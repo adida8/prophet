@@ -1,333 +1,189 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, BarChart, Bar,
-} from "recharts";
-import {
-  Activity, DollarSign, TrendingUp, TrendingDown,
-  Wifi, WifiOff, BarChart3, Clock,
-} from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Activity, Search, RefreshCw } from "lucide-react";
 import "./App.css";
 
-const WS_URL =
-  (window.location.protocol === "https:" ? "wss://" : "ws://") +
-  window.location.host +
-  "/ws/dashboard";
-
-// ── Helpers ──────────────────────────────────────────────────────────
-const fmt = (n, d = 2) => Number(n).toFixed(d);
-const fmtUsd = (n) => `$${fmt(n)}`;
-const fmtPct = (n) => `${fmt(n)}%`;
-const fmtTime = (iso) => {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+const SERIES_LABELS = {
+  KXBTC: "Bitcoin",
+  KXETH: "Ethereum",
+  KXINX: "S&P 500",
+  KXSP500: "S&P 500",
+  KXFED: "Fed Rate",
+  KXCPI: "CPI",
+  KXGDP: "GDP",
+  KXNBA: "NBA",
+  KXNFL: "NFL",
+  KXMLB: "MLB",
+  KXTRUMP: "Trump",
 };
 
-// ── App ──────────────────────────────────────────────────────────────
+const fmtPrice = (v) => {
+  const n = parseFloat(v);
+  if (!n) return "-";
+  return `${(n * 100).toFixed(0)}\u00a2`;
+};
+
+const fmtVol = (v) => {
+  const n = parseFloat(v);
+  if (!n) return "-";
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toFixed(0);
+};
+
+const fmtTime = (iso) => {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = d - now;
+  if (diff < 0) return "Closed";
+  if (diff < 3600000) return `${Math.round(diff / 60000)}m`;
+  if (diff < 86400000) return `${Math.round(diff / 3600000)}h`;
+  return d.toLocaleDateString([], { month: "short", day: "numeric" });
+};
+
 export default function App() {
-  const [connected, setConnected] = useState(false);
-  const [summary, setSummary] = useState({
-    total_trades: 0, total_fees: 0, total_invested: 0,
-    current_balance: 10000, return_pct: 0,
-  });
-  const [trades, setTrades] = useState([]);
-  const [balanceHistory, setBalanceHistory] = useState([
-    { time: fmtTime(new Date().toISOString()), balance: 10000 },
-  ]);
-  const wsRef = useRef(null);
-  const reconnectRef = useRef(null);
+  const [markets, setMarkets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState(null);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("ALL");
+  const [error, setError] = useState(null);
 
-  const connect = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) return;
-
-    const ws = new WebSocket(WS_URL);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      setConnected(true);
-      if (reconnectRef.current) clearTimeout(reconnectRef.current);
-    };
-
-    ws.onclose = () => {
-      setConnected(false);
-      reconnectRef.current = setTimeout(connect, 3000);
-    };
-
-    ws.onerror = () => ws.close();
-
-    ws.onmessage = (evt) => {
-      const msg = JSON.parse(evt.data);
-
-      if (msg.type === "init") {
-        setSummary(msg.data.summary);
-        setTrades(msg.data.trades);
-        const hist = msg.data.trades.map((t) => ({
-          time: fmtTime(t.timestamp),
-          balance: t.balance_after,
-        }));
-        if (hist.length) setBalanceHistory(hist);
-      }
-
-      if (msg.type === "trade") {
-        const t = msg.data;
-        setTrades((prev) => [...prev, t]);
-        setBalanceHistory((prev) => [
-          ...prev,
-          { time: fmtTime(t.timestamp), balance: t.balance_after },
-        ]);
-      }
-
-      if (msg.type === "heartbeat") {
-        setSummary(msg.data);
-      }
-    };
+  const fetchFeed = useCallback(async () => {
+    try {
+      const res = await fetch("/api/feed");
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data = await res.json();
+      setMarkets(data.markets || []);
+      setLastUpdate(new Date());
+      setError(null);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    connect();
-    return () => {
-      if (reconnectRef.current) clearTimeout(reconnectRef.current);
-      wsRef.current?.close();
-    };
-  }, [connect]);
+    fetchFeed();
+    const interval = setInterval(fetchFeed, 10000);
+    return () => clearInterval(interval);
+  }, [fetchFeed]);
 
-  const returnPositive = summary.return_pct >= 0;
+  const seriesSet = [...new Set(markets.map((m) => m.series))];
+
+  const filtered = markets.filter((m) => {
+    if (filter !== "ALL" && m.series !== filter) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      return (
+        m.title.toLowerCase().includes(q) ||
+        m.subtitle.toLowerCase().includes(q) ||
+        m.ticker.toLowerCase().includes(q) ||
+        m.event_title.toLowerCase().includes(q)
+      );
+    }
+    return true;
+  });
 
   return (
-    <div className="dashboard">
-      {/* Header */}
-      <header className="header">
+    <div className="app">
+      <header>
         <div className="header-left">
-          <Activity size={24} />
-          <h1>Prophet MVP</h1>
-          <span className="tag">PAPER TRADING</span>
+          <Activity size={22} />
+          <h1>Prophet</h1>
+          <span className="tag">LIVE FEED</span>
         </div>
-        <div className={`status ${connected ? "online" : "offline"}`}>
-          {connected ? <Wifi size={14} /> : <WifiOff size={14} />}
-          {connected ? "Live" : "Reconnecting..."}
+        <div className="header-right">
+          {lastUpdate && (
+            <span className="last-update">
+              <RefreshCw size={12} className={loading ? "spin" : ""} />
+              {lastUpdate.toLocaleTimeString()}
+            </span>
+          )}
+          <span className="count">{filtered.length} contracts</span>
         </div>
       </header>
 
-      {/* Stats Cards */}
-      <div className="cards">
-        <StatCard
-          icon={<DollarSign size={20} />}
-          label="Balance"
-          value={fmtUsd(summary.current_balance)}
-          accent="blue"
-        />
-        <StatCard
-          icon={returnPositive ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
-          label="Return"
-          value={fmtPct(summary.return_pct)}
-          accent={returnPositive ? "green" : "red"}
-        />
-        <StatCard
-          icon={<BarChart3 size={20} />}
-          label="Trades"
-          value={summary.total_trades}
-          accent="purple"
-        />
-        <StatCard
-          icon={<Clock size={20} />}
-          label="Fees Paid"
-          value={fmtUsd(summary.total_fees)}
-          accent="orange"
-        />
-      </div>
+      {error && <div className="error-bar">API error: {error}</div>}
 
-      {/* Strategy Controls */}
-      <SettingsPanel />
-
-      {/* Charts Row */}
-      <div className="charts-row">
-        <div className="chart-card">
-          <h2>Balance Over Time</h2>
-          <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={balanceHistory}>
-              <defs>
-                <linearGradient id="balGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="time" tick={{ fill: "#94a3b8", fontSize: 11 }} />
-              <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} domain={["dataMin - 100", "dataMax + 100"]} />
-              <Tooltip
-                contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8 }}
-                labelStyle={{ color: "#94a3b8" }}
-              />
-              <Area type="monotone" dataKey="balance" stroke="#6366f1" fill="url(#balGrad)" strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
+      <div className="controls">
+        <div className="search-box">
+          <Search size={16} />
+          <input
+            type="text"
+            placeholder="Search contracts..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
-
-        <div className="chart-card">
-          <h2>Trade Sizes</h2>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={trades.slice(-30)}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="ticker" tick={{ fill: "#94a3b8", fontSize: 10 }} />
-              <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} />
-              <Tooltip
-                contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8 }}
-                labelStyle={{ color: "#94a3b8" }}
-              />
-              <Bar dataKey="contracts" fill="#22d3ee" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="filters">
+          <button
+            className={filter === "ALL" ? "active" : ""}
+            onClick={() => setFilter("ALL")}
+          >
+            All
+          </button>
+          {seriesSet.map((s) => (
+            <button
+              key={s}
+              className={filter === s ? "active" : ""}
+              onClick={() => setFilter(s)}
+            >
+              {SERIES_LABELS[s] || s}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Trade Log */}
-      <div className="trade-log">
-        <h2>Trade Log</h2>
-        <div className="table-wrap">
-          <table>
-            <thead>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th className="th-cat">Cat</th>
+              <th className="th-contract">Contract</th>
+              <th className="th-price">Yes Bid</th>
+              <th className="th-price">Yes Ask</th>
+              <th className="th-price">No Bid</th>
+              <th className="th-price">No Ask</th>
+              <th className="th-price">Last</th>
+              <th className="th-vol">Volume</th>
+              <th className="th-time">Closes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading && markets.length === 0 ? (
               <tr>
-                <th>Time</th>
-                <th>Ticker</th>
-                <th>Side</th>
-                <th>Price</th>
-                <th>Qty</th>
-                <th>Fee</th>
-                <th>Cost</th>
-                <th>Balance</th>
+                <td colSpan={9} className="empty">Loading markets...</td>
               </tr>
-            </thead>
-            <tbody>
-              {trades.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="empty">
-                    Waiting for signals...
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="empty">No contracts found</td>
+              </tr>
+            ) : (
+              filtered.map((m) => (
+                <tr key={m.ticker}>
+                  <td className="cat">
+                    <span className={`badge badge-${m.series}`}>
+                      {SERIES_LABELS[m.series] || m.series}
+                    </span>
                   </td>
+                  <td className="contract">
+                    <div className="contract-title">{m.subtitle || m.title}</div>
+                    <div className="contract-event">{m.event_title}</div>
+                  </td>
+                  <td className="price green">{fmtPrice(m.yes_bid)}</td>
+                  <td className="price green">{fmtPrice(m.yes_ask)}</td>
+                  <td className="price red">{fmtPrice(m.no_bid)}</td>
+                  <td className="price red">{fmtPrice(m.no_ask)}</td>
+                  <td className="price last">{fmtPrice(m.last_price)}</td>
+                  <td className="vol">{fmtVol(m.volume)}</td>
+                  <td className="time">{fmtTime(m.close_time)}</td>
                 </tr>
-              ) : (
-                [...trades].reverse().slice(0, 100).map((t, i) => (
-                  <tr key={i}>
-                    <td className="mono">{fmtTime(t.timestamp)}</td>
-                    <td className="ticker">{t.ticker}</td>
-                    <td className={t.side === "BUY_YES" ? "buy" : "sell"}>{t.side}</td>
-                    <td className="mono">{fmt(t.entry_price * 100, 1)}c</td>
-                    <td className="mono">{t.contracts}</td>
-                    <td className="mono">{fmtUsd(t.fee)}</td>
-                    <td className="mono">{fmtUsd(t.net_cost)}</td>
-                    <td className="mono">{fmtUsd(t.balance_after)}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SettingsPanel() {
-  const [settings, setSettings] = useState(null);
-  const [local, setLocal] = useState({});
-  const [toast, setToast] = useState(null);
-  const [saving, setSaving] = useState(false);
-
-  const fetchSettings = useCallback(async () => {
-    try {
-      const res = await fetch("/api/settings");
-      const data = await res.json();
-      setSettings(data);
-      // Only update local if user hasn't made unsaved changes
-      setLocal((prev) => {
-        if (!settings) return data; // first load
-        return prev;
-      });
-    } catch { /* ignore */ }
-  }, [settings]);
-
-  useEffect(() => {
-    fetchSettings();
-    const interval = setInterval(fetchSettings, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const res = await fetch("/api/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(local),
-      });
-      if (!res.ok) throw new Error("Save failed");
-      const data = await res.json();
-      setSettings(data);
-      setLocal(data);
-      setToast({ message: "Settings saved", type: "success" });
-    } catch {
-      setToast({ message: "Failed to save settings", type: "error" });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 3000);
-    return () => clearTimeout(t);
-  }, [toast]);
-
-  if (!settings) return null;
-
-  const sliders = [
-    { key: "yes_ceiling", label: "YES Ceiling", min: 0.1, max: 1.0, step: 0.01 },
-    { key: "no_floor", label: "NO Floor", min: 0.1, max: 1.0, step: 0.01 },
-    { key: "min_edge", label: "Min Edge", min: 0.001, max: 0.2, step: 0.001 },
-  ];
-
-  const dirty = JSON.stringify(local) !== JSON.stringify(settings);
-
-  return (
-    <div className="settings-panel">
-      <h2>Strategy Controls</h2>
-      <div className="settings-sliders">
-        {sliders.map(({ key, label, min, max, step }) => (
-          <div key={key} className="slider-group">
-            <div className="slider-header">
-              <label>{label}</label>
-              <span className="slider-value">
-                {(local[key] ?? 0).toFixed(key === "min_edge" ? 3 : 2)}
-              </span>
-            </div>
-            <input
-              type="range"
-              min={min}
-              max={max}
-              step={step}
-              value={local[key] ?? min}
-              onChange={(e) => setLocal({ ...local, [key]: parseFloat(e.target.value) })}
-            />
-          </div>
-        ))}
-        <button onClick={handleSave} disabled={saving || !dirty} className="btn-save">
-          {saving ? "Saving..." : "Update Thresholds"}
-        </button>
-      </div>
-      {toast && (
-        <div className={`toast toast-${toast.type}`}>{toast.message}</div>
-      )}
-    </div>
-  );
-}
-
-function StatCard({ icon, label, value, accent }) {
-  return (
-    <div className={`stat-card accent-${accent}`}>
-      <div className="stat-icon">{icon}</div>
-      <div className="stat-body">
-        <span className="stat-label">{label}</span>
-        <span className="stat-value">{value}</span>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

@@ -9,9 +9,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ── Kalshi Demo Environment ──────────────────────────────────────────
-BASE_URL = "https://demo-api.kalshi.co/trade-api/v2"
-WS_URL = "wss://demo-api.kalshi.co/trade-api/ws/v2"
+# ── Kalshi API Environment ────────────────────────────────────────────
+# Production (real markets, real prices — bot only paper-trades, never places orders)
+BASE_URL = os.getenv("KALSHI_BASE_URL", "https://api.elections.kalshi.com/trade-api/v2")
+WS_URL = os.getenv("KALSHI_WS_URL", "wss://api.elections.kalshi.com/trade-api/ws/v2")
 
 API_KEY = os.getenv("KALSHI_API_KEY", "")
 PRIVATE_KEY_PATH = Path(os.getenv("KALSHI_PRIVATE_KEY_PATH", "./kalshi_private_key.pem"))

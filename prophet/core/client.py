@@ -105,7 +105,7 @@ async def stream_tickers(
     url = config.WS_URL
     log.info("Connecting to WebSocket: %s", url)
 
-    async for ws in websockets.connect(url, extra_headers=extra_headers):
+    async for ws in websockets.connect(url, additional_headers=extra_headers):
         try:
             # Subscribe to ticker channel
             subscribe_msg = {
