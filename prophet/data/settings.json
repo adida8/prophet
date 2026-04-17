@@ -1,0 +1,5 @@
+{
+  "yes_ceiling": 0.55,
+  "no_floor": 0.50,
+  "min_edge": 0.01
+}
