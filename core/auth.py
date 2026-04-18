@@ -3,6 +3,7 @@ Prophet-MVP-v1 — RSA-PSS Authentication
 Signs requests for the Kalshi v2 API using RSA-PSS with SHA-256.
 """
 
+import os
 import time
 from pathlib import Path
 
@@ -12,20 +13,37 @@ from cryptography.hazmat.primitives.asymmetric import padding
 import config
 
 
-def _load_private_key(path: Path):
-    """Load an RSA private key from a PEM file."""
-    pem_data = path.read_bytes()
-    return serialization.load_pem_private_key(pem_data, password=None)
+def _load_private_key_bytes() -> bytes:
+    """
+    Prefer the PEM content set via KALSHI_PRIVATE_KEY (useful on Railway
+    where you cannot commit or mount a PEM). Fall back to the file at
+    config.PRIVATE_KEY_PATH for local development.
+    """
+    pem = os.getenv("KALSHI_PRIVATE_KEY", "").strip()
+    if pem:
+        # Allow single-line env vars with literal "\n" for newlines
+        if "\\n" in pem and "\n" not in pem:
+            pem = pem.replace("\\n", "\n")
+        return pem.encode("utf-8")
+    path: Path = config.PRIVATE_KEY_PATH
+    if not path.exists():
+        raise FileNotFoundError(
+            f"No Kalshi private key: set KALSHI_PRIVATE_KEY env var or "
+            f"put a PEM at {path}"
+        )
+    return path.read_bytes()
 
 
-# Cache the key so we only read disk once.
+# Cache the key so we only parse it once.
 _private_key = None
 
 
 def _get_key():
     global _private_key
     if _private_key is None:
-        _private_key = _load_private_key(config.PRIVATE_KEY_PATH)
+        _private_key = serialization.load_pem_private_key(
+            _load_private_key_bytes(), password=None
+        )
     return _private_key
 
 

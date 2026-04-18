@@ -1,0 +1,20 @@
+# Railway / nixpacks build config
+# Installs Node so we can build the frontend, then runs the Python app.
+
+[phases.setup]
+nixPkgs = ["python313", "nodejs_20", "gcc"]
+
+[phases.install]
+cmds = [
+    "python -m venv --copies /opt/venv",
+    ". /opt/venv/bin/activate && pip install -r requirements.txt",
+    "cd frontend && npm install --no-audit --no-fund",
+]
+
+[phases.build]
+cmds = [
+    "cd frontend && npm run build",
+]
+
+[start]
+cmd = ". /opt/venv/bin/activate && python main.py --dashboard"

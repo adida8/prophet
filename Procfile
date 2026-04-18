@@ -1,1 +1,1 @@
-web: python main.py --dashboard --port $PORT
+web: python main.py --dashboard
