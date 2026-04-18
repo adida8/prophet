@@ -13,23 +13,40 @@ from cryptography.hazmat.primitives.asymmetric import padding
 import config
 
 
+def _normalize_pem(value: str) -> bytes:
+    """Turn a PEM value (possibly with escaped newlines) into bytes."""
+    if "\\n" in value and "\n" not in value:
+        value = value.replace("\\n", "\n")
+    return value.encode("utf-8")
+
+
 def _load_private_key_bytes() -> bytes:
     """
-    Prefer the PEM content set via KALSHI_PRIVATE_KEY (useful on Railway
-    where you cannot commit or mount a PEM). Fall back to the file at
+    Prefer the PEM content set via KALSHI_PRIVATE_KEY (required on PaaS
+    hosts that cannot mount a file). Fall back to the file at
     config.PRIVATE_KEY_PATH for local development.
+
+    Forgiving: if KALSHI_PRIVATE_KEY_PATH was accidentally set to the PEM
+    contents instead of a path, detect that and use it as PEM.
+
+    Never echoes the value of either env var into exceptions — those get
+    captured by log aggregators.
     """
     pem = os.getenv("KALSHI_PRIVATE_KEY", "").strip()
     if pem:
-        # Allow single-line env vars with literal "\n" for newlines
-        if "\\n" in pem and "\n" not in pem:
-            pem = pem.replace("\\n", "\n")
-        return pem.encode("utf-8")
+        return _normalize_pem(pem)
+
+    raw_path = os.getenv("KALSHI_PRIVATE_KEY_PATH", "").strip()
+    if raw_path.startswith("-----BEGIN"):
+        # User put the PEM in the *_PATH variable by mistake — accept it.
+        return _normalize_pem(raw_path)
+
     path: Path = config.PRIVATE_KEY_PATH
     if not path.exists():
         raise FileNotFoundError(
-            f"No Kalshi private key: set KALSHI_PRIVATE_KEY env var or "
-            f"put a PEM at {path}"
+            "No Kalshi private key found. Set KALSHI_PRIVATE_KEY to the "
+            "PEM contents (recommended on Railway), or put a PEM file at "
+            "the path named by KALSHI_PRIVATE_KEY_PATH."
         )
     return path.read_bytes()
 
