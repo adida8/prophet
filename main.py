@@ -198,7 +198,14 @@ if __name__ == "__main__":
         "--dashboard", action="store_true",
         help="Launch live dashboard on http://localhost:8000",
     )
+    parser.add_argument(
+        "--port", type=int, default=None,
+        help="Override the dashboard port (otherwise uses $PORT or 8000)",
+    )
     args = parser.parse_args()
+
+    if args.port is not None:
+        config.PORT = args.port
 
     try:
         asyncio.run(main(dashboard=args.dashboard))
