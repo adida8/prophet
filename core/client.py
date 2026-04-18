@@ -74,6 +74,58 @@ class KalshiClient:
     async def get_orderbook(self, ticker: str) -> dict:
         return await self._request("GET", f"/markets/{ticker}/orderbook")
 
+    # --- Portfolio / Orders (live trading) ---
+
+    async def place_order(
+        self,
+        ticker: str,
+        side: str,              # "yes" or "no"
+        contracts: int,
+        price_cents: int | None = None,
+        client_order_id: str | None = None,
+    ) -> dict:
+        """
+        POST /portfolio/orders — place a market order.
+
+        For market orders, Kalshi requires a `yes_price` or `no_price` as a
+        worst-acceptable fill cap (in cents, 1-99). Passing `price_cents`
+        sets that cap; otherwise the current signal price is used.
+        """
+        body: dict = {
+            "ticker": ticker,
+            "action": "buy",
+            "side": side,
+            "count": contracts,
+            "type": "market",
+        }
+        if client_order_id:
+            body["client_order_id"] = client_order_id
+        if price_cents is not None:
+            # Kalshi's market-order protection cap
+            if side == "yes":
+                body["yes_price"] = price_cents
+            else:
+                body["no_price"] = price_cents
+        return await self._request("POST", "/portfolio/orders", json=body)
+
+    async def get_order(self, order_id: str) -> dict:
+        return await self._request("GET", f"/portfolio/orders/{order_id}")
+
+    async def cancel_order(self, order_id: str) -> dict:
+        return await self._request("DELETE", f"/portfolio/orders/{order_id}")
+
+    async def get_orders(self, status: str | None = None) -> dict:
+        params: dict = {}
+        if status:
+            params["status"] = status
+        return await self._request("GET", "/portfolio/orders", params=params)
+
+    async def get_positions(self) -> dict:
+        return await self._request("GET", "/portfolio/positions")
+
+    async def get_balance(self) -> dict:
+        return await self._request("GET", "/portfolio/balance")
+
 
 # ── WebSocket Stream ─────────────────────────────────────────────────
 

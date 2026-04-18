@@ -1,90 +1,77 @@
 """
-Prophet-MVP-v1 — Simple Arbitrage Strategy
+Prophet-MVP-v1 — Simple Arbitrage / Imbalance Strategy
 
-Evaluates Kalshi markets for mispriced YES/NO contracts.
-Thresholds are loaded from data/settings.json on every call,
-so changes from the dashboard take effect immediately.
+Logic:
+  If the 'Yes' price < 0.45 AND the 'No' price > 0.60, there's a
+  mispricing imbalance. Buy the cheap 'Yes' side because the implied
+  probabilities don't add to ~1.0, leaving room for profit after fees.
+
+  The confidence score is proportional to the size of the gap, capped
+  at 0.95 so the Kelly Criterion never goes all-in.
 """
 
 from __future__ import annotations
 
-import json
 import logging
-from pathlib import Path
 
 import config
+from strategies.base import Signal, Strategy
 
-log = logging.getLogger("prophet.strategy")
+log = logging.getLogger("prophet.strategy.simple_arb")
 
-SETTINGS_PATH = config.DATA_DIR / "settings.json"
-
-DEFAULTS = {
-    "yes_ceiling": 0.42,
-    "no_floor": 0.58,
-    "min_edge": 0.03,
-}
+# ── Thresholds ────────────────────────────────────────────────────────
+YES_CEILING = 0.45   # Yes price must be below this
+NO_FLOOR = 0.60      # No price must be above this
+MIN_EDGE = 0.05      # minimum expected edge after fees to trigger
 
 
-def _load_settings() -> dict:
-    """Read thresholds from settings.json, creating it with defaults if missing."""
-    if not SETTINGS_PATH.exists():
-        SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
-        SETTINGS_PATH.write_text(json.dumps(DEFAULTS, indent=2))
-        return dict(DEFAULTS)
-    try:
-        data = json.loads(SETTINGS_PATH.read_text())
-        return {
-            "yes_ceiling": float(data.get("yes_ceiling", DEFAULTS["yes_ceiling"])),
-            "no_floor": float(data.get("no_floor", DEFAULTS["no_floor"])),
-            "min_edge": float(data.get("min_edge", DEFAULTS["min_edge"])),
-        }
-    except (json.JSONDecodeError, ValueError):
-        log.warning("Corrupt settings.json — using defaults")
-        return dict(DEFAULTS)
+class SimpleArbStrategy(Strategy):
+    """Detect Yes/No imbalance and signal a buy on the cheap side."""
 
+    @property
+    def name(self) -> str:
+        return "simple_arb"
 
-def evaluate(ticker: str, yes_price: float, no_price: float) -> dict | None:
-    """
-    Check if a market has a tradeable edge.
+    def evaluate(self, tick: dict) -> Signal | None:
+        ticker = tick.get("market_ticker", "")
+        yes_price = tick.get("yes_price", 0)
+        no_price = tick.get("no_price", 0)
 
-    Returns a signal dict if an opportunity exists, None otherwise.
-    Signal: {"ticker", "side", "price", "edge", "reason"}
-    """
-    settings = _load_settings()
-    yes_ceil = settings["yes_ceiling"]
-    no_floor = settings["no_floor"]
-    min_edge = settings["min_edge"]
+        # Kalshi prices are in cents (1-99); normalise to 0-1
+        if yes_price > 1:
+            yes_price /= 100
+        if no_price > 1:
+            no_price /= 100
 
-    # YES is cheap — market underpricing the outcome
-    if yes_price < yes_ceil:
-        edge = yes_ceil - yes_price
-        if edge >= min_edge:
-            log.info(
-                "SIGNAL  %s  BUY_YES  price=%.2f  ceil=%.2f  edge=%.4f",
-                ticker, yes_price, yes_ceil, edge,
-            )
-            return {
-                "ticker": ticker,
-                "side": "BUY_YES",
-                "price": yes_price,
-                "edge": round(edge, 4),
-                "reason": f"YES @ {yes_price:.2f} < ceiling {yes_ceil:.2f}",
-            }
+        if not (0 < yes_price < 1 and 0 < no_price < 1):
+            return None  # invalid / missing data
 
-    # NO is cheap — market overpricing the outcome
-    if no_price > no_floor:
-        edge = no_price - no_floor
-        if edge >= min_edge:
-            log.info(
-                "SIGNAL  %s  BUY_NO  price=%.2f  floor=%.2f  edge=%.4f",
-                ticker, no_price, no_floor, edge,
-            )
-            return {
-                "ticker": ticker,
-                "side": "BUY_NO",
-                "price": no_price,
-                "edge": round(edge, 4),
-                "reason": f"NO @ {no_price:.2f} > floor {no_floor:.2f}",
-            }
+        # ── Check the imbalance condition ─────────────────────────
+        if yes_price >= YES_CEILING or no_price <= NO_FLOOR:
+            return None
 
-    return None
+        # Expected profit: (1 - yes_price) is the payout if "Yes" wins.
+        # Subtract the 0.8% fee on both entry and exit (round-trip).
+        fee_rt = config.TRADING_FEE_PCT * 2
+        expected_profit = (1 - yes_price) - fee_rt
+        edge = expected_profit - yes_price  # net edge per contract
+
+        if edge < MIN_EDGE:
+            return None
+
+        # Confidence: scale edge into [0.3, 0.95]
+        confidence = min(0.95, 0.3 + edge * 3)
+
+        reason = (
+            f"Imbalance detected — Yes={yes_price:.2f}, No={no_price:.2f}. "
+            f"Edge after fees: {edge:.4f}. Confidence: {confidence:.2f}"
+        )
+        log.info("SIGNAL  %s  %s", ticker, reason)
+
+        return Signal(
+            ticker=ticker,
+            side="BUY_YES",
+            price=yes_price,
+            confidence=confidence,
+            reason=reason,
+        )
