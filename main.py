@@ -176,7 +176,13 @@ async def main(dashboard: bool = False) -> None:
             log.error("No markets available. Exiting.")
             return
 
-        tasks.append(asyncio.create_task(run_trading_loop(tickers, dashboard=dashboard)))
+        async def _loop_guard():
+            try:
+                await run_trading_loop(tickers, dashboard=dashboard)
+            except Exception:
+                log.exception("Trading loop crashed — dashboard will keep running")
+
+        tasks.append(asyncio.create_task(_loop_guard()))
         await asyncio.gather(*tasks)
     except KeyboardInterrupt:
         pass

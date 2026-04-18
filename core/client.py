@@ -137,53 +137,71 @@ async def stream_tickers(
     Connect to the Kalshi Demo WebSocket and subscribe to the
     `ticker` channel for the given market tickers.
 
-    Yields each incoming tick message as a dict.  If `on_tick` is
-    provided, it's called as a side-effect for every tick (useful for
-    feeding the strategy engine without consuming the iterator).
+    Re-signs auth headers on every attempt — Kalshi's signature window
+    is narrow (~10s), so reusing a stale timestamp guarantees 401 on
+    reconnect. Survives auth failures with exponential backoff rather
+    than propagating (which would kill the whole trading loop).
     """
     import time, base64
     from core.auth import sign_message
-
-    # Build auth headers for the WS handshake
-    timestamp = str(int(time.time() * 1000))
-    path = "/trade-api/ws/v2"
-    sig = sign_message(timestamp, "GET", path)
-    extra_headers = {
-        "KALSHI-ACCESS-KEY": config.API_KEY,
-        "KALSHI-ACCESS-TIMESTAMP": timestamp,
-        "KALSHI-ACCESS-SIGNATURE": base64.b64encode(sig).decode(),
-    }
+    from websockets.exceptions import InvalidStatus
 
     url = config.WS_URL
-    log.info("Connecting to WebSocket: %s", url)
+    backoff = 5
+    max_backoff = 60
 
-    async for ws in websockets.connect(url, additional_headers=extra_headers):
+    while True:
+        # Fresh signature per connect attempt
+        timestamp = str(int(time.time() * 1000))
+        path = "/trade-api/ws/v2"
+        sig = sign_message(timestamp, "GET", path)
+        extra_headers = {
+            "KALSHI-ACCESS-KEY": config.API_KEY,
+            "KALSHI-ACCESS-TIMESTAMP": timestamp,
+            "KALSHI-ACCESS-SIGNATURE": base64.b64encode(sig).decode(),
+        }
+
+        log.info("Connecting to WebSocket: %s", url)
         try:
-            # Subscribe to ticker channel
-            subscribe_msg = {
-                "id": 1,
-                "cmd": "subscribe",
-                "params": {
-                    "channels": ["ticker"],
-                    "market_tickers": tickers,
-                },
-            }
-            await ws.send(json.dumps(subscribe_msg))
-            log.info("Subscribed to tickers: %s", tickers)
+            async with websockets.connect(url, additional_headers=extra_headers) as ws:
+                backoff = 5  # reset on successful connect
+                subscribe_msg = {
+                    "id": 1,
+                    "cmd": "subscribe",
+                    "params": {
+                        "channels": ["ticker"],
+                        "market_tickers": tickers,
+                    },
+                }
+                await ws.send(json.dumps(subscribe_msg))
+                log.info("Subscribed to tickers: %s", tickers)
 
-            async for raw in ws:
-                msg = json.loads(raw)
-                msg_type = msg.get("type", "")
+                async for raw in ws:
+                    msg = json.loads(raw)
+                    msg_type = msg.get("type", "")
+                    if msg_type == "ticker":
+                        data = msg.get("msg", {})
+                        if on_tick:
+                            on_tick(data)
+                        yield data
+                    elif msg_type == "error":
+                        log.error("WS error frame: %s", msg)
+                    # heartbeats and other frames are silently ignored
 
-                if msg_type == "ticker":
-                    data = msg.get("msg", {})
-                    if on_tick:
-                        on_tick(data)
-                    yield data
-                elif msg_type == "error":
-                    log.error("WS error: %s", msg)
-                # heartbeats and other frames are silently ignored
-
+        except InvalidStatus as e:
+            status = getattr(e.response, "status_code", "?")
+            log.error(
+                "WS handshake rejected (HTTP %s). Check KALSHI_WS_URL and "
+                "that the new API key pair is active on Kalshi Demo. "
+                "Retrying in %ds.", status, backoff,
+            )
+            await asyncio.sleep(backoff)
+            backoff = min(backoff * 2, max_backoff)
         except websockets.ConnectionClosed:
-            log.warning("WebSocket closed — reconnecting in 5 s")
-            await asyncio.sleep(5)
+            log.warning("WebSocket closed — reconnecting in %ds", backoff)
+            await asyncio.sleep(backoff)
+            backoff = min(backoff * 2, max_backoff)
+        except Exception:
+            log.exception("Unexpected WS error — retrying in %ds", backoff)
+            await asyncio.sleep(backoff)
+            backoff = min(backoff * 2, max_backoff)
