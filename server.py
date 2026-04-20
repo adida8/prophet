@@ -1,11 +1,11 @@
 """
-Prophet-MVP-v1 — Dashboard Server
+Prophet — FastAPI server
 
-A lightweight FastAPI app that:
-  1. Serves the React frontend (static files)
-  2. Exposes a WebSocket at /ws/dashboard that broadcasts every
-     simulated trade + periodic portfolio snapshots to connected browsers
-  3. Exposes REST endpoints for initial page load (trade history, summary)
+Serves:
+  - React frontend (static files from frontend/dist/)
+  - REST endpoints for market data platform
+  - /ws/live — real-time broadcast to dashboard clients
+  - Legacy paper-trading endpoints (/ws/dashboard, /api/summary, etc.)
 """
 
 from __future__ import annotations
@@ -16,14 +16,11 @@ import logging
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-
-from typing import Optional
-
 from pydantic import BaseModel
 
 import config
@@ -31,14 +28,68 @@ from core.logger import get_portfolio_summary
 
 log = logging.getLogger("prophet.server")
 
+# ── Shared scheduler instance (set by main.py after creation) ─────────
+_scheduler = None
+
+
+def set_scheduler(s) -> None:
+    global _scheduler
+    _scheduler = s
+
+
+# ── WebSocket client sets ─────────────────────────────────────────────
+_live_clients: set[WebSocket] = set()      # /ws/live  (data platform)
+_dash_clients: set[WebSocket] = set()      # /ws/dashboard (legacy paper trading)
+
+# Legacy paper-trade state
+_trade_history: list[dict[str, Any]] = []
+
+
+# ── Broadcast helpers ─────────────────────────────────────────────────
+
+async def broadcast(payload: dict) -> None:
+    """Broadcast to all /ws/live clients.  Called by scheduler."""
+    text = json.dumps(payload, default=str)
+    dead: list[WebSocket] = []
+    for ws in list(_live_clients):
+        try:
+            await ws.send_text(text)
+        except Exception:
+            dead.append(ws)
+    for ws in dead:
+        _live_clients.discard(ws)
+
+
+async def push_trade(trade: dict) -> None:
+    """Legacy: push a simulated trade to /ws/dashboard clients."""
+    _trade_history.append(trade)
+    await _dash_broadcast({"type": "trade", "data": trade})
+
+
+async def push_heartbeat() -> None:
+    """Legacy: push portfolio snapshot to /ws/dashboard clients."""
+    summary = get_portfolio_summary()
+    await _dash_broadcast({
+        "type": "heartbeat",
+        "data": {**summary, "timestamp": datetime.now(timezone.utc).isoformat()},
+    })
+
+
+async def _dash_broadcast(event: dict) -> None:
+    text = json.dumps(event)
+    dead = []
+    for ws in list(_dash_clients):
+        try:
+            await ws.send_text(text)
+        except Exception:
+            dead.append(ws)
+    for ws in dead:
+        _dash_clients.discard(ws)
+
+
+# ── Legacy settings (paper trading strategy) ──────────────────────────
 SETTINGS_PATH = config.DATA_DIR / "settings.json"
 SETTINGS_DEFAULTS = {"yes_ceiling": 0.42, "no_floor": 0.58, "min_edge": 0.03}
-
-
-class SettingsUpdate(BaseModel):
-    yes_ceiling: Optional[float] = None
-    no_floor: Optional[float] = None
-    min_edge: Optional[float] = None
 
 
 def _read_settings() -> dict:
@@ -56,60 +107,33 @@ def _write_settings(data: dict) -> None:
     SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
     SETTINGS_PATH.write_text(json.dumps(data, indent=2))
 
-# ── Connected dashboard clients ───────────────────────────────────────
-_clients: set[WebSocket] = set()
-_trade_history: list[dict[str, Any]] = []  # in-memory mirror of CSV rows
+
+class SettingsUpdate(BaseModel):
+    yes_ceiling: Optional[float] = None
+    no_floor:    Optional[float] = None
+    min_edge:    Optional[float] = None
 
 
-async def broadcast(event: dict) -> None:
-    """Send a JSON event to every connected dashboard client."""
-    payload = json.dumps(event)
-    dead: list[WebSocket] = []
-    for ws in _clients:
-        try:
-            await ws.send_text(payload)
-        except Exception:
-            dead.append(ws)
-    for ws in dead:
-        _clients.discard(ws)
-
-
-async def push_trade(trade: dict) -> None:
-    """Called by the trading loop whenever a sim-trade is recorded."""
-    _trade_history.append(trade)
-    await broadcast({"type": "trade", "data": trade})
-
-
-async def push_heartbeat() -> None:
-    """Push a portfolio summary snapshot to all clients."""
-    summary = get_portfolio_summary()
-    await broadcast({
-        "type": "heartbeat",
-        "data": {
-            **summary,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "trade_count": len(_trade_history),
-        },
-    })
-
-
-# ── Periodic heartbeat task ──────────────────────────────────────────
-async def _heartbeat_loop():
-    while True:
-        await asyncio.sleep(5)
-        if _clients:
-            await push_heartbeat()
-
+# ── Lifespan ──────────────────────────────────────────────────────────
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Periodic heartbeat for legacy dashboard
     task = asyncio.create_task(_heartbeat_loop())
     yield
     task.cancel()
 
 
-# ── FastAPI App ───────────────────────────────────────────────────────
-app = FastAPI(title="Prophet Dashboard", lifespan=lifespan)
+async def _heartbeat_loop():
+    while True:
+        await asyncio.sleep(5)
+        if _dash_clients:
+            await push_heartbeat()
+
+
+# ── FastAPI app ───────────────────────────────────────────────────────
+
+app = FastAPI(title="Prophet — Prediction Market Intelligence", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -119,10 +143,73 @@ app.add_middleware(
 )
 
 
+# ─────────────────────────── REST endpoints ───────────────────────────
+
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "last_updated": _scheduler.last_updated.isoformat() if _scheduler and _scheduler.last_updated else None,
+    }
 
+
+# ── Data platform endpoints ───────────────────────────────────────────
+
+@app.get("/api/markets")
+async def api_markets(category: Optional[str] = None, platform: Optional[str] = None):
+    if not _scheduler:
+        return []
+    markets = _scheduler.all_markets
+    if category:
+        markets = [m for m in markets if m.category == category]
+    if platform:
+        markets = [m for m in markets if m.platform == platform]
+    return [m.to_dict() for m in markets]
+
+
+@app.get("/api/compare")
+async def api_compare(category: Optional[str] = None):
+    if not _scheduler:
+        return []
+    compared = _scheduler.compared
+    if category:
+        compared = [c for c in compared if c.category == category]
+    return [c.to_dict() for c in compared]
+
+
+@app.get("/api/arbitrage")
+async def api_arbitrage():
+    if not _scheduler:
+        return []
+    return [a.to_dict() for a in _scheduler.arb_opps]
+
+
+@app.get("/api/movers")
+async def api_movers(window: str = "24h"):
+    if not _scheduler:
+        return []
+    return _scheduler.movers_1h if window == "1h" else _scheduler.movers_24h
+
+
+@app.get("/api/stats")
+async def api_stats():
+    return _scheduler.stats if _scheduler else {}
+
+
+@app.get("/api/platforms")
+async def api_platforms():
+    return _scheduler.platform_stats if _scheduler else {}
+
+
+@app.get("/api/snapshot")
+async def api_snapshot():
+    """Full snapshot — used by frontend on initial load."""
+    if not _scheduler:
+        return {"data": {}}
+    return _scheduler.snapshot()
+
+
+# ── Legacy paper-trading endpoints ────────────────────────────────────
 
 @app.get("/api/settings")
 async def get_settings():
@@ -139,7 +226,6 @@ async def update_settings(body: SettingsUpdate):
     if body.min_edge is not None:
         current["min_edge"] = body.min_edge
     _write_settings(current)
-    log.info("Settings updated: %s", current)
     return current
 
 
@@ -153,31 +239,47 @@ async def api_trades():
     return _trade_history
 
 
-@app.websocket("/ws/dashboard")
-async def dashboard_ws(ws: WebSocket):
+# ── WebSockets ────────────────────────────────────────────────────────
+
+@app.websocket("/ws/live")
+async def ws_live(ws: WebSocket):
     await ws.accept()
-    _clients.add(ws)
-    log.info("Dashboard client connected (%d total)", len(_clients))
+    _live_clients.add(ws)
+    log.info("Live client connected (%d total)", len(_live_clients))
     try:
-        # Send current state on connect
-        await ws.send_text(json.dumps({
-            "type": "init",
-            "data": {
-                "summary": get_portfolio_summary(),
-                "trades": _trade_history,
-            },
-        }))
-        # Keep alive — the client only listens
+        if _scheduler and _scheduler.last_updated:
+            await ws.send_text(json.dumps(_scheduler.snapshot(), default=str))
+        else:
+            await ws.send_text(json.dumps({"type": "init", "data": {}}))
         while True:
             await ws.receive_text()
     except WebSocketDisconnect:
         pass
     finally:
-        _clients.discard(ws)
-        log.info("Dashboard client disconnected (%d remaining)", len(_clients))
+        _live_clients.discard(ws)
+        log.info("Live client disconnected (%d remaining)", len(_live_clients))
 
 
-# ── Mount static frontend (built files) ──────────────────────────────
+@app.websocket("/ws/dashboard")
+async def ws_dashboard(ws: WebSocket):
+    """Legacy paper-trading dashboard WebSocket."""
+    await ws.accept()
+    _dash_clients.add(ws)
+    try:
+        await ws.send_text(json.dumps({
+            "type": "init",
+            "data": {"summary": get_portfolio_summary(), "trades": _trade_history},
+        }))
+        while True:
+            await ws.receive_text()
+    except WebSocketDisconnect:
+        pass
+    finally:
+        _dash_clients.discard(ws)
+
+
+# ── Static frontend ───────────────────────────────────────────────────
+
 FRONTEND_DIST = Path(__file__).parent / "frontend" / "dist"
 if FRONTEND_DIST.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIST), html=True), name="frontend")

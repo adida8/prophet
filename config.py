@@ -32,5 +32,16 @@ WATCH_TICKERS = ["KXBTC", "KXETH", "KXFED", "KXCPI", "KXGDP"]
 DATA_DIR = Path(__file__).parent / "data"
 PORTFOLIO_CSV = DATA_DIR / "portfolio.csv"
 
+# ── Polymarket ────────────────────────────────────────────────────────
+POLYMARKET_GAMMA_URL = os.getenv("POLYMARKET_GAMMA_URL", "https://gamma-api.polymarket.com")
+POLYMARKET_CLOB_URL = os.getenv("POLYMARKET_CLOB_URL", "https://clob.polymarket.com")
+
+# ── Data Platform ─────────────────────────────────────────────────────
+FETCH_INTERVAL_SEC = int(os.getenv("FETCH_INTERVAL_SEC", "30"))
+MOVERS_SNAPSHOT_INTERVAL_SEC = int(os.getenv("MOVERS_SNAPSHOT_INTERVAL_SEC", "300"))
+DB_PATH = DATA_DIR / "prophet.db"
+ARB_MIN_EDGE_PCT = float(os.getenv("ARB_MIN_EDGE_PCT", "1.5"))
+MATCH_THRESHOLD = float(os.getenv("MATCH_THRESHOLD", "0.30"))
+
 # ── Server ────────────────────────────────────────────────────────────
 PORT = int(os.getenv("PORT", "8000"))

@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["nodejs_22", "python311"]
+
+[phases.install]
+cmds = [
+  "pip install -r requirements.txt",
+  "cd frontend && npm install"
+]
+
+[phases.build]
+cmds = ["cd frontend && npm run build"]
+
+[start]
+cmd = "python main.py --dashboard --port $PORT"
