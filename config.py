@@ -52,5 +52,8 @@ DB_PATH             = DATA_DIR / "prophet.db"
 ARB_MIN_EDGE_PCT    = float(os.getenv("ARB_MIN_EDGE_PCT",  "1.5"))
 MATCH_THRESHOLD     = float(os.getenv("MATCH_THRESHOLD",   "0.30"))
 
+# ── Affiliate / UTM ──────────────────────────────────────────────────
+UTM_PARAMS = "utm_source=predictionedge&utm_medium=comparison&utm_campaign=odds"
+
 # ── Server ────────────────────────────────────────────────────────────
 PORT = int(os.getenv("PORT", "8000"))

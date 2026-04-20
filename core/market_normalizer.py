@@ -12,6 +12,8 @@ from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from typing import Optional
 
+import config
+
 log = logging.getLogger("prophet.normalizer")
 
 # ── Canonical category mapping ────────────────────────────────────────
@@ -46,6 +48,10 @@ def _norm_category(raw: str) -> str:
 def _to_decimal(price: float) -> float:
     """Convert cents (0-100) to decimal (0-1) if needed."""
     return price / 100.0 if price > 1.0 else price
+
+
+def _now() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 # ── Unified schema ────────────────────────────────────────────────────
@@ -92,26 +98,49 @@ def normalize_kalshi(market: dict) -> Optional[NormalizedMarket]:
         if not ticker:
             return None
 
+        # T1.2: Skip markets that aren't open/active
+        status = (market.get("status") or "").lower()
+        if status and status not in ("active", "open"):
+            return None
+
+        close_time = _parse_dt(market.get("close_time") or market.get("expiration_time"))
+        if close_time and close_time < _now():
+            return None
+
+        # T1.1: Mid-price from spread; fall back to last_price
         yes_bid = _to_decimal(float(market.get("yes_bid") or 0))
         yes_ask = _to_decimal(float(market.get("yes_ask") or 0))
         no_bid  = _to_decimal(float(market.get("no_bid") or 0))
         no_ask  = _to_decimal(float(market.get("no_ask") or 0))
 
-        yes_price = (yes_bid + yes_ask) / 2 if yes_bid and yes_ask else (yes_bid or yes_ask)
-        no_price  = (no_bid + no_ask) / 2 if no_bid and no_ask else (no_bid or no_ask)
+        if yes_bid and yes_ask:
+            yes_price = (yes_bid + yes_ask) / 2
+        elif yes_bid or yes_ask:
+            yes_price = yes_bid or yes_ask
+        else:
+            last = _to_decimal(float(market.get("last_price") or 0))
+            yes_price = last
 
-        # Fallback: if no spread data, infer no_price
-        if yes_price and not no_price:
-            no_price = 1.0 - yes_price
+        if not yes_price:
+            return None  # T1.1: drop markets with no price data
 
-        resolution_date = _parse_dt(market.get("close_time") or market.get("expiration_time"))
+        no_price = (no_bid + no_ask) / 2 if (no_bid and no_ask) else (no_bid or no_ask)
+        if not no_price:
+            no_price = round(1.0 - yes_price, 4)
+
         volume_24h = float(market.get("volume_24h") or market.get("volume") or 0)
-        # Kalshi volume is in cents contracts; convert to USD equivalent (rough)
-        volume_24h = volume_24h / 100.0
+        volume_24h = volume_24h / 100.0  # Kalshi volumes are in cents
+
+        # T1.3: Prefer yes_sub_title > title > ticker
+        title = market.get("yes_sub_title") or market.get("title") or ticker
+
+        # T1.4: UTM affiliate link
+        event_ticker = market.get("event_ticker", ticker)
+        url = f"https://kalshi.com/markets/{event_ticker}?{config.UTM_PARAMS}"
 
         return NormalizedMarket(
             id=f"kalshi:{ticker}",
-            title=market.get("title") or ticker,
+            title=title,
             category=_norm_category(market.get("category", "")),
             platform="kalshi",
             platform_id=ticker,
@@ -120,9 +149,9 @@ def normalize_kalshi(market: dict) -> Optional[NormalizedMarket]:
             best_bid=round(yes_bid, 4),
             best_ask=round(yes_ask, 4),
             volume_24h=round(volume_24h, 2),
-            resolution_date=resolution_date,
-            last_updated=datetime.now(timezone.utc),
-            url=f"https://kalshi.com/markets/{market.get('event_ticker', ticker)}",
+            resolution_date=close_time,
+            last_updated=_now(),
+            url=url,
         )
     except Exception as e:
         log.debug("normalize_kalshi failed for %s: %s", market.get("ticker"), e)
@@ -137,6 +166,14 @@ def normalize_polymarket(market: dict) -> Optional[NormalizedMarket]:
         if not market_id:
             return None
 
+        # T1.2: Drop closed or inactive markets
+        if market.get("closed") or not market.get("active"):
+            return None
+
+        end_date = _parse_dt(market.get("endDate") or market.get("end_date_iso"))
+        if end_date and end_date < _now():
+            return None
+
         # outcomePrices is a JSON string like '["0.67","0.33"]'
         raw_prices = market.get("outcomePrices", "[]")
         prices = json.loads(raw_prices) if isinstance(raw_prices, str) else raw_prices
@@ -144,7 +181,6 @@ def normalize_polymarket(market: dict) -> Optional[NormalizedMarket]:
         raw_outcomes = market.get("outcomes", '["Yes","No"]')
         outcomes = json.loads(raw_outcomes) if isinstance(raw_outcomes, str) else raw_outcomes
 
-        # Find YES/NO indices
         yes_idx, no_idx = 0, 1
         for i, o in enumerate(outcomes):
             s = str(o).lower()
@@ -156,17 +192,22 @@ def normalize_polymarket(market: dict) -> Optional[NormalizedMarket]:
         yes_price = float(prices[yes_idx]) if len(prices) > yes_idx else 0.5
         no_price  = float(prices[no_idx])  if len(prices) > no_idx  else 0.5
 
-        resolution_date = _parse_dt(market.get("endDate") or market.get("end_date_iso"))
         volume_24h = float(market.get("volume24hr") or market.get("volume24h") or 0)
-        slug = market.get("slug", market_id)
+
         category_raw = market.get("category") or market.get("tag") or ""
-        # Polymarket sometimes nests category
         if isinstance(category_raw, dict):
             category_raw = category_raw.get("label", "")
 
+        # T1.3: question is the canonical readable title
+        title = market.get("question") or market.get("title") or ""
+
+        # T1.4: UTM affiliate link
+        slug = market.get("slug", market_id)
+        url = f"https://polymarket.com/event/{slug}?{config.UTM_PARAMS}"
+
         return NormalizedMarket(
             id=f"polymarket:{market_id}",
-            title=market.get("question") or market.get("title") or "",
+            title=title,
             category=_norm_category(category_raw),
             platform="polymarket",
             platform_id=market_id,
@@ -175,9 +216,9 @@ def normalize_polymarket(market: dict) -> Optional[NormalizedMarket]:
             best_bid=round(max(yes_price - 0.01, 0.0), 4),
             best_ask=round(min(yes_price + 0.01, 1.0), 4),
             volume_24h=round(volume_24h, 2),
-            resolution_date=resolution_date,
-            last_updated=datetime.now(timezone.utc),
-            url=f"https://polymarket.com/event/{slug}",
+            resolution_date=end_date,
+            last_updated=_now(),
+            url=url,
         )
     except Exception as e:
         log.debug("normalize_polymarket failed for %s: %s", market.get("id"), e)
