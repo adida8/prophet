@@ -159,11 +159,11 @@ async def run_paper_loop(tickers: list[str], dashboard: bool = False) -> None:
             })
 
 
-async def main(dashboard: bool = False) -> None:
+async def main(dashboard: bool = False, port: int = 8000) -> None:
     log.info("=" * 60)
     log.info("  PROPHET-MVP-v1  —  Paper Trading Engine")
     log.info("  Environment : Kalshi DEMO")
-    log.info("  Dashboard   : %s", "http://localhost:8000" if dashboard else "off")
+    log.info("  Dashboard   : %s", f"http://0.0.0.0:{port}" if dashboard else "off")
     log.info("  Balance     : $%.2f", config.STARTING_BALANCE)
     log.info("  Fee         : %.1f%%", config.TRADING_FEE_PCT * 100)
     log.info("  Max bet     : %.0f%% of balance (Kelly-capped)", config.MAX_BET_PCT * 100)
@@ -176,10 +176,10 @@ async def main(dashboard: bool = False) -> None:
         import uvicorn
         from server import app
 
-        uv_config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
+        uv_config = uvicorn.Config(app, host="0.0.0.0", port=port, log_level="info")
         server = uvicorn.Server(uv_config)
         tasks.append(asyncio.create_task(server.serve()))
-        log.info("Dashboard server starting on http://localhost:8000")
+        log.info("Dashboard server starting on http://0.0.0.0:%d", port)
 
     tickers = await preflight()
     if not tickers:
@@ -204,14 +204,20 @@ async def main(dashboard: bool = False) -> None:
 
 
 if __name__ == "__main__":
+    import os
+
     parser = argparse.ArgumentParser(description="Prophet Paper Trader")
     parser.add_argument(
         "--dashboard", action="store_true",
-        help="Launch live dashboard on http://localhost:8000",
+        help="Launch live dashboard on http://localhost:$PORT",
+    )
+    parser.add_argument(
+        "--port", type=int, default=int(os.environ.get("PORT", 8000)),
+        help="Port for the dashboard server (defaults to $PORT or 8000)",
     )
     args = parser.parse_args()
 
     try:
-        asyncio.run(main(dashboard=args.dashboard))
+        asyncio.run(main(dashboard=args.dashboard, port=args.port))
     except KeyboardInterrupt:
         log.info("Shut down by user.")
