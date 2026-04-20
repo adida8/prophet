@@ -1,3 +1,71 @@
-/* Reset — the real styles live in App.css */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { -webkit-font-smoothing: antialiased; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  width: 100%;
+  flex: 1;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 32px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  max-width: 1360px;
+  margin: 40px auto 0;
+  width: 100%;
+  font-family: var(--font-sans);
+}
+
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-track { will-change: transform; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.odds-row:hover { background: var(--bg-card-hover); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.main > * { animation: fadeUp 0.4s ease-out both; }
+.main > *:nth-child(1) { animation-delay: 0.03s; }
+.main > *:nth-child(2) { animation-delay: 0.07s; }
+.main > *:nth-child(3) { animation-delay: 0.11s; }
+.main > *:nth-child(4) { animation-delay: 0.15s; }
+.main > *:nth-child(5) { animation-delay: 0.19s; }
+.main > *:nth-child(6) { animation-delay: 0.23s; }
+
+@media (max-width: 900px) {
+  .two-col { grid-template-columns: 1fr; }
+}

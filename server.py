@@ -62,6 +62,32 @@ def _write_settings(data: dict) -> None:
     SETTINGS_PATH.write_text(json.dumps(data, indent=2))
 
 
+# ── Scheduler binding (wired by main.py on startup) ──────────────────
+_scheduler = None
+
+
+def set_scheduler(s) -> None:
+    global _scheduler
+    _scheduler = s
+
+
+# ── Live-client set for /ws/live ──────────────────────────────────────
+_live_clients: set[WebSocket] = set()
+
+
+async def broadcast_live(payload: dict) -> None:
+    """Broadcast a data-platform snapshot to all /ws/live clients."""
+    text = json.dumps(payload, default=str)
+    dead = []
+    for ws in list(_live_clients):
+        try:
+            await ws.send_text(text)
+        except Exception:
+            dead.append(ws)
+    for ws in dead:
+        _live_clients.discard(ws)
+
+
 # ── Executor binding (wired by main.py on startup) ───────────────────
 _executor = None
 
@@ -288,7 +314,79 @@ async def api_live_balance():
     return data
 
 
+# ── Data platform endpoints ───────────────────────────────────────────
+
+@app.get("/api/markets")
+async def api_markets(category: Optional[str] = None, platform: Optional[str] = None):
+    if not _scheduler:
+        return []
+    markets = _scheduler.all_markets
+    if category:
+        markets = [m for m in markets if m.category == category]
+    if platform:
+        markets = [m for m in markets if m.platform == platform]
+    return [m.to_dict() for m in markets]
+
+
+@app.get("/api/compare")
+async def api_compare(category: Optional[str] = None):
+    if not _scheduler:
+        return []
+    rows = _scheduler.compared
+    if category:
+        rows = [c for c in rows if c.category == category]
+    return [c.to_dict() for c in rows]
+
+
+@app.get("/api/arbitrage")
+async def api_arbitrage():
+    return [a.to_dict() for a in _scheduler.arb_opps] if _scheduler else []
+
+
+@app.get("/api/movers")
+async def api_movers(window: str = "24h"):
+    if not _scheduler:
+        return []
+    return _scheduler.movers_1h if window == "1h" else _scheduler.movers_24h
+
+
+@app.get("/api/stats")
+async def api_stats():
+    return _scheduler.stats if _scheduler else {}
+
+
+@app.get("/api/platforms")
+async def api_platforms():
+    return _scheduler.platform_stats if _scheduler else {}
+
+
+@app.get("/api/snapshot")
+async def api_snapshot():
+    if not _scheduler:
+        return {"type": "init", "data": {}}
+    return _scheduler.snapshot()
+
+
 # ── WebSocket ────────────────────────────────────────────────────────
+
+@app.websocket("/ws/live")
+async def ws_live(ws: WebSocket):
+    await ws.accept()
+    _live_clients.add(ws)
+    log.info("Live client connected (%d total)", len(_live_clients))
+    try:
+        if _scheduler and _scheduler.last_updated:
+            await ws.send_text(json.dumps(_scheduler.snapshot(), default=str))
+        else:
+            await ws.send_text(json.dumps({"type": "init", "data": {}}))
+        while True:
+            await ws.receive_text()
+    except WebSocketDisconnect:
+        pass
+    finally:
+        _live_clients.discard(ws)
+        log.info("Live client disconnected (%d remaining)", len(_live_clients))
+
 
 @app.websocket("/ws/dashboard")
 async def dashboard_ws(ws: WebSocket):

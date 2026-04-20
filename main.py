@@ -155,7 +155,12 @@ async def main(dashboard: bool = False) -> None:
         starting_balance=config.STARTING_BALANCE,
     )
 
-    tasks = []
+    from scheduler import Scheduler
+    from server import set_scheduler, broadcast_live
+
+    scheduler = Scheduler(broadcast_fn=broadcast_live)
+    set_scheduler(scheduler)
+    tasks = [asyncio.create_task(scheduler.run(), name="scheduler")]
 
     if dashboard:
         import uvicorn
