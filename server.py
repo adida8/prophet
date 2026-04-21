@@ -367,6 +367,37 @@ async def api_snapshot():
     return _scheduler.snapshot()
 
 
+@app.get("/api/signal")
+async def api_signal(source: Optional[str] = None):
+    """
+    Prophet signals for all compared markets that trigger the strategy.
+    Optional ?source=explicit|fuzzy|single to filter by match quality.
+    """
+    if not _scheduler:
+        return []
+    from services.signal_engine import evaluate_all
+    compared = _scheduler.compared or []
+    if source:
+        compared = [c for c in compared if c.source == source]
+    return evaluate_all(compared)
+
+
+@app.get("/api/signal/{market_id:path}")
+async def api_signal_market(market_id: str):
+    """Prophet signal for a specific market ID."""
+    if not _scheduler:
+        raise HTTPException(503, "Scheduler not ready")
+    from services.signal_engine import evaluate_compared
+    compared = _scheduler.compared or []
+    market = next((c for c in compared if c.id == market_id), None)
+    if market is None:
+        raise HTTPException(404, f"Market '{market_id}' not found in current snapshot")
+    result = evaluate_compared(market)
+    if result is None:
+        return {"market_id": market_id, "signal": None, "reason": "No edge detected by strategy"}
+    return result
+
+
 # ── WebSocket ────────────────────────────────────────────────────────
 
 @app.websocket("/ws/live")
