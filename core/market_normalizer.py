@@ -201,8 +201,10 @@ def normalize_polymarket(market: dict) -> Optional[NormalizedMarket]:
         # T1.3: question is the canonical readable title
         title = market.get("question") or market.get("title") or ""
 
-        # T1.4: UTM affiliate link
-        slug = market.get("slug", market_id)
+        # T1.4: UTM affiliate link — prefer event slug (navigable page) over market slug
+        events = market.get("events") or []
+        event_slug = events[0].get("slug") if events else None
+        slug = event_slug or market.get("slug") or market_id
         url = f"https://polymarket.com/event/{slug}?{config.UTM_PARAMS}"
 
         return NormalizedMarket(

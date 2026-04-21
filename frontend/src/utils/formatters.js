@@ -48,11 +48,12 @@ export function platformLabel(key) {
   return PLATFORM_LABELS[key] ?? key;
 }
 
-/** Build affiliate URL from platform URL */
+/** Pass through URLs from the backend (already have UTM params); add params to bare homepage links */
 export function affiliateUrl(url, platform) {
-  if (!url) return '#';
+  if (!url || url === '#') return '#';
+  if (url.includes('utm_source=')) return url;  // backend already stamped it
   const utm = '?utm_source=predictionedge&utm_medium=referral&utm_campaign=odds';
-  return url.includes('?') ? url + '&utm_source=predictionedge' : url + utm;
+  return url.includes('?') ? `${url}&utm_source=predictionedge&utm_medium=referral` : url + utm;
 }
 
 const MAX_VOL_FOR_BAR = 10_000_000;
