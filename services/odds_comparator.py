@@ -1,21 +1,34 @@
 """
 Cross-platform odds comparison.
 
-Takes matched (Kalshi, Polymarket) market pairs plus any unmatched markets
-from either platform and produces ComparedMarket objects ready for the
-dashboard table.
+Priority:
+  1. Explicit pairs from data/market_mappings.json (polarity-verified by hand)
+  2. Fuzzy Jaccard matches for remaining markets
+  3. High-volume unmatched markets shown as single-platform rows
+
+Polarity handling: if a mapping has polarity="inverted", the Polymarket NO
+price is treated as the YES equivalent when computing best prices and arb.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import json
+import logging
+from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from core.market_normalizer import NormalizedMarket, match_markets
 
 import config
 
+log = logging.getLogger("prophet.comparator")
+
+MAPPINGS_PATH = Path(__file__).parent.parent / "data" / "market_mappings.json"
+
+
+# ── Data classes ──────────────────────────────────────────────────────
 
 @dataclass
 class PlatformPrice:
@@ -39,6 +52,7 @@ class ComparedMarket:
     price_gap: float        # max_yes - min_yes across platforms
     total_volume_24h: float
     arb_edge_pct: float     # >0 if a risk-free edge exists
+    source: str = "fuzzy"  # "explicit" | "fuzzy" | "single"
 
     def to_dict(self) -> dict:
         return {
@@ -62,55 +76,131 @@ class ComparedMarket:
             "price_gap":         self.price_gap,
             "total_volume_24h":  self.total_volume_24h,
             "arb_edge_pct":      self.arb_edge_pct,
+            "source":            self.source,
         }
 
+
+# ── Explicit mapping loader ───────────────────────────────────────────
+
+def _load_mappings() -> list[dict]:
+    try:
+        data = json.loads(MAPPINGS_PATH.read_text())
+        return data.get("mappings", [])
+    except Exception as e:
+        log.warning("Could not load market_mappings.json: %s", e)
+        return []
+
+
+def _index_by(markets: list[NormalizedMarket], key: str) -> dict[str, NormalizedMarket]:
+    """Build a lookup dict by platform_id."""
+    return {m.platform_id: m for m in markets}
+
+
+# ── Main build function ───────────────────────────────────────────────
 
 def build_compared_markets(
     kalshi_markets: list[NormalizedMarket],
     poly_markets:   list[NormalizedMarket],
 ) -> list[ComparedMarket]:
     """
-    Match markets across platforms and return ComparedMarket objects,
-    sorted by total volume descending.  Also surfaces top unmatched
-    markets from each platform (single-platform rows).
+    Build ComparedMarket rows with explicit mappings taking priority over fuzzy.
+    Sorted by total volume descending.
     """
-    matched_pairs = match_markets(
-        kalshi_markets, poly_markets, threshold=config.MATCH_THRESHOLD
-    )
+    mappings = _load_mappings()
+    k_by_id  = _index_by(kalshi_markets, "platform_id")
+    pm_by_id = _index_by(poly_markets,   "platform_id")
 
-    used_kalshi = {km.id for km, _, _ in matched_pairs}
-    used_poly   = {pm.id for _, pm, _ in matched_pairs}
-
+    used_kalshi: set[str] = set()
+    used_poly:   set[str] = set()
     results: list[ComparedMarket] = []
 
-    # --- Matched rows (have prices from both platforms) ---
-    for km, pm, _ in matched_pairs:
+    # ── Phase 1: Explicit mappings ────────────────────────────────────
+    for mapping in mappings:
+        k_cfg  = mapping.get("kalshi")   or {}
+        pm_cfg = mapping.get("polymarket") or {}
+        polarity = mapping.get("polarity", "same")
+
+        k_ticker = k_cfg.get("ticker", "")
+        pm_id    = pm_cfg.get("id", "")
+
+        km = k_by_id.get(k_ticker) if k_ticker else None
+        pm = pm_by_id.get(pm_id)   if pm_id    else None
+
+        if km is None and pm is None:
+            continue  # neither platform returned this market right now
+
+        platform_markets: dict[str, NormalizedMarket] = {}
+        if km:
+            platform_markets["kalshi"] = km
+            used_kalshi.add(k_ticker)
+        if pm:
+            # Apply polarity inversion: swap YES/NO on Polymarket if inverted
+            if polarity == "inverted" and pm:
+                pm = _invert(pm)
+            platform_markets["polymarket"] = pm
+            used_poly.add(pm_id)
+
+        category = mapping.get("category") or (km or pm).category
+        resolution = (km.resolution_date if km else None) or (pm.resolution_date if pm else None)
+        source = "explicit" if (km and pm) else "single"
+
         results.append(_make_compared(
-            f"match:{km.platform_id}",
-            km.title,
-            km.category,
-            km.resolution_date or pm.resolution_date,
-            {km.platform: km, pm.platform: pm},
+            cid=mapping["id"],
+            title=mapping.get("title") or (km or pm).title,
+            category=category,
+            resolution_date=resolution,
+            platform_markets=platform_markets,
+            source=source,
         ))
 
-    # --- Unmatched Kalshi (top 20 by volume) ---
+    # ── Phase 2: Fuzzy matches for remaining markets ──────────────────
+    remaining_k  = [m for m in kalshi_markets  if m.platform_id not in used_kalshi]
+    remaining_pm = [m for m in poly_markets    if m.platform_id not in used_poly]
+
+    fuzzy_pairs = match_markets(remaining_k, remaining_pm, threshold=config.MATCH_THRESHOLD)
+    for km, pm, _ in fuzzy_pairs:
+        results.append(_make_compared(
+            cid=f"match:{km.platform_id}",
+            title=km.title,
+            category=km.category,
+            resolution_date=km.resolution_date or pm.resolution_date,
+            platform_markets={"kalshi": km, "polymarket": pm},
+            source="fuzzy",
+        ))
+        used_kalshi.add(km.platform_id)
+        used_poly.add(pm.platform_id)
+
+    # ── Phase 3: High-volume unmatched markets ────────────────────────
     unmatched_k = sorted(
-        [m for m in kalshi_markets if m.id not in used_kalshi],
+        [m for m in kalshi_markets if m.platform_id not in used_kalshi],
         key=lambda m: m.volume_24h, reverse=True,
     )[:20]
     for m in unmatched_k:
-        results.append(_make_compared(m.id, m.title, m.category, m.resolution_date, {m.platform: m}))
+        results.append(_make_compared(m.id, m.title, m.category, m.resolution_date, {m.platform: m}, "single"))
 
-    # --- Unmatched Polymarket (top 30 by volume) ---
-    unmatched_p = sorted(
-        [m for m in poly_markets if m.id not in used_poly],
+    unmatched_pm = sorted(
+        [m for m in poly_markets if m.platform_id not in used_poly],
         key=lambda m: m.volume_24h, reverse=True,
     )[:30]
-    for m in unmatched_p:
-        results.append(_make_compared(m.id, m.title, m.category, m.resolution_date, {m.platform: m}))
+    for m in unmatched_pm:
+        results.append(_make_compared(m.id, m.title, m.category, m.resolution_date, {m.platform: m}, "single"))
 
     results.sort(key=lambda c: c.total_volume_24h, reverse=True)
     return results
+
+
+# ── Helpers ───────────────────────────────────────────────────────────
+
+def _invert(m: NormalizedMarket) -> NormalizedMarket:
+    """Return a copy with YES/NO swapped (for polarity=inverted mappings)."""
+    from dataclasses import replace
+    return replace(
+        m,
+        yes_price=m.no_price,
+        no_price=m.yes_price,
+        best_bid=round(1.0 - m.best_ask, 4),
+        best_ask=round(1.0 - m.best_bid, 4),
+    )
 
 
 def _make_compared(
@@ -119,6 +209,7 @@ def _make_compared(
     category: str,
     resolution_date: Optional[datetime],
     platform_markets: dict[str, NormalizedMarket],
+    source: str = "fuzzy",
 ) -> ComparedMarket:
     platform_prices: dict[str, PlatformPrice] = {}
     for platform, m in platform_markets.items():
@@ -146,7 +237,6 @@ def _make_compared(
 
     price_gap = (max(yes_prices.values()) - min(yes_prices.values())) if len(yes_prices) > 1 else 0.0
 
-    # Arb edge: buy YES on cheapest + buy NO on cheapest simultaneously
     if len(yes_prices) > 1:
         min_yes = min(yes_prices.values())
         min_no  = min(no_prices.values()) if no_prices else 1.0 - max(yes_prices.values())
@@ -168,4 +258,5 @@ def _make_compared(
         price_gap=round(price_gap, 4),
         total_volume_24h=sum(v.volume_24h for v in platform_prices.values()),
         arb_edge_pct=round(arb_edge, 2),
+        source=source,
     )
