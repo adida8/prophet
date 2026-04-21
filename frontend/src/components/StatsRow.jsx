@@ -1,53 +1,31 @@
-import { fmtVolume, toCents, fmtPct } from '../utils/formatters';
+import { fmtVolume } from '../utils/formatters';
 
-export default function StatsRow({ stats = {}, loading }) {
-  const volume   = stats.total_volume_24h ?? 0;
-  const markets  = stats.total_markets   ?? 0;
-  const arbCount = stats.arb_count       ?? 0;
-  const avgEdge  = stats.avg_arb_edge_pct ?? 0;
-  const bm       = stats.biggest_mover   ?? {};
+export default function StatsRow({ stats = {} }) {
+  const volume  = stats.total_volume_24h ?? 0;
+  const markets = stats.total_markets   ?? 0;
 
   return (
     <div style={styles.row}>
       <StatCard
         label="24h Volume (All Platforms)"
-        value={loading ? '—' : fmtVolume(volume)}
-        sub={loading ? '' : '▲ aggregated across platforms'}
-        subColor="var(--accent-green)"
+        value={volume > 0 ? fmtVolume(volume) : '—'}
+        sub="Kalshi + Polymarket aggregated"
       />
       <StatCard
         label="Active Markets Tracked"
-        value={loading ? '—' : markets.toLocaleString()}
+        value={markets > 0 ? markets.toLocaleString() : '—'}
         sub="Kalshi + Polymarket"
-        subColor="var(--text-muted)"
-      />
-      <StatCard
-        label="Live Arbitrage Opportunities"
-        value={loading ? '—' : arbCount}
-        valueColor="var(--accent-amber)"
-        sub={arbCount > 0 ? `Avg edge: ${avgEdge.toFixed(1)}%` : 'None above 1.5% threshold'}
-        subColor="var(--accent-amber)"
-      />
-      <StatCard
-        label="Biggest Mover (24h)"
-        value={loading ? '—' : (bm.title ? bm.title.slice(0, 28) : '—')}
-        valueSize="15px"
-        valueColor="var(--accent-green)"
-        sub={bm.current ? `${toCents(bm.current)} · ${fmtPct(bm.change_pct)}` : ''}
-        subColor="var(--accent-green)"
       />
     </div>
   );
 }
 
-function StatCard({ label, value, sub, subColor, valueColor, valueSize }) {
+function StatCard({ label, value, sub }) {
   return (
     <div style={styles.card}>
       <div style={styles.label}>{label}</div>
-      <div style={{ ...styles.value, color: valueColor ?? 'var(--text-primary)', fontSize: valueSize ?? '24px' }}>
-        {value}
-      </div>
-      {sub && <div style={{ ...styles.sub, color: subColor ?? 'var(--text-muted)' }}>{sub}</div>}
+      <div style={styles.value}>{value}</div>
+      <div style={styles.sub}>{sub}</div>
     </div>
   );
 }
@@ -55,7 +33,7 @@ function StatCard({ label, value, sub, subColor, valueColor, valueSize }) {
 const styles = {
   row: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
+    gridTemplateColumns: 'repeat(2, 1fr)',
     gap: '12px',
     marginBottom: '20px',
   },
@@ -66,22 +44,14 @@ const styles = {
     padding: '16px 20px',
   },
   label: {
-    fontSize: '11px',
-    color: 'var(--text-muted)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-    marginBottom: '6px',
-    fontFamily: 'var(--font-sans)',
+    fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase',
+    letterSpacing: '0.5px', marginBottom: '6px', fontFamily: 'var(--font-sans)',
   },
   value: {
-    fontFamily: 'var(--font-mono)',
-    fontWeight: 700,
-    letterSpacing: '-1px',
-    lineHeight: 1.1,
+    fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '24px',
+    letterSpacing: '-1px', lineHeight: 1.1, color: 'var(--text-primary)',
   },
   sub: {
-    fontFamily: 'var(--font-mono)',
-    fontSize: '11px',
-    marginTop: '4px',
+    fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px',
   },
 };
