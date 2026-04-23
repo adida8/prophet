@@ -10,14 +10,10 @@ import MatchedMarketsTable   from './components/MatchedMarketsTable';
 import MarketDetailDrawer    from './components/MarketDetailDrawer';
 import PlatformCards         from './components/PlatformCards';
 import CTABanner             from './components/CTABanner';
-import BetaGate, { useBetaGate } from './components/BetaGate';
 
 export default function App() {
   const { stats, platforms, ticker, connected } = useMarketData();
   const [selectedSignal, setSelectedSignal] = useState(null);
-  const { unlocked, unlock } = useBetaGate();
-
-  if (!unlocked) return <BetaGate onUnlock={unlock} />;
 
   return (
     <div className="app">
