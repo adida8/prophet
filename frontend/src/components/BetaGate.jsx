@@ -33,13 +33,10 @@ export default function BetaGate({ onUnlock }) {
 
   const submit = (e) => {
     e.preventDefault();
-    if (check(input)) {
-      onUnlock();
-    } else {
-      setError(true);
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
-    }
+    if (onUnlock(input)) return;
+    setError(true);
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
   };
 
   return (
