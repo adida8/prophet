@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Today's board — Odds Primer</title>
+<link rel="stylesheet" href="./colors_and_type.css">
+<link rel="stylesheet" href="./v2-nav.css">
+<style>
+  /* ============================================================
+     home-v2 — Today's board
+     Mobile-first; min-width breakpoints only.
+     All color/type/spacing comes from colors_and_type.css.
+     ============================================================ */
+
+  body { padding: 32px 0 80px; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter-page); }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    display: flex; flex-direction: column; gap: 6px;
+    border-top: var(--hairline-strong);
+    border-bottom: var(--hairline);
+    padding: 14px 0 12px;
+    margin-bottom: 28px;
+  }
+  .masthead .wm-row {
+    display: flex; align-items: baseline; flex-wrap: wrap; gap: 14px;
+  }
+  .masthead .wm {
+    font-family: var(--font-sans); font-size: 18px; font-weight: 700;
+    letter-spacing: -0.005em; color: var(--ink);
+  }
+  .masthead .edition {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--graphite-soft);
+  }
+  .masthead .updated {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--graphite-soft); font-variant-numeric: tabular-nums;
+  }
+
+  @media (min-width: 720px) {
+    .masthead {
+      display: grid; grid-template-columns: 1fr auto;
+      align-items: baseline; gap: 16px 24px;
+    }
+    .masthead .updated { justify-self: end; }
+  }
+
+  /* ---------- title block ---------- */
+  .title-block {
+    display: flex; flex-direction: column; gap: 16px;
+    margin-bottom: 36px;
+  }
+  .h-eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-bottom: 6px;
+  }
+  h1.title {
+    font-family: var(--font-serif);
+    font-size: clamp(32px, 4.6vw, 60px);
+    font-weight: 600; line-height: 1.04; letter-spacing: -0.02em;
+    margin: 0; color: var(--ink); text-wrap: balance;
+  }
+  .deck {
+    font-family: var(--font-serif); font-size: 16px; line-height: 1.55;
+    color: var(--ink); margin: 0; max-width: 56ch;
+  }
+  .deck em { color: var(--flame); font-style: normal; font-weight: 600; }
+
+  @media (min-width: 980px) {
+    .title-block {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 56px;
+      align-items: end;
+      margin-bottom: 40px;
+    }
+    .title-block > .deck { margin-top: 0; }
+  }
+
+  /* ---------- legend ---------- */
+  .legend {
+    border-top: var(--hairline); border-bottom: var(--hairline);
+    padding: 14px 0;
+    margin-bottom: 12px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .legend .lbl {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .legend .items {
+    display: flex; flex-wrap: wrap; gap: 18px 28px;
+  }
+  .legend .item { display: flex; align-items: center; gap: 12px; }
+  .legend .item .demo {
+    width: 36px; height: 26px; position: relative; flex-shrink: 0;
+    border: var(--hairline); background: var(--paper-pure);
+  }
+  .legend .item .demo .bar {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  }
+  .legend .item .demo .glyph {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700; line-height: 1;
+  }
+  .legend .item .text { display: flex; flex-direction: column; gap: 1px; }
+  .legend .item .text .name {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); line-height: 1.1;
+  }
+  .legend .item .text .what {
+    font-family: var(--font-serif); font-size: 12.5px; font-style: italic;
+    color: var(--graphite); line-height: 1.3;
+  }
+
+  .demo--pick { background: var(--flame-tint); }
+  .demo--pick .bar { background: var(--flame); }
+  .demo--pick .glyph { color: var(--flame); }
+  .legend .item.pick .text .name { color: var(--flame-deep); }
+
+  .demo--pass .bar { background: var(--graphite-soft); opacity: 0.45; }
+  .demo--pass .glyph { color: var(--graphite-soft); }
+
+  .demo--avoid { background: var(--paper-pure); }
+  .demo--avoid .bar { background: var(--ink); }
+  .demo--avoid .glyph { color: var(--flame); }
+  .legend .item.avoid .text .name {
+    color: var(--ink); border-bottom: 1.5px solid var(--flame);
+    padding-bottom: 1px; align-self: flex-start;
+  }
+
+  .legend .by {
+    font-family: var(--font-serif); font-size: 12.5px; font-style: italic;
+    color: var(--graphite); line-height: 1.45;
+    padding-top: 10px; border-top: var(--hairline-soft);
+  }
+
+  @media (min-width: 720px) {
+    .legend { flex-direction: row; align-items: center; gap: 28px; flex-wrap: wrap; }
+    .legend .by {
+      max-width: 30ch; padding-top: 0; border-top: 0;
+      border-left: 1px solid var(--rule); padding-left: 18px;
+    }
+  }
+
+  /* ---------- group banner ---------- */
+  .group-banner {
+    margin-top: 36px; margin-bottom: 0;
+    display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 12px;
+    padding-bottom: 8px;
+  }
+  .group-banner .gname {
+    font-family: var(--font-serif); font-size: 22px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ink);
+  }
+  .group-banner .gname em {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    font-style: normal; margin-left: 10px; vertical-align: 2px;
+  }
+  .group-banner .gcount {
+    font-family: var(--font-mono); font-size: 11px; color: var(--graphite-soft);
+    letter-spacing: 0.04em; font-variant-numeric: tabular-nums;
+  }
+
+  @media (min-width: 720px) {
+    .group-banner {
+      grid-template-columns: auto 1fr auto; gap: 18px;
+    }
+    .group-banner .grule { border-top: var(--hairline); align-self: center; }
+    .group-banner .gname { font-size: 24px; }
+  }
+
+  /* ---------- fixtures table — mobile first ---------- */
+  .fixtures { display: flex; flex-direction: column; }
+
+  .fx {
+    display: grid;
+    grid-template-columns: 4px 1fr auto;
+    grid-template-rows: auto auto auto;
+    column-gap: 14px; row-gap: 4px;
+    align-items: stretch;
+    border-top: var(--hairline);
+    padding: 12px 0;
+    text-decoration: none;
+    color: var(--ink);
+    position: relative;
+    transition: background var(--dur-fast) var(--ease-standard);
+  }
+  .fx:last-child { border-bottom: var(--hairline); }
+  .fx:hover { background: var(--paper-warm); text-decoration: none; }
+
+  .fx .bar { grid-column: 1; grid-row: 1 / -1; align-self: stretch; }
+  .fx .verdict-cell {
+    grid-column: 2; grid-row: 1;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .fx .verdict-cell .gly {
+    font-family: var(--font-sans); font-weight: 700; font-size: 14px;
+    line-height: 1; width: 16px; text-align: center; flex-shrink: 0;
+  }
+  .fx .verdict-cell .lab {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; line-height: 1;
+  }
+  .fx .line {
+    grid-column: 3; grid-row: 1;
+    display: flex; flex-direction: column; gap: 2px;
+    align-items: flex-end; justify-self: end;
+  }
+  .fx .line .venue {
+    font-family: var(--font-sans); font-size: 9.5px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .fx .line .price {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 600; font-size: 16px; color: var(--ink); line-height: 1;
+  }
+
+  .fx .match { grid-column: 2 / span 2; grid-row: 2; min-width: 0; }
+  .fx .match .teams {
+    font-family: var(--font-serif); font-size: 18px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ink); line-height: 1.2;
+  }
+  .fx .match .teams .vs {
+    color: var(--graphite-soft); font-weight: 400; margin: 0 6px; font-style: italic;
+  }
+  .fx .match .meta {
+    font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
+    letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-top: 2px;
+  }
+
+  .fx .thesis { grid-column: 2 / span 2; grid-row: 3; min-width: 0; }
+  .fx .thesis {
+    font-family: var(--font-serif); font-size: 14px; line-height: 1.45; color: var(--graphite);
+  }
+  .fx .thesis em { font-style: italic; color: var(--ink); }
+  .fx .thesis .nm { font-style: normal; font-weight: 600; color: var(--ink); }
+
+  .fx .action { display: none; }
+
+  /* ---- variant: PICK ---- */
+  .fx.is-pick { background: var(--flame-tint); }
+  .fx.is-pick:hover { filter: brightness(0.985); }
+  .fx.is-pick .bar { background: var(--flame); }
+  .fx.is-pick .verdict-cell .gly { color: var(--flame); }
+  .fx.is-pick .verdict-cell .lab { color: var(--flame-deep); }
+  .fx.is-pick .line .price {
+    color: var(--ink); border-bottom: 2px solid var(--flame);
+    padding-bottom: 1px;
+  }
+
+  /* ---- variant: PASS ---- */
+  .fx.is-pass .bar { background: transparent; }
+  .fx.is-pass .verdict-cell .gly { color: var(--graphite-soft); }
+  .fx.is-pass .verdict-cell .lab { color: var(--graphite-soft); }
+  .fx.is-pass .match .teams { font-size: 16px; }
+  .fx.is-pass .thesis { font-size: 13.5px; }
+  .fx.is-pass .line .price { color: var(--graphite); font-weight: 500; font-size: 15px; }
+
+  /* ---- variant: AVOID ---- */
+  .fx.is-avoid .bar { background: var(--ink); }
+  .fx.is-avoid .verdict-cell .gly { color: var(--flame); font-size: 15px; }
+  .fx.is-avoid .verdict-cell .lab {
+    color: var(--ink); border-bottom: 1.5px solid var(--flame);
+    padding-bottom: 1px; align-self: center;
+  }
+  .fx.is-avoid .line .price {
+    color: var(--ink); text-decoration: line-through;
+    text-decoration-color: var(--flame); text-decoration-thickness: 1.5px;
+  }
+
+  /* ---- 720px: bring in 5-column row layout ---- */
+  @media (min-width: 720px) {
+    .fx {
+      grid-template-columns: 4px 70px minmax(0, 1fr) 96px;
+      grid-template-rows: auto auto;
+      column-gap: 14px; row-gap: 4px;
+      padding: 0;
+      min-height: 64px;
+    }
+    .fx > .verdict-cell, .fx > .match, .fx > .thesis, .fx > .line, .fx > .action {
+      padding: 14px 0;
+    }
+    .fx .verdict-cell { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+    .fx .match { grid-column: 3; grid-row: 1; align-self: end; }
+    .fx .thesis { grid-column: 3; grid-row: 2; align-self: start; padding-top: 0; }
+    .fx .line { grid-column: 4; grid-row: 1 / span 2; align-self: center; }
+  }
+
+  /* ---- 980px: full 6-column layout ---- */
+  @media (min-width: 980px) {
+    .fx {
+      grid-template-columns: 6px 84px minmax(0, 1.5fr) minmax(0, 2fr) 96px 132px;
+      grid-template-rows: 1fr;
+      column-gap: 18px; row-gap: 0;
+      min-height: 64px;
+    }
+    .fx .verdict-cell { grid-column: 2; grid-row: 1; align-self: center; }
+    .fx .match { grid-column: 3; grid-row: 1; align-self: center; padding: 16px 0; }
+    .fx .thesis { grid-column: 4; grid-row: 1; align-self: center; padding: 16px 0; font-size: 14px; }
+    .fx .line { grid-column: 5; grid-row: 1; align-items: flex-end; align-self: center; }
+    .fx .line .price { font-size: 17px; }
+    .fx .action {
+      grid-column: 6; grid-row: 1;
+      display: flex; flex-direction: column; gap: 4px;
+      align-items: flex-end; justify-content: center; align-self: center;
+      padding: 16px 0;
+    }
+    .fx .action .when {
+      font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+      font-size: 11px; color: var(--graphite-soft); letter-spacing: 0.04em;
+    }
+    .fx .action .open {
+      font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.06em; color: var(--ink); text-transform: uppercase;
+    }
+    .fx:hover .action .open { color: var(--flame-deep); }
+    .fx .action .open .arr {
+      display: inline-block; transition: transform var(--dur-fast) var(--ease-standard);
+      margin-left: 4px; color: var(--flame);
+    }
+    .fx:hover .action .open .arr { transform: translate(2px, -2px); }
+    .fx.is-pass .match .teams { font-size: 19px; }
+    .fx.is-pass .thesis { font-size: 14px; }
+  }
+
+  /* ---------- footer summary ---------- */
+  .summary {
+    margin-top: 48px;
+    border: var(--hairline); border-radius: 6px; background: var(--paper-pure);
+    padding: 22px 22px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    align-items: end;
+  }
+  .summary .lbl {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--graphite-soft); margin-bottom: 6px;
+  }
+  .summary .val {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 600; font-size: 26px; color: var(--ink); line-height: 1;
+  }
+  .summary .sub {
+    font-family: var(--font-serif); font-size: 12.5px; color: var(--graphite);
+    font-style: italic; margin-top: 4px; line-height: 1.4;
+  }
+  .summary .v-pick .val { color: var(--flame-deep); }
+
+  @media (min-width: 720px) {
+    .summary { grid-template-columns: repeat(4, 1fr); padding: 22px 26px; gap: 36px; }
+    .summary .val { font-size: 28px; }
+  }
+
+  /* ---------- candidate switcher block (footer) ---------- */
+  .candidates {
+    margin-top: 48px;
+    border-top: var(--hairline-strong); border-bottom: var(--hairline);
+    padding: 18px 0 22px;
+  }
+  .candidates h2 {
+    font-family: var(--font-serif); font-size: 19px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ink); margin: 0 0 4px;
+  }
+  .candidates p {
+    font-family: var(--font-serif); font-size: 14px; line-height: 1.5;
+    color: var(--graphite); margin: 0 0 14px; max-width: 56ch;
+  }
+  .candidates ol {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .candidates ol a {
+    display: flex; align-items: baseline; gap: 12px;
+    font-family: var(--font-sans); font-size: 13px; color: var(--ink);
+    text-decoration: none;
+    padding: 6px 0; border-bottom: 1px solid transparent;
+  }
+  .candidates ol a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
+  .candidates ol a .num {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 12px; color: var(--graphite-soft); font-weight: 500;
+    flex-shrink: 0; width: 22px;
+  }
+  .candidates ol a .name { font-weight: 600; flex-shrink: 0; }
+  .candidates ol a .what {
+    font-family: var(--font-serif); font-style: italic; font-size: 13px;
+    color: var(--graphite); line-height: 1.4;
+  }
+
+  @media (min-width: 720px) {
+    .candidates ol a { gap: 16px; }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <div class="masthead">
+      <div class="wm-row">
+        <span class="wm">Odds Primer</span>
+        <span class="edition">World Cup 2026 · Vol. 1 · matchday 2</span>
+      </div>
+      <span class="updated">Updated 14:08 ET</span>
+    </div>
+
+    <div class="title-block">
+      <div>
+        <div class="h-eyebrow">Today's board · 8 fixtures</div>
+        <h1 class="title">Where the prices look wrong, and where they don't.</h1>
+      </div>
+      <p class="deck">Three calls per fixture. <em>Pick</em> when the line is slow; <em>Pass</em> when it's right; <em>Avoid</em> when the favourite is overpriced and the contrarian is unattractive too. Tap any row to read the case.</p>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+      <span class="lbl">Verdict key</span>
+      <div class="items">
+        <div class="item pick">
+          <div class="demo demo--pick"><div class="bar"></div><div class="glyph">▲</div></div>
+          <div class="text">
+            <span class="name">Pick</span>
+            <span class="what">the line is underpriced — back it</span>
+          </div>
+        </div>
+        <div class="item pass">
+          <div class="demo demo--pass"><div class="bar"></div><div class="glyph">—</div></div>
+          <div class="text">
+            <span class="name">Pass</span>
+            <span class="what">the line is fair — no edge to play</span>
+          </div>
+        </div>
+        <div class="item avoid">
+          <div class="demo demo--avoid"><div class="bar"></div><div class="glyph">✕</div></div>
+          <div class="text">
+            <span class="name">Avoid</span>
+            <span class="what">overpriced both ways — sit it out</span>
+          </div>
+        </div>
+      </div>
+      <div class="by">Color, glyph, and label all carry the call — any one is enough.</div>
+    </div>
+
+    <!-- ============ GROUP F ============ -->
+    <div class="group-banner">
+      <div class="gname">Group F<em>4 fixtures</em></div>
+      <div class="grule"></div>
+      <div class="gcount">2 picks · 1 pass · 1 avoid</div>
+    </div>
+
+    <div class="fixtures">
+
+      <a class="fx is-pick" href="./market-v2-newspaper-deck.html">
+        <span class="bar"></span>
+        <div class="verdict-cell"><span class="gly">▲</span><span class="lab">Pick</span></div>
+        <div class="match">
+          <div class="teams">France <span class="vs">v</span> Mexico</div>
+          <div class="meta">MEX · Estadio Azteca · 21:00 local</div>
+        </div>
+        <div class="thesis"><em>France look four points underpriced.</em> <span class="nm">Polymarket</span> is the slower of the two markets — that's where to read the price.</div>
+        <div class="line">
+          <span class="venue">Polymarket</span>
+          <span class="price">−180</span>
+        </div>
+        <div class="action">
+          <span class="when">Sat · 21:00</span>
+          <span class="open">Read <span class="arr">↗</span></span>
+        </div>
+      </a>
+
+      <a class="fx is-pass" href="./market-v2-newspaper-deck.html">
+        <span class="bar"></span>
+        <div class="verdict-cell"><span class="gly">—</span><span class="lab">Pass</span></div>
+        <div class="match">
+          <div class="teams">Cameroon <span class="vs">v</span> Saudi Arabia</div>
+          <div class="meta">USA · MetLife · 18:00 local</div>
+        </div>
+        <div class="thesis">Two markets within half a point — no edge. Skip the moneyline; total may have legs.</div>
+        <div class="line">
+          <span class="venue">Kalshi</span>
+          <span class="price">+135</span>
+        </div>
+        <div class="action">
+          <span class="when">Sat · 18:00</span>
+          <span class="open">Read <span class="arr">↗</span></span>
+        </div>
+      </a>
+
+      <a class="fx is-pick" href="./market-v2-newspaper-deck.html">
+        <span class="bar"></span>
+        <div class="verdict-cell"><span class="gly">▲</span><span class="lab">Pick</span></div>
+        <div class="match">
+          <div class="teams">Cameroon <span class="vs">v</span> France</div>
+          <div class="meta">CAN · BMO Field · 15:00 local</div>
+        </div>
+        <div class="thesis"><em>Total goals is mispriced.</em> Both teams need a result; over 2.5 has 6.5 points of room.</div>
+        <div class="line">
+          <span class="venue">Kalshi</span>
+          <span class="price">+108</span>
+        </div>
+        <div class="action">
+          <span class="when">Wed · 15:00</span>
+          <span class="open">Read <span class="arr">↗</span></span>
+        </div>
+      </a>
+
+      <a class="fx is-avoid" href="./market-v2-newspaper-deck.html">
+        <span class="bar"></span>
+        <div class="verdict-cell"><span class="gly">✕</span><span class="lab">Avoid</span></div>
+        <div class="match">
+          <div class="teams">Mexico <span class="vs">v</span> Saudi Arabia</div>
+          <div class="meta">MEX · Guadalajara · 18:00 local</div>
+        </div>
+        <div class="thesis">Mexico overpriced as the home favourite; Saudi Arabia priced as if they can't draw. Both sides cost too much.</div>
+        <div class="line">
+          <span class="venue">Polymarket</span>
+          <span class="price">−240</span>
+        </div>
+        <div class="action">
+          <span class="when">Tue · 18:00</span>
+          <span class="open">Read <span class="arr">↗</span></span>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- ============ GROUP A ============ -->
+    <div class="group-banner">
+      <div class="gname">Group A<em>2 fixtures</em></div>
+      <div class="grule"></div>
+      <div class="gcount">1 pick · 1 pass</div>
+    </div>
+
+    <div class="fixtures">
+
+      <a class="fx is-pick" href="./market-v2-newspaper-deck.html">
+        <span class="bar"></span>
+        <div class="verdict-cell"><span class="gly">▲</span><span class="lab">Pick</span></div>
+        <div class="match">
+          <div class="teams">Argentina <span class="vs">v</span> Canada</div>
+          <div class="meta">USA · Levi's Stadium · 19:00 local</div>
+        </div>
+        <div class="thesis"><em>Canada +1.5 has clean value.</em> The handicap line hasn't tracked Canada's improved second half of 2025.</div>
+        <div class="line">
+          <span class="venue">Polymarket</span>
+          <span class="price">−108</span>
+        </div>
+        <div class="action">
+          <span class="when">Sun · 19:00</span>
+          <span class="open">Read <span class="arr">↗</span></span>
+        </div>
+      </a>
+
+      <a class="fx is-pass" href="./market-v2-newspaper-deck.html">
+        <span class="bar"></span>
+        <div class="verdict-cell"><span class="gly">—</span><span class="lab">Pass</span></div>
+        <div class="match">
+          <div class="teams">Iceland <span class="vs">v</span> Tunisia</div>
+          <div class="meta">CAN · BC Place · 16:00 local</div>
+        </div>
+        <div class="thesis">Pick'em with three-way uncertainty. The market is doing its job here — leave it.</div>
+        <div class="line">
+          <span class="venue">Kalshi</span>
+          <span class="price">+220</span>
+        </div>
+        <div class="action">
+          <span class="when">Sun · 16:00</span>
+          <span class="open">Read <span class="arr">↗</span></span>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- ============ GROUP B ============ -->
+    <div class="group-banner">
+      <div class="gname">Group B<em>2 fixtures</em></div>
+      <div class="grule"></div>
+      <div class="gcount">2 passes</div>
+    </div>
+
+    <div class="fixtures">
+
+      <a class="fx is-pass" href="./market-v2-newspaper-deck.html">
+        <span class="bar"></span>
+        <div class="verdict-cell"><span class="gly">—</span><span class="lab">Pass</span></div>
+        <div class="match">
+          <div class="teams">Brazil <span class="vs">v</span> Norway</div>
+          <div class="meta">USA · SoFi Stadium · 20:00 local</div>
+        </div>
+        <div class="thesis">Both markets within 0.4 points of consensus. The line is doing its job.</div>
+        <div class="line">
+          <span class="venue">Polymarket</span>
+          <span class="price">−145</span>
+        </div>
+        <div class="action">
+          <span class="when">Mon · 20:00</span>
+          <span class="open">Read <span class="arr">↗</span></span>
+        </div>
+      </a>
+
+      <a class="fx is-pass" href="./market-v2-newspaper-deck.html">
+        <span class="bar"></span>
+        <div class="verdict-cell"><span class="gly">—</span><span class="lab">Pass</span></div>
+        <div class="match">
+          <div class="teams">Egypt <span class="vs">v</span> Australia</div>
+          <div class="meta">USA · Hard Rock Stadium · 17:00 local</div>
+        </div>
+        <div class="thesis">Tight three-way market; movement on draw odds is consistent across both venues. No edge to play.</div>
+        <div class="line">
+          <span class="venue">Kalshi</span>
+          <span class="price">+155</span>
+        </div>
+        <div class="action">
+          <span class="when">Tue · 17:00</span>
+          <span class="open">Read <span class="arr">↗</span></span>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- ---- SUMMARY ROW ---- -->
+    <div class="summary">
+      <div class="v-pick">
+        <div class="lbl">Picks today</div>
+        <div class="val">3</div>
+        <div class="sub">avg edge +3.4 points · highest conviction: France v Mexico</div>
+      </div>
+      <div>
+        <div class="lbl">Passes</div>
+        <div class="val">4</div>
+        <div class="sub">markets within tolerance · check back at kickoff</div>
+      </div>
+      <div>
+        <div class="lbl">Avoids</div>
+        <div class="val">1</div>
+        <div class="sub">both sides overpriced · the rare two-way no</div>
+      </div>
+      <div>
+        <div class="lbl">Total fixtures</div>
+        <div class="val">8</div>
+        <div class="sub">across three groups · matchday 2 of 3</div>
+      </div>
+    </div>
+
+    <!-- ---- VERDICT CANDIDATES ---- -->
+    <section class="candidates">
+      <h2>Verdict treatments — pick a direction</h2>
+      <p>The verdict block on the market page has five working drafts. Each shows the same three fixtures — France v Mexico (pick), Tunisia v Australia (pass), Germany v Japan (avoid) — under a different treatment. Open each, then choose one.</p>
+      <ol>
+        <li><a href="./market-v2-stamp.html">
+          <span class="num">01</span><span class="name">Stamp</span>
+          <span class="what">a magazine pull-quote — heavy rule, display-serif action</span>
+        </a></li>
+        <li><a href="./market-v2-newspaper-deck.html">
+          <span class="num">02</span><span class="name">Newspaper deck</span>
+          <span class="what">eyebrow, headline, standfirst — the top of a column</span>
+        </a></li>
+        <li><a href="./market-v2-spec-sheet.html">
+          <span class="num">03</span><span class="name">Spec sheet</span>
+          <span class="what">dense data block — action, venue, line, confidence, tip count</span>
+        </a></li>
+        <li><a href="./market-v2-ticket-stub.html">
+          <span class="num">04</span><span class="name">Ticket stub</span>
+          <span class="what">perforated card — editorial body and structured stub</span>
+        </a></li>
+        <li><a href="./market-v2-weather-report.html">
+          <span class="num">05</span><span class="name">Weather report</span>
+          <span class="what">small, calm, declarative — verdict in one sentence</span>
+        </a></li>
+      </ol>
+    </section>
+  </main>
+</body>
+</html>

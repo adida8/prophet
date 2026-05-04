@@ -1,0 +1,41 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "provider": "python",
+  "packages": {
+    "node": "20"
+  },
+  "steps": {
+    "frontend-install": {
+      "inputs": [
+        { "step": "packages:mise" },
+        { "local": true, "include": ["frontend/package.json", "frontend/package-lock.json"] }
+      ],
+      "commands": [
+        "cd frontend && npm ci"
+      ],
+      "caches": ["npm"]
+    },
+    "frontend-build": {
+      "inputs": [
+        { "step": "frontend-install" },
+        { "local": true, "include": ["frontend"] }
+      ],
+      "commands": [
+        "cd frontend && npm run build"
+      ]
+    }
+  },
+  "caches": {
+    "npm": {
+      "directory": "/root/.npm",
+      "type": "shared"
+    }
+  },
+  "deploy": {
+    "startCommand": "python main.py --dashboard --port $PORT",
+    "inputs": [
+      { "step": "build" },
+      { "step": "frontend-build", "include": ["frontend/dist"] }
+    ]
+  }
+}

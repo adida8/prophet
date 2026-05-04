@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verdict · Newspaper deck — Odds Primer</title>
+<link rel="stylesheet" href="./colors_and_type.css">
+<link rel="stylesheet" href="./v2-nav.css">
+<style>
+  body { padding: 56px 0 96px; }
+  .page { max-width: 940px; margin: 0 auto; padding: 0 var(--gutter-page); }
+
+  .page-eyebrow { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft); margin-bottom: 8px; }
+  .page-title { font-family: var(--font-serif); font-size: 28px; font-weight: 600; letter-spacing: -0.005em; line-height: 1.15; margin: 0 0 4px; }
+  .page-deck { font-family: var(--font-serif); font-style: italic; font-size: 15px; line-height: 1.5; color: var(--graphite); margin: 0 0 56px; max-width: 56ch; }
+
+  .fixture {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 18px 0 14px; border-top: var(--hairline-strong); border-bottom: var(--hairline);
+    margin-bottom: 28px;
+  }
+  .fixture-teams { font-family: var(--font-serif); font-size: 22px; font-weight: 600; color: var(--ink); }
+  .fixture-meta { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--graphite-soft); }
+
+  /* ---------- Newspaper deck verdict ---------- */
+  .deck { display: grid; grid-template-columns: 1fr 220px; gap: 56px; margin-bottom: 64px; align-items: start; }
+  @media (max-width: 760px) { .deck { grid-template-columns: 1fr; gap: 24px; } }
+
+  .deck-eyebrow {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink); margin-bottom: 10px; display: inline-flex; align-items: center; gap: 10px;
+  }
+  .deck-eyebrow .pip { width: 7px; height: 7px; border-radius: 50%; background: var(--flame); }
+  .deck.pass .deck-eyebrow .pip { background: var(--graphite-soft); }
+  .deck.avoid .deck-eyebrow .pip { background: var(--ink); }
+
+  .deck-headline {
+    font-family: var(--font-serif); font-weight: 600;
+    font-size: clamp(36px, 4.4vw, 54px);
+    line-height: 1.04; letter-spacing: -0.018em;
+    margin: 0 0 16px; color: var(--ink); text-wrap: balance;
+  }
+  .deck-headline .flame { color: var(--flame); }
+  .deck-headline em {
+    font-style: italic; font-weight: 600;
+    background-image: linear-gradient(var(--flame), var(--flame));
+    background-repeat: no-repeat;
+    background-position: 0 92%;
+    background-size: 100% 5px;
+    padding-bottom: 1px;
+  }
+
+  .standfirst {
+    font-family: var(--font-serif); font-size: 19px; line-height: 1.5;
+    color: var(--ink); font-weight: 400; max-width: 36em;
+    margin: 0 0 22px;
+  }
+  .standfirst .venue-inline {
+    font-family: var(--font-sans); font-weight: 600; font-size: 16px;
+    letter-spacing: 0.01em; padding: 0 4px; color: var(--ink);
+    border-bottom: 2px solid var(--flame);
+  }
+  .deck.pass .standfirst .venue-inline,
+  .deck.avoid .standfirst .venue-inline { border-bottom-color: var(--rule); }
+
+  .standfirst .price-inline {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 600; font-size: 17px; color: var(--ink);
+  }
+
+  .deck-handoff {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 12px 0 0; border-top: var(--hairline);
+  }
+  .deck-handoff a {
+    font-family: var(--font-sans); font-weight: 600; font-size: 14px;
+    color: var(--ink); text-decoration: underline; text-decoration-color: var(--flame); text-decoration-thickness: 2px; text-underline-offset: 5px;
+    padding: 6px 0;
+  }
+  .deck-handoff a:hover { color: var(--flame-deep); }
+  .deck-handoff .meta {
+    font-family: var(--font-serif); font-style: italic; font-size: 13px; color: var(--graphite);
+  }
+  .deck.pass .deck-handoff,
+  .deck.avoid .deck-handoff {
+    color: var(--graphite); font-family: var(--font-serif); font-style: italic; font-size: 14px;
+  }
+
+  /* sidebar — score model + tip chips */
+  .deck-aside {
+    border-top: var(--hairline);
+    padding-top: 14px;
+    font-family: var(--font-sans);
+  }
+  .aside-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--graphite-soft); margin-bottom: 10px;
+  }
+  .aside-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 8px 0;
+    border-bottom: var(--hairline-soft);
+  }
+  .aside-row:last-child { border-bottom: 0; }
+  .aside-row .name { font-size: 13px; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+  .aside-row .name .vdot { width: 7px; height: 7px; border-radius: 50%; }
+  .aside-row .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; color: var(--ink); }
+  .aside-row.best .num { color: var(--flame-deep); }
+  .aside-row.best { background: var(--flame-tint); margin: 0 -10px; padding: 8px 10px; border-radius: 3px; }
+  .aside-row.score { border-top: var(--hairline); margin-top: 6px; padding-top: 12px; }
+  .aside-row.score .name { font-weight: 600; }
+
+  .chip-row {
+    margin-top: 18px; display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .chip {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 500;
+    color: var(--graphite); background: var(--paper-warm);
+    padding: 4px 9px; border-radius: 999px; border: 1px solid var(--rule);
+  }
+  .chip.more { background: transparent; color: var(--graphite-soft); border-color: transparent; padding-left: 4px; }
+
+  /* meter — bar diff between venue + model */
+  .meter {
+    margin: 16px 0 4px;
+    font-family: var(--font-sans);
+  }
+  .meter-rail {
+    position: relative; height: 6px; background: var(--paper-deep); border-radius: 3px;
+    margin-top: 10px;
+  }
+  .meter-fill {
+    position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink); border-radius: 3px;
+  }
+  .meter-tick {
+    position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--flame);
+  }
+  .meter-tick.right { background: var(--ink); }
+  .meter-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--graphite-soft); margin-top: 6px; font-family: var(--font-sans); letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; }
+
+  /* glyph */
+  .bars-glyph { display: inline-flex; align-items: flex-end; gap: 2px; height: 16px; vertical-align: -3px; }
+  .bars-glyph i { display: block; width: 3px; background: var(--ink); }
+  .bars-glyph.up i:nth-child(1) { height: 5px; }
+  .bars-glyph.up i:nth-child(2) { height: 9px; }
+  .bars-glyph.up i:nth-child(3) { height: 13px; background: var(--flame); }
+  .bars-glyph.up i:nth-child(4) { height: 16px; background: var(--flame); }
+  .bars-glyph.flat i { background: var(--graphite-soft); }
+  .bars-glyph.flat i:nth-child(1),
+  .bars-glyph.flat i:nth-child(2),
+  .bars-glyph.flat i:nth-child(3),
+  .bars-glyph.flat i:nth-child(4) { height: 10px; }
+  .bars-glyph.down i:nth-child(1) { height: 16px; background: var(--graphite); }
+  .bars-glyph.down i:nth-child(2) { height: 13px; background: var(--graphite); }
+  .bars-glyph.down i:nth-child(3) { height: 9px; background: var(--graphite-soft); }
+  .bars-glyph.down i:nth-child(4) { height: 5px; background: var(--graphite-soft); }
+</style>
+</head>
+<body>
+  <main class="page">
+    <nav class="v2-switcher" aria-label="Verdict candidate switcher">
+      <a class="v2-switcher__home" href="./home-v2.html">← Today's board</a>
+      <span class="v2-switcher__lbl">Verdict candidates</span>
+      <ol class="v2-switcher__list">
+        <li><a href="./market-v2-stamp.html">01 stamp</a></li>
+        <li><a href="./market-v2-newspaper-deck.html" aria-current="page">02 newspaper deck</a></li>
+        <li><a href="./market-v2-spec-sheet.html">03 spec sheet</a></li>
+        <li><a href="./market-v2-ticket-stub.html">04 ticket stub</a></li>
+        <li><a href="./market-v2-weather-report.html">05 weather report</a></li>
+      </ol>
+    </nav>
+    <div class="page-eyebrow">Verdict explorations · Direction 02</div>
+    <h1 class="page-title">Newspaper deck</h1>
+    <p class="page-deck">Eyebrow, display headline, standfirst — the top of a column. The venue and price are absorbed into the standfirst sentence; the handoff link sits as a footer to the deck. The verdict reads like editorial, not a callout.</p>
+
+    <!-- ============================== PICK ============================== -->
+    <div class="fixture">
+      <span class="fixture-teams">France <span style="color:var(--graphite-soft); font-style:italic; font-weight:400; font-size:18px;"> v </span> Mexico</span>
+      <span class="fixture-meta">Group A · 14 Jun · 21:00 CET</span>
+    </div>
+
+    <article class="deck pick">
+      <div>
+        <div class="deck-eyebrow"><span class="bars-glyph up"><i></i><i></i><i></i><i></i></span><span class="pip"></span> The verdict — Pick</div>
+        <h2 class="deck-headline">France look four points underpriced. <em>Polymarket</em> is the slower of the two markets.</h2>
+        <p class="standfirst">
+          Our score puts France at 68.5% to win the match; <span class="venue-inline">Polymarket</span> has them at <span class="price-inline">−180</span>, an implied 64.3%. Kalshi is still at −151. If you're going to take a side, take the one with the better number.
+        </p>
+        <div class="deck-handoff">
+          <a href="#">Open France −180 on Polymarket ↗</a>
+          <span class="meta">Last priced 4 min ago · venue spread 4.1 pts</span>
+        </div>
+      </div>
+
+      <aside class="deck-aside">
+        <div class="aside-eyebrow">The score model</div>
+        <div class="aside-row">
+          <span class="name"><span class="vdot" style="background: var(--venue-kalshi);"></span>Kalshi</span>
+          <span class="num">60.2%</span>
+        </div>
+        <div class="aside-row best">
+          <span class="name"><span class="vdot" style="background: var(--venue-polymarket);"></span>Polymarket</span>
+          <span class="num">64.3%</span>
+        </div>
+        <div class="aside-row score">
+          <span class="name">Odds Primer</span>
+          <span class="num">68.5%</span>
+        </div>
+
+        <div class="meter">
+          <div class="aside-eyebrow" style="margin-bottom: 4px;">Spread to model</div>
+          <div class="meter-rail">
+            <div class="meter-fill" style="width: 64%;"></div>
+            <div class="meter-tick" style="left: 64%;"></div>
+            <div class="meter-tick right" style="left: 68%;"></div>
+          </div>
+          <div class="meter-labels"><span>Polymarket</span><span>Model</span></div>
+        </div>
+
+        <div class="chip-row">
+          <span class="chip">Recent form</span>
+          <span class="chip">xG diff</span>
+          <span class="chip">Lineup</span>
+          <span class="chip">Venue spread</span>
+          <span class="chip more">+3 more</span>
+        </div>
+      </aside>
+    </article>
+
+    <!-- ============================== PASS ============================== -->
+    <div class="fixture">
+      <span class="fixture-teams">Tunisia <span style="color:var(--graphite-soft); font-style:italic; font-weight:400; font-size:18px;"> v </span> Australia</span>
+      <span class="fixture-meta">Group C · 19 Jun · 18:00 CET</span>
+    </div>
+
+    <article class="deck pass">
+      <div>
+        <div class="deck-eyebrow"><span class="bars-glyph flat"><i></i><i></i><i></i><i></i></span><span class="pip"></span> The verdict — Pass</div>
+        <h2 class="deck-headline" style="color: var(--ink-soft);">No edge here. The two markets agree, and so do we.</h2>
+        <p class="standfirst">
+          Polymarket and Kalshi are pricing Tunisia–Australia within a single point on every outcome, and our score sits inside their spread. There's no slower line to hand off to and no number worth waiting for.
+        </p>
+        <div class="deck-handoff">
+          <span>The verdict here is to read, not to act. We'll re-rate if the gap widens past two points.</span>
+        </div>
+      </div>
+
+      <aside class="deck-aside">
+        <div class="aside-eyebrow">The score model</div>
+        <div class="aside-row">
+          <span class="name"><span class="vdot" style="background: var(--venue-kalshi);"></span>Kalshi</span>
+          <span class="num">42.8%</span>
+        </div>
+        <div class="aside-row">
+          <span class="name"><span class="vdot" style="background: var(--venue-polymarket);"></span>Polymarket</span>
+          <span class="num">43.4%</span>
+        </div>
+        <div class="aside-row score">
+          <span class="name">Odds Primer</span>
+          <span class="num">43.0%</span>
+        </div>
+
+        <div class="meter">
+          <div class="aside-eyebrow" style="margin-bottom: 4px;">Spread to model</div>
+          <div class="meter-rail">
+            <div class="meter-fill" style="width: 43%;"></div>
+            <div class="meter-tick" style="left: 43%;"></div>
+          </div>
+          <div class="meter-labels"><span>Inside the spread</span><span>—</span></div>
+        </div>
+
+        <div class="chip-row">
+          <span class="chip">Venue agreement</span>
+          <span class="chip">Model differential</span>
+          <span class="chip">Market depth</span>
+          <span class="chip more">+4 more</span>
+        </div>
+      </aside>
+    </article>
+
+    <!-- ============================== AVOID ============================== -->
+    <div class="fixture">
+      <span class="fixture-teams">Germany <span style="color:var(--graphite-soft); font-style:italic; font-weight:400; font-size:18px;"> v </span> Japan</span>
+      <span class="fixture-meta">Group E · 22 Jun · 17:00 CET</span>
+    </div>
+
+    <article class="deck avoid">
+      <div>
+        <div class="deck-eyebrow"><span class="bars-glyph down"><i></i><i></i><i></i><i></i></span><span class="pip"></span> The verdict — Avoid</div>
+        <h2 class="deck-headline">Skip Germany–Japan. The line is short on both venues.</h2>
+        <p class="standfirst">
+          Both Kalshi and Polymarket are pricing Germany inside our number — the market reacted hard to Japan's friendly result, and the price moves have overshot what our model can defend. There's no second-best price to take, and no patience to be rewarded for waiting.
+        </p>
+        <div class="deck-handoff">
+          <span>No venue handoff here — both sides sit short of our number. We'll revisit if Polymarket softens past 60%.</span>
+        </div>
+      </div>
+
+      <aside class="deck-aside">
+        <div class="aside-eyebrow">The score model</div>
+        <div class="aside-row">
+          <span class="name"><span class="vdot" style="background: var(--venue-kalshi);"></span>Kalshi</span>
+          <span class="num">58.0%</span>
+        </div>
+        <div class="aside-row">
+          <span class="name"><span class="vdot" style="background: var(--venue-polymarket);"></span>Polymarket</span>
+          <span class="num">59.1%</span>
+        </div>
+        <div class="aside-row score">
+          <span class="name">Odds Primer</span>
+          <span class="num">61.4%</span>
+        </div>
+
+        <div class="meter">
+          <div class="aside-eyebrow" style="margin-bottom: 4px;">Spread to model</div>
+          <div class="meter-rail">
+            <div class="meter-fill" style="width: 58%; background: var(--graphite);"></div>
+            <div class="meter-tick" style="left: 59%; background: var(--graphite);"></div>
+            <div class="meter-tick right" style="left: 61%;"></div>
+          </div>
+          <div class="meter-labels"><span>Both inside</span><span>Model</span></div>
+        </div>
+
+        <div class="chip-row">
+          <span class="chip">xG</span>
+          <span class="chip">Line movement</span>
+          <span class="chip">Market consensus</span>
+          <span class="chip">Lineup</span>
+          <span class="chip more">+5 more</span>
+        </div>
+      </aside>
+    </article>
+
+  </main>
+</body>
+</html>
