@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verdict · Ticket stub — Odds Primer</title>
+<link rel="stylesheet" href="./colors_and_type.css">
+<link rel="stylesheet" href="./v2-nav.css">
+<style>
+  body { padding: 56px 0 96px; }
+  .page { max-width: 880px; margin: 0 auto; padding: 0 var(--gutter-page); }
+
+  .page-eyebrow { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft); margin-bottom: 8px; }
+  .page-title { font-family: var(--font-serif); font-size: 28px; font-weight: 600; letter-spacing: -0.005em; line-height: 1.15; margin: 0 0 4px; }
+  .page-deck { font-family: var(--font-serif); font-style: italic; font-size: 15px; line-height: 1.5; color: var(--graphite); margin: 0 0 56px; max-width: 56ch; }
+
+  .fixture {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 18px 0 14px; border-top: var(--hairline-strong); border-bottom: var(--hairline);
+    margin-bottom: 28px;
+  }
+  .fixture-teams { font-family: var(--font-serif); font-size: 22px; font-weight: 600; color: var(--ink); }
+  .fixture-meta { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--graphite-soft); }
+
+  /* ---------- Stub ---------- */
+  .stub-row {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 0;
+    margin-bottom: 64px;
+    background: var(--paper-pure);
+    border: var(--hairline);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  @media (max-width: 760px) { .stub-row { grid-template-columns: 1fr; } }
+
+  /* perforation between body and stub */
+  .stub-row::before {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    left: calc(100% - 320px);
+    width: 0;
+    border-left: 1px dashed var(--rule);
+  }
+  @media (max-width: 760px) {
+    .stub-row::before {
+      left: 0; right: 0; top: auto; bottom: 320px;
+      width: 100%; height: 0;
+      border-left: 0; border-top: 1px dashed var(--rule);
+    }
+  }
+  /* the punched holes at the perforation top/bottom */
+  .stub-row::after {
+    content: "";
+    position: absolute;
+    left: calc(100% - 320px);
+    top: -8px;
+    width: 16px; height: 16px;
+    background: var(--paper);
+    border-radius: 50%;
+    transform: translateX(-50%);
+  }
+  .stub-row .punch-bot {
+    position: absolute;
+    left: calc(100% - 320px);
+    bottom: -8px;
+    width: 16px; height: 16px;
+    background: var(--paper);
+    border-radius: 50%;
+    transform: translateX(-50%);
+  }
+  @media (max-width: 760px) {
+    .stub-row::after, .stub-row .punch-bot { display: none; }
+  }
+
+  /* main body */
+  .stub-body {
+    padding: 22px 26px 22px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .stub-eyebrow {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--graphite); display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  }
+  .stub-eyebrow .verdict-state {
+    color: var(--ink); display: inline-flex; align-items: center; gap: 10px;
+  }
+  .stub-eyebrow .glyph { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; }
+  .stub-eyebrow .glyph i { display: block; width: 3px; }
+  .stub-eyebrow .glyph.up i:nth-child(1) { height: 5px; background: var(--ink); }
+  .stub-eyebrow .glyph.up i:nth-child(2) { height: 8px; background: var(--ink); }
+  .stub-eyebrow .glyph.up i:nth-child(3) { height: 11px; background: var(--flame); }
+  .stub-eyebrow .glyph.up i:nth-child(4) { height: 14px; background: var(--flame); }
+  .stub-eyebrow .glyph.flat i { background: var(--graphite-soft); height: 9px; }
+  .stub-eyebrow .glyph.down i:nth-child(1) { height: 14px; background: var(--graphite); }
+  .stub-eyebrow .glyph.down i:nth-child(2) { height: 11px; background: var(--graphite); }
+  .stub-eyebrow .glyph.down i:nth-child(3) { height: 8px; background: var(--graphite-soft); }
+  .stub-eyebrow .glyph.down i:nth-child(4) { height: 5px; background: var(--graphite-soft); }
+  .stub-eyebrow .upd { font-family: var(--font-serif); font-style: italic; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--graphite); font-size: 12px; }
+
+  .stub-headline {
+    font-family: var(--font-serif); font-weight: 600;
+    font-size: clamp(28px, 3.4vw, 38px);
+    line-height: 1.1; letter-spacing: -0.012em;
+    color: var(--ink); margin: 0;
+    text-wrap: balance;
+  }
+  .stub-headline .flame { color: var(--flame); }
+
+  .stub-prose {
+    font-family: var(--font-serif); font-size: 15px; line-height: 1.5;
+    color: var(--ink); max-width: 50ch; margin: 0;
+  }
+  .stub-prose .reasons { display: grid; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: var(--hairline-soft); }
+  .stub-prose .reasons p { margin: 0; padding-left: 18px; position: relative; font-size: 14px; line-height: 1.5; color: var(--ink); }
+  .stub-prose .reasons p::before {
+    content: "—"; position: absolute; left: 0; color: var(--flame); font-style: normal;
+  }
+
+  /* the stub side */
+  .stub-side {
+    background: var(--paper-warm);
+    padding: 22px 24px 18px;
+    display: flex; flex-direction: column;
+    border-left: 1px dashed var(--rule);
+  }
+  .stub-side-head {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--graphite); padding-bottom: 10px; border-bottom: var(--hairline);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .stub-side-head .seq {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0;
+    font-size: 11px; color: var(--graphite-soft); font-weight: 500;
+  }
+
+  .stub-rows { padding: 12px 0 0; flex: 1; }
+  .stub-row-item {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 8px 0;
+    border-bottom: var(--hairline-soft);
+  }
+  .stub-row-item:last-child { border-bottom: 0; }
+  .stub-row-item .k {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--graphite-soft);
+  }
+  .stub-row-item .v {
+    font-family: var(--font-sans); font-size: 13px; color: var(--ink); font-weight: 500;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .stub-row-item .v .vdot { width: 7px; height: 7px; border-radius: 50%; }
+  .stub-row-item .v.num {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600;
+  }
+  .stub-row-item.best .v.num { color: var(--flame-deep); }
+
+  .stub-action {
+    margin-top: 14px; padding: 14px 0 0;
+    border-top: 1px solid var(--ink);
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .stub-action .open-link {
+    font-family: var(--font-sans); font-weight: 700; font-size: 13px; letter-spacing: 0.02em;
+    color: var(--ink); text-decoration: underline; text-decoration-color: var(--flame); text-decoration-thickness: 2px; text-underline-offset: 5px;
+  }
+  .stub-action .open-link:hover { color: var(--flame-deep); }
+  .stub-action .meta { font-family: var(--font-serif); font-style: italic; font-size: 11px; color: var(--graphite); }
+
+  .stub-row.pass .stub-action { border-top: 1px dashed var(--rule); }
+  .stub-row.pass .stub-action .open-link { color: var(--graphite); text-decoration-color: var(--rule); cursor: default; }
+  .stub-row.avoid .stub-action { border-top: 1px solid var(--graphite); }
+  .stub-row.avoid .stub-action .open-link { color: var(--graphite); text-decoration-color: var(--graphite); cursor: default; }
+
+  /* tip footnote on the body side */
+  .stub-tip {
+    font-family: var(--font-serif); font-style: italic; font-size: 12px; color: var(--graphite);
+    padding-top: 12px; border-top: var(--hairline-soft);
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <nav class="v2-switcher" aria-label="Verdict candidate switcher">
+      <a class="v2-switcher__home" href="./home-v2.html">← Today's board</a>
+      <span class="v2-switcher__lbl">Verdict candidates</span>
+      <ol class="v2-switcher__list">
+        <li><a href="./market-v2-stamp.html">01 stamp</a></li>
+        <li><a href="./market-v2-newspaper-deck.html">02 newspaper deck</a></li>
+        <li><a href="./market-v2-spec-sheet.html">03 spec sheet</a></li>
+        <li><a href="./market-v2-ticket-stub.html" aria-current="page">04 ticket stub</a></li>
+        <li><a href="./market-v2-weather-report.html">05 weather report</a></li>
+      </ol>
+    </nav>
+    <div class="page-eyebrow">Verdict explorations · Direction 04</div>
+    <h1 class="page-title">Ticket stub</h1>
+    <p class="page-deck">A perforated card — evocative of a betting slip but sized down and intentionally restrained. Editorial body on one side, structured stub on the other. The handoff link sits at the bottom of the stub, where a ticket's serial number would be.</p>
+
+    <!-- ============================== PICK ============================== -->
+    <div class="fixture">
+      <span class="fixture-teams">France <span style="color:var(--graphite-soft); font-style:italic; font-weight:400; font-size:18px;"> v </span> Mexico</span>
+      <span class="fixture-meta">Group A · 14 Jun · 21:00 CET</span>
+    </div>
+
+    <article class="stub-row pick">
+      <div class="punch-bot"></div>
+      <div class="stub-body">
+        <div class="stub-eyebrow">
+          <span class="verdict-state"><span class="glyph up"><i></i><i></i><i></i><i></i></span> The verdict — Pick</span>
+          <span class="upd">Last priced 4 min ago</span>
+        </div>
+        <h2 class="stub-headline">Back <span class="flame">France</span>. The slower line is on Polymarket.</h2>
+        <p class="stub-prose">
+          Our score puts France at 68.5% to win this match outright. Polymarket has them at 64.3%; Kalshi at 60.2%. The gap between the two venues is wider than usual, and Polymarket has been the slow market on World Cup favorites all week.
+          <span class="reasons">
+            <p>France's xG over Mexico's last six is 2.3 to 0.9 — the model treats this as a 68% match.</p>
+            <p>Polymarket has run 4¢ behind Kalshi on the favorite for three pricings now.</p>
+          </span>
+        </p>
+        <div class="stub-tip">Built from 7 tips · recent form, xG, lineup, venue spread, model differential, market depth, line movement.</div>
+      </div>
+
+      <aside class="stub-side">
+        <div class="stub-side-head">
+          <span>The verdict</span>
+          <span class="seq">№ FRA·MEX·01</span>
+        </div>
+        <div class="stub-rows">
+          <div class="stub-row-item">
+            <span class="k">Action</span>
+            <span class="v" style="font-family: var(--font-serif); font-weight: 600; font-size: 15px;">Back France</span>
+          </div>
+          <div class="stub-row-item best">
+            <span class="k">Venue</span>
+            <span class="v"><span class="vdot" style="background: var(--venue-polymarket);"></span>Polymarket</span>
+          </div>
+          <div class="stub-row-item best">
+            <span class="k">Line</span>
+            <span class="v num">−180</span>
+          </div>
+          <div class="stub-row-item">
+            <span class="k">Implied</span>
+            <span class="v num">64.3%</span>
+          </div>
+          <div class="stub-row-item">
+            <span class="k">Op model</span>
+            <span class="v num">68.5%</span>
+          </div>
+          <div class="stub-row-item">
+            <span class="k">Spread</span>
+            <span class="v num" style="color: var(--flame-deep);">+4.2 pts</span>
+          </div>
+        </div>
+        <div class="stub-action">
+          <a class="open-link" href="#">Open ↗</a>
+          <span class="meta">on Polymarket</span>
+        </div>
+      </aside>
+    </article>
+
+    <!-- ============================== PASS ============================== -->
+    <div class="fixture">
+      <span class="fixture-teams">Tunisia <span style="color:var(--graphite-soft); font-style:italic; font-weight:400; font-size:18px;"> v </span> Australia</span>
+      <span class="fixture-meta">Group C · 19 Jun · 18:00 CET</span>
+    </div>
+
+    <article class="stub-row pass">
+      <div class="punch-bot"></div>
+      <div class="stub-body">
+        <div class="stub-eyebrow">
+          <span class="verdict-state"><span class="glyph flat"><i></i><i></i><i></i><i></i></span> The verdict — Pass</span>
+          <span class="upd">Last priced 6 min ago</span>
+        </div>
+        <h2 class="stub-headline" style="color: var(--ink-soft);">No edge here. The two markets agree.</h2>
+        <p class="stub-prose">
+          Polymarket and Kalshi are pricing every outcome of Tunisia–Australia within a single point of each other, and our score sits inside their spread. There's no slower line to take and no number worth waiting for.
+          <span class="reasons">
+            <p>Three days of flat agreement between Polymarket and Kalshi at this fixture.</p>
+            <p>The 0.6-point gap is below the 2-point threshold we treat as actionable.</p>
+          </span>
+        </p>
+        <div class="stub-tip">Built from 7 tips · venue agreement, model differential, market depth, lineup, recent form, xG, line movement.</div>
+      </div>
+
+      <aside class="stub-side">
+        <div class="stub-side-head">
+          <span>The verdict</span>
+          <span class="seq">№ TUN·AUS·01</span>
+        </div>
+        <div class="stub-rows">
+          <div class="stub-row-item">
+            <span class="k">Action</span>
+            <span class="v" style="font-family: var(--font-serif); font-style: italic; font-weight: 600; font-size: 15px; color: var(--graphite);">No edge</span>
+          </div>
+          <div class="stub-row-item">
+            <span class="k">Venue</span>
+            <span class="v" style="color: var(--graphite); font-style: italic; font-family: var(--font-serif);">Both, equal</span>
+          </div>
+          <div class="stub-row-item">
+            <span class="k">Kalshi</span>
+            <span class="v num">42.8%</span>
+          </div>
+          <div class="stub-row-item">
+            <span class="k">Polymarket</span>
+            <span class="v num">43.4%</span>
+          </div>
+          <div class="stub-row-item">
+            <span class="k">Op model</span>
+            <span class="v num">43.0%</span>
+          </div>
+          <div class="stub-row-item">
+            <span class="k">Spread</span>
+            <span class="v num" style="color: var(--graphite);">−0.4 pts</span>
+          </div>
+        </div>
+        <div class="stub-action">
+          <span class="open-link">No handoff</span>
+          <span class="meta">quiet market</span>
+        </div>
+      </aside>
+    </article>
+
+    <!-- ============================== AVOID ============================== -->
+    <div class="fixture">
+      <span class="fixture-teams">Germany <span style="color:var(--graphite-soft); font-style:italic; font-weight:400; font-size:18px;"> v </span> Japan</span>
+      <span class="fixture-meta">Group E · 22 Jun · 17:00 CET</span>
+    </div>
+
+    <article class="stub-row avoid">
+      <div class="punch-bot"></div>
+      <div class="stub-body">
+        <div class="stub-eyebrow">
+          <span class="verdict-state"><span class="glyph down"><i></i><i></i><i></i><i></i></span> The verdict — Avoid</span>
+          <span class="upd">Last priced 2 min ago</span>
+        </div>
+        <h2 class="stub-headline">Skip Germany–Japan. The line is short on both venues.</h2>
+        <p class="stub-prose">
+          Both Kalshi and Polymarket are pricing Germany inside our number. The market reacted hard to Japan's friendly result and the price moves have overshot what our model can defend. Neither side is the better price.
+          <span class="reasons">
+            <p>Polymarket sits 2.3 points inside the model; Kalshi 3.4 points.</p>
+            <p>When both venues are inside, there's no second-best price to hand off to — the right move is to wait.</p>
+          </span>
+        </p>
+        <div class="stub-tip">Built from 9 tips · xG, line movement, market consensus, lineup, venue spread, model differential, recent form, market depth, news signal.</div>
+      </div>
+
+      <aside class="stub-side">
+        <div class="stub-side-head">
+          <span>The verdict</span>
+          <span class="seq">№ GER·JPN·01</span>
+        </div>
+        <div class="stub-rows">
+          <div class="stub-row-item">
+            <span class="k">Action</span>
+            <span class="v" style="font-family: var(--font-serif); font-weight: 600; font-size: 15px;">Skip the match</span>
+          </div>
+          <div class="stub-row-item">
+            <span class="k">Venue</span>
+            <span class="v" style="color: var(--graphite); font-style: italic; font-family: var(--font-serif);">Neither</span>
+          </div>
+          <div class="stub-row-item">
+            <span class="k">Kalshi</span>
+            <span class="v num" style="color: var(--graphite);">58.0%</span>
+          </div>
+          <div class="stub-row-item">
+            <span class="k">Polymarket</span>
+            <span class="v num" style="color: var(--graphite);">59.1%</span>
+          </div>
+          <div class="stub-row-item">
+            <span class="k">Op model</span>
+            <span class="v num">61.4%</span>
+          </div>
+          <div class="stub-row-item">
+            <span class="k">Spread</span>
+            <span class="v num" style="color: var(--graphite);">−2.3 / −3.4</span>
+          </div>
+        </div>
+        <div class="stub-action">
+          <span class="open-link">No handoff</span>
+          <span class="meta">both sides short</span>
+        </div>
+      </aside>
+    </article>
+
+  </main>
+</body>
+</html>
