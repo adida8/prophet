@@ -12,14 +12,13 @@
       "commands": [
         "npm --prefix=/app/frontend ci",
         "npm --prefix=/app/frontend run build"
+      ],
+      "deployOutputs": [
+        { "include": ["frontend/dist"] }
       ]
     }
   },
   "deploy": {
-    "startCommand": "python main.py --dashboard --port $PORT",
-    "inputs": [
-      { "step": "build" },
-      { "step": "frontend", "include": ["frontend/dist"] }
-    ]
+    "startCommand": "python main.py --dashboard --port $PORT"
   }
 }
