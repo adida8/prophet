@@ -7,20 +7,12 @@
   "steps": {
     "frontend": {
       "inputs": [
-        { "step": "packages:mise" },
-        { "local": true, "include": ["frontend"] }
+        { "step": "build" }
       ],
       "commands": [
-        "cd frontend && npm ci",
-        "cd frontend && npm run build"
-      ],
-      "caches": ["npm"]
-    }
-  },
-  "caches": {
-    "npm": {
-      "directory": "/root/.npm",
-      "type": "shared"
+        "npm --prefix=/app/frontend ci",
+        "npm --prefix=/app/frontend run build"
+      ]
     }
   },
   "deploy": {
