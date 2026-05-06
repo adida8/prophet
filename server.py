@@ -20,11 +20,14 @@ from typing import Any, Optional
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import config
 from core.logger import get_portfolio_summary
+from ledger import db as ledger_db
+from ledger.router import router as ledger_router
 
 log = logging.getLogger("prophet.server")
 
@@ -118,6 +121,8 @@ class SettingsUpdate(BaseModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Ledger: initialise SQLite tables on boot
+    await ledger_db.init_db()
     # Periodic heartbeat for legacy dashboard
     task = asyncio.create_task(_heartbeat_loop())
     yield
@@ -141,6 +146,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(ledger_router)
 
 
 # ─────────────────────────── REST endpoints ───────────────────────────
@@ -282,4 +289,16 @@ async def ws_dashboard(ws: WebSocket):
 
 FRONTEND_DIST = Path(__file__).parent / "frontend" / "dist"
 if FRONTEND_DIST.exists():
-    app.mount("/", StaticFiles(directory=str(FRONTEND_DIST), html=True), name="frontend")
+    # Serve assets/ directly so JS/CSS hashed bundles work.
+    assets_dir = FRONTEND_DIST / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+    # SPA fallback: every non-API GET serves index.html so client-side
+    # routes like /ledger and /ledger/0x… resolve to the React app.
+    @app.get("/{full_path:path}")
+    async def spa_fallback(full_path: str):
+        candidate = FRONTEND_DIST / full_path
+        if full_path and candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(FRONTEND_DIST / "index.html")
