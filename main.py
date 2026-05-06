@@ -25,6 +25,7 @@ import sys
 import uvicorn
 
 import config
+from ledger.refresh_loop import run_refresh_loop as run_ledger_refresh_loop
 from scheduler import Scheduler
 from server import app, set_scheduler, broadcast
 
@@ -52,8 +53,9 @@ async def main(port: int, paper_trade: bool) -> None:
     server    = uvicorn.Server(uv_config)
 
     tasks = [
-        asyncio.create_task(scheduler.run(), name="scheduler"),
-        asyncio.create_task(server.serve(),  name="server"),
+        asyncio.create_task(scheduler.run(),         name="scheduler"),
+        asyncio.create_task(server.serve(),          name="server"),
+        asyncio.create_task(run_ledger_refresh_loop(), name="ledger_refresh"),
     ]
 
     if paper_trade:
