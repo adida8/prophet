@@ -1,0 +1,1478 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oddsprimer Ledger — Command Center v2 · Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700;8..60,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF7F0;
+    --paper-pure: #FFFFFF;
+    --paper-warm: #F0ECE2;
+    --paper-deep: #E8E2D2;
+    --ink: #0E2240;
+    --ink-soft: #2A3957;
+    --graphite: #3A3F47;
+    --graphite-soft: #6B7079;
+    --rule: #D9D2C0;
+    --rule-soft: #EDE7D6;
+    --flame: #D9461C;
+    --flame-deep: #A8341A;
+    --flame-tint: #F7E4DA;
+    --chart-1: #0E2240;
+    --chart-2: #D9461C;
+    --chart-3: #6B7079;
+    --chart-4: #B89968;
+    --chart-5: #2A3957;
+    --chart-6: #8A6F3D;
+    --venue-poly: #2A6FDB;
+    --venue-kalshi: #00C46A;
+    --delta-up: #4A7A5A;
+    --delta-down: #A8534A;
+    /* Category colors — pulled from the chart palette + venues, applied consistently */
+    --cat-politics: #0E2240;   /* ink */
+    --cat-sports:   #D9461C;   /* flame */
+    --cat-crypto:   #B89968;   /* warm tan */
+    --cat-economic: #2A6FDB;   /* polymarket blue */
+    --cat-other:    #6B7079;
+    /* heatmap ramp */
+    --heat-0: #F0ECE2;
+    --heat-1: #E8DDC4;
+    --heat-2: #DCC298;
+    --heat-3: #D9826B;
+    --heat-4: #D9461C;
+    --heat-down: #BFB9AB;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body {
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+  .shell { max-width: 1440px; margin: 0 auto; padding: 0 40px; }
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--graphite-soft);
+  }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 500; }
+
+  /* ============ LIVE TICKER ============ */
+  .ticker {
+    background: var(--ink);
+    color: var(--paper);
+    overflow: hidden;
+    border-bottom: 4px solid var(--flame);
+    position: relative;
+  }
+  .ticker .strip {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 36px;
+    width: max-content;
+    animation: scroll 50s linear infinite;
+  }
+  .ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 22px;
+    border-right: 1px solid rgba(255,255,255,0.12);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .ticker-item .label { color: rgba(255,247,240,0.55); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+  .ticker-item .price { color: var(--paper); }
+  .ticker-item .delta-up   { color: #92D6A4; font-weight: 600; }
+  .ticker-item .delta-down { color: #E89A8A; font-weight: 600; }
+  .ticker-item .dot { width: 7px; height: 7px; border-radius: 999px; }
+  .ticker-item .dot.poly { background: var(--venue-poly); }
+  .ticker-item .dot.kalshi { background: var(--venue-kalshi); }
+  @keyframes scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .live-pill {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--flame);
+    color: var(--paper);
+    padding: 4px 10px;
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 2px;
+  }
+  .live-pill::before {
+    content: '';
+    width: 7px; height: 7px; border-radius: 999px;
+    background: var(--paper);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  /* ============ MASTHEAD ============ */
+  .mast {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--rule);
+    padding: 18px 0 14px;
+  }
+  .brand { display: inline-flex; align-items: center; gap: 11px; }
+  .glyph { display: inline-flex; align-items: flex-end; gap: 3px; height: 28px; }
+  .glyph i { display: block; width: 5px; background: var(--ink); }
+  .glyph i:nth-child(1) { height: 22%; }
+  .glyph i:nth-child(2) { height: 38%; }
+  .glyph i:nth-child(3) { height: 65%; background: var(--flame); }
+  .glyph i:nth-child(4) { height: 30%; }
+  .wordmark {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .wordmark .pipe { color: var(--rule); margin: 0 8px; font-weight: 400; }
+  .wordmark .sub { font-weight: 600; color: var(--graphite); font-size: 18px; }
+  .mast-meta { display: inline-flex; align-items: center; gap: 18px; }
+  .mast-meta .timestamp { font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--graphite); }
+  .mast-meta .timestamp .dagger { color: var(--flame); }
+  .btn {
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    padding: 8px 16px;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--paper);
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    transition: all 120ms;
+  }
+  .btn:hover { background: var(--flame); border-color: var(--flame); }
+  .btn.secondary { background: none; color: var(--graphite); border-color: var(--rule); }
+  .btn.secondary:hover { background: none; color: var(--ink); border-color: var(--ink); }
+
+  /* ============ HERO ============ */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper-warm);
+  }
+  .hero-main {
+    padding: 48px 40px 40px;
+    border-right: 1px solid var(--rule);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-main .label-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--flame);
+    margin-bottom: 24px;
+  }
+  .hero-main .label-line .live-dot {
+    width: 8px; height: 8px; border-radius: 999px; background: var(--flame);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .hero-value-row {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    margin-bottom: 16px;
+  }
+  .hero-value {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 88px;
+    letter-spacing: -0.035em;
+    color: var(--ink);
+    line-height: 0.95;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-value .cents { font-size: 56px; color: var(--graphite); font-weight: 600; }
+  .hero-delta-stack { display: flex; flex-direction: column; gap: 2px; }
+  .hero-delta-big {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--delta-up);
+    font-variant-numeric: tabular-nums;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hero-delta-big .arrow { color: var(--delta-up); }
+  .hero-delta-meta {
+    font-family: var(--sans); font-size: 12px; color: var(--graphite); font-weight: 500;
+  }
+  .hero-spark-row {
+    margin-top: 24px;
+    border-top: 1px dashed var(--rule);
+    padding-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+  .hero-spark-row .label {
+    font-family: var(--sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft);
+    min-width: 60px;
+  }
+  .hero-spark-row svg { flex: 1; }
+
+  .hero-side { padding: 36px 40px 40px; display: flex; flex-direction: column; gap: 24px; }
+  .stat-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .stat-card {
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    padding: 18px 20px;
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card.accent { border-left: 4px solid var(--flame); }
+  .stat-card.accent-blue { border-left: 4px solid var(--venue-poly); }
+  .stat-card.accent-tan { border-left: 4px solid var(--chart-4); }
+  .stat-card .eyebrow { margin-bottom: 8px; }
+  .stat-card .val {
+    font-family: var(--mono); font-weight: 700; font-size: 26px;
+    letter-spacing: -0.015em; line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .stat-card .sub {
+    font-family: var(--serif); font-style: italic; font-size: 12px; color: var(--graphite);
+    margin-top: 6px;
+  }
+  .stat-card.streak {
+    background: linear-gradient(135deg, var(--flame-tint) 0%, var(--paper-pure) 70%);
+    border: 1px solid var(--flame);
+    border-left-width: 4px;
+  }
+  .stat-card.streak .val { color: var(--flame-deep); display: inline-flex; align-items: baseline; gap: 8px; }
+  .stat-card.streak .val .badge {
+    font-family: var(--sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--paper);
+    background: var(--flame); padding: 3px 8px; border-radius: 2px;
+  }
+
+  /* ============ MOVERS BAR ============ */
+  .movers {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 32px;
+    align-items: stretch;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .movers .head {
+    display: flex; flex-direction: column; justify-content: center;
+    border-right: 1px solid var(--rule); padding-right: 32px;
+  }
+  .movers .head .title {
+    font-family: var(--serif); font-size: 22px; font-weight: 600;
+    letter-spacing: -0.005em; line-height: 1.1; margin-bottom: 4px;
+  }
+  .movers .head .byline {
+    font-family: var(--serif); font-style: italic; font-size: 12px; color: var(--graphite);
+  }
+  .movers .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .mover {
+    border: 1px solid var(--rule);
+    background: var(--paper-pure);
+    padding: 14px 16px;
+    position: relative;
+  }
+  .mover.up { border-left: 4px solid var(--flame); }
+  .mover.down { border-left: 4px solid var(--graphite); }
+  .mover .cat-tag {
+    font-family: var(--sans); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 4px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .mover .cat-tag::before { content: ''; width: 6px; height: 6px; border-radius: 999px; }
+  .mover.cat-pol .cat-tag { color: var(--cat-politics); }
+  .mover.cat-pol .cat-tag::before { background: var(--cat-politics); }
+  .mover.cat-spo .cat-tag { color: var(--cat-sports); }
+  .mover.cat-spo .cat-tag::before { background: var(--cat-sports); }
+  .mover.cat-cry .cat-tag { color: var(--cat-crypto); }
+  .mover.cat-cry .cat-tag::before { background: var(--cat-crypto); }
+  .mover.cat-eco .cat-tag { color: var(--cat-economic); }
+  .mover.cat-eco .cat-tag::before { background: var(--cat-economic); }
+  .mover .q {
+    font-family: var(--serif); font-size: 13px; font-weight: 500;
+    line-height: 1.3; color: var(--ink); margin-bottom: 8px;
+  }
+  .mover .deltabig {
+    font-family: var(--mono); font-size: 22px; font-weight: 700;
+    letter-spacing: -0.01em; line-height: 1;
+  }
+  .mover.up .deltabig { color: var(--flame-deep); }
+  .mover.down .deltabig { color: var(--graphite); }
+  .mover .meta {
+    font-family: var(--mono); font-size: 11px; color: var(--graphite-soft);
+    margin-top: 6px;
+  }
+  .mover .liveflag {
+    position: absolute; top: 10px; right: 10px;
+    font-family: var(--sans); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--flame);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .mover .liveflag::before {
+    content: ''; width: 6px; height: 6px; border-radius: 999px; background: var(--flame);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  /* ============ MAIN CHART ============ */
+  .chart-section { padding: 36px 0; border-bottom: 1px solid var(--rule); }
+  .section-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 22px;
+  }
+  .section-head h2 {
+    font-family: var(--serif); font-size: 30px; font-weight: 600;
+    letter-spacing: -0.005em; margin: 0 0 4px;
+  }
+  .section-head .byline {
+    font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--graphite);
+  }
+  .range-pills { display: inline-flex; gap: 0; border: 1px solid var(--ink); border-radius: 2px; overflow: hidden; }
+  .range-pills button {
+    background: var(--paper-pure);
+    border: none;
+    border-right: 1px solid var(--rule);
+    padding: 8px 14px;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--graphite);
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .range-pills button:last-child { border-right: none; }
+  .range-pills button.active { background: var(--ink); color: var(--paper); }
+  .range-pills button:hover:not(.active) { background: var(--flame-tint); color: var(--ink); }
+
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+  }
+  .main-chart-wrap {
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    padding: 24px 28px;
+  }
+  .chart-stats {
+    display: flex;
+    gap: 28px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .chart-stat .label { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft); }
+  .chart-stat .val { font-family: var(--mono); font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .chart-stat .delta { font-family: var(--mono); font-size: 11px; color: var(--delta-up); font-weight: 600; }
+
+  /* HEATMAP */
+  .heatmap-card {
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+  }
+  .heatmap-card .head { margin-bottom: 14px; }
+  .heatmap-card .head h3 {
+    font-family: var(--serif); font-size: 17px; font-weight: 600; margin: 0 0 2px;
+  }
+  .heatmap-card .head .byline {
+    font-family: var(--serif); font-style: italic; font-size: 11px; color: var(--graphite);
+  }
+  .heat-grid {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    gap: 3px;
+    flex: 1;
+  }
+  .heat-cell {
+    aspect-ratio: 1;
+    border-radius: 2px;
+    position: relative;
+  }
+  .heat-cell:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: var(--paper);
+    padding: 4px 8px; font-size: 10px; font-family: var(--mono);
+    white-space: nowrap; border-radius: 2px;
+    z-index: 10;
+  }
+  .heat-legend {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--mono); font-size: 10px; color: var(--graphite-soft);
+  }
+  .heat-legend .scale { display: inline-flex; gap: 3px; }
+  .heat-legend .scale span { width: 14px; height: 10px; border-radius: 1px; }
+
+  /* ============ QUAD ============ */
+  .quad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .quad-cell {
+    padding: 26px 24px 28px;
+    border-right: 1px solid var(--rule);
+    position: relative;
+  }
+  .quad-cell:last-child { border-right: none; }
+  .quad-cell.glow {
+    background: linear-gradient(180deg, var(--flame-tint) 0%, var(--paper) 60%);
+  }
+  .quad-cell .eyebrow { margin-bottom: 12px; }
+  .quad-value {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 6px;
+    line-height: 1;
+  }
+  .quad-value .accent { color: var(--flame-deep); }
+  .quad-sub {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--graphite);
+    line-height: 1.45;
+  }
+  .quad-viz { margin-top: 16px; }
+
+  /* ============ POSITIONS TABLE ============ */
+  .table-section { padding: 40px 0 12px; }
+  .filter-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  .filter-pills { display: inline-flex; gap: 6px; }
+  .filter-pills button {
+    background: none;
+    border: 1px solid var(--rule);
+    padding: 7px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--graphite);
+    letter-spacing: 0.02em;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .filter-pills button .dot { width: 6px; height: 6px; border-radius: 999px; }
+  .filter-pills button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .filter-pills button:hover:not(.active) { border-color: var(--ink); color: var(--ink); }
+
+  table.positions {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--sans);
+  }
+  .positions thead th {
+    text-align: left;
+    padding: 12px 14px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .positions thead th.right { text-align: right; }
+  .positions thead th:first-child { padding-left: 24px; }
+  .positions thead th:last-child { padding-right: 24px; }
+  .positions tbody tr {
+    transition: background 120ms;
+    border-left: 4px solid transparent;
+  }
+  .positions tbody tr.cat-pol { border-left-color: var(--cat-politics); }
+  .positions tbody tr.cat-spo { border-left-color: var(--cat-sports); }
+  .positions tbody tr.cat-cry { border-left-color: var(--cat-crypto); }
+  .positions tbody tr.cat-eco { border-left-color: var(--cat-economic); }
+  .positions tbody tr:hover { background: var(--paper-warm); }
+  .positions tbody tr.hot { background: var(--flame-tint); }
+  .positions tbody tr.hot:hover { background: #F0D5C5; }
+  .positions tbody td {
+    padding: 16px 14px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: middle;
+  }
+  .positions tbody td.right { text-align: right; }
+  .positions tbody td:first-child { padding-left: 20px; }
+  .positions tbody td:last-child { padding-right: 24px; }
+  .market-q {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 4px;
+    line-height: 1.3;
+    max-width: 36ch;
+  }
+  .market-q .live-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: var(--sans); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--flame);
+    margin-left: 8px; vertical-align: middle;
+  }
+  .market-q .live-tag::before {
+    content: ''; width: 5px; height: 5px; border-radius: 999px; background: var(--flame);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .market-meta {
+    font-family: var(--sans);
+    font-size: 10px;
+    color: var(--graphite-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+  }
+  .venue-dot { width: 6px; height: 6px; border-radius: 999px; display: inline-block; }
+  .venue-dot.poly { background: var(--venue-poly); }
+  .venue-dot.kalshi { background: var(--venue-kalshi); }
+  .cat-chip {
+    display: inline-block; padding: 1px 7px; border-radius: 2px;
+    font-family: var(--sans); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--paper);
+  }
+  .cat-chip.pol { background: var(--cat-politics); }
+  .cat-chip.spo { background: var(--cat-sports); }
+  .cat-chip.cry { background: var(--cat-crypto); }
+  .cat-chip.eco { background: var(--cat-economic); }
+  .outcome-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 2px;
+  }
+  .outcome-yes { background: var(--ink); color: var(--paper); }
+  .outcome-no { background: var(--paper-deep); color: var(--ink); border: 1px solid var(--rule); }
+  .pnl-pos { color: var(--ink); font-weight: 700; }
+  .pnl-pos.flame {
+    background: var(--flame);
+    color: var(--paper);
+    padding: 3px 8px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .pnl-pos.warm {
+    background: var(--flame-tint);
+    padding: 3px 8px;
+    border-radius: 2px;
+    display: inline-block;
+    color: var(--flame-deep);
+  }
+  .pnl-neg { color: var(--graphite-soft); }
+  .pnl-neg.cool {
+    background: var(--paper-warm);
+    padding: 3px 8px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .view-source {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--rule);
+    text-underline-offset: 3px;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+    font-weight: 600;
+  }
+  .view-source:hover { color: var(--flame-deep); text-decoration-color: var(--flame); }
+  .row-spark { width: 100px; height: 26px; }
+
+  /* ============ CLOSED TEASER ============ */
+  .closed-teaser {
+    padding: 22px 24px;
+    margin: 0 -40px;
+    background: var(--ink);
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .closed-teaser .left {
+    font-family: var(--serif); font-size: 16px;
+  }
+  .closed-teaser .left strong {
+    font-family: var(--mono); font-weight: 700; color: var(--paper);
+  }
+  .closed-teaser .left em { color: rgba(250,247,240,0.55); font-style: italic; }
+  .closed-teaser .left .pop { color: #F0D5C5; font-family: var(--mono); font-weight: 700; }
+  .closed-teaser .btn { background: var(--flame); border-color: var(--flame); }
+  .closed-teaser .btn:hover { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+
+  /* ============ DUAL ============ */
+  .dual {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 56px;
+    padding: 48px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .dual h3 {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    letter-spacing: -0.005em;
+  }
+  .dual .byline {
+    font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--graphite);
+    margin-bottom: 20px;
+  }
+  .timeline { list-style: none; padding: 0; margin: 0; }
+  .timeline li {
+    display: grid;
+    grid-template-columns: 78px 80px 1fr auto;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    align-items: baseline;
+    position: relative;
+  }
+  .timeline li::before {
+    content: ''; position: absolute; left: 86px; top: 0; bottom: 0; width: 2px;
+    background: var(--rule-soft);
+  }
+  .timeline li:first-child::before { top: 50%; }
+  .timeline li:last-child::before { bottom: 50%; }
+  .timeline li:last-child { border-bottom: none; }
+  .tl-time { font-family: var(--mono); font-size: 11px; color: var(--graphite-soft); }
+  .tl-action {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 2px; align-self: center; text-align: center; min-width: 70px;
+    position: relative; z-index: 1;
+  }
+  .tl-action.buy { background: var(--ink); color: var(--paper); }
+  .tl-action.sell { background: var(--paper-deep); color: var(--ink); border: 1px solid var(--rule); }
+  .tl-action.resolve { background: var(--flame); color: var(--paper); }
+  .tl-detail { font-family: var(--serif); font-size: 14px; color: var(--ink); }
+  .tl-detail em { color: var(--graphite); font-style: italic; }
+  .tl-amt { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+  .tl-amt.pos { color: var(--delta-up); }
+  .tl-amt.neg { color: var(--delta-down); }
+  .tl-amt.win { color: var(--flame-deep); font-weight: 700; }
+
+  /* ============ EDGE ============ */
+  .edge-table { width: 100%; border-collapse: collapse; }
+  .edge-table th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--graphite-soft);
+    padding: 10px 0;
+    border-bottom: 2px solid var(--ink);
+  }
+  .edge-table th.right { text-align: right; }
+  .edge-table td { padding: 14px 0; border-bottom: 1px solid var(--rule-soft); font-family: var(--mono); font-size: 13px; vertical-align: middle; }
+  .edge-table td.right { text-align: right; font-variant-numeric: tabular-nums; }
+  .edge-table td.cat {
+    font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--ink);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .edge-table td.cat::before {
+    content: ''; width: 10px; height: 10px; border-radius: 2px;
+  }
+  .edge-table tr.row-pol td.cat::before { background: var(--cat-politics); }
+  .edge-table tr.row-spo td.cat::before { background: var(--cat-sports); }
+  .edge-table tr.row-cry td.cat::before { background: var(--cat-crypto); }
+  .edge-table tr.row-eco td.cat::before { background: var(--cat-economic); }
+  .verdict-pill {
+    display: inline-block; padding: 4px 12px; border-radius: 999px;
+    font-family: var(--sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .verdict-pill.skill { background: var(--flame); color: var(--paper); }
+  .verdict-pill.luck { background: var(--paper-deep); color: var(--graphite); border: 1px solid var(--rule); }
+  .verdict-pill.hot { background: var(--ink); color: var(--paper); }
+
+  /* ============ FOOTER ============ */
+  .foot {
+    padding: 32px 0 64px;
+    text-align: center;
+    font-family: var(--serif);
+    font-size: 12px;
+    font-style: italic;
+    color: var(--graphite-soft);
+  }
+  .foot .dagger { color: var(--flame); }
+  .foot .rule { width: 80px; height: 1px; background: var(--rule); margin: 0 auto 20px; }
+</style>
+</head>
+<body>
+
+<!-- ============ LIVE TICKER ============ -->
+<div class="ticker">
+  <span class="live-pill">Live</span>
+  <div class="strip" style="padding-left: 90px;">
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Trump 28</span><span class="price">$0.41</span><span class="delta-up">▲ +2.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Argentina WC</span><span class="price">$0.24</span><span class="delta-up">▲ +1.8¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Lakers Finals</span><span class="price">$0.29</span><span class="delta-down">▼ −0.6¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">BTC $200K</span><span class="price">$0.38</span><span class="delta-down">▼ −1.2¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Fed Cut Dec</span><span class="price">$0.61</span><span class="delta-up">▲ +0.9¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">DeSantis 28</span><span class="price">$0.16</span><span class="delta-up">▲ +1.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Oilers Cup</span><span class="price">$0.31</span><span class="delta-up">▲ +0.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">ETH flip BTC</span><span class="price">$0.06</span><span class="delta-down">▼ −0.3¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Q3 GDP &gt;2.5%</span><span class="price">$0.32</span><span class="delta-down">▼ −0.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">SOL $300</span><span class="price">$0.49</span><span class="delta-up">▲ +1.7¢</span></span>
+    <!-- duplicate set for seamless loop -->
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Trump 28</span><span class="price">$0.41</span><span class="delta-up">▲ +2.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Argentina WC</span><span class="price">$0.24</span><span class="delta-up">▲ +1.8¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Lakers Finals</span><span class="price">$0.29</span><span class="delta-down">▼ −0.6¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">BTC $200K</span><span class="price">$0.38</span><span class="delta-down">▼ −1.2¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Fed Cut Dec</span><span class="price">$0.61</span><span class="delta-up">▲ +0.9¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">DeSantis 28</span><span class="price">$0.16</span><span class="delta-up">▲ +1.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Oilers Cup</span><span class="price">$0.31</span><span class="delta-up">▲ +0.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">ETH flip BTC</span><span class="price">$0.06</span><span class="delta-down">▼ −0.3¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Q3 GDP &gt;2.5%</span><span class="price">$0.32</span><span class="delta-down">▼ −0.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">SOL $300</span><span class="price">$0.49</span><span class="delta-up">▲ +1.7¢</span></span>
+  </div>
+</div>
+
+<div class="shell">
+
+  <!-- ============ MASTHEAD ============ -->
+  <header class="mast">
+    <div class="brand">
+      <span class="glyph"><i></i><i></i><i></i><i></i></span>
+      <span class="wordmark">Oddsprimer<span class="pipe">·</span><span class="sub">Ledger</span></span>
+    </div>
+    <div class="mast-meta">
+      <span class="timestamp">Wallet 0x1f3a · · · a4b2 · synced 2 min ago<span class="dagger">†</span></span>
+      <button class="btn secondary">Disconnect</button>
+      <button class="btn">Refresh</button>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="hero-main">
+      <div class="label-line">
+        <span class="live-dot"></span>
+        Portfolio value · Live · Polymarket · Polygon
+      </div>
+      <div class="hero-value-row">
+        <div class="hero-value">$42,847<span class="cents">.13</span></div>
+        <div class="hero-delta-stack">
+          <div class="hero-delta-big"><span class="arrow">▲</span> $1,247.40</div>
+          <div class="hero-delta-meta">+3.0% over 24h · 7 trades · 1 resolved</div>
+        </div>
+      </div>
+      <div class="hero-spark-row">
+        <div class="label">53d</div>
+        <svg width="100%" height="56" viewBox="0 0 600 56" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#D9461C" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#F7E4DA" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M 0,46 L 30,44 L 60,42 L 90,38 L 120,40 L 150,32 L 180,30 L 210,38 L 240,28 L 270,26 L 300,22 L 330,20 L 360,16 L 390,18 L 420,12 L 450,10 L 480,8 L 510,6 L 540,4 L 570,3 L 600,2 L 600,56 L 0,56 Z"
+                fill="url(#g1)"/>
+          <polyline points="0,46 30,44 60,42 90,38 120,40 150,32 180,30 210,38 240,28 270,26 300,22 330,20 360,16 390,18 420,12 450,10 480,8 510,6 540,4 570,3 600,2"
+                    fill="none" stroke="var(--ink)" stroke-width="2"/>
+          <circle cx="600" cy="2" r="4" fill="var(--flame)"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="hero-side">
+      <div class="stat-pair">
+        <div class="stat-card accent">
+          <div class="eyebrow">All-time return</div>
+          <div class="val">+$8,235</div>
+          <div class="sub">+23.81% ROI · 53 days</div>
+        </div>
+        <div class="stat-card accent-blue">
+          <div class="eyebrow">Edge realised</div>
+          <div class="val">+12.4%</div>
+          <div class="sub">vs consensus at entry</div>
+        </div>
+      </div>
+      <div class="stat-pair">
+        <div class="stat-card streak">
+          <div class="eyebrow" style="color: var(--flame-deep);">Hot streak</div>
+          <div class="val">5 <span class="badge">Wins</span></div>
+          <div class="sub">In a row · longest of 2026</div>
+        </div>
+        <div class="stat-card accent-tan">
+          <div class="eyebrow">Sharpe-like</div>
+          <div class="val">2.18</div>
+          <div class="sub">Top decile of 8,200 wallets</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MOVERS ============ -->
+  <section class="movers">
+    <div class="head">
+      <div class="eyebrow" style="margin-bottom: 8px;">The Floor</div>
+      <div class="title">Now moving</div>
+      <div class="byline">Your top movers, last 60 minutes</div>
+    </div>
+    <div class="grid">
+      <div class="mover up cat-pol">
+        <span class="liveflag">Live</span>
+        <div class="cat-tag">Politics</div>
+        <div class="q">Will Trump win 2028?</div>
+        <div class="deltabig">+$184</div>
+        <div class="meta">$0.41 · ▲ +6.0% · 12K shares</div>
+      </div>
+      <div class="mover up cat-spo">
+        <span class="liveflag">Live</span>
+        <div class="cat-tag">Sports</div>
+        <div class="q">Argentina to win World Cup 2026</div>
+        <div class="deltabig">+$153</div>
+        <div class="meta">$0.24 · ▲ +8.1% · 8.5K shares</div>
+      </div>
+      <div class="mover down cat-cry">
+        <div class="cat-tag">Crypto</div>
+        <div class="q">Bitcoin to reach $200K in 2026</div>
+        <div class="deltabig">−$48</div>
+        <div class="meta">$0.38 · ▼ −3.1% · 4K shares</div>
+      </div>
+      <div class="mover up cat-eco">
+        <div class="cat-tag">Economic</div>
+        <div class="q">Fed rate cut at Dec 2026 meeting</div>
+        <div class="deltabig">+$50</div>
+        <div class="meta">$0.61 · ▲ +1.5% · 5.5K shares</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MAIN CHART + HEATMAP ============ -->
+  <section class="chart-section">
+    <div class="section-head">
+      <div>
+        <h2>Portfolio value, all time</h2>
+        <div class="byline">Mar 14 — May 6, 2026 · 53 trading days · daily close</div>
+      </div>
+      <div class="range-pills">
+        <button>1W</button>
+        <button>1M</button>
+        <button>3M</button>
+        <button>6M</button>
+        <button>1Y</button>
+        <button class="active">All</button>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="main-chart-wrap">
+        <div class="chart-stats">
+          <div class="chart-stat"><div class="label">Open</div><div class="val">$34,612</div></div>
+          <div class="chart-stat"><div class="label">High</div><div class="val">$43,201</div></div>
+          <div class="chart-stat"><div class="label">Low</div><div class="val">$31,840</div></div>
+          <div class="chart-stat"><div class="label">Last</div><div class="val" style="color: var(--flame-deep);">$42,847</div><div class="delta">▲ +23.8% all-time</div></div>
+          <div class="chart-stat" style="margin-left: auto;">
+            <div class="label">Best day</div>
+            <div class="val">+$2,140</div>
+            <div class="delta" style="color: var(--graphite-soft);">Apr 28 · Lakers/Celtics G5 OT</div>
+          </div>
+        </div>
+        <svg viewBox="0 0 1280 340" preserveAspectRatio="none" style="width:100%; height: 320px; display: block;">
+          <defs>
+            <linearGradient id="bigfill" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#D9461C" stop-opacity="0.32"/>
+              <stop offset="60%" stop-color="#F7E4DA" stop-opacity="0.1"/>
+              <stop offset="100%" stop-color="#F7E4DA" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <g stroke="var(--rule-soft)" stroke-width="1">
+            <line x1="40" y1="40" x2="1280" y2="40"/>
+            <line x1="40" y1="110" x2="1280" y2="110"/>
+            <line x1="40" y1="180" x2="1280" y2="180"/>
+            <line x1="40" y1="250" x2="1280" y2="250"/>
+          </g>
+          <g font-family="JetBrains Mono" font-size="10" fill="var(--graphite-soft)">
+            <text x="0" y="44">$45K</text>
+            <text x="0" y="114">$40K</text>
+            <text x="0" y="184">$36K</text>
+            <text x="0" y="254">$32K</text>
+          </g>
+          <path d="M 60,260 L 110,255 L 160,250 L 210,240 L 260,235 L 310,225 L 360,215 L 410,210 L 440,225 L 470,200 L 520,195 L 570,185 L 620,178 L 660,172 L 710,160 L 760,155 L 810,140 L 860,128 L 910,118 L 960,108 L 1010,98 L 1060,88 L 1110,80 L 1160,68 L 1210,56 L 1260,42 L 1260,290 L 60,290 Z"
+                fill="url(#bigfill)"/>
+          <polyline points="60,260 110,255 160,250 210,240 260,235 310,225 360,215 410,210 440,225 470,200 520,195 570,185 620,178 660,172 710,160 760,155 810,140 860,128 910,118 960,108 1010,98 1060,88 1110,80 1160,68 1210,56 1260,42"
+                    fill="none" stroke="var(--ink)" stroke-width="2.5"/>
+          <!-- annotation: drawdown -->
+          <g>
+            <line x1="440" y1="225" x2="440" y2="295" stroke="var(--graphite)" stroke-width="0.8" stroke-dasharray="3,3"/>
+            <circle cx="440" cy="225" r="4" fill="var(--paper)" stroke="var(--graphite)" stroke-width="2"/>
+            <text x="445" y="313" font-family="Source Serif 4" font-style="italic" font-size="11" fill="var(--graphite)">Apr 7 · −7.4% drawdown</text>
+          </g>
+          <!-- annotation: winning streak start -->
+          <g>
+            <rect x="710" y="155" width="280" height="80" fill="var(--flame-tint)" opacity="0.4"/>
+            <text x="850" y="248" text-anchor="middle" font-family="Source Serif 4" font-style="italic" font-size="11" fill="var(--flame-deep)">5-win streak begins</text>
+          </g>
+          <!-- annotation: best day -->
+          <g>
+            <line x1="860" y1="128" x2="860" y2="20" stroke="var(--flame)" stroke-width="1.2" stroke-dasharray="3,3"/>
+            <circle cx="860" cy="128" r="5" fill="var(--flame)"/>
+            <rect x="752" y="2" width="216" height="20" fill="var(--flame)" rx="2"/>
+            <text x="860" y="16" text-anchor="middle" font-family="Inter Tight" font-weight="700" font-size="11" fill="var(--paper)" letter-spacing="1">APR 28 · BEST DAY +$2,140</text>
+          </g>
+          <!-- end marker -->
+          <circle cx="1260" cy="42" r="6" fill="var(--flame)" stroke="var(--paper)" stroke-width="2.5"/>
+          <circle cx="1260" cy="42" r="11" fill="none" stroke="var(--flame)" stroke-width="1" opacity="0.5">
+            <animate attributeName="r" from="6" to="14" dur="1.6s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" from="0.6" to="0" dur="1.6s" repeatCount="indefinite"/>
+          </circle>
+          <g font-family="JetBrains Mono" font-size="10" fill="var(--graphite-soft)">
+            <text x="60" y="332">Mar 14</text>
+            <text x="360" y="332">Mar 28</text>
+            <text x="660" y="332">Apr 11</text>
+            <text x="960" y="332">Apr 25</text>
+            <text x="1230" y="332" text-anchor="end">May 6</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="heatmap-card">
+        <div class="head">
+          <h3>Daily P&L</h3>
+          <div class="byline">Last 53 days · darker = bigger gain</div>
+        </div>
+        <div class="heat-grid">
+          <!-- row 1 -->
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Mar 14 · +$120"></div>
+          <div class="heat-cell" style="background: var(--heat-0);" data-tooltip="Mar 15 · −$30"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Mar 16 · +$240"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Mar 17 · +$84"></div>
+          <div class="heat-cell" style="background: var(--heat-down);" data-tooltip="Mar 18 · −$140"></div>
+          <div class="heat-cell" style="background: var(--heat-0);" data-tooltip="Mar 19 · +$22"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Mar 20 · +$310"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Mar 21 · +$95"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Mar 22 · +$280"></div>
+          <div class="heat-cell" style="background: var(--heat-0);" data-tooltip="Mar 23 · +$18"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Mar 24 · +$110"></div>
+          <!-- row 2 -->
+          <div class="heat-cell" style="background: var(--heat-3);" data-tooltip="Mar 25 · +$540"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Mar 26 · +$130"></div>
+          <div class="heat-cell" style="background: var(--heat-down);" data-tooltip="Mar 27 · −$220"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Mar 28 · +$420"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Mar 29 · +$310"></div>
+          <div class="heat-cell" style="background: var(--heat-0);" data-tooltip="Mar 30 · +$45"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Mar 31 · +$165"></div>
+          <div class="heat-cell" style="background: var(--heat-down);" data-tooltip="Apr 1 · −$80"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 2 · +$305"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 3 · +$125"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 4 · +$140"></div>
+          <!-- row 3 -->
+          <div class="heat-cell" style="background: var(--heat-down);" data-tooltip="Apr 5 · −$310"></div>
+          <div class="heat-cell" style="background: var(--heat-down);" data-tooltip="Apr 6 · −$420"></div>
+          <div class="heat-cell" style="background: var(--heat-down);" data-tooltip="Apr 7 · −$540"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 8 · +$110"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 9 · +$340"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 10 · +$160"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 11 · +$295"></div>
+          <div class="heat-cell" style="background: var(--heat-3);" data-tooltip="Apr 12 · +$610"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 13 · +$340"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 14 · +$155"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 15 · +$280"></div>
+          <!-- row 4 -->
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 16 · +$110"></div>
+          <div class="heat-cell" style="background: var(--heat-down);" data-tooltip="Apr 17 · −$120"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 18 · +$320"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 19 · +$190"></div>
+          <div class="heat-cell" style="background: var(--heat-3);" data-tooltip="Apr 20 · +$640"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 21 · +$305"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 22 · +$140"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 23 · +$390"></div>
+          <div class="heat-cell" style="background: var(--heat-3);" data-tooltip="Apr 24 · +$580"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 25 · +$310"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 26 · +$340"></div>
+          <!-- row 5 -->
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 27 · +$170"></div>
+          <div class="heat-cell" style="background: var(--heat-4);" data-tooltip="Apr 28 · +$2,140"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 29 · +$310"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 30 · +$135"></div>
+          <div class="heat-cell" style="background: var(--heat-3);" data-tooltip="May 1 · +$680"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="May 2 · +$420"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="May 3 · +$310"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="May 4 · +$185"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="May 5 · +$295"></div>
+          <div class="heat-cell" style="background: var(--heat-3);" data-tooltip="May 6 · +$1,247" id="today"></div>
+          <div class="heat-cell" style="background: transparent; border: 1px dashed var(--rule);"></div>
+        </div>
+        <div class="heat-legend">
+          <span>−$540</span>
+          <div class="scale">
+            <span style="background: var(--heat-down);"></span>
+            <span style="background: var(--heat-0);"></span>
+            <span style="background: var(--heat-1);"></span>
+            <span style="background: var(--heat-2);"></span>
+            <span style="background: var(--heat-3);"></span>
+            <span style="background: var(--heat-4);"></span>
+          </div>
+          <span>+$2,140</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUAD ============ -->
+  <section class="quad">
+    <div class="quad-cell glow">
+      <div class="eyebrow">Win rate</div>
+      <div class="quad-value"><span class="accent">68%</span></div>
+      <div class="quad-sub">34 of 50 resolved · top quartile</div>
+      <svg class="quad-viz" viewBox="0 0 220 50">
+        <g transform="translate(0, 8)">
+          <text x="0" y="0" font-family="Inter Tight" font-size="9" font-weight="700" letter-spacing="1" fill="var(--graphite-soft)">YES CALLS · 22W / 6L · 79%</text>
+          <rect x="0" y="6" width="174" height="10" fill="var(--ink)"/>
+          <rect x="174" y="6" width="46" height="10" fill="var(--paper-deep)" stroke="var(--rule)"/>
+        </g>
+        <g transform="translate(0, 32)">
+          <text x="0" y="0" font-family="Inter Tight" font-size="9" font-weight="700" letter-spacing="1" fill="var(--graphite-soft)">NO CALLS · 12W / 10L · 55%</text>
+          <rect x="0" y="6" width="120" height="10" fill="var(--flame)"/>
+          <rect x="120" y="6" width="100" height="10" fill="var(--paper-deep)" stroke="var(--rule)"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="quad-cell">
+      <div class="eyebrow">Open exposure</div>
+      <div class="quad-value">$32,447</div>
+      <div class="quad-sub">75.7% deployed · 14 positions · max single $4,200</div>
+      <div class="quad-viz" style="margin-top: 22px;">
+        <div style="display: flex; height: 14px; border: 1px solid var(--ink);">
+          <div style="width: 75.7%; background: var(--ink); position: relative;">
+            <span style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-family: var(--mono); font-size: 9px; color: var(--paper); font-weight: 700;">76%</span>
+          </div>
+          <div style="width: 24.3%; background: var(--paper-warm);"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 6px; font-family: var(--mono); font-size: 10px; color: var(--graphite-soft); font-weight: 500;">
+          <span>Deployed $32,447</span>
+          <span>Cash $10,400</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="quad-cell">
+      <div class="eyebrow">Realised vs unrealised</div>
+      <div class="quad-value">$3,421 <span style="color: var(--graphite-soft); font-weight: 400;">·</span> $4,814</div>
+      <div class="quad-sub">Locked-in vs paper · 41% / 59%</div>
+      <svg class="quad-viz" viewBox="0 0 220 38" style="margin-top: 18px;">
+        <rect x="0" y="0" width="91" height="14" fill="var(--ink)"/>
+        <rect x="91" y="0" width="129" height="14" fill="var(--flame-tint)" stroke="var(--flame)" stroke-dasharray="3,2"/>
+        <text x="0" y="30" font-family="JetBrains Mono" font-size="9" font-weight="600" fill="var(--ink)">Realised</text>
+        <text x="220" y="30" text-anchor="end" font-family="JetBrains Mono" font-size="9" font-weight="600" fill="var(--flame-deep)">Unrealised (paper)</text>
+      </svg>
+    </div>
+
+    <div class="quad-cell">
+      <div class="eyebrow">By category</div>
+      <div class="quad-value">4 active</div>
+      <div class="quad-sub">Politics dominates · 41% allocation</div>
+      <svg class="quad-viz" viewBox="0 0 220 70" style="margin-top: 16px;">
+        <g transform="translate(0, 6)">
+          <rect x="0" y="0" width="90.2" height="16" fill="var(--cat-politics)"/>
+          <rect x="90.2" y="0" width="61.6" height="16" fill="var(--cat-sports)"/>
+          <rect x="151.8" y="0" width="41.8" height="16" fill="var(--cat-crypto)"/>
+          <rect x="193.6" y="0" width="26.4" height="16" fill="var(--cat-economic)"/>
+        </g>
+        <g font-family="Inter Tight" font-size="9" font-weight="700" letter-spacing="1" fill="var(--graphite-soft)" transform="translate(0, 42)">
+          <g><rect x="0" y="-7" width="8" height="8" fill="var(--cat-politics)"/><text x="12" y="-1">POL · 41%</text></g>
+          <g transform="translate(58, 0)"><rect x="0" y="-7" width="8" height="8" fill="var(--cat-sports)"/><text x="12" y="-1">SPO · 28%</text></g>
+          <g transform="translate(116, 0)"><rect x="0" y="-7" width="8" height="8" fill="var(--cat-crypto)"/><text x="12" y="-1">CRY · 19%</text></g>
+          <g transform="translate(174, 0)"><rect x="0" y="-7" width="8" height="8" fill="var(--cat-economic)"/><text x="12" y="-1">ECO · 12%</text></g>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============ POSITIONS ============ -->
+  <section class="table-section">
+    <div class="section-head">
+      <div>
+        <h2>Open positions</h2>
+        <div class="byline">14 active markets · $32,447 at risk · category-coded · live tags on movers</div>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="filter-pills">
+        <button class="active">All · 14</button>
+        <button><span class="dot" style="background: var(--cat-politics);"></span>Politics · 5</button>
+        <button><span class="dot" style="background: var(--cat-sports);"></span>Sports · 4</button>
+        <button><span class="dot" style="background: var(--cat-crypto);"></span>Crypto · 3</button>
+        <button><span class="dot" style="background: var(--cat-economic);"></span>Economic · 2</button>
+      </div>
+      <div style="font-family: var(--sans); font-size: 12px; color: var(--graphite-soft); display: inline-flex; gap: 16px;">
+        <span>Sort: <a href="#" style="color: var(--ink); text-decoration: underline; text-decoration-color: var(--rule);">Unrealised P&L ↓</a></span>
+        <span><a href="#" style="color: var(--ink); text-decoration: underline; text-decoration-color: var(--rule);">Export CSV</a></span>
+      </div>
+    </div>
+
+    <table class="positions">
+      <thead>
+        <tr>
+          <th style="width: 32%;">Market</th>
+          <th>Pos.</th>
+          <th class="right">Shares</th>
+          <th class="right">Entry</th>
+          <th class="right">Now</th>
+          <th class="right">Value</th>
+          <th class="right">Unrealised</th>
+          <th class="right">Held</th>
+          <th>30-day</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="cat-pol hot">
+          <td>
+            <span class="market-q">Will Donald Trump win the 2028 presidential election?<span class="live-tag">Live</span></span>
+            <span class="market-meta"><span class="cat-chip pol">Politics</span><span class="venue-dot poly"></span>Polymarket · 2028 GE</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">12,000</td>
+          <td class="right num">$0.34</td>
+          <td class="right num">$0.41</td>
+          <td class="right num">$4,920</td>
+          <td class="right"><span class="num pnl-pos flame">+$840 · +20.5%</span></td>
+          <td class="right num">47d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,20 11,19 22,20 33,17 44,18 55,14 66,15 77,9 88,8 100,4" fill="none" stroke="var(--ink)" stroke-width="1.6"/><circle cx="100" cy="4" r="2.5" fill="var(--flame)"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="cat-spo hot">
+          <td>
+            <span class="market-q">Will Argentina win the 2026 FIFA World Cup?<span class="live-tag">Live</span></span>
+            <span class="market-meta"><span class="cat-chip spo">Sports</span><span class="venue-dot poly"></span>Polymarket · WC 2026</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">8,500</td>
+          <td class="right num">$0.18</td>
+          <td class="right num">$0.24</td>
+          <td class="right num">$2,040</td>
+          <td class="right"><span class="num pnl-pos flame">+$510 · +33.3%</span></td>
+          <td class="right num">22d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,22 11,21 22,19 33,20 44,15 55,13 66,11 77,12 88,7 100,5" fill="none" stroke="var(--ink)" stroke-width="1.6"/><circle cx="100" cy="5" r="2.5" fill="var(--flame)"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="cat-spo">
+          <td>
+            <span class="market-q">Will the Lakers win the 2026 NBA Finals?</span>
+            <span class="market-meta"><span class="cat-chip spo">Sports</span><span class="venue-dot poly"></span>Polymarket · NBA</span>
+          </td>
+          <td><span class="outcome-pill outcome-no">No</span></td>
+          <td class="right num">6,200</td>
+          <td class="right num">$0.62</td>
+          <td class="right num">$0.71</td>
+          <td class="right num">$4,402</td>
+          <td class="right"><span class="num pnl-pos warm">+$558 · +14.5%</span></td>
+          <td class="right num">23d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,18 11,19 22,15 33,16 44,13 55,14 66,10 77,11 88,9 100,8" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="cat-cry">
+          <td>
+            <span class="market-q">Will Bitcoin reach $200,000 in 2026?</span>
+            <span class="market-meta"><span class="cat-chip cry">Crypto</span><span class="venue-dot poly"></span>Polymarket · BTC</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">4,000</td>
+          <td class="right num">$0.41</td>
+          <td class="right num">$0.38</td>
+          <td class="right num">$1,520</td>
+          <td class="right"><span class="num pnl-neg cool">−$120 · −7.3%</span></td>
+          <td class="right num">15d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,11 11,12 22,10 33,13 44,11 55,15 66,13 77,17 88,15 100,18" fill="none" stroke="var(--graphite-soft)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="cat-eco">
+          <td>
+            <span class="market-q">Will the Federal Reserve cut rates at the December 2026 meeting?</span>
+            <span class="market-meta"><span class="cat-chip eco">Economic</span><span class="venue-dot poly"></span>Polymarket · Fed</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">5,500</td>
+          <td class="right num">$0.55</td>
+          <td class="right num">$0.61</td>
+          <td class="right num">$3,355</td>
+          <td class="right"><span class="num pnl-pos warm">+$330 · +10.9%</span></td>
+          <td class="right num">31d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,18 11,17 22,16 33,17 44,15 55,14 66,13 77,14 88,11 100,10" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="cat-pol">
+          <td>
+            <span class="market-q">Will Ron DeSantis win the 2028 Republican primary?</span>
+            <span class="market-meta"><span class="cat-chip pol">Politics</span><span class="venue-dot poly"></span>Polymarket · 2028 GOP</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">3,200</td>
+          <td class="right num">$0.12</td>
+          <td class="right num">$0.16</td>
+          <td class="right num">$512</td>
+          <td class="right"><span class="num pnl-pos flame">+$128 · +33.3%</span></td>
+          <td class="right num">38d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,22 11,20 22,21 33,17 44,16 55,14 66,11 77,9 88,8 100,5" fill="none" stroke="var(--ink)" stroke-width="1.6"/><circle cx="100" cy="5" r="2.5" fill="var(--flame)"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="cat-spo">
+          <td>
+            <span class="market-q">Will the Edmonton Oilers win the 2026 Stanley Cup?</span>
+            <span class="market-meta"><span class="cat-chip spo">Sports</span><span class="venue-dot poly"></span>Polymarket · NHL</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">2,800</td>
+          <td class="right num">$0.28</td>
+          <td class="right num">$0.31</td>
+          <td class="right num">$868</td>
+          <td class="right"><span class="num pnl-pos warm">+$84 · +10.7%</span></td>
+          <td class="right num">12d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,18 11,17 22,19 33,16 44,15 55,17 66,14 77,13 88,15 100,12" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="cat-cry">
+          <td>
+            <span class="market-q">Will Ethereum flip Bitcoin's market cap by end of 2026?</span>
+            <span class="market-meta"><span class="cat-chip cry">Crypto</span><span class="venue-dot poly"></span>Polymarket · ETH</span>
+          </td>
+          <td><span class="outcome-pill outcome-no">No</span></td>
+          <td class="right num">4,500</td>
+          <td class="right num">$0.91</td>
+          <td class="right num">$0.94</td>
+          <td class="right num">$4,230</td>
+          <td class="right"><span class="num pnl-pos">+$135 · +3.3%</span></td>
+          <td class="right num">52d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,13 11,14 22,12 33,13 44,12 55,11 66,12 77,11 88,10 100,10" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="cat-eco">
+          <td>
+            <span class="market-q">Will US Q3 2026 GDP growth exceed 2.5%?</span>
+            <span class="market-meta"><span class="cat-chip eco">Economic</span><span class="venue-dot poly"></span>Polymarket · GDP</span>
+          </td>
+          <td><span class="outcome-pill outcome-no">No</span></td>
+          <td class="right num">3,400</td>
+          <td class="right num">$0.71</td>
+          <td class="right num">$0.68</td>
+          <td class="right num">$2,312</td>
+          <td class="right"><span class="num pnl-neg cool">−$102 · −4.2%</span></td>
+          <td class="right num">19d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,9 11,10 22,12 33,11 44,13 55,12 66,14 77,13 88,15 100,16" fill="none" stroke="var(--graphite-soft)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="cat-cry">
+          <td>
+            <span class="market-q">Will Solana close above $300 on July 1, 2026?</span>
+            <span class="market-meta"><span class="cat-chip cry">Crypto</span><span class="venue-dot poly"></span>Polymarket · SOL</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">2,100</td>
+          <td class="right num">$0.44</td>
+          <td class="right num">$0.49</td>
+          <td class="right num">$1,029</td>
+          <td class="right"><span class="num pnl-pos warm">+$105 · +11.4%</span></td>
+          <td class="right num">9d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,16 11,15 22,17 33,14 44,13 55,12 66,13 77,11 88,12 100,10" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="closed-teaser">
+      <div class="left">
+        <em>plus</em> <strong>45 closed positions</strong> · realised <span class="pop">+$3,421</span> over 53 days · win rate <strong>68%</strong> · longest streak <strong>5</strong>
+      </div>
+      <button class="btn">Show closed →</button>
+    </div>
+  </section>
+
+  <!-- ============ DUAL ============ -->
+  <section class="dual">
+    <div>
+      <div class="eyebrow" style="margin-bottom: 8px;">The Wire</div>
+      <h3>Recent activity</h3>
+      <div class="byline">Last 24 hours · 7 events · all venues</div>
+      <ul class="timeline">
+        <li>
+          <span class="tl-time">14:32</span>
+          <span class="tl-action buy">Buy</span>
+          <span class="tl-detail">+1,200 shares <em>Yes</em> · Will Trump win 2028? <em>@</em> $0.41</span>
+          <span class="tl-amt neg">−$492.00</span>
+        </li>
+        <li>
+          <span class="tl-time">12:18</span>
+          <span class="tl-action sell">Sell</span>
+          <span class="tl-detail">−800 shares <em>Yes</em> · Will Powell remain Fed Chair? <em>@</em> $0.78</span>
+          <span class="tl-amt pos">+$624.00</span>
+        </li>
+        <li>
+          <span class="tl-time">09:44</span>
+          <span class="tl-action resolve">Won</span>
+          <span class="tl-detail">Will Lakers/Celtics Game 5 go to OT? <em>resolved</em> Yes · paid 1.0</span>
+          <span class="tl-amt win">+$2,140.00</span>
+        </li>
+        <li>
+          <span class="tl-time">Yesterday</span>
+          <span class="tl-action buy">Buy</span>
+          <span class="tl-detail">+2,000 shares <em>Yes</em> · Solana to close above $300 July 1 <em>@</em> $0.44</span>
+          <span class="tl-amt neg">−$880.00</span>
+        </li>
+        <li>
+          <span class="tl-time">Yesterday</span>
+          <span class="tl-action sell">Sell</span>
+          <span class="tl-detail">−1,500 shares <em>No</em> · Will OpenAI IPO in 2026? <em>@</em> $0.83</span>
+          <span class="tl-amt pos">+$1,245.00</span>
+        </li>
+        <li>
+          <span class="tl-time">2d ago</span>
+          <span class="tl-action buy">Buy</span>
+          <span class="tl-detail">+800 shares <em>Yes</em> · Edmonton to win Stanley Cup <em>@</em> $0.31</span>
+          <span class="tl-amt neg">−$248.00</span>
+        </li>
+        <li>
+          <span class="tl-time">3d ago</span>
+          <span class="tl-action resolve">Won</span>
+          <span class="tl-detail">Will Bitcoin close above $90K April 30? <em>resolved</em> Yes · paid 1.0</span>
+          <span class="tl-amt win">+$420.00</span>
+        </li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="eyebrow" style="margin-bottom: 8px;">The Honest Mirror</div>
+      <h3>Edge analysis</h3>
+      <div class="byline">Were you right, or just lucky? · resolved markets only</div>
+      <table class="edge-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th class="right">Markets</th>
+            <th class="right">Win rate</th>
+            <th class="right">Avg edge</th>
+            <th class="right">Verdict</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-pol">
+            <td class="cat">Politics</td>
+            <td class="right">22</td>
+            <td class="right">73%</td>
+            <td class="right" style="color: var(--ink); font-weight: 700;">+18.4%</td>
+            <td class="right"><span class="verdict-pill skill">Skill</span></td>
+          </tr>
+          <tr class="row-spo">
+            <td class="cat">Sports</td>
+            <td class="right">14</td>
+            <td class="right">64%</td>
+            <td class="right" style="color: var(--ink); font-weight: 700;">+11.2%</td>
+            <td class="right"><span class="verdict-pill skill">Skill</span></td>
+          </tr>
+          <tr class="row-cry">
+            <td class="cat">Crypto</td>
+            <td class="right">8</td>
+            <td class="right">50%</td>
+            <td class="right">+2.1%</td>
+            <td class="right"><span class="verdict-pill luck">Coin-flip</span></td>
+          </tr>
+          <tr class="row-eco">
+            <td class="cat">Economic</td>
+            <td class="right">6</td>
+            <td class="right">67%</td>
+            <td class="right" style="color: var(--ink); font-weight: 700;">+9.8%</td>
+            <td class="right"><span class="verdict-pill skill">Skill</span></td>
+          </tr>
+          <tr style="background: var(--ink);">
+            <td class="cat" style="color: var(--paper); font-style: normal; font-weight: 700;"><span style="background: var(--flame); display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 10px;"></span>Overall</td>
+            <td class="right" style="color: var(--paper); font-weight: 700;">50</td>
+            <td class="right" style="color: var(--paper); font-weight: 700;">68%</td>
+            <td class="right" style="color: #F0D5C5; font-weight: 700;">+12.4%</td>
+            <td class="right"><span class="verdict-pill hot" style="background: var(--flame);">Edge holds</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--graphite); margin-top: 18px; line-height: 1.5;">
+        Edge is the difference between average entry price and resolved outcome price. A positive edge across many markets is the signal of skill. Crypto reads as a coin-flip — consider whether to keep allocating there.
+      </p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div class="rule"></div>
+    <p style="margin: 0 0 6px;"><span class="dagger">†</span> Polymarket data via on-chain reads on Polygon mainnet. Refreshed every 5 min on view.</p>
+    <p style="margin: 0;"><span class="dagger">‡</span> Sharpe-like metric compares all-time return to maximum drawdown across the same window. Sample of 8,200 active wallets.</p>
+    <p style="margin: 18px 0 0; font-family: var(--sans); font-size: 11px; color: var(--graphite-soft); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700;">
+      Oddsprimer Ledger · Edition No. 1 · 2026
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>

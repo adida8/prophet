@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verdict explorations — Odds Primer</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  body { padding: 56px 0 96px; }
+  .page { max-width: 1100px; margin: 0 auto; padding: 0 var(--gutter-page); }
+
+  .masthead {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-top: 2px solid var(--ink); border-bottom: var(--hairline);
+    padding: 14px 0 12px; margin-bottom: 36px;
+  }
+  .wm-text {
+    font-family: var(--font-sans); font-size: 18px; font-weight: 700; letter-spacing: -0.005em; color: var(--ink);
+  }
+  .wm-edition {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+
+  .h-eyebrow { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft); margin-bottom: 8px; }
+  h1.title { font-family: var(--font-serif); font-size: clamp(36px, 4.4vw, 52px); font-weight: 600; line-height: 1.04; letter-spacing: -0.02em; margin: 0 0 14px; color: var(--ink); text-wrap: balance; max-width: 22ch; }
+  .deck { font-family: var(--font-serif); font-size: 17px; line-height: 1.55; color: var(--ink); margin: 0 0 56px; max-width: 56ch; }
+  .deck em { color: var(--flame); font-style: normal; font-weight: 600; }
+
+  /* ----- contact-sheet rows ----- */
+  .sheet { display: flex; flex-direction: column; }
+  .row {
+    display: grid;
+    grid-template-columns: 48px minmax(420px, 1.4fr) 1fr;
+    gap: 36px;
+    align-items: stretch;
+    padding: 32px 0 36px;
+    border-top: var(--hairline);
+    text-decoration: none;
+    color: var(--ink);
+    transition: background var(--dur-fast) var(--ease-standard);
+  }
+  .row:last-child { border-bottom: var(--hairline); }
+  .row:hover { background: var(--paper-warm); text-decoration: none; }
+  .row.is-pick { background: var(--flame-tint); }
+  .row.is-pick:hover { background: var(--flame-tint); filter: brightness(0.985); }
+
+  @media (max-width: 820px) {
+    .row { grid-template-columns: 1fr; gap: 18px; }
+  }
+
+  .row .num {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 13px; color: var(--graphite-soft); font-weight: 500;
+    padding-top: 6px;
+  }
+  .row .meta { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding-top: 4px; }
+  .row .tag {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--graphite-soft);
+  }
+  .row.is-pick .tag { color: var(--flame-deep); }
+  .row .name { font-family: var(--font-serif); font-size: 26px; font-weight: 600; letter-spacing: -0.005em; color: var(--ink); line-height: 1.15; text-wrap: balance; }
+  .row .desc { font-family: var(--font-serif); font-size: 14.5px; line-height: 1.5; color: var(--graphite); max-width: 38ch; margin-top: 4px; }
+  .row .open {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; color: var(--graphite); text-transform: uppercase;
+    margin-top: 14px;
+  }
+  .row:hover .open { color: var(--flame-deep); }
+  .row:hover .open .arr { transform: translate(2px, -2px); }
+  .row .open .arr { display: inline-block; transition: transform var(--dur-fast) var(--ease-standard); margin-left: 4px; color: var(--flame); }
+
+  /* ----- the thumbnail (the verdict, in miniature, in its own visual language) ----- */
+  .thumb {
+    background: var(--paper-pure);
+    border: var(--hairline);
+    border-radius: 6px;
+    padding: 18px 20px 16px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 178px;
+    justify-content: center;
+  }
+  .thumb-tag {
+    position: absolute; top: 8px; left: 12px;
+    font-family: var(--font-sans); font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--graphite-soft);
+  }
+  .thumb-fix {
+    position: absolute; top: 8px; right: 12px;
+    font-family: var(--font-mono); font-size: 9px; color: var(--graphite-soft);
+  }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .ink { color: var(--ink); }
+  .flame { color: var(--flame); }
+
+  /* --- 01 STAMP thumb --- */
+  .t-stamp { padding: 22px 20px 18px; }
+  .t-stamp .rule-top { border-top: 2px solid var(--ink); margin-bottom: 12px; }
+  .t-stamp .verb {
+    font-family: var(--font-serif); font-weight: 600; font-size: 32px; letter-spacing: -0.015em; line-height: 1.0; color: var(--ink);
+  }
+  .t-stamp .verb em { font-style: italic; color: var(--ink); }
+  .t-stamp .sub {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: var(--graphite); margin-top: 6px;
+  }
+  .t-stamp .sub .price { color: var(--ink); border-bottom: 2px solid var(--flame); padding-bottom: 1px; }
+  .t-stamp .rule-bot { border-top: var(--hairline); margin-top: 12px; padding-top: 8px;
+    display: flex; justify-content: space-between;
+    font-family: var(--font-sans); font-size: 9.5px; color: var(--graphite); letter-spacing: 0.04em;
+  }
+
+  /* --- 02 NEWSPAPER DECK thumb --- */
+  .t-news .eyebrow {
+    font-family: var(--font-sans); font-size: 9px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--flame); margin-bottom: 8px;
+  }
+  .t-news .head {
+    font-family: var(--font-serif); font-weight: 600; font-size: 24px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 8px;
+    text-wrap: balance;
+  }
+  .t-news .head em { font-style: italic; }
+  .t-news .standfirst {
+    font-family: var(--font-serif); font-size: 12.5px; line-height: 1.45; color: var(--graphite);
+  }
+  .t-news .standfirst .nm { color: var(--ink); font-weight: 600; }
+  .t-news .standfirst .price { color: var(--ink); font-weight: 600; border-bottom: 1.5px solid var(--flame); padding-bottom: 1px; font-family: var(--font-mono); }
+
+  /* --- 03 SPEC SHEET thumb --- */
+  .t-spec .grid {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    border: var(--hairline);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .t-spec .cell {
+    padding: 8px 8px;
+    border-right: var(--hairline);
+    display: flex; flex-direction: column; gap: 3px;
+    background: var(--paper-pure);
+  }
+  .t-spec .cell:last-child { border-right: none; }
+  .t-spec .cell.action { background: var(--flame-tint); }
+  .t-spec .cell-key {
+    font-family: var(--font-sans); font-size: 8px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .t-spec .cell-val {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 600; color: var(--ink); line-height: 1;
+  }
+  .t-spec .cell.action .cell-val { font-family: var(--font-serif); color: var(--ink); font-size: 13px; font-weight: 600; }
+  .t-spec .body {
+    font-family: var(--font-serif); font-size: 11.5px; line-height: 1.45; color: var(--graphite);
+  }
+  .t-spec .body .nm { color: var(--ink); font-weight: 600; }
+
+  /* --- 04 TICKET STUB thumb --- */
+  .t-ticket {
+    display: grid; grid-template-columns: 1.4fr 1fr;
+    background: var(--paper-pure);
+    padding: 0;
+    border: var(--hairline);
+    overflow: hidden;
+  }
+  .t-ticket .left {
+    padding: 16px 16px;
+    background: var(--paper);
+    display: flex; flex-direction: column; justify-content: center; gap: 6px;
+    /* perforation on right edge */
+    background-image: radial-gradient(circle at right center, var(--paper-pure) 2.5px, transparent 3px);
+    background-size: 1px 9px;
+    background-repeat: repeat-y;
+    background-position: right center;
+  }
+  .t-ticket .right {
+    padding: 14px 14px;
+    background: var(--paper-pure);
+    border-left: 1px dashed var(--rule);
+    display: flex; flex-direction: column; gap: 6px; justify-content: center;
+  }
+  .t-ticket .left .ed {
+    font-family: var(--font-sans); font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .t-ticket .left .verb {
+    font-family: var(--font-serif); font-weight: 600; font-size: 22px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink);
+  }
+  .t-ticket .left .verb em { font-style: italic; }
+  .t-ticket .left .why {
+    font-family: var(--font-serif); font-size: 11.5px; line-height: 1.4; color: var(--graphite);
+  }
+  .t-ticket .right .row-meta {
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .t-ticket .right .key {
+    font-family: var(--font-sans); font-size: 8.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .t-ticket .right .val {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 600; color: var(--ink);
+  }
+  .t-ticket .right .val.flame { color: var(--ink); border-bottom: 1.5px solid var(--flame); padding-bottom: 1px; }
+  .t-ticket .right .open-link {
+    margin-top: 4px;
+    font-family: var(--font-sans); font-size: 10px; font-weight: 600; color: var(--ink);
+    text-align: right;
+  }
+  .t-ticket .right .open-link .arr { color: var(--flame); }
+
+  /* --- 05 WEATHER REPORT thumb --- */
+  .t-weather { padding: 22px 22px 18px; min-height: 178px; }
+  .t-weather .lead-in {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--graphite-soft); margin-bottom: 14px;
+  }
+  .t-weather .sentence {
+    font-family: var(--font-serif); font-style: italic; font-size: 18px; line-height: 1.4; color: var(--ink); text-wrap: balance;
+  }
+  .t-weather .sentence .nm { font-style: normal; font-weight: 600; }
+  .t-weather .sentence .price { font-style: normal; font-family: var(--font-mono); color: var(--ink); border-bottom: 1.5px solid var(--flame); padding-bottom: 1px; }
+  .t-weather .evidence {
+    margin-top: 14px; padding-top: 8px; border-top: var(--hairline);
+    display: flex; gap: 16px;
+    font-family: var(--font-sans); font-size: 10px; color: var(--graphite); letter-spacing: 0.04em;
+  }
+  .t-weather .evidence .num {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600;
+  }
+
+  /* state strip — three coloured dots showing which states are demonstrated */
+  .states {
+    display: flex; gap: 10px; align-items: center;
+    margin-top: 14px;
+    font-family: var(--font-sans); font-size: 10px; color: var(--graphite); letter-spacing: 0.04em;
+  }
+  .states .pip {
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .states .dot {
+    width: 7px; height: 7px; border-radius: 999px; background: var(--ink);
+    display: inline-block;
+  }
+  .states .dot.flame { background: var(--flame); }
+  .states .dot.pass { background: var(--graphite-soft); }
+  .states .dot.avoid { background: var(--ink); border: 1.5px solid var(--flame); width: 9px; height: 9px; box-sizing: border-box; }
+
+  /* notes card at the foot */
+  .notes-card {
+    margin-top: 56px;
+    border: var(--hairline); border-radius: 6px; background: var(--paper-pure);
+    padding: 22px 24px;
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap;
+  }
+  .notes-card .left { font-family: var(--font-serif); font-size: 15px; line-height: 1.5; color: var(--ink); max-width: 56ch; }
+  .notes-card .left strong { font-weight: 600; }
+  .notes-card a {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    color: var(--ink); text-decoration: underline; text-decoration-color: var(--flame); text-decoration-thickness: 2px; text-underline-offset: 5px;
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <div class="masthead">
+      <span class="wm-text">Odds Primer</span>
+      <span class="wm-edition">Vol. 1 · World Cup 2026 · Verdict explore</span>
+    </div>
+
+    <div class="h-eyebrow">Verdict explorations · contact sheet</div>
+    <h1 class="title">Five takes on the verdict, side by side.</h1>
+    <p class="deck">Each thumbnail below shows the <em>Pick</em> state for the same fixture — France v Mexico — rendered in that direction's own visual language. Read which one feels right at a glance; click through for the full mockup with all three states stacked.</p>
+
+    <div class="sheet">
+
+      <!-- ============ 01 · STAMP ============ -->
+      <a class="row" href="01-stamp.html">
+        <span class="num">01</span>
+        <div class="meta">
+          <span class="tag">Stamp</span>
+          <span class="name">A magazine pull-quote</span>
+          <span class="desc">Heavy rule above, the action verb in display serif, venue and price as a sub-line, two reasons in two columns, the handoff under a hairline.</span>
+          <div class="states">
+            <span class="pip"><span class="dot flame"></span>Pick</span>
+            <span class="pip"><span class="dot pass"></span>Pass</span>
+            <span class="pip"><span class="dot avoid"></span>Avoid</span>
+          </div>
+          <span class="open">Open mockup <span class="arr">↗</span></span>
+        </div>
+        <div class="thumb t-stamp">
+          <span class="thumb-tag">Verdict</span>
+          <span class="thumb-fix">FRA · MEX</span>
+          <div class="rule-top"></div>
+          <div class="verb">Back <em>France</em>.</div>
+          <div class="sub">Polymarket · <span class="price mono">−180</span> · best price</div>
+          <div class="rule-bot">
+            <span>Two reasons · one number</span>
+            <span class="ink">View source on Polymarket ↗</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- ============ 02 · NEWSPAPER DECK ============ -->
+      <a class="row is-pick" href="02-newspaper-deck.html">
+        <span class="num">02</span>
+        <div class="meta">
+          <span class="tag">Newspaper deck · recommended</span>
+          <span class="name">The top of a column</span>
+          <span class="desc">Eyebrow, display headline, standfirst — the venue and price absorbed into the sentence. The conversion moment matches the editorial moment.</span>
+          <div class="states">
+            <span class="pip"><span class="dot flame"></span>Pick</span>
+            <span class="pip"><span class="dot pass"></span>Pass</span>
+            <span class="pip"><span class="dot avoid"></span>Avoid</span>
+          </div>
+          <span class="open">Open mockup <span class="arr">↗</span></span>
+        </div>
+        <div class="thumb t-news">
+          <span class="thumb-tag">Verdict · the call</span>
+          <span class="thumb-fix">FRA · MEX</span>
+          <div class="eyebrow">Group F · Outright · Pick</div>
+          <div class="head">France look <em>four points</em> underpriced.</div>
+          <div class="standfirst"><span class="nm">Polymarket</span> is the slower of the two markets at <span class="price">−180</span> — that's where to read the price.</div>
+        </div>
+      </a>
+
+      <!-- ============ 03 · SPEC SHEET ============ -->
+      <a class="row" href="03-spec-sheet.html">
+        <span class="num">03</span>
+        <div class="meta">
+          <span class="tag">Spec sheet</span>
+          <span class="name">A structured object</span>
+          <span class="desc">Action / venue / line / confidence / tip-count in a five-cell row, with the editorial paragraph below. Highest density. Closest to fintech — the prose has to do rear-guard work.</span>
+          <div class="states">
+            <span class="pip"><span class="dot flame"></span>Pick</span>
+            <span class="pip"><span class="dot pass"></span>Pass</span>
+            <span class="pip"><span class="dot avoid"></span>Avoid</span>
+          </div>
+          <span class="open">Open mockup <span class="arr">↗</span></span>
+        </div>
+        <div class="thumb t-spec">
+          <span class="thumb-tag">Verdict · spec</span>
+          <span class="thumb-fix">FRA · MEX</span>
+          <div class="grid">
+            <div class="cell action">
+              <span class="cell-key">Call</span>
+              <span class="cell-val">Pick</span>
+            </div>
+            <div class="cell">
+              <span class="cell-key">Venue</span>
+              <span class="cell-val ink">Poly</span>
+            </div>
+            <div class="cell">
+              <span class="cell-key">Line</span>
+              <span class="cell-val">−180</span>
+            </div>
+            <div class="cell">
+              <span class="cell-key">Edge</span>
+              <span class="cell-val">+4.0pp</span>
+            </div>
+            <div class="cell">
+              <span class="cell-key">Tips</span>
+              <span class="cell-val">7</span>
+            </div>
+          </div>
+          <div class="body">Two markets, one match — and <span class="nm">Polymarket</span> is the slower line.</div>
+        </div>
+      </a>
+
+      <!-- ============ 04 · TICKET STUB ============ -->
+      <a class="row" href="04-ticket-stub.html">
+        <span class="num">04</span>
+        <div class="meta">
+          <span class="tag">Ticket stub</span>
+          <span class="name">A perforated card</span>
+          <span class="desc">Editorial body on one side, structured stub on the other, a hairline-dashed perforation between. The strongest handoff. The most likely to read as casino if screenshotted out of context.</span>
+          <div class="states">
+            <span class="pip"><span class="dot flame"></span>Pick</span>
+            <span class="pip"><span class="dot pass"></span>Pass</span>
+            <span class="pip"><span class="dot avoid"></span>Avoid</span>
+          </div>
+          <span class="open">Open mockup <span class="arr">↗</span></span>
+        </div>
+        <div class="thumb" style="padding: 0; background: transparent; border: none;">
+          <span class="thumb-tag" style="z-index:1;">Verdict · stub</span>
+          <span class="thumb-fix" style="z-index:1;">FRA · MEX</span>
+          <div class="t-ticket">
+            <div class="left">
+              <span class="ed">Group F · Pick</span>
+              <span class="verb">Back <em>France</em>.</span>
+              <span class="why">Underpriced four points; Polymarket is the slower line.</span>
+            </div>
+            <div class="right">
+              <div class="row-meta"><span class="key">Venue</span><span class="val">Poly</span></div>
+              <div class="row-meta"><span class="key">Line</span><span class="val flame">−180</span></div>
+              <div class="row-meta"><span class="key">Implied</span><span class="val">64.3%</span></div>
+              <div class="open-link">Open <span class="arr">↗</span></div>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- ============ 05 · WEATHER REPORT ============ -->
+      <a class="row" href="05-weather-report.html">
+        <span class="num">05</span>
+        <div class="meta">
+          <span class="tag">Weather report</span>
+          <span class="name">Today's read, in one sentence</span>
+          <span class="desc">No card, no rules above, no display type. The verdict as a single italic-serif sentence at 22px, with a quiet evidence row underneath. The most editorial. Asks the most of the reader.</span>
+          <div class="states">
+            <span class="pip"><span class="dot flame"></span>Pick</span>
+            <span class="pip"><span class="dot pass"></span>Pass</span>
+            <span class="pip"><span class="dot avoid"></span>Avoid</span>
+          </div>
+          <span class="open">Open mockup <span class="arr">↗</span></span>
+        </div>
+        <div class="thumb t-weather">
+          <span class="thumb-tag">Verdict · today's read</span>
+          <span class="thumb-fix">FRA · MEX</span>
+          <div class="lead-in">Today's read on France v Mexico —</div>
+          <div class="sentence"><span class="nm">France</span> look four points underpriced; <span class="nm">Polymarket</span> at <span class="price">−180</span> is the slower line.</div>
+          <div class="evidence">
+            <span><span class="num">−180</span> Polymarket</span>
+            <span><span class="num">−165</span> Kalshi</span>
+            <span><span class="num">+4.0pp</span> edge</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+
+    <div class="notes-card">
+      <div class="left">
+        <strong>The full write-up.</strong> Rationale, copy variants per state, supporting-structure decisions, anti-pattern check, and the recommendation at the foot — take 02 forward with 03's score-model sidebar.
+      </div>
+      <a href="notes.md">Open notes.md ↗</a>
+    </div>
+  </main>
+</body>
+</html>

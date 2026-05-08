@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Brand landscape — Prophet research</title>
+<style>
+  @page { size: A4 portrait; margin: 14mm 14mm; }
+  :root {
+    --bg: #FAF8F1;
+    --paper: #FFFFFF;
+    --ink: #15171C;
+    --ink-soft: #404451;
+    --moss: #4F5D3F;
+    --signal: #C24F2A;
+    --line: #C7C4B8;
+    --muted: #6B6F75;
+    --avoid: #B23A3A;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif;
+    font-size: 9.5px; line-height: 1.4;
+  }
+  .mono { font-family: ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace; }
+  .page { page-break-after: always; padding: 0 0 8px; }
+  .page:last-of-type { page-break-after: auto; }
+  h1, h2, h3 { margin: 0; }
+
+  /* MASTHEAD */
+  .masthead { border-top: 6px double var(--ink); border-bottom: 1px solid var(--ink);
+    padding: 10px 0 8px; margin-bottom: 14px; display:flex; justify-content:space-between; align-items:flex-end; }
+  .title { font-size: 18px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+  .sub { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--moss); margin-top: 2px;}
+  .meta { font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+
+  .label { font-size: 8.5px; letter-spacing: 2px; text-transform: uppercase; color: var(--signal); font-weight: 700; margin: 14px 0 6px; }
+  .kicker { font-size: 14px; font-weight: 800; letter-spacing: -0.2px; text-transform: uppercase; margin-bottom: 8px; }
+
+  /* SECTION 1 — LANDSCAPE GRID */
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .card { background: var(--paper); border: 1px solid var(--line); padding: 8px 8px 7px;
+    min-height: 132px; display: flex; flex-direction: column; }
+  .card.avoid { border-left: 3px solid var(--avoid); }
+  .card.odds { border-left: 3px solid var(--ink); }
+  .card.publication { border-left: 3px solid var(--moss); }
+  .card.consumer { border-left: 3px solid #2E5C8A; }
+  .card .name { font-weight: 800; font-size: 11px; letter-spacing: -0.1px; }
+  .card .tag { font-size: 7.5px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 1px; }
+  .card .swatches { display: flex; gap: 2px; margin: 7px 0 5px; height: 18px; }
+  .swatch { flex: 1; border: 1px solid rgba(0,0,0,0.07); border-radius: 1px; }
+  .card .vibe { font-size: 8.5px; line-height: 1.35; color: var(--ink-soft); flex: 1; }
+  .card .footer { font-family: ui-monospace, Menlo, monospace; font-size: 7px;
+    color: var(--muted); margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--line); display: flex; justify-content: space-between; }
+  .card .reg { font-weight: 700; color: var(--ink); }
+
+  .legend { display: flex; gap: 14px; font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .legend .dot { width: 8px; height: 8px; border-radius: 50%; display:inline-block; }
+
+  /* SECTION 2 — CLUSTER MAP */
+  .map-wrap { background: var(--paper); border: 1px solid var(--line); padding: 14px; }
+  .map-grid { position: relative; width: 100%; height: 420px;
+    background:
+      linear-gradient(to right, transparent 49.5%, rgba(0,0,0,0.12) 49.5%, rgba(0,0,0,0.12) 50.5%, transparent 50.5%),
+      linear-gradient(to bottom, transparent 49.5%, rgba(0,0,0,0.12) 49.5%, rgba(0,0,0,0.12) 50.5%, transparent 50.5%),
+      var(--paper);
+    border: 1px solid var(--line);
+  }
+  .axis-x { position: absolute; bottom: -16px; width: 100%; display: flex; justify-content: space-between;
+    font-size: 8px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; }
+  .axis-y { position: absolute; left: -110px; top: 0; height: 100%;
+    display: flex; flex-direction: column; justify-content: space-between; font-size: 8px;
+    letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; padding: 0 6px; text-align: right; width: 100px; }
+  .point { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 4px; }
+  .point .marker { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--paper);}
+  .point.odds .marker { background: var(--ink); }
+  .point.publication .marker { background: var(--moss); border-color: var(--moss);}
+  .point.consumer .marker { background: #2E5C8A; border-color: #2E5C8A;}
+  .point.avoid .marker { background: var(--avoid); border-color: var(--avoid);}
+  .point .lbl { font-size: 7.5px; font-weight: 700; color: var(--ink); white-space: nowrap; background: rgba(255,255,255,0.85); padding: 0 2px; }
+  .quad-label { position: absolute; font-size: 7.5px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--muted); padding: 4px 6px; }
+  .empty-zone { position: absolute; border: 1.5px dashed var(--signal); background: rgba(194,79,42,0.05); pointer-events:none;}
+
+  /* VERDICT */
+  .verdict { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 6px; }
+  .direction { background: var(--paper); border: 1px solid var(--line); padding: 9px; display: flex; flex-direction: column;}
+  .direction .dname { font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px;}
+  .direction .dpalette { display: flex; gap: 2px; height: 24px; margin: 6px 0 5px; border: 1px solid var(--line);}
+  .direction .dpalette div { flex: 1; }
+  .direction .drationale { font-size: 8px; line-height: 1.4; color: var(--ink-soft); flex: 1;}
+  .direction .dhex { font-family: ui-monospace, Menlo, monospace; font-size: 6.5px; color: var(--muted);
+    letter-spacing: 0.4px; margin-top: 4px; }
+  .direction.recommended { border-left: 4px solid var(--signal); }
+  .direction.recommended .dname::after {
+    content: "· RECOMMENDED"; color: var(--signal); font-size: 7.5px; letter-spacing: 1.5px; margin-left: 4px;
+  }
+
+  /* MOCK */
+  .mock { margin-top: 8px; padding: 10px 12px; border: 1px solid var(--line); }
+  .mock .mock-mast { display: flex; align-items: center; gap: 8px; padding-bottom: 6px;
+    border-bottom: 1px solid currentColor; }
+  .mock .reticle { width: 18px; height: 18px; border: 1.2px solid currentColor; border-radius: 50%; position: relative; flex-shrink: 0;}
+  .mock .reticle::before, .mock .reticle::after { content: ''; position: absolute; background: currentColor;}
+  .mock .reticle::before { top: 50%; left: -3px; right: -3px; height: 0.8px;}
+  .mock .reticle::after  { left: 50%; top: -3px; bottom: -3px; width: 0.8px; }
+  .mock .reticle .dot { position: absolute; top: 50%; left: 50%; width: 3px; height: 3px;
+    border-radius: 50%; transform: translate(-50%, -50%); }
+  .mock .wm { font-weight: 800; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;}
+  .mock .wm .a { font-weight: 400; opacity: 0.65; margin-right: 3px; font-size: 8px; letter-spacing: 1.2px;}
+  .mock .stamp { display: inline-block; font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 2px 5px; font-weight: 700; margin-top: 7px; }
+  .mock h4 { font-size: 13px; font-weight: 800; line-height: 1.1; margin: 5px 0 3px;
+    text-transform: uppercase; letter-spacing: -0.1px; }
+  .mock .lede { font-size: 8px; line-height: 1.4; opacity: 0.85;}
+  .mock .row { display:flex; gap:10px; font-family: ui-monospace, Menlo, monospace; font-size: 7px;
+    margin-top: 5px; padding-top: 5px; border-top: 1px dashed currentColor; opacity: 0.85;}
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 7px; }
+  th { text-align: left; padding: 3px 4px; border-bottom: 1.5px solid var(--ink);
+    font-size: 6.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink); }
+  td { padding: 2.5px 4px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.3;}
+  td.hex { font-family: ui-monospace, Menlo, monospace; font-size: 6.5px; letter-spacing: 0.3px;}
+  tr.avoid-row { background: rgba(178,58,58,0.05);}
+  td.swatchcell { white-space: nowrap;}
+  td .ms { display:inline-block; width:9px; height:9px; margin-right:1px; border:0.5px solid rgba(0,0,0,0.15);}
+
+  .verdict-text { background: var(--paper); border: 1px solid var(--line);
+    border-left: 4px solid var(--signal); padding: 10px 14px; margin-top: 8px; font-size: 9.5px; line-height: 1.5;}
+  .verdict-text strong { color: var(--ink);}
+
+  .small { font-size: 8px; line-height: 1.45; color: var(--ink-soft);}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     PAGE 1 — LANDSCAPE GRID
+============================================================ -->
+<section class="page">
+  <div class="masthead">
+    <div>
+      <div class="title">Brand Landscape</div>
+      <div class="sub">Prophet · World Cup 2026 · 20-site EU-weighted sample</div>
+    </div>
+    <div class="meta">2026-05-02 · v1 · for adi</div>
+  </div>
+
+  <div class="kicker">1 · The Field</div>
+  <p class="small" style="margin: 0 0 10px; max-width: 92%;">
+    Twenty sites across four buckets: <strong>direct competitors / odds-comparison</strong> (six),
+    <strong>quality football publications</strong> (six), <strong>football-native consumer products</strong>
+    (five), and <strong>gambling-promo "AVOID" cases</strong> (three). Palettes sampled from rendered pages.
+    Register scored 1–4: <span class="mono">tipster · promo · product · publication</span>.
+  </p>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="legend">
+    <span><span class="dot" style="background: var(--ink);"></span>Odds / aggregator</span>
+    <span><span class="dot" style="background: var(--moss);"></span>Publication</span>
+    <span><span class="dot" style="background: #2E5C8A;"></span>Consumer product</span>
+    <span><span class="dot" style="background: var(--avoid);"></span>Avoid (gambling-promo)</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     PAGE 2 — CLUSTER MAP
+============================================================ -->
+<section class="page">
+  <div class="masthead">
+    <div>
+      <div class="title">Cluster Map</div>
+      <div class="sub">Where the white space is</div>
+    </div>
+    <div class="meta">2 of 4 · plot of the 20-site field</div>
+  </div>
+
+  <div class="kicker">2 · Where the white space is</div>
+  <p class="small" style="margin: 0 0 14px; max-width: 90%;">
+    Each site placed by a single best-fit reading on two axes. <strong>X-axis:</strong> publication ◀▶ product
+    (does it read as editorial writing or as a tool?). <strong>Y-axis:</strong> muted ◀▶ bold (does the visual
+    register whisper or shout?). Crowded zones are red flags; empty zones are opportunities. The dashed
+    box marks the most distinctive uncrowded area for a football brand.
+  </p>
+
+  <div class="map-wrap">
+    <div style="position:relative; padding: 6px 6px 30px 110px;">
+      <div class="map-grid" id="mapgrid"></div>
+      <div style="position: absolute; left: 0; top: 6px; height: 420px; display: flex; flex-direction: column; justify-content: space-between; font-size: 8px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; padding: 0 6px; text-align: right; width: 100px;">
+        <div>Bold</div>
+        <div>Muted</div>
+      </div>
+      <div style="position: absolute; bottom: 8px; left: 110px; right: 6px; display: flex; justify-content: space-between; font-size: 8px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-soft); font-weight: 700;">
+        <div>◀ Publication</div>
+        <div>Product ▶</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div class="small">
+      <strong>Crowded zones:</strong>
+      <ul style="margin: 4px 0 0; padding-left: 14px;">
+        <li><strong>Top-right (bold + product)</strong> — every gambling promo (bet365, William Hill, Paddy, Action Network) and every "loud" sports news portal (Goal, Sky, Sofascore-leaning, Oddschecker). The least useful place to land.</li>
+        <li><strong>Bottom-right (muted + product)</strong> — Pinnacle, OddsPortal, FotMob, Polymarket. Clinical SaaS-grade tooling. Owns "trustworthy data utility." Hard to compete; not the brand's wedge anyway.</li>
+        <li><strong>Bottom-left (muted + publication)</strong> — The Athletic, Mundial, Set Pieces, Coaches' Voice. The B&W editorial corner. Premium but requires decades of credibility to land here on day one.</li>
+      </ul>
+    </div>
+    <div class="small">
+      <strong>Where the white space is:</strong>
+      <ul style="margin: 4px 0 0; padding-left: 14px;">
+        <li><strong>Mid-left (publication, slightly bold)</strong> — only The Blizzard sits here (cream + hot pink) and Scouted FC (red on white). Distinctive, <em>not</em> gambling, <em>not</em> commodity score-tracker.</li>
+        <li><strong>Dark-mode editorial</strong> — completely unowned. Every football publication defaults to white-paper. The dark-mode sites in the sample are all gambling (bet365, Action Network) — owning dark-mode-as-publication is genuinely empty quadrant.</li>
+        <li><strong>Warm/muted but not B&amp;W</strong> — cream-paper + a non-default accent (anything that isn't red/yellow/Sky-navy) is uncontested.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PAGE 3 — VERDICT (3 directions + recommendation)
+============================================================ -->
+<section class="page">
+  <div class="masthead">
+    <div>
+      <div class="title">Verdict</div>
+      <div class="sub">Three directions · one ship</div>
+    </div>
+    <div class="meta">3 of 4 · ship by Monday</div>
+  </div>
+
+  <div class="kicker">3 · Three palette directions</div>
+  <p class="small" style="margin: 0 0 8px;">
+    Each of these earns its rationale from the field above. None of them are safe defaults — each one
+    chooses a piece of unowned territory. The recommendation is below; if the chosen one does not feel
+    inevitable on second viewing, the other two are real fallbacks rather than consolation prizes.
+  </p>
+
+  <div class="verdict">
+
+    <!-- DIRECTION A -->
+    <div class="direction">
+      <div class="dname">A · Broadsheet</div>
+      <div class="dpalette">
+        <div style="background:#F4EFE2"></div>
+        <div style="background:#15171C"></div>
+        <div style="background:#7A1E26"></div>
+        <div style="background:#9B927C"></div>
+        <div style="background:#FFFFFF"></div>
+      </div>
+      <div class="dhex">#F4EFE2 · #15171C · #7A1E26 · #9B927C · #FFFFFF</div>
+      <div class="drationale">
+        Warm chalk-cream, ink black, single oxblood accent. Reads as a Sunday-broadsheet football
+        section. <strong>Earns its place</strong> by sitting next to The Athletic / Set Pieces but using
+        oxblood (not BBC red, not Athletic red, not Scouted red) — a deeper, ink-printed shade. <strong>Risk:</strong>
+        in five seconds, casual fans may not differentiate it from existing prestige editorial.
+      </div>
+      <div class="mock" style="background:#F4EFE2; color:#15171C;">
+        <div class="mock-mast">
+          <div class="reticle"><div class="dot" style="background:#7A1E26;"></div></div>
+          <div class="wm"><span class="a">THE</span>SCOUT</div>
+        </div>
+        <div class="stamp" style="background:#7A1E26; color:#F4EFE2;">Scout Report</div>
+        <h4>Brazil's path to the final, scouted.</h4>
+        <div class="lede">Three things the markets are missing about Tite's side, what to back, what to fade.</div>
+        <div class="row"><span>FIX 14</span><span>BRA v ARG</span><span>EDGE +4.2%</span></div>
+      </div>
+    </div>
+
+    <!-- DIRECTION B (RECOMMENDED) -->
+    <div class="direction recommended">
+      <div class="dname">B · Floodlight</div>
+      <div class="dpalette">
+        <div style="background:#0F1115"></div>
+        <div style="background:#EDE6D2"></div>
+        <div style="background:#F2A93B"></div>
+        <div style="background:#3B463F"></div>
+        <div style="background:#1A1D24"></div>
+      </div>
+      <div class="dhex">#0F1115 · #EDE6D2 · #F2A93B · #3B463F · #1A1D24</div>
+      <div class="drationale">
+        Ink-black background, warm parchment text, sodium-amber accent — like a stadium under floodlights.
+        <strong>Earns its place</strong> because the entire sampled field defaults to white paper, and the
+        only dark-mode sites are gambling promos. A dark-mode <em>publication</em> is genuinely uncrowded
+        in football. The reticle motif renders dramatically against ink. Sodium-amber is football-native
+        (literal floodlight reference) and unused by any peer in the sample.
+      </div>
+      <div class="mock" style="background:#0F1115; color:#EDE6D2;">
+        <div class="mock-mast">
+          <div class="reticle"><div class="dot" style="background:#F2A93B;"></div></div>
+          <div class="wm"><span class="a">THE</span>SCOUT</div>
+        </div>
+        <div class="stamp" style="background:#F2A93B; color:#0F1115;">Scout Report</div>
+        <h4>Brazil's path to the final, scouted.</h4>
+        <div class="lede">Three things the markets are missing about Tite's side, what to back, what to fade.</div>
+        <div class="row" style="border-top-color: rgba(237,230,210,0.25);"><span>FIX 14</span><span>BRA v ARG</span><span>EDGE +4.2%</span></div>
+      </div>
+    </div>
+
+    <!-- DIRECTION C -->
+    <div class="direction">
+      <div class="dname">C · Pitch</div>
+      <div class="dpalette">
+        <div style="background:#F5F4EE"></div>
+        <div style="background:#2E3A2A"></div>
+        <div style="background:#C24F2A"></div>
+        <div style="background:#B7B6A8"></div>
+        <div style="background:#15171C"></div>
+      </div>
+      <div class="dhex">#F5F4EE · #2E3A2A · #C24F2A · #B7B6A8 · #15171C</div>
+      <div class="drationale">
+        Stone-cream paper + deep-pitch moss + a single signal-orange accent. Extension of the original
+        Scout direction. <strong>Earns its place</strong> because no sampled site combines these three —
+        the moss is darker than any sportsbook green and warmer than any utility navy. Signal-orange
+        echoes a referee flag without leaning gambling-promo. <strong>Risk:</strong> proximity to existing
+        Scouted-the-publication and Coaches' Voice (orange-on-white) means the visual hook lands on the
+        accent color rather than the system.
+      </div>
+      <div class="mock" style="background:#F5F4EE; color:#15171C;">
+        <div class="mock-mast" style="border-color: #2E3A2A;">
+          <div class="reticle" style="border-color:#2E3A2A;"><div class="dot" style="background:#C24F2A;"></div></div>
+          <div class="wm" style="color:#2E3A2A;"><span class="a">THE</span>SCOUT</div>
+        </div>
+        <div class="stamp" style="background:#2E3A2A; color:#F5F4EE;">Scout Report</div>
+        <h4>Brazil's path to the final, scouted.</h4>
+        <div class="lede">Three things the markets are missing about Tite's side, what to back, what to fade.</div>
+        <div class="row" style="border-top-color: rgba(0,0,0,0.2);"><span>FIX 14</span><span>BRA v ARG</span><span>EDGE +4.2%</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="verdict-text">
+    <strong>Recommendation: ship Direction B — "Floodlight."</strong> The sampled field shows that every
+    football publication defaults to white-paper editorial, and every dark-mode site in the category is a
+    gambling promo. A dark-mode editorial brand is the only quadrant where the visual register
+    <em>itself</em> communicates "publication, not bookmaker" before a reader has parsed a single word.
+    Sodium-amber is football-native (floodlight, captain's-armband, late-evening kickoff) and lands as a
+    distinctive accent that no peer owns. The reticle/scope motif gains contrast and gravity against ink.
+    <strong>Strongest single reason:</strong> in a field where category-shift requires earning trust on
+    day one, picking the unowned quadrant of the cluster map is the cheapest way to be remembered.
+    <strong>Strongest second reason:</strong> dark mode dramatizes the scout-report stamp far better
+    than cream-paper does — every "scout report" headline reads as a briefing in a coach's office,
+    not a Sunday-broadsheet column.
+  </div>
+</section>
+
+<!-- ============================================================
+     PAGE 4 — RECEIPTS
+============================================================ -->
+<section class="page">
+  <div class="masthead">
+    <div>
+      <div class="title">Receipts</div>
+      <div class="sub">All 20 sites · stress-test the call</div>
+    </div>
+    <div class="meta">4 of 4 · sourced 2026-05-02</div>
+  </div>
+
+  <div class="kicker">4 · Receipts</div>
+  <p class="small" style="margin: 0 0 8px;">
+    Every input behind the verdict. Register scored 1–4
+    (<span class="mono">tipster · promo · product · publication</span>).
+    Hex codes sampled from rendered homepage pixels (1280×800) at the dates noted, with manual
+    visual confirmation against algorithmic median-cut output. Audience signal is the most defensible
+    public number per site (X followers OR Similarweb monthly visits OR app downloads).
+  </p>
+
+  <table id="receipts">
+    <thead>
+      <tr>
+        <th style="width:14%">Site</th>
+        <th style="width:8%">Bucket</th>
+        <th style="width:18%">Palette (sampled)</th>
+        <th style="width:5%">Reg</th>
+        <th style="width:14%">Type</th>
+        <th style="width:6%">Mode</th>
+        <th style="width:13%">Audience</th>
+        <th style="width:22%">Vibe</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="small" style="margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line);">
+    <strong>Method &amp; caveats.</strong>
+    Screenshots captured with headless Chromium at 1280×800, viewport-only (not full-page) to mirror
+    above-the-fold first impression. Cookie modals partially obscure several sites (BBC Sport, The
+    Athletic, Sofascore) — for those, palettes were curated from visible header/nav strips with
+    visual confirmation rather than relying solely on algorithmic output. Two substitutions:
+    <strong>Smarkets</strong> 404'd from the rendering origin (geo-blocked, possibly because the
+    brand has rebranded to "Smarkets Predictions"); replaced with <strong>Betfair Exchange</strong> as
+    the closest UK exchange peer in the same bucket. <strong>Tifo Football's</strong> domain
+    (tifofootball.com) has been taken over by an unrelated Thai gambling promo (UFABET);
+    replaced with <strong>Mundial Magazine</strong> from the substitute list. Both swaps preserve
+    bucket counts (6+6+5+3=20).
+  </div>
+</section>
+
+<script>
+  const data = __DATA__;
+
+  // GRID
+  const grid = document.getElementById('grid');
+  const order = ['odds','publication','consumer','avoid'];
+  const sorted = [...data.sites].sort((a,b) => order.indexOf(a.category) - order.indexOf(b.category));
+  for (const s of sorted) {
+    const card = document.createElement('div');
+    card.className = `card ${s.category}`;
+    const swatchesHtml = s.palette.map(c => `<div class="swatch" style="background:${c};"></div>`).join('');
+    const tag = s.category === 'avoid' ? 'AVOID · gambling-promo' :
+                s.category === 'odds' ? 'Odds / aggregator' :
+                s.category === 'publication' ? 'Publication' : 'Consumer product';
+    card.innerHTML = `
+      <div class="name">${s.name}</div>
+      <div class="tag">${tag}</div>
+      <div class="swatches">${swatchesHtml}</div>
+      <div class="vibe">${s.vibe}</div>
+      <div class="footer">
+        <span class="reg">REG ${s.register}/4</span>
+        <span>${s.mode === 'dark' ? '◑ dark' : '◐ light'}</span>
+      </div>
+    `;
+    grid.appendChild(card);
+  }
+
+  // CLUSTER MAP
+  const mg = document.getElementById('mapgrid');
+  // empty zone — top-left + dark-mode editorial: roughly x in [-0.95,-0.3], y in [0.0,0.95]
+  const ez = document.createElement('div');
+  ez.className = 'empty-zone';
+  // x range -0.9..-0.2 -> 5%..40%, y range 0.0..0.85 -> 50%..7.5%
+  ez.style.left = '5%'; ez.style.right = '60%';
+  ez.style.top = '7%'; ez.style.height = '46%';
+  mg.appendChild(ez);
+  const ezLbl = document.createElement('div');
+  ezLbl.className = 'quad-label';
+  ezLbl.style.cssText = 'left:6%;top:8%;color:var(--signal); font-weight:700;';
+  ezLbl.textContent = 'White space — bold publication / dark-mode editorial';
+  mg.appendChild(ezLbl);
+
+  for (const s of data.sites) {
+    const xPct = ((s.x + 1) / 2) * 100;
+    const yPct = ((-s.y + 1) / 2) * 100;
+    const pt = document.createElement('div');
+    pt.className = `point ${s.category}`;
+    pt.style.left = xPct + '%';
+    pt.style.top = yPct + '%';
+    pt.innerHTML = `<div class="marker"></div><div class="lbl">${s.name.replace(' (AVOID)','').replace(' (sub for Smarkets)','').replace(' (sub for Tifo)','')}</div>`;
+    mg.appendChild(pt);
+  }
+
+  // RECEIPTS TABLE
+  const tb = document.querySelector('#receipts tbody');
+  for (const s of data.sites) {
+    const row = document.createElement('tr');
+    if (s.category === 'avoid') row.className = 'avoid-row';
+    const swatches = s.palette.map(c => `<span class="ms" style="background:${c};"></span>`).join('');
+    const hexLine = s.palette.join(' ');
+    row.innerHTML = `
+      <td><strong>${s.name}</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">${s.url.replace(/^https?:\\/\\/(www\\.)?/, '')}</span></td>
+      <td>${s.category === 'odds' ? 'Odds' : s.category === 'publication' ? 'Pub.' : s.category === 'consumer' ? 'Consumer' : 'Avoid'}</td>
+      <td class="swatchcell">${swatches}<br><span class="hex" style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">${hexLine}</span></td>
+      <td><strong>${s.register}</strong>/4</td>
+      <td>${s.type}</td>
+      <td>${s.mode}</td>
+      <td>${s.audience}</td>
+      <td>${s.vibe}</td>
+    `;
+    tb.appendChild(row);
+  }
+</script>
+</body>
+</html>

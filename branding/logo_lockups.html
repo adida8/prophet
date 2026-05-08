@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Logo lockups — domain candidates</title>
+<style>
+  @page { size: A4 portrait; margin: 14mm 14mm; }
+  :root {
+    --paper:    #FFFFFF;
+    --ink:      #0E2240;
+    --orange:   #FF5A1F;
+    --graphite: #3A3F47;
+    --rule:     #F0ECE2;
+    --warm:     #FCFAF5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink);
+    font-family: -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif;
+    font-size: 9px; line-height: 1.45; }
+  .mono { font-family: ui-monospace, "JetBrains Mono", Menlo, monospace; }
+
+  /* MASTHEAD */
+  .masthead { border-top: 6px double var(--ink); border-bottom: 1px solid var(--ink);
+    padding: 12px 0 10px; margin-bottom: 14px;
+    display: flex; justify-content: space-between; align-items: center; }
+  .logo-block { display: flex; align-items: center; gap: 10px; }
+  .reticle-mast { width: 26px; height: 26px; border: 1.5px solid var(--ink); border-radius: 50%;
+    position: relative; flex-shrink: 0; }
+  .reticle-mast::before, .reticle-mast::after { content: ''; position: absolute; background: var(--ink); }
+  .reticle-mast::before { top: 50%; left: -4px; right: -4px; height: 1px; }
+  .reticle-mast::after  { left: 50%; top: -4px; bottom: -4px; width: 1px; }
+  .reticle-mast .dot { position: absolute; top: 50%; left: 50%; width: 4px; height: 4px;
+    border-radius: 50%; background: var(--orange); transform: translate(-50%,-50%); }
+  .title { font-size: 18px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    line-height: 1; margin-bottom: 3px; }
+  .meta { font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--graphite); }
+
+  /* CONTEXT */
+  .context { font-size: 9px; line-height: 1.5; color: var(--graphite); margin: 0 0 14px; max-width: 95%; }
+  .context strong { color: var(--ink); }
+
+  /* TILE GRID */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tile { border: 1px solid var(--ink); display: flex; flex-direction: column; }
+  .tile.match { border-left: 4px solid var(--orange); }
+  .tile .lockup-light { background: var(--paper); padding: 18px 16px 12px;
+    display: flex; align-items: center; justify-content: center; min-height: 70px; }
+  .tile .lockup-dark { background: var(--ink); padding: 14px 16px 10px;
+    display: flex; align-items: center; justify-content: center; min-height: 60px; }
+  .tile .footer { padding: 6px 12px 8px; display: flex; justify-content: space-between;
+    align-items: center; border-top: 1px dashed var(--rule); }
+  .tile .url { font-family: ui-monospace, Menlo, monospace; font-size: 9px;
+    color: var(--ink); font-weight: 600; }
+  .tile .price-tag { font-size: 7px; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--graphite); font-family: ui-monospace, Menlo, monospace; }
+  .tile .price-tag.premium { color: var(--orange); font-weight: 700; }
+
+  /* LOCKUP — same shape as 02_the_scout/mockup.html, scaled */
+  .lockup { display: flex; align-items: center; gap: 9px; }
+  .lockup .reticle { width: 26px; height: 26px; border: 1.4px solid currentColor;
+    border-radius: 50%; position: relative; flex-shrink: 0; }
+  .lockup .reticle::before, .lockup .reticle::after { content: ''; position: absolute;
+    background: currentColor; }
+  .lockup .reticle::before { top: 50%; left: -4px; right: -4px; height: 1px; }
+  .lockup .reticle::after  { left: 50%; top: -4px; bottom: -4px; width: 1px; }
+  .lockup .reticle .dot { position: absolute; top: 50%; left: 50%; width: 4px; height: 4px;
+    border-radius: 50%; background: var(--orange); transform: translate(-50%,-50%); }
+
+  .wm { font-family: -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif;
+    font-weight: 800; font-size: 21px; letter-spacing: 3px; text-transform: uppercase;
+    line-height: 1; color: currentColor; white-space: nowrap; }
+  .wm .article { font-weight: 400; letter-spacing: 2px; font-size: 13px; opacity: 0.7;
+    margin-right: 5px; vertical-align: 2px; }
+
+  /* dark variant: reticle + wordmark in paper, dot stays orange */
+  .lockup-dark .lockup { color: var(--paper); }
+  .lockup-light .lockup { color: var(--ink); }
+
+  /* FOOTER NOTES */
+  .notes { margin-top: 14px; padding: 10px 12px; background: var(--warm);
+    border-left: 4px solid var(--orange); }
+  .notes h3 { font-size: 9px; letter-spacing: 1.8px; text-transform: uppercase;
+    color: var(--ink); margin: 0 0 4px; }
+  .notes p { margin: 0 0 6px; font-size: 9px; line-height: 1.55; color: var(--graphite); }
+  .notes p:last-child { margin-bottom: 0; }
+  .notes strong { color: var(--ink); }
+  .notes em { color: var(--orange); font-style: normal; font-weight: 700; }
+</style>
+</head>
+<body>
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="logo-block">
+      <div class="reticle-mast"><div class="dot"></div></div>
+      <div>
+        <div class="title">Logo Lockups</div>
+        <div class="meta">8 wordmark candidates · same system · 2026-05-02</div>
+      </div>
+    </div>
+    <div class="meta" style="text-align: right;">
+      Reticle motif + condensed sans wordmark<br>
+      Primary on white · inverted on navy
+    </div>
+  </div>
+
+  <!-- CONTEXT -->
+  <div class="context">
+    <strong>System.</strong> Reticle (circle + crosshairs + flame-orange dot) + wordmark in heavy condensed sans,
+    uppercase, with optional <span class="mono">THE</span> article in lighter weight. Same lockup geometry across
+    all eight; only the wordmark text changes. The orange dot stays orange in both variants — it is the single
+    accent the brand permits anywhere. Highlighted tiles (orange edge) are the strongest pick from each price tier.
+  </div>
+
+  <!-- GRID -->
+  <div class="grid">
+
+    <!-- 1 · The Scout Room — match -->
+    <div class="tile match">
+      <div class="lockup-light">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm"><span class="article">THE</span>SCOUT ROOM</div>
+        </div>
+      </div>
+      <div class="lockup-dark">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm"><span class="article">THE</span>SCOUT ROOM</div>
+        </div>
+      </div>
+      <div class="footer">
+        <span class="url">thescoutroom.ai</span>
+        <span class="price-tag premium">$180 · 2YR</span>
+      </div>
+    </div>
+
+    <!-- 2 · Scout Room -->
+    <div class="tile">
+      <div class="lockup-light">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm">SCOUT ROOM</div>
+        </div>
+      </div>
+      <div class="lockup-dark">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm">SCOUT ROOM</div>
+        </div>
+      </div>
+      <div class="footer">
+        <span class="url">scoutroom.ai</span>
+        <span class="price-tag premium">$180 · 2YR</span>
+      </div>
+    </div>
+
+    <!-- 3 · Odds Primer -->
+    <div class="tile">
+      <div class="lockup-light">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm">ODDS PRIMER</div>
+        </div>
+      </div>
+      <div class="lockup-dark">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm">ODDS PRIMER</div>
+        </div>
+      </div>
+      <div class="footer">
+        <span class="url">oddsprimer.ai &nbsp;·&nbsp; oddsprimer.com</span>
+        <span class="price-tag">.com $10 · 2YR</span>
+      </div>
+    </div>
+
+    <!-- 4 · Scoutline -->
+    <div class="tile">
+      <div class="lockup-light">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm">SCOUTLINE</div>
+        </div>
+      </div>
+      <div class="lockup-dark">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm">SCOUTLINE</div>
+        </div>
+      </div>
+      <div class="footer">
+        <span class="url">scoutline.ai</span>
+        <span class="price-tag premium">$180 · 2YR</span>
+      </div>
+    </div>
+
+    <!-- 5 · The Pitch Line -->
+    <div class="tile">
+      <div class="lockup-light">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm"><span class="article">THE</span>PITCH LINE</div>
+        </div>
+      </div>
+      <div class="lockup-dark">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm"><span class="article">THE</span>PITCH LINE</div>
+        </div>
+      </div>
+      <div class="footer">
+        <span class="url">thepitchline.ai</span>
+        <span class="price-tag premium">$180 · 2YR</span>
+      </div>
+    </div>
+
+    <!-- 6 · The Stand -->
+    <div class="tile">
+      <div class="lockup-light">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm"><span class="article">THE</span>STAND</div>
+        </div>
+      </div>
+      <div class="lockup-dark">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm"><span class="article">THE</span>STAND</div>
+        </div>
+      </div>
+      <div class="footer">
+        <span class="url">thestand.ai</span>
+        <span class="price-tag premium">$180 · 2YR</span>
+      </div>
+    </div>
+
+    <!-- 7 · The Morning XI — match -->
+    <div class="tile match">
+      <div class="lockup-light">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm"><span class="article">THE</span>MORNING XI</div>
+        </div>
+      </div>
+      <div class="lockup-dark">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm"><span class="article">THE</span>MORNING XI</div>
+        </div>
+      </div>
+      <div class="footer">
+        <span class="url">themorningxi.com</span>
+        <span class="price-tag">$10 · 2YR</span>
+      </div>
+    </div>
+
+    <!-- 8 · The Morning 11 -->
+    <div class="tile">
+      <div class="lockup-light">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm"><span class="article">THE</span>MORNING 11</div>
+        </div>
+      </div>
+      <div class="lockup-dark">
+        <div class="lockup">
+          <div class="reticle"><div class="dot"></div></div>
+          <div class="wm"><span class="article">THE</span>MORNING 11</div>
+        </div>
+      </div>
+      <div class="footer">
+        <span class="url">themorning11.com</span>
+        <span class="price-tag">$10 · 2YR</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- NOTES -->
+  <div class="notes">
+    <h3>How to read this</h3>
+    <p>Each tile is the same lockup geometry — only the wordmark text varies. The reticle proportions
+       (28px circle, 4px crosshair extension, central dot) are constant. <strong>Names with a "THE" article</strong>
+       (Scout Room, Pitch Line, Stand, Morning XI/11) gain editorial weight from the lighter prefix; the brand
+       reads as a publication, not a product. <strong>Names without an article</strong> (Scout Room solo, Odds
+       Primer, Scoutline) feel a notch closer to "tool" or "feature" — slightly weaker as a publication wordmark
+       in this system.</p>
+    <p><strong>What to look for.</strong> Which lockup feels inevitable on second viewing? Which one would you
+       comfortably put on a printed match-day programme? Which one wears the inverted (white-on-navy) variant
+       best — masthead, social cards, and merch all need that mode to work too.</p>
+    <p><strong>Provisional reads.</strong> <em>The Scout Room</em> + <em>The Morning XI</em> have the strongest
+       fit with the system as drawn. <em>The Stand</em> is the cleanest single-syllable option — strongest
+       inverted-on-navy presence. <em>Scoutline</em> and <em>Odds Primer</em> read less like a publication and
+       more like a feature; if either of those wins on positioning, worth re-testing the lockup with a different
+       glyph (the reticle may not be the right system glyph for those names).</p>
+  </div>
+
+</body>
+</html>

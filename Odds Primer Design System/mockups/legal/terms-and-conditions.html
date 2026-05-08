@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Terms and conditions — Odds Primer</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  body { padding: 48px 0 96px; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter-page); }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;
+    border-top: 2px solid var(--ink); border-bottom: var(--hairline);
+    padding: 14px 0 12px; margin-bottom: 28px; gap: 24px;
+  }
+  .masthead .left  { font-family: var(--font-serif); font-size: 18px; font-weight: 800; letter-spacing: -0.012em; color: var(--ink); }
+  .masthead .center { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft); text-align: center; }
+  .masthead .right { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft); text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* ---------- title block ---------- */
+  .title-block {
+    display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 56px; margin-bottom: 36px; align-items: end;
+  }
+  .h-eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-bottom: 8px;
+  }
+  h1.title {
+    font-family: var(--font-serif); font-size: clamp(40px, 4.6vw, 60px);
+    font-weight: 600; line-height: 1.04; letter-spacing: -0.02em;
+    margin: 0 0 14px; color: var(--ink); text-wrap: balance;
+  }
+  .deck {
+    font-family: var(--font-serif); font-size: 16px; line-height: 1.55;
+    color: var(--ink); margin: 0; max-width: 56ch;
+  }
+  .deck em { color: var(--flame); font-style: normal; font-weight: 600; }
+
+  /* ---------- placeholder banner ---------- */
+  .placeholder-banner {
+    background: var(--paper-warm);
+    border-top: 2px solid var(--flame); border-bottom: var(--hairline);
+    padding: 16px 20px; margin: 0 0 40px;
+    display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: baseline;
+  }
+  .placeholder-banner .tag {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--flame-deep);
+    white-space: nowrap;
+  }
+  .placeholder-banner .msg {
+    font-family: var(--font-serif); font-style: italic; font-size: 14px;
+    color: var(--graphite); line-height: 1.5;
+  }
+  .placeholder-banner code {
+    font-family: var(--font-mono); font-size: 12.5px;
+    background: var(--paper-pure); padding: 1px 5px; border-radius: 2px;
+  }
+
+  /* ---------- meta strip ---------- */
+  .meta-strip {
+    border-top: var(--hairline); border-bottom: var(--hairline);
+    padding: 12px 0; margin-bottom: 40px;
+    display: flex; gap: 36px; flex-wrap: wrap;
+  }
+  .meta-strip .item { display: flex; flex-direction: column; gap: 2px; }
+  .meta-strip .lbl {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .meta-strip .val {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 13px; color: var(--ink);
+  }
+
+  /* ---------- two-column body ---------- */
+  .body-grid {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 64px;
+    align-items: start;
+  }
+
+  /* ---------- left: section index ---------- */
+  .toc {
+    position: sticky; top: 32px;
+    border-top: 2px solid var(--ink);
+    padding-top: 14px;
+  }
+  .toc .lbl {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-bottom: 14px;
+  }
+  .toc ol {
+    list-style: none; padding: 0; margin: 0;
+    counter-reset: toc;
+  }
+  .toc li {
+    counter-increment: toc;
+    border-top: var(--hairline);
+    padding: 8px 0;
+    font-family: var(--font-sans); font-size: 13px; line-height: 1.35;
+  }
+  .toc li:last-child { border-bottom: var(--hairline); }
+  .toc li a {
+    text-decoration: none; color: var(--ink);
+    display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: baseline;
+  }
+  .toc li a::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+    color: var(--graphite-soft); letter-spacing: 0.04em;
+  }
+  .toc li a:hover { color: var(--flame-deep); }
+  .toc li a:hover::before { color: var(--flame); }
+
+  /* ---------- right: prose body ---------- */
+  .prose {
+    font-family: var(--font-serif);
+    font-size: 17px; line-height: 1.6;
+    color: var(--ink);
+    max-width: 64ch;
+  }
+  .prose .lede {
+    font-size: 19px; line-height: 1.55;
+    color: var(--ink); margin: 0 0 32px;
+    border-left: 2px solid var(--flame);
+    padding-left: 18px;
+  }
+  .prose section { margin-bottom: 44px; }
+  .prose section:last-child { margin-bottom: 0; }
+  .prose h2 {
+    font-family: var(--font-serif); font-size: 24px; font-weight: 600;
+    line-height: 1.2; letter-spacing: -0.005em; color: var(--ink);
+    margin: 0 0 4px;
+    display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: baseline;
+  }
+  .prose h2::before {
+    content: attr(data-num);
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 12px; font-weight: 500; color: var(--flame);
+    letter-spacing: 0.04em;
+  }
+  .prose .h-rule { border-top: var(--hairline); margin: 14px 0 18px; }
+  .prose h3 {
+    font-family: var(--font-sans); font-size: 14px; font-weight: 700;
+    color: var(--ink); margin: 22px 0 6px;
+  }
+  .prose p { margin: 0 0 14px; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose ul {
+    margin: 0 0 16px; padding-left: 22px;
+    font-family: var(--font-serif);
+  }
+  .prose ul li { margin-bottom: 6px; }
+  .prose ul li::marker { color: var(--flame); }
+  .prose strong { font-weight: 600; color: var(--ink); }
+  .prose em { font-style: italic; }
+  .prose .pl {
+    font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+    color: var(--flame-deep); background: var(--flame-tint);
+    padding: 1px 5px; border-radius: 2px; letter-spacing: 0.02em;
+  }
+  .prose .caps {
+    /* the all-caps disclaimer paragraphs */
+    font-family: var(--font-sans); font-size: 12.5px; font-weight: 500;
+    letter-spacing: 0.04em; line-height: 1.55;
+    color: var(--graphite); text-transform: uppercase;
+    background: var(--paper-warm); padding: 14px 16px;
+    border-left: 2px solid var(--graphite-soft); margin: 0 0 14px;
+  }
+  .prose a {
+    color: var(--ink);
+    text-decoration: underline; text-decoration-color: var(--flame);
+    text-underline-offset: 3px; text-decoration-thickness: 1px;
+  }
+  .prose a:hover { color: var(--flame-deep); }
+
+  /* ---------- footer ---------- */
+  footer.foot {
+    margin-top: 80px;
+    border-top: 2px solid var(--ink);
+    padding-top: 22px;
+    display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: baseline;
+  }
+  footer.foot .left {
+    font-family: var(--font-serif); font-size: 13px; font-style: italic;
+    color: var(--graphite); max-width: 60ch; line-height: 1.5;
+  }
+  footer.foot .right {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 980px) {
+    .title-block { grid-template-columns: 1fr; gap: 20px; }
+    .body-grid { grid-template-columns: 1fr; gap: 32px; }
+    .toc { position: static; }
+    footer.foot { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    .placeholder-banner { grid-template-columns: 1fr; gap: 6px; }
+    .meta-strip { gap: 20px; }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+
+    <div class="masthead">
+      <span class="left">Odds Primer</span>
+      <span class="center">Site policy · World Cup 2026 edition</span>
+      <span class="right">Legal</span>
+    </div>
+
+    <div class="title-block">
+      <div>
+        <div class="h-eyebrow">Site policy · Terms</div>
+        <h1 class="title">The rules of the room, in plain language.</h1>
+      </div>
+      <p class="deck">Odds Primer is an <em>educational publication</em>, not a betting venue. These terms set out what you can expect from us, and what you agree to by reading along.</p>
+    </div>
+
+    <div class="placeholder-banner">
+      <span class="tag">Placeholder · pre-launch</span>
+      <span class="msg">Generic placeholder copy intended for review by counsel before launch. Bracketed values such as <code>[JURISDICTION]</code> and <code>[AMOUNT]</code> are intentional and must be filled in before publishing.</span>
+    </div>
+
+    <div class="meta-strip">
+      <div class="item">
+        <span class="lbl">Effective</span>
+        <span class="val">[DATE]</span>
+      </div>
+      <div class="item">
+        <span class="lbl">Last updated</span>
+        <span class="val">[DATE]</span>
+      </div>
+      <div class="item">
+        <span class="lbl">Publisher</span>
+        <span class="val">Adi Dagan t/a Odds Primer</span>
+      </div>
+      <div class="item">
+        <span class="lbl">Status</span>
+        <span class="val">Sole trader · pre-incorporation</span>
+      </div>
+      <div class="item">
+        <span class="lbl">Governing law</span>
+        <span class="val">[JURISDICTION]</span>
+      </div>
+    </div>
+
+    <div class="body-grid">
+
+      <aside class="toc" aria-label="Sections">
+        <div class="lbl">Sections</div>
+        <ol>
+          <li><a href="#s1">What we are, what we aren't</a></li>
+          <li><a href="#s2">Educational, not advice</a></li>
+          <li><a href="#s3">Eligibility</a></li>
+          <li><a href="#s4">Your account</a></li>
+          <li><a href="#s5">Acceptable use</a></li>
+          <li><a href="#s6">Intellectual property</a></li>
+          <li><a href="#s7">Third-party venues</a></li>
+          <li><a href="#s8">Disclaimers</a></li>
+          <li><a href="#s9">Limitation of liability</a></li>
+          <li><a href="#s10">Indemnification</a></li>
+          <li><a href="#s11">Termination</a></li>
+          <li><a href="#s12">Changes</a></li>
+          <li><a href="#s13">Governing law</a></li>
+          <li><a href="#s14">Miscellaneous</a></li>
+          <li><a href="#s15">Contact</a></li>
+        </ol>
+      </aside>
+
+      <article class="prose">
+
+        <p class="lede">These Terms and Conditions govern your access to and use of the Odds Primer website and related services, published by <strong>Adi Dagan</strong>, an individual trading under the name &ldquo;Odds Primer&rdquo;. There is no separate legal entity behind the Service. By using the Service, you agree to these Terms. If you do not agree, do not use the Service.</p>
+
+        <section id="s1">
+          <h2 data-num="01">What Odds Primer is, and what it isn't</h2>
+          <div class="h-rule"></div>
+          <p>Odds Primer is an editorial publication. We explain how prediction-market prices form, where two markets disagree, and what the underlying sports fundamentals suggest. We do <em>not</em>:</p>
+          <ul>
+            <li>accept wagers, deposits, or customer funds;</li>
+            <li>execute, broker, or facilitate trades;</li>
+            <li>provide personalised financial, investment, or betting advice;</li>
+            <li>guarantee any outcome of any market.</li>
+          </ul>
+          <p>When the Service points you to a third-party venue (&ldquo;View source on [venue]&rdquo;), any account, transaction, or contractual relationship you form with that venue is governed by the venue's own terms. We are not a party to that relationship and have no responsibility for it.</p>
+        </section>
+
+        <section id="s2">
+          <h2 data-num="02">Educational content, not advice</h2>
+          <div class="h-rule"></div>
+          <p>Everything on the Service is for general informational and educational purposes. It is not, and should not be relied on as, financial, legal, tax, or professional advice. The Service is not directed at any specific person's circumstances. You are solely responsible for your own decisions, including any decisions to participate or not participate on a third-party venue.</p>
+          <p>Past performance does not predict future results. Markets are uncertain by definition; nothing on the Service should be read as a promise that any particular price is wrong, or that any particular outcome will occur.</p>
+        </section>
+
+        <section id="s3">
+          <h2 data-num="03">Eligibility</h2>
+          <div class="h-rule"></div>
+          <p>You must be at least the age of majority in your jurisdiction, and legally permitted to access educational content about prediction markets where you live. You are responsible for confirming that your use of any third-party venue is lawful in your jurisdiction; the Service does not make that determination for you.</p>
+        </section>
+
+        <section id="s4">
+          <h2 data-num="04">Your account</h2>
+          <div class="h-rule"></div>
+          <p>If we offer accounts, you agree to provide accurate information, keep your credentials confidential, and notify us promptly at <span class="pl">[security@oddsprimer.example]</span> of any unauthorised use. You are responsible for activity on your account. We may suspend or close accounts that violate these Terms or are used in a way that creates risk for the Service or other users.</p>
+        </section>
+
+        <section id="s5">
+          <h2 data-num="05">Acceptable use</h2>
+          <div class="h-rule"></div>
+          <p>You agree not to:</p>
+          <ul>
+            <li>use the Service for any unlawful purpose;</li>
+            <li>scrape, copy, or republish substantial portions of the Service without permission;</li>
+            <li>reverse-engineer, probe, or attempt to gain unauthorised access to our systems;</li>
+            <li>introduce malware, attempt to disrupt the Service, or interfere with other users;</li>
+            <li>misrepresent the Service or our editorial work, including by passing it off as personalised advice.</li>
+          </ul>
+        </section>
+
+        <section id="s6">
+          <h2 data-num="06">Intellectual property</h2>
+          <div class="h-rule"></div>
+          <p>The Service &mdash; including text, graphics, design system, logo, and code &mdash; is owned by Odds Primer or licensed to us, and is protected by intellectual-property law. You may read, share short excerpts with attribution, and link to the Service. You may not copy substantial portions, frame the Service, or use our brand assets in a way that suggests endorsement, without prior written permission.</p>
+          <p>Subject to these Terms, we grant you a limited, non-exclusive, non-transferable, revocable licence to use the Service for personal, non-commercial purposes.</p>
+        </section>
+
+        <section id="s7">
+          <h2 data-num="07">Third-party venues and links</h2>
+          <div class="h-rule"></div>
+          <p>The Service contains links to and references to third-party prediction-market venues, sportsbooks, data providers, and other sites. We are not responsible for the content, prices, availability, terms, or practices of any third party. Linking to a venue is not an endorsement of the venue, nor a recommendation to open an account with it.</p>
+        </section>
+
+        <section id="s8">
+          <h2 data-num="08">Disclaimers</h2>
+          <div class="h-rule"></div>
+          <p class="caps">The Service is provided &ldquo;as is&rdquo; and &ldquo;as available&rdquo;, without warranties of any kind, express or implied, including warranties of merchantability, fitness for a particular purpose, accuracy, and non-infringement, to the fullest extent permitted by law.</p>
+          <p>We do not warrant that the Service will be uninterrupted, error-free, or that any information on it is current or accurate. Prices and probabilities shown can be stale, mis-pulled, or simply wrong.</p>
+        </section>
+
+        <section id="s9">
+          <h2 data-num="09">Limitation of liability</h2>
+          <div class="h-rule"></div>
+          <p class="caps">To the fullest extent permitted by law, Adi Dagan (trading as &ldquo;Odds Primer&rdquo;) will not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits, revenue, data, or goodwill, arising out of or related to your use of, or inability to use, the Service.</p>
+          <p>The Service is currently provided free of charge. Our aggregate liability for any claim arising out of or related to these Terms or the Service will not exceed the greater of (a) the total fees you have paid us in the twelve months preceding the claim (which may be &pound;0 for a free service), or (b) <span class="pl">[AMOUNT, e.g. &pound;100]</span>, or, where required by your local law, the minimum permitted amount.</p>
+          <p>Nothing in these Terms limits liability that cannot be limited under applicable law (for example, liability for fraud, gross negligence, or death or personal injury caused by negligence).</p>
+        </section>
+
+        <section id="s10">
+          <h2 data-num="10">Indemnification</h2>
+          <div class="h-rule"></div>
+          <p>You agree to indemnify and hold harmless Odds Primer from claims, damages, and expenses (including reasonable legal fees) arising out of your breach of these Terms, your misuse of the Service, or your violation of applicable law or third-party rights.</p>
+        </section>
+
+        <section id="s11">
+          <h2 data-num="11">Termination</h2>
+          <div class="h-rule"></div>
+          <p>We may suspend or terminate your access to the Service at any time, with or without notice, for breach of these Terms or where we reasonably believe continued access creates risk. Sections that by their nature should survive termination &mdash; intellectual property, disclaimers, limitation of liability, indemnification, governing law &mdash; will survive.</p>
+        </section>
+
+        <section id="s12">
+          <h2 data-num="12">Changes to these Terms</h2>
+          <div class="h-rule"></div>
+          <p>We may update these Terms from time to time. We will post the revised version with a new effective date and, where the change is material, take reasonable steps to notify users. Continued use of the Service after the effective date constitutes acceptance.</p>
+        </section>
+
+        <section id="s13">
+          <h2 data-num="13">Governing law and disputes</h2>
+          <div class="h-rule"></div>
+          <p>These Terms are governed by the laws of <span class="pl">[JURISDICTION]</span>, without regard to conflict-of-laws rules. Disputes will be resolved in the courts of <span class="pl">[VENUE]</span>, unless your local consumer-protection law gives you the right to a different forum. <span class="pl">[INSERT ARBITRATION OR CLASS-ACTION WAIVER]</span></p>
+        </section>
+
+        <section id="s14">
+          <h2 data-num="14">Miscellaneous</h2>
+          <div class="h-rule"></div>
+          <p>These Terms are the entire agreement between you and us regarding the Service. If any provision is held unenforceable, the remainder remains in effect. Our failure to enforce a provision is not a waiver. You may not assign these Terms without our consent; we may assign them in connection with a merger, acquisition, or sale of assets.</p>
+        </section>
+
+        <section id="s15">
+          <h2 data-num="15">Contact</h2>
+          <div class="h-rule"></div>
+          <p>Adi Dagan, trading as &ldquo;Odds Primer&rdquo;<br>
+          <span class="pl">[SERVICE ADDRESS]</span>, <span class="pl">[CITY, COUNTRY]</span><br>
+          <a href="mailto:hello@oddsprimer.example">hello@oddsprimer.example</a></p>
+        </section>
+
+      </article>
+
+    </div>
+
+    <footer class="foot">
+      <div class="left">Odds Primer is a publication, not a venue. We point at prices; we don't move them. Our <a href="privacy-policy.html">Privacy Policy</a> sets out what we do with your data.</div>
+      <div class="right">&copy; [YEAR] Odds Primer</div>
+    </footer>
+
+  </main>
+</body>
+</html>

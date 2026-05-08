@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WC 2026 edition · banner attachments · Odds Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF7F0;
+    --ink: #0E2240;
+    --ink-soft: #3D4F6A;
+    --rule: #D9D2BE;
+    --flame: #D9461C;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body { font-family: var(--serif); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+
+  .page { max-width: 1240px; margin: 0 auto; padding: 48px 36px 96px; }
+
+  .eyebrow {
+    font-family: var(--sans); font-weight: 500;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 6px;
+  }
+  h1.page-title {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 32px; line-height: 1.15; letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+  .page-sub {
+    max-width: 64ch; font-size: 14.5px;
+    color: var(--ink-soft); margin: 0 0 36px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  @media (max-width: 1080px) { .grid { grid-template-columns: 1fr; } }
+
+  .cell {
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 24px 24px 20px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .cell-head {
+    display: flex; align-items: baseline; gap: 12px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 10px; margin-bottom: 16px;
+  }
+  .cell-id {
+    font-family: var(--mono); font-weight: 500;
+    font-size: 12px; color: var(--flame);
+    letter-spacing: 0.06em;
+  }
+  .cell-name {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 17px; line-height: 1.2;
+    margin: 0;
+  }
+  .cell-bet {
+    font-family: var(--sans); font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: 4px 0 16px;
+  }
+
+  .stage {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 140px;
+    padding: 22px 16px;
+    background: var(--paper);
+    border: 1px dashed var(--rule);
+    margin-bottom: 14px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* core lockup pieces (locked v2) */
+  .lock { display: inline-flex; align-items: stretch; gap: 11px; position: relative; }
+  .lock-row { display: inline-flex; align-items: center; gap: 11px; }
+  .word {
+    font-family: var(--serif); font-weight: 800;
+    letter-spacing: -0.012em; color: var(--ink);
+    font-size: 32px; line-height: 1;
+    font-feature-settings: "ss01" on;
+  }
+
+  /* ---------- BANNER FAMILIES ---------- */
+
+  /* B1 — Right flame block, reverse type, two-line */
+  .ban-block {
+    background: var(--flame);
+    color: var(--paper);
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    line-height: 1.25;
+    display: inline-flex; flex-direction: column; justify-content: center;
+    align-self: stretch;
+  }
+
+  /* B2 — Diagonal sash */
+  .ban-sash-wrap {
+    position: relative;
+    display: inline-flex;
+    padding: 18px 100px 24px 0;
+  }
+  .ban-sash {
+    position: absolute;
+    top: 50%;
+    right: -10px;
+    transform: translateY(-50%) rotate(-12deg);
+    background: var(--flame);
+    color: var(--paper);
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 6px 24px;
+    white-space: nowrap;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  }
+
+  /* B3 — Full-width banner under */
+  .ban-under-wrap {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+  .ban-under {
+    background: var(--flame);
+    color: var(--paper);
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  /* B4 — Marquee bar extending right */
+  .ban-marquee {
+    background: var(--flame);
+    color: var(--paper);
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 0 18px;
+    line-height: 1;
+    display: inline-flex; align-items: center;
+    align-self: stretch;
+    height: auto;
+    min-height: 28px;
+    margin-left: 4px;
+    white-space: nowrap;
+  }
+  .ban-marquee .pip { color: rgba(250,247,240,0.55); margin: 0 8px; }
+
+  /* B5 — Pennant tail */
+  .ban-pennant {
+    background: var(--flame);
+    color: var(--paper);
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 8px 24px 8px 16px;
+    line-height: 1;
+    display: inline-flex; align-items: center;
+    align-self: stretch;
+    margin-left: 6px;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 50%, 100% 100%, 0 100%);
+  }
+
+  /* B6 — Big edition slab */
+  .ban-slab {
+    background: var(--flame);
+    color: var(--paper);
+    font-family: var(--serif);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 0.9;
+    padding: 10px 18px;
+    align-self: stretch;
+    display: inline-flex; flex-direction: column; justify-content: center;
+    margin-left: 6px;
+  }
+  .ban-slab .big {
+    font-size: 36px;
+    font-feature-settings: "ss01" on;
+  }
+  .ban-slab .small {
+    font-family: var(--sans);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-top: 2px;
+    color: rgba(250,247,240,0.85);
+  }
+
+  /* masthead test row */
+  .masthead {
+    height: 56px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1.5px solid var(--ink);
+    display: flex; align-items: stretch; justify-content: space-between;
+    padding: 0 16px;
+    background: var(--paper);
+    overflow: hidden;
+  }
+  .masthead > div { display: flex; align-items: center; }
+  .masthead .live {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-soft);
+    align-self: center;
+  }
+  .mast-wrap {
+    border: 1px solid var(--rule);
+  }
+  .mast-tag {
+    font-family: var(--mono); font-size: 9.5px;
+    letter-spacing: 0.1em; color: var(--flame);
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper);
+  }
+
+  .note {
+    font-family: var(--sans); font-size: 11.5px;
+    color: var(--ink-soft);
+    border-top: 1px dashed var(--rule);
+    padding-top: 10px;
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 4px 10px;
+  }
+  .note b { color: var(--ink); font-weight: 600; }
+
+  footer.colophon {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--ink);
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex; justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <p class="eyebrow">Odds Primer · Brand · WC 2026 edition · Banner attachments</p>
+  <h1 class="page-title">Loud — six banner attachments</h1>
+  <p class="page-sub">Same locked lockup in every cell. The banner is a flame graphic device that sits next to the logo. Editorial special-issue energy — the kind of banner The Athletic, France Football, or Esquire uses for an anniversary cover.</p>
+
+  <div class="grid">
+
+    <!-- ============================================
+         B1 — Flame block stripe, two-line
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">B1</span>
+        <h3 class="cell-name">Right block · reverse type</h3>
+      </div>
+      <p class="cell-bet">A solid flame block butting against the right edge of the wordmark, two lines of cream small caps. Cleanest cover-stripe energy.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <div class="lock-row">
+            <svg viewBox="0 0 56 50" width="74" height="66" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word">Odds Primer</span>
+          </div>
+          <span class="ban-block">World Cup<br>2026 · Vol. 1</span>
+        </div>
+      </div>
+
+      <div class="mast-wrap">
+        <div class="mast-tag">Masthead</div>
+        <div class="masthead">
+          <div style="gap:11px;">
+            <svg viewBox="0 0 56 50" width="42" height="38" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word" style="font-size:18px;">Odds Primer</span>
+            <span class="ban-block" style="font-size:9px; padding:4px 10px;">World Cup<br>2026 · Vol. 1</span>
+          </div>
+          <span class="live">FRA v ARG · live</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Read</b><span>Loud-but-disciplined. The block is its own object — usable on swag, stickers, social cards.</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         B2 — Diagonal sash
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">B2</span>
+        <h3 class="cell-name">Diagonal sash · special-issue energy</h3>
+      </div>
+      <p class="cell-bet">A flame sash angled down-right, crossing the right side of the lockup. The "anniversary issue / world tour" cover treatment. Loudest of the six.</p>
+
+      <div class="stage">
+        <div class="ban-sash-wrap">
+          <div class="lock-row">
+            <svg viewBox="0 0 56 50" width="74" height="66" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word">Odds Primer</span>
+          </div>
+          <span class="ban-sash">World Cup 2026</span>
+        </div>
+      </div>
+
+      <div class="mast-wrap">
+        <div class="mast-tag">Masthead</div>
+        <div class="masthead" style="position:relative; overflow:visible;">
+          <div style="gap:11px; position:relative; padding-right: 110px;">
+            <svg viewBox="0 0 56 50" width="42" height="38" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word" style="font-size:18px;">Odds Primer</span>
+            <span class="ban-sash" style="font-size:9px; padding:4px 16px; right:-4px;">World Cup 2026</span>
+          </div>
+          <span class="live">FRA v ARG · live</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Read</b><span>Most graphic. Magazine-cover special-issue. Risk: angled type can read promotional in some contexts.</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         B3 — Full-width banner under
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">B3</span>
+        <h3 class="cell-name">Banner under · cover-deck</h3>
+      </div>
+      <p class="cell-bet">A flame band running the full width of the lockup beneath, edition copy reversed. Reads like a newspaper deck under a masthead — bold but settled.</p>
+
+      <div class="stage">
+        <div class="ban-under-wrap">
+          <div class="lock-row">
+            <svg viewBox="0 0 56 50" width="74" height="66" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word">Odds Primer</span>
+          </div>
+          <div class="ban-under">World Cup 2026 · Edition I · Vol. 1</div>
+        </div>
+      </div>
+
+      <div class="mast-wrap">
+        <div class="mast-tag">Masthead — banner runs full width</div>
+        <div style="display:flex; flex-direction:column;">
+          <div class="masthead" style="border-bottom:0;">
+            <div style="gap:11px;">
+              <svg viewBox="0 0 56 50" width="42" height="38" aria-hidden="true">
+                <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+                <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+                <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+                <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+                <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+              </svg>
+              <span class="word" style="font-size:18px;">Odds Primer</span>
+            </div>
+            <span class="live">FRA v ARG · live</span>
+          </div>
+          <div style="background:var(--flame); color:var(--paper); padding:7px 16px; text-align:center; font-family:var(--sans); font-weight:800; font-size:10px; letter-spacing:0.32em; text-transform:uppercase;">World Cup 2026 · Edition I · Vol. 1</div>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Read</b><span>Loudest <em>and</em> most editorial. Reads as a newspaper "deck" or a magazine cover line.</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         B4 — Marquee bar extending right
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">B4</span>
+        <h3 class="cell-name">Marquee bar · ticker right</h3>
+      </div>
+      <p class="cell-bet">A long flame bar extending right of the wordmark — edition copy running like a ticker / newsroom band. Newsroom energy, not casino.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <div class="lock-row">
+            <svg viewBox="0 0 56 50" width="74" height="66" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word">Odds Primer</span>
+          </div>
+          <span class="ban-marquee">World Cup 2026<span class="pip">·</span>Edition I<span class="pip">·</span>Vol. 1</span>
+        </div>
+      </div>
+
+      <div class="mast-wrap">
+        <div class="mast-tag">Masthead — bar fills the right side</div>
+        <div class="masthead">
+          <div style="gap:11px; flex: 1;">
+            <svg viewBox="0 0 56 50" width="42" height="38" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word" style="font-size:18px;">Odds Primer</span>
+            <span class="ban-marquee" style="font-size:9px; padding:0 12px;">World Cup 2026<span class="pip">·</span>Edition I<span class="pip">·</span>Vol. 1</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Read</b><span>Most informational. The bar is a slot for live tournament copy ("Group stage · Day 4," "Knockouts begin Saturday").</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         B5 — Pennant tail
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">B5</span>
+        <h3 class="cell-name">Pennant tail · tournament flag</h3>
+      </div>
+      <p class="cell-bet">A flame band with a triangular notch on the right — reads as a tournament pennant or sports flag without being a literal flag illustration.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <div class="lock-row">
+            <svg viewBox="0 0 56 50" width="74" height="66" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word">Odds Primer</span>
+          </div>
+          <span class="ban-pennant">World Cup 2026</span>
+        </div>
+      </div>
+
+      <div class="mast-wrap">
+        <div class="mast-tag">Masthead</div>
+        <div class="masthead">
+          <div style="gap:11px;">
+            <svg viewBox="0 0 56 50" width="42" height="38" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word" style="font-size:18px;">Odds Primer</span>
+            <span class="ban-pennant" style="font-size:9px; padding:5px 18px 5px 12px;">World Cup 2026</span>
+          </div>
+          <span class="live">FRA v ARG · live</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Read</b><span>Most tournament-coded. The pennant cut signals "this is a sporting edition" without being a football, a stadium, or a trophy.</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         B6 — Big edition slab
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">B6</span>
+        <h3 class="cell-name">Big slab · the edition is the headline</h3>
+      </div>
+      <p class="cell-bet">A taller flame block right of the wordmark with a giant serif "26" — the wordmark is the publication, the slab is the issue. Loudest typographic move.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <div class="lock-row">
+            <svg viewBox="0 0 56 50" width="74" height="66" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word">Odds Primer</span>
+          </div>
+          <span class="ban-slab"><span class="big">26</span><span class="small">World Cup</span></span>
+        </div>
+      </div>
+
+      <div class="mast-wrap">
+        <div class="mast-tag">Masthead</div>
+        <div class="masthead">
+          <div style="gap:11px;">
+            <svg viewBox="0 0 56 50" width="42" height="38" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word" style="font-size:18px;">Odds Primer</span>
+            <span class="ban-slab" style="padding:4px 10px;"><span class="big" style="font-size:22px;">26</span><span class="small" style="font-size:7.5px; margin-top:1px;">World Cup</span></span>
+          </div>
+          <span class="live">FRA v ARG · live</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Read</b><span>Most ownable. "26" + flame becomes its own little artifact — the digit is the WC mark, reusable on social cards and merch.</span>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="colophon">
+    <span>Odds Primer · Brand · WC 2026 edition · Banner attachments · v0.2</span>
+    <span>6 attachments · all share the locked v2 lockup · all louder</span>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Will France win the 2026 World Cup? — Odds Primer</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 var(--gutter-page); }
+  .section-block { background: var(--paper-warm); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 28px 0; margin-top: 56px; }
+  .two-col { display: grid; grid-template-columns: 1fr 320px; gap: 56px; align-items: start; }
+  @media (max-width: 880px) { .two-col { grid-template-columns: 1fr; gap: 32px; } }
+  .prose p { font-family: var(--font-serif); font-size: 17px; line-height: 1.55; color: var(--ink); margin: 0 0 16px; max-width: 60ch; }
+  .prose p + p { text-indent: 1.25em; }
+  .prose h2 { font-family: var(--font-serif); font-weight: 600; font-size: 26px; letter-spacing: -0.005em; line-height: 1.2; color: var(--ink); margin: 36px 0 14px; }
+  .pull { font-family: var(--font-serif); font-size: 22px; font-style: italic; line-height: 1.4; color: var(--ink); border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); padding: 18px 0; margin: 28px 0; max-width: 50ch; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="Wordmark.jsx"></script>
+<script type="text/babel" src="Masthead.jsx"></script>
+<script type="text/babel" src="Footnote.jsx"></script>
+<script type="text/babel" src="ProbabilityBar.jsx"></script>
+<script type="text/babel" src="ComparisonRow.jsx"></script>
+<script type="text/babel" src="EventHero.jsx"></script>
+<script type="text/babel" src="Glossary.jsx"></script>
+
+<script type="text/babel">
+const App = () => {
+  const [tab, setTab] = React.useState("tournament");
+
+  const outcomes = [
+    { label: "Brazil",     value: 22 },
+    { label: "Argentina",  value: 18 },
+    { label: "France",     value: 16 },
+    { label: "England",    value: 12 },
+    { label: "Spain",      value: 11 },
+    { label: "Field",      value: 21 },
+  ];
+
+  const rows = [
+    { venue: "Polymarket", price: "16¢",   implied: "16.0%", impliedNum: 16.0, delta7d: 1.2 },
+    { venue: "Kalshi",     price: "14¢",   implied: "14.0%", impliedNum: 14.0, delta7d: -0.4 },
+    { venue: "DraftKings", price: "+550",  implied: "15.4%", impliedNum: 15.4, delta7d: 0.6, native: "+550" },
+    { venue: "FanDuel",    price: "+625",  implied: "13.8%", impliedNum: 13.8, delta7d: -0.2, native: "+625" },
+    { venue: "BetMGM",     price: "+575",  implied: "14.8%", impliedNum: 14.8, delta7d: 0.1, native: "+575" },
+  ];
+
+  return (
+    <>
+      <Masthead tab={tab} onTab={setTab} updated="12 min ago" live={true} />
+
+      <EventHero
+        kicker="WORLD CUP 2026 · OUTRIGHT WINNER"
+        title="Will France win the 2026 World Cup?"
+        standfirst="Polymarket has them at 16¢. Kalshi has them at 14¢. The same question, two answers — and the gap tells you something about who's trading where."
+        byline={{ author: "The Editors", date: "12 May 2026", read: "6 min read" }}
+        outcomes={outcomes}
+        highlight="France"
+      />
+
+      <section style={{ padding: "0 var(--gutter-page) 24px" }}>
+        <div className="container">
+          <div className="two-col">
+            <div className="prose">
+              <h2>What you're looking at</h2>
+              <p>Five venues. One question — <em>will France win the tournament outright?</em> The implied probability column is the one that matters. It tells you what each venue's traders <em>collectively</em> believe France's chance of winning is, regardless of how the price is quoted.</p>
+              <p>Polymarket prices contracts from 0¢ to 100¢, where the cents <FootnoteMark symbol="†">On a "yes" contract, the price is the implied probability. 16¢ ≈ 16%.</FootnoteMark> are the probability. Kalshi is similar. American sportsbooks quote in moneyline odds (e.g. <span className="mono">+550</span>), which require a small conversion. We do the conversion for you, in the implied column.</p>
+
+              <div className="pull">A two-cent gap on a binary contract is a two-percentage-point gap on the same outcome. That's small in the abstract, large for a market this liquid.</div>
+
+              <h2>Why the venues disagree</h2>
+              <p>Prediction markets and sportsbooks aren't the same animal. <strong>Polymarket</strong> is a global crypto-native venue — its traders skew international and tend to react quickly to football news. <strong>Kalshi</strong> is US-regulated and its World Cup volume is thinner; thin markets move slower. <strong>Sportsbooks</strong> set lines to balance their book, not to estimate truth — they widen or narrow margins based on which side the public is taking.</p>
+              <p>So a 2¢ gap between Polymarket and Kalshi often reflects a global vs. US-trader split. A wider gap to the sportsbooks usually reflects the book's house margin<FootnoteMark symbol="‡">Sportsbooks build a margin into both sides of the line — the "vig." Implied probabilities across all outcomes sum to more than 100%; the excess is the book's edge.</FootnoteMark> rather than a different opinion about France.</p>
+
+              <h2>How to read the comparison below</h2>
+              <p>The flame highlight marks the venue offering the highest implied probability — equivalent to the best price for a "yes." We are not telling you to bet there. We are telling you that, if you were going to take that side, the math is most generous on that venue today.</p>
+            </div>
+
+            <aside style={{ position: "sticky", top: 110 }}>
+              <GlossaryEntry
+                term="Implied probability"
+                mark="P(yes)"
+                def="The chance an event happens, derived from the price. On a 0–$1 contract, the price IS the probability. For American odds, divide differently — see the conversion table."
+                example="16¢ → 16% · +550 → 15.4% · −110 → 52.4%"
+              />
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <div className="section-block">
+        <div className="container">
+          <div className="op-eyebrow" style={{ marginBottom: 14 }}>The comparison · across 5 venues</div>
+          <h2 style={{
+            fontFamily: "var(--font-serif)", fontWeight: 600, fontSize: 30,
+            letterSpacing: "-0.005em", margin: "0 0 22px", color: "var(--ink)",
+          }}>France · to win 2026 World Cup outright</h2>
+          <ComparisonTable rows={rows} />
+          <div style={{
+            marginTop: 14, fontFamily: "var(--font-serif)",
+            fontStyle: "italic", fontSize: 13, color: "var(--graphite)",
+          }}>
+            Best price highlighted in flame. We don't tell you to bet there — we show you it exists.
+          </div>
+        </div>
+      </div>
+
+      <section style={{ padding: "56px var(--gutter-page) 32px" }}>
+        <div className="container">
+          <div className="op-eyebrow" style={{ marginBottom: 14 }}>Footnotes</div>
+          <FootnoteList items={[
+            { symbol: "†", term: "Implied probability", body: "On a yes contract priced 0–$1, the price is the implied probability. American odds need a conversion (see glossary)." },
+            { symbol: "‡", term: "Vig / book margin", body: "Sportsbooks build a margin into both sides of a line. Implied probabilities across all outcomes sum to more than 100%; the excess is the book's edge." },
+            { symbol: "§", term: "Liquidity", body: "How much volume a market has. Thin markets move on small trades; liquid markets resist single-trader influence." },
+          ]} />
+        </div>
+      </section>
+
+      <footer style={{
+        padding: "32px var(--gutter-page) 56px",
+        borderTop: "1px solid var(--rule)",
+        marginTop: 32,
+      }}>
+        <div className="container" style={{
+          display: "flex", justifyContent: "space-between", alignItems: "baseline",
+          flexWrap: "wrap", gap: 18,
+        }}>
+          <Wordmark size={20} />
+          <div style={{
+            fontFamily: "var(--font-serif)", fontStyle: "italic",
+            fontSize: 13, color: "var(--graphite)", maxWidth: "48ch",
+          }}>
+            We compare prices across venues and explain in plain English what the market means. We don't tip. We don't take fees. We don't sell anything.
+          </div>
+          <div className="op-eyebrow" style={{ color: "var(--graphite)" }}>Vol. 1 · World Cup 2026</div>
+        </div>
+      </footer>
+    </>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

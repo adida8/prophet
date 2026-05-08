@@ -1,0 +1,114 @@
+{
+  "_about": "The Desk — output contract example file. Three matches showing Pick / Pass / Avoid verdict states. Faktor's site builds against this shape. Schema is described in RECOMMENDATION_ENGINE_DESIGN.md. Field semantics: team_a/team_b follow FIFA listing convention (no home/away in tournament play). verdict.side carries an actual team name on Pick, null on Pass/Avoid. verdict.market_venue is the market with the better price for the called side. copy.* strings are written in voice and should not be interpolated by the consumer — render verbatim. Model internals (probabilities, xG, drivers) intentionally do not appear here — they stay inside The Desk.",
+
+  "matches": [
+    {
+      "_state_demo": "PICK — model and market disagree by enough to call it",
+      "match_id": "wc26-d-fra-mex-20260612",
+      "kickoff_utc": "2026-06-12T19:00:00Z",
+      "group": "D",
+      "team_a": "France",
+      "team_b": "Mexico",
+      "venue": {
+        "city": "Guadalajara",
+        "stadium": "Estadio Akron",
+        "country": "MX"
+      },
+
+      "verdict": {
+        "state": "pick",
+        "side": "France",
+        "market_venue": "polymarket",
+        "price": "-180",
+        "edge_pp": 4.2
+      },
+
+      "copy": {
+        "title": "France v Mexico · class shows",
+        "summary": "France land in Guadalajara as the heavier side, and Mexico's keeper situation has the market a step behind.",
+        "blurb": "France meet Mexico in Guadalajara on Friday evening. The class gap is the story — France's qualifying xG was nearly double Mexico's, and the experience on the team sheet leans one way. Globo Esporte reported on Tuesday that Mexico's first-choice keeper picked up a knock in training and is doubtful for the opener. Polymarket has France at -180; Kalshi sits a touch shorter. We land on a 4pp gap to Polymarket, which feels like the market still pricing the keeper as available.",
+        "citations": [
+          "https://globoesporte.globo.com/futebol/copa-do-mundo/...",
+          "https://lequipe.fr/Football/Article/..."
+        ]
+      },
+
+      "updated_at": "2026-06-12T17:00:00Z"
+    },
+
+    {
+      "_state_demo": "PASS — model and market agree within ~1pp; nothing to surface",
+      "match_id": "wc26-d-tun-aus-20260612",
+      "kickoff_utc": "2026-06-12T16:00:00Z",
+      "group": "D",
+      "team_a": "Tunisia",
+      "team_b": "Australia",
+      "venue": {
+        "city": "Toronto",
+        "stadium": "BMO Field",
+        "country": "CA"
+      },
+
+      "verdict": {
+        "state": "pass",
+        "side": null,
+        "market_venue": null,
+        "price": null,
+        "edge_pp": 0.6
+      },
+
+      "copy": {
+        "title": "Tunisia v Australia · markets agree",
+        "summary": "Two evenly-matched sides, both venues priced inside a percentage point of our number. Nothing to call.",
+        "blurb": "Tunisia and Australia open Group D in Toronto with both venues sitting almost exactly where the fundamentals say they should. Form has been similar across qualifying, the venue is neutral, and neither side has a meaningful availability story. Kalshi and Polymarket are within a percentage point of our score on every outcome, and within a percentage point of each other. There's no edge to publish here, and surfacing nothing is the call. If the market drifts in the next few days, we'll revisit.",
+        "citations": []
+      },
+
+      "updated_at": "2026-06-12T14:30:00Z"
+    },
+
+    {
+      "_state_demo": "AVOID — both venues priced inside The Desk's number; negative signal",
+      "match_id": "wc26-e-ger-jpn-20260613",
+      "kickoff_utc": "2026-06-13T18:00:00Z",
+      "group": "E",
+      "team_a": "Germany",
+      "team_b": "Japan",
+      "venue": {
+        "city": "East Rutherford",
+        "stadium": "MetLife Stadium",
+        "country": "US"
+      },
+
+      "verdict": {
+        "state": "avoid",
+        "side": null,
+        "market_venue": null,
+        "price": null,
+        "edge_pp": -3.8
+      },
+
+      "copy": {
+        "title": "Germany v Japan · line short on both",
+        "summary": "Both Kalshi and Polymarket have Germany shorter than our number — whichever side you take, you're paying over.",
+        "blurb": "Germany are the right favourite against Japan in East Rutherford, but both venues have priced them shorter than the fundamentals support. Kalshi has Germany inside our score by roughly four points; Polymarket is two points shorter still. The Athletic flagged on Wednesday that Germany's central defender is in concussion protocol, which should widen the line — neither market has moved on it yet. There's no clean way to take Germany at value, and Japan at the implied price is no better. The Desk skips this one.",
+        "citations": [
+          "https://theathletic.com/..."
+        ]
+      },
+
+      "updated_at": "2026-06-13T15:00:00Z"
+    }
+  ],
+
+  "_index_example": {
+    "comment": "The companion index.json published alongside the per-match files lets Faktor poll for changes cheaply. Shape:",
+    "edition": "wc-2026",
+    "generated_at": "2026-06-12T17:00:00Z",
+    "matches": [
+      { "match_id": "wc26-d-fra-mex-20260612", "verdict_state": "pick",  "updated_at": "2026-06-12T17:00:00Z", "etag": "W/\"abc123\"" },
+      { "match_id": "wc26-d-tun-aus-20260612", "verdict_state": "pass",  "updated_at": "2026-06-12T14:30:00Z", "etag": "W/\"def456\"" },
+      { "match_id": "wc26-e-ger-jpn-20260613", "verdict_state": "avoid", "updated_at": "2026-06-13T15:00:00Z", "etag": "W/\"ghi789\"" }
+    ]
+  }
+}

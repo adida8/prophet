@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Brand landscape — Prophet research</title>
+<style>
+  @page { size: A4 portrait; margin: 14mm 14mm; }
+  :root {
+    --bg: #FAF8F1;
+    --paper: #FFFFFF;
+    --ink: #15171C;
+    --ink-soft: #404451;
+    --moss: #4F5D3F;
+    --signal: #C24F2A;
+    --line: #C7C4B8;
+    --muted: #6B6F75;
+    --avoid: #B23A3A;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif;
+    font-size: 9.5px; line-height: 1.4;
+  }
+  .mono { font-family: ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace; }
+  .page { page-break-after: always; padding: 0 0 8px; }
+  .page:last-of-type { page-break-after: auto; }
+  h1, h2, h3 { margin: 0; }
+
+  /* MASTHEAD */
+  .masthead { border-top: 6px double var(--ink); border-bottom: 1px solid var(--ink);
+    padding: 10px 0 8px; margin-bottom: 14px; display:flex; justify-content:space-between; align-items:flex-end; }
+  .title { font-size: 18px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+  .sub { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--moss); margin-top: 2px;}
+  .meta { font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+
+  .label { font-size: 8.5px; letter-spacing: 2px; text-transform: uppercase; color: var(--signal); font-weight: 700; margin: 14px 0 6px; }
+  .kicker { font-size: 14px; font-weight: 800; letter-spacing: -0.2px; text-transform: uppercase; margin-bottom: 8px; }
+
+  /* SECTION 1 — LANDSCAPE GRID */
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .card { background: var(--paper); border: 1px solid var(--line); padding: 8px 8px 7px;
+    min-height: 132px; display: flex; flex-direction: column; }
+  .card.avoid { border-left: 3px solid var(--avoid); }
+  .card.odds { border-left: 3px solid var(--ink); }
+  .card.publication { border-left: 3px solid var(--moss); }
+  .card.consumer { border-left: 3px solid #2E5C8A; }
+  .card .name { font-weight: 800; font-size: 11px; letter-spacing: -0.1px; }
+  .card .tag { font-size: 7.5px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 1px; }
+  .card .swatches { display: flex; gap: 2px; margin: 7px 0 5px; height: 18px; }
+  .swatch { flex: 1; border: 1px solid rgba(0,0,0,0.07); border-radius: 1px; }
+  .card .vibe { font-size: 8.5px; line-height: 1.35; color: var(--ink-soft); flex: 1; }
+  .card .footer { font-family: ui-monospace, Menlo, monospace; font-size: 7px;
+    color: var(--muted); margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--line); display: flex; justify-content: space-between; }
+  .card .reg { font-weight: 700; color: var(--ink); }
+
+  .legend { display: flex; gap: 14px; font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .legend .dot { width: 8px; height: 8px; border-radius: 50%; display:inline-block; }
+
+  /* SECTION 2 — CLUSTER MAP */
+  .map-wrap { background: var(--paper); border: 1px solid var(--line); padding: 14px; }
+  .map-grid { position: relative; width: 100%; height: 420px;
+    background:
+      linear-gradient(to right, transparent 49.5%, rgba(0,0,0,0.12) 49.5%, rgba(0,0,0,0.12) 50.5%, transparent 50.5%),
+      linear-gradient(to bottom, transparent 49.5%, rgba(0,0,0,0.12) 49.5%, rgba(0,0,0,0.12) 50.5%, transparent 50.5%),
+      var(--paper);
+    border: 1px solid var(--line);
+  }
+  .axis-x { position: absolute; bottom: -16px; width: 100%; display: flex; justify-content: space-between;
+    font-size: 8px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; }
+  .axis-y { position: absolute; left: -110px; top: 0; height: 100%;
+    display: flex; flex-direction: column; justify-content: space-between; font-size: 8px;
+    letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; padding: 0 6px; text-align: right; width: 100px; }
+  .point { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 4px; }
+  .point .marker { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--paper);}
+  .point.odds .marker { background: var(--ink); }
+  .point.publication .marker { background: var(--moss); border-color: var(--moss);}
+  .point.consumer .marker { background: #2E5C8A; border-color: #2E5C8A;}
+  .point.avoid .marker { background: var(--avoid); border-color: var(--avoid);}
+  .point .lbl { font-size: 7.5px; font-weight: 700; color: var(--ink); white-space: nowrap; background: rgba(255,255,255,0.85); padding: 0 2px; }
+  .quad-label { position: absolute; font-size: 7.5px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--muted); padding: 4px 6px; }
+  .empty-zone { position: absolute; border: 1.5px dashed var(--signal); background: rgba(194,79,42,0.05); pointer-events:none;}
+
+  /* VERDICT */
+  .verdict { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 6px; }
+  .direction { background: var(--paper); border: 1px solid var(--line); padding: 9px; display: flex; flex-direction: column;}
+  .direction .dname { font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px;}
+  .direction .dpalette { display: flex; gap: 2px; height: 24px; margin: 6px 0 5px; border: 1px solid var(--line);}
+  .direction .dpalette div { flex: 1; }
+  .direction .drationale { font-size: 8px; line-height: 1.4; color: var(--ink-soft); flex: 1;}
+  .direction .dhex { font-family: ui-monospace, Menlo, monospace; font-size: 6.5px; color: var(--muted);
+    letter-spacing: 0.4px; margin-top: 4px; }
+  .direction.recommended { border-left: 4px solid var(--signal); }
+  .direction.recommended .dname::after {
+    content: "· RECOMMENDED"; color: var(--signal); font-size: 7.5px; letter-spacing: 1.5px; margin-left: 4px;
+  }
+
+  /* MOCK */
+  .mock { margin-top: 8px; padding: 10px 12px; border: 1px solid var(--line); }
+  .mock .mock-mast { display: flex; align-items: center; gap: 8px; padding-bottom: 6px;
+    border-bottom: 1px solid currentColor; }
+  .mock .reticle { width: 18px; height: 18px; border: 1.2px solid currentColor; border-radius: 50%; position: relative; flex-shrink: 0;}
+  .mock .reticle::before, .mock .reticle::after { content: ''; position: absolute; background: currentColor;}
+  .mock .reticle::before { top: 50%; left: -3px; right: -3px; height: 0.8px;}
+  .mock .reticle::after  { left: 50%; top: -3px; bottom: -3px; width: 0.8px; }
+  .mock .reticle .dot { position: absolute; top: 50%; left: 50%; width: 3px; height: 3px;
+    border-radius: 50%; transform: translate(-50%, -50%); }
+  .mock .wm { font-weight: 800; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;}
+  .mock .wm .a { font-weight: 400; opacity: 0.65; margin-right: 3px; font-size: 8px; letter-spacing: 1.2px;}
+  .mock .stamp { display: inline-block; font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 2px 5px; font-weight: 700; margin-top: 7px; }
+  .mock h4 { font-size: 13px; font-weight: 800; line-height: 1.1; margin: 5px 0 3px;
+    text-transform: uppercase; letter-spacing: -0.1px; }
+  .mock .lede { font-size: 8px; line-height: 1.4; opacity: 0.85;}
+  .mock .row { display:flex; gap:10px; font-family: ui-monospace, Menlo, monospace; font-size: 7px;
+    margin-top: 5px; padding-top: 5px; border-top: 1px dashed currentColor; opacity: 0.85;}
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 7px; }
+  th { text-align: left; padding: 3px 4px; border-bottom: 1.5px solid var(--ink);
+    font-size: 6.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink); }
+  td { padding: 2.5px 4px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.3;}
+  td.hex { font-family: ui-monospace, Menlo, monospace; font-size: 6.5px; letter-spacing: 0.3px;}
+  tr.avoid-row { background: rgba(178,58,58,0.05);}
+  td.swatchcell { white-space: nowrap;}
+  td .ms { display:inline-block; width:9px; height:9px; margin-right:1px; border:0.5px solid rgba(0,0,0,0.15);}
+
+  .verdict-text { background: var(--paper); border: 1px solid var(--line);
+    border-left: 4px solid var(--signal); padding: 10px 14px; margin-top: 8px; font-size: 9.5px; line-height: 1.5;}
+  .verdict-text strong { color: var(--ink);}
+
+  .small { font-size: 8px; line-height: 1.45; color: var(--ink-soft);}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     PAGE 1 — LANDSCAPE GRID
+============================================================ -->
+<section class="page">
+  <div class="masthead">
+    <div>
+      <div class="title">Brand Landscape</div>
+      <div class="sub">Prophet · World Cup 2026 · 20-site EU-weighted sample</div>
+    </div>
+    <div class="meta">2026-05-02 · v1 · for adi</div>
+  </div>
+
+  <div class="kicker">1 · The Field</div>
+  <p class="small" style="margin: 0 0 10px; max-width: 92%;">
+    Twenty sites across four buckets: <strong>direct competitors / odds-comparison</strong> (six),
+    <strong>quality football publications</strong> (six), <strong>football-native consumer products</strong>
+    (five), and <strong>gambling-promo "AVOID" cases</strong> (three). Palettes sampled from rendered pages.
+    Register scored 1–4: <span class="mono">tipster · promo · product · publication</span>.
+  </p>
+
+  <div class="grid" id="grid">
+    <div class="card odds">
+      <div class="name">Action Network</div>
+      <div class="tag">Odds / aggregator</div>
+      <div class="swatches"><div class="swatch" style="background:#03241D;"></div><div class="swatch" style="background:#03A57B;"></div><div class="swatch" style="background:#122945;"></div><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#0E2231;"></div></div>
+      <div class="vibe">US sports-betting media — dark teal/navy, bonus banners, picks-driven</div>
+      <div class="footer">
+        <span class="reg">REG 2/4</span>
+        <span>◑ dark</span>
+      </div>
+    </div>
+
+    <div class="card odds">
+      <div class="name">Betfair (sub for Smarkets)</div>
+      <div class="tag">Odds / aggregator</div>
+      <div class="swatches"><div class="swatch" style="background:#FFB80C;"></div><div class="swatch" style="background:#1F1F1F;"></div><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#444444;"></div><div class="swatch" style="background:#28392B;"></div></div>
+      <div class="vibe">UK exchange — yellow/black masthead, dense odds grid, casino-adjacent</div>
+      <div class="footer">
+        <span class="reg">REG 2/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card odds">
+      <div class="name">OddsPortal</div>
+      <div class="tag">Odds / aggregator</div>
+      <div class="swatches"><div class="swatch" style="background:#2E3739;"></div><div class="swatch" style="background:#894721;"></div><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#5C594C;"></div><div class="swatch" style="background:#232323;"></div></div>
+      <div class="vibe">Spreadsheet-grade odds aggregator — utilitarian, brown/grey data interface</div>
+      <div class="footer">
+        <span class="reg">REG 3/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card odds">
+      <div class="name">Oddschecker</div>
+      <div class="tag">Odds / aggregator</div>
+      <div class="swatches"><div class="swatch" style="background:#0B0D10;"></div><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#1ABE6E;"></div><div class="swatch" style="background:#A9B7BE;"></div><div class="swatch" style="background:#D0D6DA;"></div></div>
+      <div class="vibe">Aggregator portal — green CTAs, dense odds tables, free-bet promos crowd the masthead</div>
+      <div class="footer">
+        <span class="reg">REG 2/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card odds">
+      <div class="name">Pinnacle</div>
+      <div class="tag">Odds / aggregator</div>
+      <div class="swatches"><div class="swatch" style="background:#05294E;"></div><div class="swatch" style="background:#046DF6;"></div><div class="swatch" style="background:#0A182A;"></div><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#F1F3F7;"></div></div>
+      <div class="vibe">Sportsbook UI in deep navy + electric blue — sharper, more product than promo</div>
+      <div class="footer">
+        <span class="reg">REG 3/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card odds">
+      <div class="name">Polymarket</div>
+      <div class="tag">Odds / aggregator</div>
+      <div class="swatches"><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#2145B2;"></div><div class="swatch" style="background:#1B1F2A;"></div><div class="swatch" style="background:#F4D74E;"></div><div class="swatch" style="background:#DC6E2A;"></div></div>
+      <div class="vibe">Prediction-market scoreboard — minimalist white, blue/yellow/orange data lines, news cards</div>
+      <div class="footer">
+        <span class="reg">REG 3/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card publication">
+      <div class="name">Coaches&#x27; Voice</div>
+      <div class="tag">Publication</div>
+      <div class="swatches"><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#FF6600;"></div><div class="swatch" style="background:#1F1F1F;"></div><div class="swatch" style="background:#333F47;"></div><div class="swatch" style="background:#2D2D2D;"></div></div>
+      <div class="vibe">B2B coaching education — orange/black/white, tactical-thinking SaaS-meets-publication</div>
+      <div class="footer">
+        <span class="reg">REG 4/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card publication">
+      <div class="name">Mundial (sub for Tifo)</div>
+      <div class="tag">Publication</div>
+      <div class="swatches"><div class="swatch" style="background:#1F1F1F;"></div><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#D9D2C5;"></div><div class="swatch" style="background:#7C6A50;"></div><div class="swatch" style="background:#2A2A2A;"></div></div>
+      <div class="vibe">Football zine / streetwear — high-contrast B&amp;W, photography-led, indie publication</div>
+      <div class="footer">
+        <span class="reg">REG 4/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card publication">
+      <div class="name">Scouted Football</div>
+      <div class="tag">Publication</div>
+      <div class="swatches"><div class="swatch" style="background:#9A2230;"></div><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#1E1617;"></div><div class="swatch" style="background:#592D2B;"></div><div class="swatch" style="background:#F0F0F0;"></div></div>
+      <div class="vibe">Digital football magazine — single deep-red brand color on white, scouting-prospects voice</div>
+      <div class="footer">
+        <span class="reg">REG 4/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card publication">
+      <div class="name">The Athletic (Football)</div>
+      <div class="tag">Publication</div>
+      <div class="swatches"><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#1A1A1A;"></div><div class="swatch" style="background:#A41C20;"></div><div class="swatch" style="background:#9E9E9E;"></div><div class="swatch" style="background:#2B2B2B;"></div></div>
+      <div class="vibe">Newspaper-grade football longform — black-and-white masthead, single red accent</div>
+      <div class="footer">
+        <span class="reg">REG 4/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card publication">
+      <div class="name">The Blizzard</div>
+      <div class="tag">Publication</div>
+      <div class="swatches"><div class="swatch" style="background:#F6F5EF;"></div><div class="swatch" style="background:#1A1A1A;"></div><div class="swatch" style="background:#E81355;"></div><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#46061A;"></div></div>
+      <div class="vibe">Quarterly long-form football mag — cream + hot pink, serious-fan zine</div>
+      <div class="footer">
+        <span class="reg">REG 4/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card publication">
+      <div class="name">The Set Pieces</div>
+      <div class="tag">Publication</div>
+      <div class="swatches"><div class="swatch" style="background:#FFF6F2;"></div><div class="swatch" style="background:#0B0B0B;"></div><div class="swatch" style="background:#C75109;"></div><div class="swatch" style="background:#11174E;"></div><div class="swatch" style="background:#DA301D;"></div></div>
+      <div class="vibe">Old-school football blog turned mag — cream backgrounds, orange/red illustrations, retro feel</div>
+      <div class="footer">
+        <span class="reg">REG 4/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card consumer">
+      <div class="name">BBC Sport (Football)</div>
+      <div class="tag">Consumer product</div>
+      <div class="swatches"><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#000000;"></div><div class="swatch" style="background:#FFD230;"></div><div class="swatch" style="background:#BB1919;"></div><div class="swatch" style="background:#535353;"></div></div>
+      <div class="vibe">Broadcast-grade news — yellow Sport sub-bar, BBC red accents, photo-led editorial cards</div>
+      <div class="footer">
+        <span class="reg">REG 3/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card consumer">
+      <div class="name">FotMob</div>
+      <div class="tag">Consumer product</div>
+      <div class="swatches"><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#1A1A1A;"></div><div class="swatch" style="background:#3F705B;"></div><div class="swatch" style="background:#F0F0F0;"></div><div class="swatch" style="background:#E5E5E5;"></div></div>
+      <div class="vibe">Live-scores app — clean white, league iconography, single green accent for live state</div>
+      <div class="footer">
+        <span class="reg">REG 3/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card consumer">
+      <div class="name">Goal</div>
+      <div class="tag">Consumer product</div>
+      <div class="swatches"><div class="swatch" style="background:#1F1F1F;"></div><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#F94C28;"></div><div class="swatch" style="background:#676768;"></div><div class="swatch" style="background:#000000;"></div></div>
+      <div class="vibe">International football news portal — black/grey + orange, ad-heavy, transfer-rumor energy</div>
+      <div class="footer">
+        <span class="reg">REG 3/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card consumer">
+      <div class="name">Sky Sports (Football)</div>
+      <div class="tag">Consumer product</div>
+      <div class="swatches"><div class="swatch" style="background:#02114F;"></div><div class="swatch" style="background:#E11A2C;"></div><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#001A6B;"></div><div class="swatch" style="background:#999999;"></div></div>
+      <div class="vibe">TV-network sport site — deep navy + red, gradient headers, premier-league-saturated</div>
+      <div class="footer">
+        <span class="reg">REG 3/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card consumer">
+      <div class="name">Sofascore</div>
+      <div class="tag">Consumer product</div>
+      <div class="swatches"><div class="swatch" style="background:#12194E;"></div><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#E32219;"></div><div class="swatch" style="background:#242952;"></div><div class="swatch" style="background:#666666;"></div></div>
+      <div class="vibe">Scoreboard utility — deep navy header + red live indicator, dense fixture list</div>
+      <div class="footer">
+        <span class="reg">REG 3/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card avoid">
+      <div class="name">Paddy Power (AVOID)</div>
+      <div class="tag">AVOID · gambling-promo</div>
+      <div class="swatches"><div class="swatch" style="background:#2D8E3E;"></div><div class="swatch" style="background:#1F1F1F;"></div><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#003D1A;"></div><div class="swatch" style="background:#FFD230;"></div></div>
+      <div class="vibe">Loud Irish bookmaker — kelly green + black, transgressive humor, max promo</div>
+      <div class="footer">
+        <span class="reg">REG 1/4</span>
+        <span>◐ light</span>
+      </div>
+    </div>
+
+    <div class="card avoid">
+      <div class="name">William Hill (AVOID)</div>
+      <div class="tag">AVOID · gambling-promo</div>
+      <div class="swatches"><div class="swatch" style="background:#021438;"></div><div class="swatch" style="background:#FFD230;"></div><div class="swatch" style="background:#FFFFFF;"></div><div class="swatch" style="background:#003580;"></div><div class="swatch" style="background:#1F1F1F;"></div></div>
+      <div class="vibe">UK heritage bookmaker — deep navy + yellow, &#x27;€200 free bet&#x27; promo register</div>
+      <div class="footer">
+        <span class="reg">REG 1/4</span>
+        <span>◑ dark</span>
+      </div>
+    </div>
+
+    <div class="card avoid">
+      <div class="name">bet365 (AVOID)</div>
+      <div class="tag">AVOID · gambling-promo</div>
+      <div class="swatches"><div class="swatch" style="background:#14533D;"></div><div class="swatch" style="background:#FFE45C;"></div><div class="swatch" style="background:#1F1F1F;"></div><div class="swatch" style="background:#3D3D3D;"></div><div class="swatch" style="background:#FFFFFF;"></div></div>
+      <div class="vibe">World&#x27;s #1 sportsbook — dark green + yellow, casino-grade data density, promo modals</div>
+      <div class="footer">
+        <span class="reg">REG 1/4</span>
+        <span>◑ dark</span>
+      </div>
+    </div></div>
+
+  <div class="legend">
+    <span><span class="dot" style="background: var(--ink);"></span>Odds / aggregator</span>
+    <span><span class="dot" style="background: var(--moss);"></span>Publication</span>
+    <span><span class="dot" style="background: #2E5C8A;"></span>Consumer product</span>
+    <span><span class="dot" style="background: var(--avoid);"></span>Avoid (gambling-promo)</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     PAGE 2 — CLUSTER MAP
+============================================================ -->
+<section class="page">
+  <div class="masthead">
+    <div>
+      <div class="title">Cluster Map</div>
+      <div class="sub">Where the white space is</div>
+    </div>
+    <div class="meta">2 of 4 · plot of the 20-site field</div>
+  </div>
+
+  <div class="kicker">2 · Where the white space is</div>
+  <p class="small" style="margin: 0 0 14px; max-width: 90%;">
+    Each site placed by a single best-fit reading on two axes. <strong>X-axis:</strong> publication ◀▶ product
+    (does it read as editorial writing or as a tool?). <strong>Y-axis:</strong> muted ◀▶ bold (does the visual
+    register whisper or shout?). Crowded zones are red flags; empty zones are opportunities. The dashed
+    box marks the most distinctive uncrowded area for a football brand.
+  </p>
+
+  <div class="map-wrap">
+    <div style="position:relative; padding: 6px 6px 30px 110px;">
+      <div class="map-grid" id="mapgrid">
+<div class="empty-zone" style="left:5%; right:60%; top:7%; height:46%;"></div>
+<div class="quad-label" style="left:6%; top:8%; color:var(--signal); font-weight:700;">White space — bold publication / dark-mode editorial</div>
+
+    <div class="point odds" style="left:80.0%; top:30.0%;">
+      <div class="marker"></div>
+      <div class="lbl">Oddschecker</div>
+    </div>
+
+    <div class="point odds" style="left:85.0%; top:55.0%;">
+      <div class="marker"></div>
+      <div class="lbl">Pinnacle</div>
+    </div>
+
+    <div class="point odds" style="left:92.5%; top:75.0%;">
+      <div class="marker"></div>
+      <div class="lbl">OddsPortal</div>
+    </div>
+
+    <div class="point odds" style="left:80.0%; top:20.0%;">
+      <div class="marker"></div>
+      <div class="lbl">Betfair</div>
+    </div>
+
+    <div class="point odds" style="left:70.0%; top:65.0%;">
+      <div class="marker"></div>
+      <div class="lbl">Polymarket</div>
+    </div>
+
+    <div class="point odds" style="left:65.0%; top:25.0%;">
+      <div class="marker"></div>
+      <div class="lbl">Action Network</div>
+    </div>
+
+    <div class="point publication" style="left:7.5%; top:85.0%;">
+      <div class="marker"></div>
+      <div class="lbl">The Athletic (Football)</div>
+    </div>
+
+    <div class="point publication" style="left:5.0%; top:70.0%;">
+      <div class="marker"></div>
+      <div class="lbl">Mundial</div>
+    </div>
+
+    <div class="point publication" style="left:15.0%; top:50.0%;">
+      <div class="marker"></div>
+      <div class="lbl">Scouted Football</div>
+    </div>
+
+    <div class="point publication" style="left:2.5%; top:35.0%;">
+      <div class="marker"></div>
+      <div class="lbl">The Blizzard</div>
+    </div>
+
+    <div class="point publication" style="left:30.0%; top:40.0%;">
+      <div class="marker"></div>
+      <div class="lbl">Coaches&#x27; Voice</div>
+    </div>
+
+    <div class="point publication" style="left:10.0%; top:45.0%;">
+      <div class="marker"></div>
+      <div class="lbl">The Set Pieces</div>
+    </div>
+
+    <div class="point consumer" style="left:92.5%; top:80.0%;">
+      <div class="marker"></div>
+      <div class="lbl">FotMob</div>
+    </div>
+
+    <div class="point consumer" style="left:95.0%; top:50.0%;">
+      <div class="marker"></div>
+      <div class="lbl">Sofascore</div>
+    </div>
+
+    <div class="point consumer" style="left:50.0%; top:55.0%;">
+      <div class="marker"></div>
+      <div class="lbl">BBC Sport (Football)</div>
+    </div>
+
+    <div class="point consumer" style="left:60.0%; top:25.0%;">
+      <div class="marker"></div>
+      <div class="lbl">Sky Sports (Football)</div>
+    </div>
+
+    <div class="point consumer" style="left:70.0%; top:25.0%;">
+      <div class="marker"></div>
+      <div class="lbl">Goal</div>
+    </div>
+
+    <div class="point avoid" style="left:85.0%; top:2.5%;">
+      <div class="marker"></div>
+      <div class="lbl">bet365</div>
+    </div>
+
+    <div class="point avoid" style="left:75.0%; top:2.5%;">
+      <div class="marker"></div>
+      <div class="lbl">William Hill</div>
+    </div>
+
+    <div class="point avoid" style="left:80.0%; top:5.0%;">
+      <div class="marker"></div>
+      <div class="lbl">Paddy Power</div>
+    </div></div>
+      <div style="position: absolute; left: 0; top: 6px; height: 420px; display: flex; flex-direction: column; justify-content: space-between; font-size: 8px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; padding: 0 6px; text-align: right; width: 100px;">
+        <div>Bold</div>
+        <div>Muted</div>
+      </div>
+      <div style="position: absolute; bottom: 8px; left: 110px; right: 6px; display: flex; justify-content: space-between; font-size: 8px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-soft); font-weight: 700;">
+        <div>◀ Publication</div>
+        <div>Product ▶</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div class="small">
+      <strong>Crowded zones:</strong>
+      <ul style="margin: 4px 0 0; padding-left: 14px;">
+        <li><strong>Top-right (bold + product)</strong> — every gambling promo (bet365, William Hill, Paddy, Action Network) and every "loud" sports news portal (Goal, Sky, Sofascore-leaning, Oddschecker). The least useful place to land.</li>
+        <li><strong>Bottom-right (muted + product)</strong> — Pinnacle, OddsPortal, FotMob, Polymarket. Clinical SaaS-grade tooling. Owns "trustworthy data utility." Hard to compete; not the brand's wedge anyway.</li>
+        <li><strong>Bottom-left (muted + publication)</strong> — The Athletic, Mundial, Set Pieces, Coaches' Voice. The B&W editorial corner. Premium but requires decades of credibility to land here on day one.</li>
+      </ul>
+    </div>
+    <div class="small">
+      <strong>Where the white space is:</strong>
+      <ul style="margin: 4px 0 0; padding-left: 14px;">
+        <li><strong>Mid-left (publication, slightly bold)</strong> — only The Blizzard sits here (cream + hot pink) and Scouted FC (red on white). Distinctive, <em>not</em> gambling, <em>not</em> commodity score-tracker.</li>
+        <li><strong>Dark-mode editorial</strong> — completely unowned. Every football publication defaults to white-paper. The dark-mode sites in the sample are all gambling (bet365, Action Network) — owning dark-mode-as-publication is genuinely empty quadrant.</li>
+        <li><strong>Warm/muted but not B&amp;W</strong> — cream-paper + a non-default accent (anything that isn't red/yellow/Sky-navy) is uncontested.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PAGE 3 — VERDICT (3 directions + recommendation)
+============================================================ -->
+<section class="page">
+  <div class="masthead">
+    <div>
+      <div class="title">Verdict</div>
+      <div class="sub">Three directions · one ship</div>
+    </div>
+    <div class="meta">3 of 4 · ship by Monday</div>
+  </div>
+
+  <div class="kicker">3 · Three palette directions</div>
+  <p class="small" style="margin: 0 0 8px;">
+    Each of these earns its rationale from the field above. None of them are safe defaults — each one
+    chooses a piece of unowned territory. The recommendation is below; if the chosen one does not feel
+    inevitable on second viewing, the other two are real fallbacks rather than consolation prizes.
+  </p>
+
+  <div class="verdict">
+
+    <!-- DIRECTION A -->
+    <div class="direction">
+      <div class="dname">A · Broadsheet</div>
+      <div class="dpalette">
+        <div style="background:#F4EFE2"></div>
+        <div style="background:#15171C"></div>
+        <div style="background:#7A1E26"></div>
+        <div style="background:#9B927C"></div>
+        <div style="background:#FFFFFF"></div>
+      </div>
+      <div class="dhex">#F4EFE2 · #15171C · #7A1E26 · #9B927C · #FFFFFF</div>
+      <div class="drationale">
+        Warm chalk-cream, ink black, single oxblood accent. Reads as a Sunday-broadsheet football
+        section. <strong>Earns its place</strong> by sitting next to The Athletic / Set Pieces but using
+        oxblood (not BBC red, not Athletic red, not Scouted red) — a deeper, ink-printed shade. <strong>Risk:</strong>
+        in five seconds, casual fans may not differentiate it from existing prestige editorial.
+      </div>
+      <div class="mock" style="background:#F4EFE2; color:#15171C;">
+        <div class="mock-mast">
+          <div class="reticle"><div class="dot" style="background:#7A1E26;"></div></div>
+          <div class="wm"><span class="a">THE</span>SCOUT</div>
+        </div>
+        <div class="stamp" style="background:#7A1E26; color:#F4EFE2;">Scout Report</div>
+        <h4>Brazil's path to the final, scouted.</h4>
+        <div class="lede">Three things the markets are missing about Tite's side, what to back, what to fade.</div>
+        <div class="row"><span>FIX 14</span><span>BRA v ARG</span><span>EDGE +4.2%</span></div>
+      </div>
+    </div>
+
+    <!-- DIRECTION B (RECOMMENDED) -->
+    <div class="direction recommended">
+      <div class="dname">B · Floodlight</div>
+      <div class="dpalette">
+        <div style="background:#0F1115"></div>
+        <div style="background:#EDE6D2"></div>
+        <div style="background:#F2A93B"></div>
+        <div style="background:#3B463F"></div>
+        <div style="background:#1A1D24"></div>
+      </div>
+      <div class="dhex">#0F1115 · #EDE6D2 · #F2A93B · #3B463F · #1A1D24</div>
+      <div class="drationale">
+        Ink-black background, warm parchment text, sodium-amber accent — like a stadium under floodlights.
+        <strong>Earns its place</strong> because the entire sampled field defaults to white paper, and the
+        only dark-mode sites are gambling promos. A dark-mode <em>publication</em> is genuinely uncrowded
+        in football. The reticle motif renders dramatically against ink. Sodium-amber is football-native
+        (literal floodlight reference) and unused by any peer in the sample.
+      </div>
+      <div class="mock" style="background:#0F1115; color:#EDE6D2;">
+        <div class="mock-mast">
+          <div class="reticle"><div class="dot" style="background:#F2A93B;"></div></div>
+          <div class="wm"><span class="a">THE</span>SCOUT</div>
+        </div>
+        <div class="stamp" style="background:#F2A93B; color:#0F1115;">Scout Report</div>
+        <h4>Brazil's path to the final, scouted.</h4>
+        <div class="lede">Three things the markets are missing about Tite's side, what to back, what to fade.</div>
+        <div class="row" style="border-top-color: rgba(237,230,210,0.25);"><span>FIX 14</span><span>BRA v ARG</span><span>EDGE +4.2%</span></div>
+      </div>
+    </div>
+
+    <!-- DIRECTION C -->
+    <div class="direction">
+      <div class="dname">C · Pitch</div>
+      <div class="dpalette">
+        <div style="background:#F5F4EE"></div>
+        <div style="background:#2E3A2A"></div>
+        <div style="background:#C24F2A"></div>
+        <div style="background:#B7B6A8"></div>
+        <div style="background:#15171C"></div>
+      </div>
+      <div class="dhex">#F5F4EE · #2E3A2A · #C24F2A · #B7B6A8 · #15171C</div>
+      <div class="drationale">
+        Stone-cream paper + deep-pitch moss + a single signal-orange accent. Extension of the original
+        Scout direction. <strong>Earns its place</strong> because no sampled site combines these three —
+        the moss is darker than any sportsbook green and warmer than any utility navy. Signal-orange
+        echoes a referee flag without leaning gambling-promo. <strong>Risk:</strong> proximity to existing
+        Scouted-the-publication and Coaches' Voice (orange-on-white) means the visual hook lands on the
+        accent color rather than the system.
+      </div>
+      <div class="mock" style="background:#F5F4EE; color:#15171C;">
+        <div class="mock-mast" style="border-color: #2E3A2A;">
+          <div class="reticle" style="border-color:#2E3A2A;"><div class="dot" style="background:#C24F2A;"></div></div>
+          <div class="wm" style="color:#2E3A2A;"><span class="a">THE</span>SCOUT</div>
+        </div>
+        <div class="stamp" style="background:#2E3A2A; color:#F5F4EE;">Scout Report</div>
+        <h4>Brazil's path to the final, scouted.</h4>
+        <div class="lede">Three things the markets are missing about Tite's side, what to back, what to fade.</div>
+        <div class="row" style="border-top-color: rgba(0,0,0,0.2);"><span>FIX 14</span><span>BRA v ARG</span><span>EDGE +4.2%</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="verdict-text">
+    <strong>Recommendation: ship Direction B — "Floodlight."</strong> The sampled field shows that every
+    football publication defaults to white-paper editorial, and every dark-mode site in the category is a
+    gambling promo. A dark-mode editorial brand is the only quadrant where the visual register
+    <em>itself</em> communicates "publication, not bookmaker" before a reader has parsed a single word.
+    Sodium-amber is football-native (floodlight, captain's-armband, late-evening kickoff) and lands as a
+    distinctive accent that no peer owns. The reticle/scope motif gains contrast and gravity against ink.
+    <strong>Strongest single reason:</strong> in a field where category-shift requires earning trust on
+    day one, picking the unowned quadrant of the cluster map is the cheapest way to be remembered.
+    <strong>Strongest second reason:</strong> dark mode dramatizes the scout-report stamp far better
+    than cream-paper does — every "scout report" headline reads as a briefing in a coach's office,
+    not a Sunday-broadsheet column.
+  </div>
+</section>
+
+<!-- ============================================================
+     PAGE 4 — RECEIPTS
+============================================================ -->
+<section class="page">
+  <div class="masthead">
+    <div>
+      <div class="title">Receipts</div>
+      <div class="sub">All 20 sites · stress-test the call</div>
+    </div>
+    <div class="meta">4 of 4 · sourced 2026-05-02</div>
+  </div>
+
+  <div class="kicker">4 · Receipts</div>
+  <p class="small" style="margin: 0 0 8px;">
+    Every input behind the verdict. Register scored 1–4
+    (<span class="mono">tipster · promo · product · publication</span>).
+    Hex codes sampled from rendered homepage pixels (1280×800) at the dates noted, with manual
+    visual confirmation against algorithmic median-cut output. Audience signal is the most defensible
+    public number per site (X followers OR Similarweb monthly visits OR app downloads).
+  </p>
+
+  <table id="receipts">
+    <thead>
+      <tr>
+        <th style="width:14%">Site</th>
+        <th style="width:8%">Bucket</th>
+        <th style="width:18%">Palette (sampled)</th>
+        <th style="width:5%">Reg</th>
+        <th style="width:14%">Type</th>
+        <th style="width:6%">Mode</th>
+        <th style="width:13%">Audience</th>
+        <th style="width:22%">Vibe</th>
+      </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td><strong>Oddschecker</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">oddschecker.com</span></td>
+      <td>Odds</td>
+      <td class="swatchcell"><span class="ms" style="background:#0B0D10;"></span><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#1ABE6E;"></span><span class="ms" style="background:#A9B7BE;"></span><span class="ms" style="background:#D0D6DA;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#0B0D10 #FFFFFF #1ABE6E #A9B7BE #D0D6DA</span></td>
+      <td><strong>2</strong>/4</td>
+      <td>Sans (Inter-ish), proportional, mid weight; data-table heavy</td>
+      <td>light</td>
+      <td>~30M visits/mo (Similarweb); UK leader, 75% male</td>
+      <td>Aggregator portal — green CTAs, dense odds tables, free-bet promos crowd the masthead</td>
+    </tr>
+
+    <tr>
+      <td><strong>Pinnacle</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">pinnacle.com</span></td>
+      <td>Odds</td>
+      <td class="swatchcell"><span class="ms" style="background:#05294E;"></span><span class="ms" style="background:#046DF6;"></span><span class="ms" style="background:#0A182A;"></span><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#F1F3F7;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#05294E #046DF6 #0A182A #FFFFFF #F1F3F7</span></td>
+      <td><strong>3</strong>/4</td>
+      <td>Sans condensed, lighter weights for body, bold blue for emphasis</td>
+      <td>light</td>
+      <td>Top-200 sportsbook globally per Similarweb; sharp/pro audience</td>
+      <td>Sportsbook UI in deep navy + electric blue — sharper, more product than promo</td>
+    </tr>
+
+    <tr>
+      <td><strong>OddsPortal</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">oddsportal.com</span></td>
+      <td>Odds</td>
+      <td class="swatchcell"><span class="ms" style="background:#2E3739;"></span><span class="ms" style="background:#894721;"></span><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#5C594C;"></span><span class="ms" style="background:#232323;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#2E3739 #894721 #FFFFFF #5C594C #232323</span></td>
+      <td><strong>3</strong>/4</td>
+      <td>Sans, dense tabular, lots of small text</td>
+      <td>light</td>
+      <td>#11 Sports Betting category, ~83% male, 35-44 skew</td>
+      <td>Spreadsheet-grade odds aggregator — utilitarian, brown/grey data interface</td>
+    </tr>
+
+    <tr>
+      <td><strong>Betfair (sub for Smarkets)</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">betfair.com/exchange</span></td>
+      <td>Odds</td>
+      <td class="swatchcell"><span class="ms" style="background:#FFB80C;"></span><span class="ms" style="background:#1F1F1F;"></span><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#444444;"></span><span class="ms" style="background:#28392B;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#FFB80C #1F1F1F #FFFFFF #444444 #28392B</span></td>
+      <td><strong>2</strong>/4</td>
+      <td>Sans bold, data tables, yellow/black gambling-exchange</td>
+      <td>light</td>
+      <td>UK is top market; bet365 is closest peer at ~108M/mo</td>
+      <td>UK exchange — yellow/black masthead, dense odds grid, casino-adjacent</td>
+    </tr>
+
+    <tr>
+      <td><strong>Polymarket</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">polymarket.com</span></td>
+      <td>Odds</td>
+      <td class="swatchcell"><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#2145B2;"></span><span class="ms" style="background:#1B1F2A;"></span><span class="ms" style="background:#F4D74E;"></span><span class="ms" style="background:#DC6E2A;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#FFFFFF #2145B2 #1B1F2A #F4D74E #DC6E2A</span></td>
+      <td><strong>3</strong>/4</td>
+      <td>Sans (Inter), proportional, light/regular weights — clean SaaS</td>
+      <td>light</td>
+      <td>~688K MAU (record Feb 2026, Token Terminal)</td>
+      <td>Prediction-market scoreboard — minimalist white, blue/yellow/orange data lines, news cards</td>
+    </tr>
+
+    <tr>
+      <td><strong>Action Network</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">actionnetwork.com</span></td>
+      <td>Odds</td>
+      <td class="swatchcell"><span class="ms" style="background:#03241D;"></span><span class="ms" style="background:#03A57B;"></span><span class="ms" style="background:#122945;"></span><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#0E2231;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#03241D #03A57B #122945 #FFFFFF #0E2231</span></td>
+      <td><strong>2</strong>/4</td>
+      <td>Sans, mixed weights, sportsbook-promo styling</td>
+      <td>dark</td>
+      <td>247K X followers; major US betting media</td>
+      <td>US sports-betting media — dark teal/navy, bonus banners, picks-driven</td>
+    </tr>
+
+    <tr>
+      <td><strong>The Athletic (Football)</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">nytimes.com/athletic/football</span></td>
+      <td>Pub.</td>
+      <td class="swatchcell"><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#1A1A1A;"></span><span class="ms" style="background:#A41C20;"></span><span class="ms" style="background:#9E9E9E;"></span><span class="ms" style="background:#2B2B2B;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#FFFFFF #1A1A1A #A41C20 #9E9E9E #2B2B2B</span></td>
+      <td><strong>4</strong>/4</td>
+      <td>Editorial serif headlines (NYT Cheltenham/Chronicle-ish) + sans body</td>
+      <td>light</td>
+      <td>@TheAthleticFC ~1M followers; @TheAthletic 867K</td>
+      <td>Newspaper-grade football longform — black-and-white masthead, single red accent</td>
+    </tr>
+
+    <tr>
+      <td><strong>Mundial (sub for Tifo)</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">mundialmag.com</span></td>
+      <td>Pub.</td>
+      <td class="swatchcell"><span class="ms" style="background:#1F1F1F;"></span><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#D9D2C5;"></span><span class="ms" style="background:#7C6A50;"></span><span class="ms" style="background:#2A2A2A;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#1F1F1F #FFFFFF #D9D2C5 #7C6A50 #2A2A2A</span></td>
+      <td><strong>4</strong>/4</td>
+      <td>Heavy condensed serif wordmark + neo-grotesque body</td>
+      <td>light</td>
+      <td>Niche football culture mag; print + Shopify shop</td>
+      <td>Football zine / streetwear — high-contrast B&amp;W, photography-led, indie publication</td>
+    </tr>
+
+    <tr>
+      <td><strong>Scouted Football</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">scoutedftbl.com</span></td>
+      <td>Pub.</td>
+      <td class="swatchcell"><span class="ms" style="background:#9A2230;"></span><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#1E1617;"></span><span class="ms" style="background:#592D2B;"></span><span class="ms" style="background:#F0F0F0;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#9A2230 #FFFFFF #1E1617 #592D2B #F0F0F0</span></td>
+      <td><strong>4</strong>/4</td>
+      <td>Bold sans wordmark, modern editorial, single brand red</td>
+      <td>light</td>
+      <td>Niche; Substack-tier scouting publication</td>
+      <td>Digital football magazine — single deep-red brand color on white, scouting-prospects voice</td>
+    </tr>
+
+    <tr>
+      <td><strong>The Blizzard</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">theblizzard.co.uk</span></td>
+      <td>Pub.</td>
+      <td class="swatchcell"><span class="ms" style="background:#F6F5EF;"></span><span class="ms" style="background:#1A1A1A;"></span><span class="ms" style="background:#E81355;"></span><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#46061A;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#F6F5EF #1A1A1A #E81355 #FFFFFF #46061A</span></td>
+      <td><strong>4</strong>/4</td>
+      <td>Serif masthead (Garamond-ish) + bold display sans for hero</td>
+      <td>light</td>
+      <td>Subscription-only print quarterly, J. Wilson edited</td>
+      <td>Quarterly long-form football mag — cream + hot pink, serious-fan zine</td>
+    </tr>
+
+    <tr>
+      <td><strong>Coaches&#x27; Voice</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">coachesvoice.com</span></td>
+      <td>Pub.</td>
+      <td class="swatchcell"><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#FF6600;"></span><span class="ms" style="background:#1F1F1F;"></span><span class="ms" style="background:#333F47;"></span><span class="ms" style="background:#2D2D2D;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#FFFFFF #FF6600 #1F1F1F #333F47 #2D2D2D</span></td>
+      <td><strong>4</strong>/4</td>
+      <td>Modern sans (Inter), minimal serif accents, clean editorial</td>
+      <td>light</td>
+      <td>Coaching-industry vertical; lower-volume but high-credibility</td>
+      <td>B2B coaching education — orange/black/white, tactical-thinking SaaS-meets-publication</td>
+    </tr>
+
+    <tr>
+      <td><strong>The Set Pieces</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">thesetpieces.com</span></td>
+      <td>Pub.</td>
+      <td class="swatchcell"><span class="ms" style="background:#FFF6F2;"></span><span class="ms" style="background:#0B0B0B;"></span><span class="ms" style="background:#C75109;"></span><span class="ms" style="background:#11174E;"></span><span class="ms" style="background:#DA301D;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#FFF6F2 #0B0B0B #C75109 #11174E #DA301D</span></td>
+      <td><strong>4</strong>/4</td>
+      <td>Slab serif logo + traditional editorial card grid</td>
+      <td>light</td>
+      <td>Mid-tier football blog; established UK voice</td>
+      <td>Old-school football blog turned mag — cream backgrounds, orange/red illustrations, retro feel</td>
+    </tr>
+
+    <tr>
+      <td><strong>FotMob</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">fotmob.com</span></td>
+      <td>Consumer</td>
+      <td class="swatchcell"><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#1A1A1A;"></span><span class="ms" style="background:#3F705B;"></span><span class="ms" style="background:#F0F0F0;"></span><span class="ms" style="background:#E5E5E5;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#FFFFFF #1A1A1A #3F705B #F0F0F0 #E5E5E5</span></td>
+      <td><strong>3</strong>/4</td>
+      <td>Geometric sans wordmark, system sans body, generous whitespace</td>
+      <td>light</td>
+      <td>20M+ users, 50M+ downloads</td>
+      <td>Live-scores app — clean white, league iconography, single green accent for live state</td>
+    </tr>
+
+    <tr>
+      <td><strong>Sofascore</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">sofascore.com</span></td>
+      <td>Consumer</td>
+      <td class="swatchcell"><span class="ms" style="background:#12194E;"></span><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#E32219;"></span><span class="ms" style="background:#242952;"></span><span class="ms" style="background:#666666;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#12194E #FFFFFF #E32219 #242952 #666666</span></td>
+      <td><strong>3</strong>/4</td>
+      <td>Sans (Roboto-ish), high-density score tables, navy header bar</td>
+      <td>light</td>
+      <td>34.5M MAU, 121M+ visits/mo (Mar 2026)</td>
+      <td>Scoreboard utility — deep navy header + red live indicator, dense fixture list</td>
+    </tr>
+
+    <tr>
+      <td><strong>BBC Sport (Football)</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">bbc.co.uk/sport/football</span></td>
+      <td>Consumer</td>
+      <td class="swatchcell"><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#000000;"></span><span class="ms" style="background:#FFD230;"></span><span class="ms" style="background:#BB1919;"></span><span class="ms" style="background:#535353;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#FFFFFF #000000 #FFD230 #BB1919 #535353</span></td>
+      <td><strong>3</strong>/4</td>
+      <td>BBC Reith Sans (broadcast-spec), bold weights for headlines</td>
+      <td>light</td>
+      <td>BBC.co.uk: 380-440M visits/mo overall (2025)</td>
+      <td>Broadcast-grade news — yellow Sport sub-bar, BBC red accents, photo-led editorial cards</td>
+    </tr>
+
+    <tr>
+      <td><strong>Sky Sports (Football)</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">skysports.com/football</span></td>
+      <td>Consumer</td>
+      <td class="swatchcell"><span class="ms" style="background:#02114F;"></span><span class="ms" style="background:#E11A2C;"></span><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#001A6B;"></span><span class="ms" style="background:#999999;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#02114F #E11A2C #FFFFFF #001A6B #999999</span></td>
+      <td><strong>3</strong>/4</td>
+      <td>Sky Text (custom), tight tracking, broadcast-style</td>
+      <td>light</td>
+      <td>Top-3 UK sports site; broadcast-anchored</td>
+      <td>TV-network sport site — deep navy + red, gradient headers, premier-league-saturated</td>
+    </tr>
+
+    <tr>
+      <td><strong>Goal</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">goal.com/en</span></td>
+      <td>Consumer</td>
+      <td class="swatchcell"><span class="ms" style="background:#1F1F1F;"></span><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#F94C28;"></span><span class="ms" style="background:#676768;"></span><span class="ms" style="background:#000000;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#1F1F1F #FFFFFF #F94C28 #676768 #000000</span></td>
+      <td><strong>3</strong>/4</td>
+      <td>Heavy sans (Goal custom), uppercase nav, photo cards</td>
+      <td>light</td>
+      <td>Global football news; high traffic across editions</td>
+      <td>International football news portal — black/grey + orange, ad-heavy, transfer-rumor energy</td>
+    </tr>
+
+    <tr class="avoid-row">
+      <td><strong>bet365 (AVOID)</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">bet365.com</span></td>
+      <td>Avoid</td>
+      <td class="swatchcell"><span class="ms" style="background:#14533D;"></span><span class="ms" style="background:#FFE45C;"></span><span class="ms" style="background:#1F1F1F;"></span><span class="ms" style="background:#3D3D3D;"></span><span class="ms" style="background:#FFFFFF;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#14533D #FFE45C #1F1F1F #3D3D3D #FFFFFF</span></td>
+      <td><strong>1</strong>/4</td>
+      <td>Custom heavy sans, yellow logotype, dense data grid</td>
+      <td>dark</td>
+      <td>#1 in Sports Betting, #999 globally; ~108M visits/mo</td>
+      <td>World&#x27;s #1 sportsbook — dark green + yellow, casino-grade data density, promo modals</td>
+    </tr>
+
+    <tr class="avoid-row">
+      <td><strong>William Hill (AVOID)</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">williamhill.com</span></td>
+      <td>Avoid</td>
+      <td class="swatchcell"><span class="ms" style="background:#021438;"></span><span class="ms" style="background:#FFD230;"></span><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#003580;"></span><span class="ms" style="background:#1F1F1F;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#021438 #FFD230 #FFFFFF #003580 #1F1F1F</span></td>
+      <td><strong>1</strong>/4</td>
+      <td>Heritage script wordmark + heavy promo sans</td>
+      <td>dark</td>
+      <td>Tier-1 UK sportsbook; ~11% UK betting share</td>
+      <td>UK heritage bookmaker — deep navy + yellow, &#x27;€200 free bet&#x27; promo register</td>
+    </tr>
+
+    <tr class="avoid-row">
+      <td><strong>Paddy Power (AVOID)</strong><br><span class="mono" style="font-size:6.5px; color:var(--muted);">paddypower.com</span></td>
+      <td>Avoid</td>
+      <td class="swatchcell"><span class="ms" style="background:#2D8E3E;"></span><span class="ms" style="background:#1F1F1F;"></span><span class="ms" style="background:#FFFFFF;"></span><span class="ms" style="background:#003D1A;"></span><span class="ms" style="background:#FFD230;"></span><br><span style="font-family: ui-monospace, Menlo, monospace; font-size:6.2px; color:var(--muted); letter-spacing:0.2px;">#2D8E3E #1F1F1F #FFFFFF #003D1A #FFD230</span></td>
+      <td><strong>1</strong>/4</td>
+      <td>Bold sans, irreverent comedic copy, heavy CTAs</td>
+      <td>light</td>
+      <td>Tier-1 Irish/UK sportsbook; market leader for irreverent voice</td>
+      <td>Loud Irish bookmaker — kelly green + black, transgressive humor, max promo</td>
+    </tr></tbody>
+  </table>
+
+  <div class="small" style="margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line);">
+    <strong>Method &amp; caveats.</strong>
+    Screenshots captured with headless Chromium at 1280×800, viewport-only (not full-page) to mirror
+    above-the-fold first impression. Cookie modals partially obscure several sites (BBC Sport, The
+    Athletic, Sofascore) — for those, palettes were curated from visible header/nav strips with
+    visual confirmation rather than relying solely on algorithmic output. Two substitutions:
+    <strong>Smarkets</strong> 404'd from the rendering origin (geo-blocked, possibly because the
+    brand has rebranded to "Smarkets Predictions"); replaced with <strong>Betfair Exchange</strong> as
+    the closest UK exchange peer in the same bucket. <strong>Tifo Football's</strong> domain
+    (tifofootball.com) has been taken over by an unrelated Thai gambling promo (UFABET);
+    replaced with <strong>Mundial Magazine</strong> from the substitute list. Both swaps preserve
+    bucket counts (6+6+5+3=20).
+  </div>
+</section>
+
+
+</body>
+</html>

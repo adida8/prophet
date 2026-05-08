@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>World Cup 2026 — Odds Primer</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 var(--gutter-page); }
+  .contents-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--rule);
+    border-left: 1px solid var(--rule);
+  }
+  .contents-grid > * {
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 22px 24px;
+    background: var(--paper-pure);
+  }
+  @media (max-width: 720px) { .contents-grid { grid-template-columns: 1fr; } }
+  .contents-item:hover { background: var(--paper-warm); cursor: pointer; }
+  .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 18px; }
+  @media (max-width: 880px) { .group-grid { grid-template-columns: repeat(2, 1fr); } }
+  .group-card {
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .feature-row {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 36px;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  @media (max-width: 720px) { .feature-row { grid-template-columns: 1fr; gap: 14px; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="Wordmark.jsx"></script>
+<script type="text/babel" src="Masthead.jsx"></script>
+<script type="text/babel" src="ProbabilityBar.jsx"></script>
+
+<script type="text/babel">
+const App = () => {
+  const [tab, setTab] = React.useState("tournament");
+
+  const outright = [
+    { label: "Brazil",     value: 22 },
+    { label: "Argentina",  value: 18 },
+    { label: "France",     value: 16 },
+    { label: "England",    value: 12 },
+    { label: "Spain",      value: 11 },
+    { label: "Field",      value: 21 },
+  ];
+
+  const groups = [
+    { id: "A", teams: ["Mexico", "Canada", "Cameroon", "Uzbekistan"] },
+    { id: "B", teams: ["USA", "Wales", "Iran", "Senegal"] },
+    { id: "C", teams: ["England", "Iran", "Tunisia", "Australia"] },
+    { id: "D", teams: ["France", "Denmark", "Tunisia", "Peru"] },
+    { id: "E", teams: ["Spain", "Germany", "Japan", "Costa Rica"] },
+    { id: "F", teams: ["Belgium", "Croatia", "Morocco", "Canada"] },
+    { id: "G", teams: ["Brazil", "Switzerland", "Serbia", "Cameroon"] },
+    { id: "H", teams: ["Portugal", "Uruguay", "Ghana", "South Korea"] },
+  ];
+
+  const features = [
+    {
+      kicker: "OUTRIGHT WINNER",
+      title: "Why Polymarket and Kalshi don't agree on France",
+      deck: "A two-cent gap on a binary contract is a two-percentage-point gap on the same outcome. Small in the abstract, large for a market this liquid.",
+      meta: "6 min read · The Editors · 12 May",
+    },
+    {
+      kicker: "READING THE NUMBERS",
+      title: "What +130 actually means",
+      deck: "American odds, decimal odds, and 'cents' on a contract — three notations for the same idea. A short conversion table, with examples.",
+      meta: "4 min read · 10 May",
+    },
+    {
+      kicker: "GROUP STAGE",
+      title: "Group D is priced as the closest in the tournament",
+      deck: "France is favored, but four cents separates the field. We look at why the books and the markets disagree most where the football is closest.",
+      meta: "5 min read · 09 May",
+    },
+  ];
+
+  return (
+    <>
+      <Masthead tab={tab} onTab={setTab} updated="12 min ago" live={true} />
+
+      {/* Edition opener */}
+      <section style={{ padding: "56px var(--gutter-page) 28px" }}>
+        <div className="container">
+          <div className="op-eyebrow" style={{
+            fontFamily: "var(--font-sans)", fontSize: 11, fontWeight: 600,
+            letterSpacing: "0.08em", textTransform: "uppercase",
+            color: "var(--graphite-soft)", marginBottom: 14,
+          }}>VOL. 1 · WORLD CUP 2026 EDITION · CONTENTS</div>
+          <h1 style={{
+            fontFamily: "var(--font-serif)", fontWeight: 600,
+            fontSize: "clamp(2.5rem, 5vw, 4rem)",
+            lineHeight: 1.04, letterSpacing: "-0.01em",
+            margin: 0, color: "var(--ink)", textWrap: "balance", maxWidth: "16ch",
+          }}>The 2026 World Cup, priced.</h1>
+          <p style={{
+            fontFamily: "var(--font-serif)", fontStyle: "italic",
+            fontSize: 20, lineHeight: 1.45, color: "var(--ink-soft)",
+            margin: "18px 0 0", maxWidth: "58ch",
+          }}>
+            Sixty-four matches across three host countries, priced in real time on at least four venues. We compare them, and we explain what the prices mean. We don't tip.
+          </p>
+        </div>
+      </section>
+
+      {/* Outright bar — the front page chart */}
+      <section style={{ padding: "12px var(--gutter-page) 36px" }}>
+        <div className="container">
+          <div className="op-eyebrow" style={{
+            fontFamily: "var(--font-sans)", fontSize: 11, fontWeight: 600,
+            letterSpacing: "0.08em", textTransform: "uppercase",
+            color: "var(--graphite-soft)", marginBottom: 10,
+          }}>OUTRIGHT WINNER · IMPLIED PROBABILITY · POLYMARKET CONSENSUS</div>
+          <ProbabilityBar items={outright} highlight="France" />
+        </div>
+      </section>
+
+      {/* Features — leading articles, magazine-style */}
+      <section style={{ padding: "0 var(--gutter-page) 32px" }}>
+        <div className="container">
+          <div className="op-eyebrow" style={{ marginBottom: 10 }}>Leading articles</div>
+          {features.map((f, i) => (
+            <article key={i} className="feature-row">
+              <div>
+                <div className="op-eyebrow" style={{ marginBottom: 8 }}>{f.kicker}</div>
+                <div style={{
+                  fontFamily: "var(--font-mono)", fontSize: 11,
+                  color: "var(--graphite-soft)",
+                }}>0{i+1}</div>
+              </div>
+              <div>
+                <h2 style={{
+                  fontFamily: "var(--font-serif)", fontWeight: 600,
+                  fontSize: 28, letterSpacing: "-0.005em", lineHeight: 1.2,
+                  margin: 0, color: "var(--ink)", textWrap: "balance",
+                }}>{f.title}</h2>
+                <p style={{
+                  fontFamily: "var(--font-serif)", fontSize: 16,
+                  lineHeight: 1.5, color: "var(--ink-soft)",
+                  margin: "10px 0 0", maxWidth: "58ch",
+                }}>{f.deck}</p>
+                <div style={{
+                  marginTop: 12, fontFamily: "var(--font-sans)", fontSize: 12,
+                  color: "var(--graphite)",
+                }}>{f.meta}</div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* Groups — the tournament structure */}
+      <section style={{
+        padding: "40px var(--gutter-page) 32px",
+        background: "var(--paper-warm)",
+        borderTop: "1px solid var(--rule)",
+        borderBottom: "1px solid var(--rule)",
+      }}>
+        <div className="container">
+          <div className="op-eyebrow" style={{ marginBottom: 8 }}>Group stage · 8 groups · 4 teams each</div>
+          <h2 style={{
+            fontFamily: "var(--font-serif)", fontWeight: 600,
+            fontSize: 30, letterSpacing: "-0.005em",
+            margin: 0, color: "var(--ink)",
+          }}>The draw, with prices to advance.</h2>
+          <div className="group-grid">
+            {groups.map(g => (
+              <div key={g.id} className="group-card">
+                <div style={{
+                  display: "flex", justifyContent: "space-between",
+                  alignItems: "baseline", marginBottom: 8,
+                }}>
+                  <span style={{
+                    fontFamily: "var(--font-sans)", fontWeight: 700,
+                    fontSize: 20, letterSpacing: "-0.02em", color: "var(--ink)",
+                  }}>Group {g.id}</span>
+                  <span style={{
+                    fontFamily: "var(--font-mono)", fontSize: 11,
+                    color: "var(--graphite-soft)",
+                  }}>4 teams</span>
+                </div>
+                {g.teams.map((t, i) => {
+                  // first team is highlighted as favorite
+                  const isFav = i === 0;
+                  return (
+                    <div key={t} style={{
+                      display: "flex", justifyContent: "space-between",
+                      padding: "5px 0",
+                      borderTop: i === 0 ? "none" : "1px solid var(--rule-soft)",
+                      fontFamily: "var(--font-sans)", fontSize: 13,
+                    }}>
+                      <span style={{ fontWeight: isFav ? 600 : 400, color: "var(--ink)" }}>{t}</span>
+                      <span className="op-num" style={{
+                        fontFamily: "var(--font-mono)", fontVariantNumeric: "tabular-nums",
+                        color: isFav ? "var(--flame)" : "var(--graphite)",
+                        fontWeight: isFav ? 600 : 500,
+                      }}>{[58, 24, 12, 6][i]}%</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+          <div style={{
+            marginTop: 14, fontFamily: "var(--font-serif)", fontStyle: "italic",
+            fontSize: 13, color: "var(--graphite)",
+          }}>
+            Probability to advance from the group, Polymarket consensus. Flame marks the strongest line in each group.
+          </div>
+        </div>
+      </section>
+
+      {/* Glossary CTA */}
+      <section style={{ padding: "48px var(--gutter-page)" }}>
+        <div className="container" style={{
+          display: "grid", gridTemplateColumns: "1fr 240px", gap: 36,
+        }}>
+          <div>
+            <div className="op-eyebrow" style={{ marginBottom: 10 }}>The primer</div>
+            <h2 style={{
+              fontFamily: "var(--font-serif)", fontWeight: 600,
+              fontSize: 26, letterSpacing: "-0.005em",
+              margin: 0, color: "var(--ink)", maxWidth: "22ch",
+            }}>New to prediction markets? Read the primer first.</h2>
+            <p style={{
+              fontFamily: "var(--font-serif)", fontSize: 16,
+              lineHeight: 1.55, color: "var(--ink-soft)",
+              margin: "10px 0 0", maxWidth: "56ch",
+            }}>Twelve short entries on what these numbers mean — implied probability, vig, liquidity, the differences between Polymarket, Kalshi, and the sportsbooks. Six minutes start to finish.</p>
+          </div>
+          <div style={{
+            display: "flex", flexDirection: "column", justifyContent: "flex-end",
+          }}>
+            <a href="#" onClick={(e) => e.preventDefault()} style={{
+              display: "inline-block",
+              fontFamily: "var(--font-sans)", fontSize: 14, fontWeight: 500,
+              padding: "10px 16px",
+              background: "var(--ink)", color: "var(--paper)",
+              textDecoration: "none", borderRadius: 4, textAlign: "center",
+            }}>Open the primer</a>
+          </div>
+        </div>
+      </section>
+
+      <footer style={{
+        padding: "32px var(--gutter-page) 56px",
+        borderTop: "1px solid var(--rule)", marginTop: 8,
+      }}>
+        <div className="container" style={{
+          display: "flex", justifyContent: "space-between", alignItems: "baseline",
+          flexWrap: "wrap", gap: 18,
+        }}>
+          <Wordmark size={20} />
+          <div style={{
+            fontFamily: "var(--font-serif)", fontStyle: "italic",
+            fontSize: 13, color: "var(--graphite)", maxWidth: "48ch",
+          }}>
+            We compare prices across venues and explain in plain English what the market means. We don't tip. We don't take fees. We don't sell anything.
+          </div>
+          <div className="op-eyebrow" style={{ color: "var(--graphite)" }}>Vol. 1 · World Cup 2026</div>
+        </div>
+      </footer>
+    </>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

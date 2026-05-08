@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 64" width="360" height="64" aria-label="Odds Primer">
+  
+  
+  <g transform="translate(0, 18)">
+    <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"></line>
+    <rect x="2" y="24" width="6" height="10" fill="#0E2240"></rect>
+    <rect x="11" y="18" width="6" height="16" fill="#0E2240"></rect>
+    <rect x="20" y="6" width="6" height="28" fill="#D9461C"></rect>
+    <rect x="29" y="20" width="6" height="14" fill="#0E2240"></rect>
+  </g>
+  <text x="50" y="46" class="word">Odds Primer</text>
+</svg>

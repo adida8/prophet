@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WC 2026 OG cards — Odds Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700;8..60,800;8..60,900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF7F0;
+    --paper-warm: #F2EDE0;
+    --ink: #0E2240;
+    --ink-soft: #3D4F6A;
+    --graphite: #5A6373;
+    --graphite-soft: #828B9C;
+    --rule: #D9D2BE;
+    --rule-soft: #E6E0CE;
+    --flame: #D9461C;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper-warm); color: var(--ink); }
+  body { font-family: var(--serif); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+
+  .page { max-width: 1280px; margin: 0 auto; padding: 56px 36px 96px; }
+
+  .eyebrow {
+    font-family: var(--sans); font-weight: 500;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--graphite-soft); margin: 0 0 6px;
+  }
+  h1.title {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 32px; line-height: 1.15; letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+  .sub {
+    max-width: 64ch; font-size: 14.5px;
+    color: var(--graphite); margin: 0 0 36px;
+  }
+
+  .section { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--ink); }
+  .section:first-of-type { margin-top: 16px; border-top: 0; padding-top: 0; }
+  .section-num {
+    font-family: var(--mono); font-weight: 500;
+    font-size: 12px; color: var(--flame);
+    letter-spacing: 0.08em; margin-bottom: 6px;
+  }
+  .section-name {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 22px; letter-spacing: -0.005em;
+    margin: 0 0 6px;
+  }
+  .section-sub {
+    font-family: var(--sans); font-size: 13px;
+    color: var(--graphite); margin: 0 0 24px;
+    max-width: 60ch;
+  }
+
+  .stack { display: flex; flex-direction: column; gap: 28px; }
+
+  .card-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .card-tag {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--flame); letter-spacing: 0.1em;
+  }
+  .card-tag b {
+    color: var(--ink); font-family: var(--sans);
+    font-weight: 600; font-size: 13px;
+    letter-spacing: 0; margin-right: 8px;
+    text-transform: none;
+  }
+
+  /* ==========================================================
+     OG CARD — DETAILED (single dossier, for link expansion)
+     ========================================================== */
+  .og {
+    aspect-ratio: 1200 / 630;
+    width: 100%;
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    display: grid;
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
+  }
+
+  .og-top {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    padding: clamp(14px, 1.6vw, 22px) clamp(20px, 2.4vw, 32px);
+    border-bottom: 1px solid var(--ink);
+    background: var(--paper-warm);
+    gap: clamp(12px, 1.4vw, 18px);
+  }
+  .og-lock { display: inline-flex; align-items: center; gap: 11px; }
+  .og-word {
+    font-family: var(--serif); font-weight: 800;
+    font-size: clamp(18px, 1.9vw, 22px);
+    letter-spacing: -0.012em; color: var(--ink);
+    line-height: 1; font-feature-settings: "ss01" on;
+  }
+  .og-edition {
+    text-align: center;
+    font-family: var(--sans); font-size: clamp(10px, 1vw, 12px);
+    letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .og-edition .edition-main {
+    color: var(--ink); font-weight: 700;
+    letter-spacing: 0.22em;
+  }
+  .og-edition .edition-secondary {
+    color: var(--ink-soft); font-weight: 500;
+  }
+  .og-edition .pip { color: var(--rule); margin: 0 6px; }
+  .og-meta {
+    font-family: var(--mono); font-size: clamp(10px, 0.95vw, 11px);
+    color: var(--graphite-soft);
+    font-variant-numeric: tabular-nums; text-align: right;
+  }
+
+  .og-dossier {
+    display: grid;
+    grid-template-columns: clamp(28px, 2.8vw, 36px) 1fr;
+    height: 100%;
+    background: var(--paper);
+  }
+  .og-rail {
+    background: var(--paper-warm);
+    border-right: 1px solid var(--ink);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: clamp(14px, 1.6vw, 18px) 0;
+  }
+  .og-rail-text {
+    font-family: var(--sans);
+    font-size: clamp(9px, 0.95vw, 11px);
+    font-weight: 700; letter-spacing: 0.32em;
+    text-transform: uppercase; color: var(--ink);
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+  }
+  .og-rail-text .pip { color: var(--flame); margin: 0 6px; }
+  .og-rail-text .secondary { color: var(--ink-soft); font-weight: 600; letter-spacing: 0.28em; }
+
+  .og-body { padding: clamp(20px, 2.2vw, 28px) clamp(22px, 2.4vw, 32px); display: flex; flex-direction: column; }
+
+  .og-d-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: clamp(10px, 1.1vw, 14px);
+    margin-bottom: clamp(12px, 1.3vw, 16px);
+    flex-wrap: wrap; gap: 8px;
+  }
+  .og-d-match {
+    font-family: var(--serif); font-weight: 700;
+    font-size: clamp(22px, 2.6vw, 32px);
+    letter-spacing: -0.008em;
+    color: var(--ink); line-height: 1.1;
+  }
+  .og-d-match .vs { color: var(--graphite); font-style: italic; font-weight: 400; margin: 0 8px; }
+  .og-d-meta {
+    font-family: var(--mono);
+    font-size: clamp(10px, 1vw, 12px);
+    letter-spacing: 0.06em; color: var(--graphite-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .og-d-meta .pip { color: var(--rule); margin: 0 6px; }
+  .og-d-question {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(13px, 1.3vw, 16px);
+    color: var(--ink-soft);
+    margin: 0 0 clamp(10px, 1.1vw, 14px);
+  }
+
+  .og-d-table {
+    width: 100%; border-collapse: collapse;
+    font-feature-settings: "tnum" on, "lnum" on;
+    flex: 1;
+  }
+  .og-d-table th {
+    text-align: left;
+    font-family: var(--sans);
+    font-size: clamp(8.5px, 0.85vw, 10px);
+    font-weight: 600; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--graphite-soft);
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .og-d-table th.r { text-align: right; }
+  .og-d-table td {
+    padding: clamp(7px, 0.85vw, 10px) 6px;
+    border-bottom: 1px solid var(--rule-soft);
+    font-family: var(--mono);
+    font-size: clamp(11px, 1.15vw, 14px);
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+  .og-d-table td.r { text-align: right; }
+  .og-d-table td.venue {
+    font-family: var(--sans); font-weight: 500;
+    font-size: clamp(11px, 1.15vw, 14px);
+    letter-spacing: 0;
+    color: var(--ink);
+  }
+  .og-d-table td.venue .dot {
+    display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; margin-right: 8px;
+    background: var(--ink); transform: translateY(-1px);
+  }
+  .og-d-table td.venue[data-v="draftkings"] .dot,
+  .og-d-table td.venue[data-v="fanduel"] .dot,
+  .og-d-table td.venue[data-v="betmgm"] .dot,
+  .og-d-table td.venue[data-v="caesars"] .dot {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
+  .og-d-table td.note {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(10px, 1.05vw, 13px);
+    color: var(--graphite); letter-spacing: 0;
+  }
+  .og-d-table td.note.empty {
+    font-family: var(--mono);
+    font-style: normal;
+    font-size: clamp(10px, 1vw, 12px);
+    color: var(--graphite-soft);
+    letter-spacing: 0.04em;
+  }
+  .og-d-table tr.best td { background: rgba(217, 70, 28, 0.04); }
+  .og-d-table tr.best td.venue { color: var(--ink); font-weight: 700; }
+  .og-d-table tr.best td.price {
+    color: var(--ink); font-weight: 600;
+    border-bottom: 2px solid var(--flame);
+  }
+  .og-d-table tr.best .best-tag {
+    display: inline-block;
+    margin-left: 8px;
+    font-family: var(--sans); font-weight: 600;
+    font-size: clamp(8px, 0.85vw, 10px);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--flame); vertical-align: 2px;
+  }
+  .og-d-table tr.best .best-tag.is-mobile { display: none; }
+
+  /* ==========================================================
+     OG THUMBNAIL — typography-led, legible at ~240px feed width
+     ========================================================== */
+  .og.thumb {
+    grid-template-rows: auto 1fr auto;
+  }
+  .og.thumb .og-top {
+    padding: clamp(14px, 1.5vw, 20px) clamp(28px, 3vw, 40px);
+  }
+  .og.thumb .og-thumb-body {
+    padding: clamp(28px, 3.6vw, 56px) clamp(32px, 4vw, 56px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(8px, 0.9vw, 14px);
+  }
+  .og.thumb .og-thumb-match {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: clamp(38px, 6vw, 84px);
+    line-height: 0.96;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    margin: 0;
+    text-wrap: balance;
+  }
+  .og.thumb .og-thumb-match .vs {
+    color: var(--graphite); font-style: italic;
+    font-weight: 400;
+    margin: 0 clamp(6px, 0.6vw, 12px);
+  }
+  .og.thumb .og-thumb-question {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(18px, 2.2vw, 30px);
+    line-height: 1.2;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+  /* label sits above the number — the editorial frame leads, not the tout */
+  .og.thumb .og-thumb-price-label {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: clamp(12px, 1.4vw, 17px);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin: clamp(10px, 1.4vw, 18px) 0 clamp(2px, 0.4vw, 6px);
+  }
+  .og.thumb .og-thumb-price {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: clamp(46px, 7.4vw, 100px);
+    line-height: 0.95;
+    color: var(--ink);
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    display: inline-block;
+    border-bottom: 4px solid var(--flame);
+    padding-bottom: 4px;
+  }
+  .og.thumb .og-thumb-price-source {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: clamp(12px, 1.3vw, 16px);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: clamp(8px, 0.9vw, 12px) 0 0;
+  }
+  .og.thumb .og-thumb-price-source b {
+    color: var(--ink); font-weight: 700;
+  }
+
+  .og.thumb .og-thumb-foot {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: clamp(14px, 1.6vw, 22px) clamp(28px, 3vw, 40px);
+    border-top: 1px solid var(--rule);
+    gap: 12px; flex-wrap: wrap;
+  }
+  .og.thumb .og-thumb-spread {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: clamp(11px, 1.2vw, 14px);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .og.thumb .og-thumb-spread .pts { color: var(--ink); font-weight: 700; margin: 0 4px; }
+  .og.thumb .og-thumb-spread .soft { color: var(--graphite); font-weight: 500; }
+  .og.thumb .og-thumb-source {
+    font-family: var(--mono);
+    font-size: clamp(10px, 1vw, 12px);
+    color: var(--graphite-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* "as seen at thumbnail size" preview — 240px wide example */
+  .thumb-preview-row {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 24px;
+    align-items: center;
+  }
+  @media (max-width: 720px) { .thumb-preview-row { grid-template-columns: 1fr; } }
+  .thumb-preview-tag {
+    font-family: var(--sans); font-size: 12px;
+    color: var(--graphite); line-height: 1.55;
+  }
+  .thumb-preview-tag b { color: var(--ink); font-weight: 600; }
+
+  footer.colophon {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ink);
+    font-family: var(--sans); font-size: 12px;
+    color: var(--graphite-soft);
+    display: flex; justify-content: space-between;
+  }
+
+  /* ============================================================
+     MOBILE — 600px and down
+     OG cards keep their 1200/630 aspect ratio (rendered as images)
+     but on the dev preview at narrow widths the inner table compresses.
+     Hide notes column in detailed cards.
+     ============================================================ */
+  @media (max-width: 600px) {
+    .page { padding: 36px 16px 56px; }
+
+    h1.title { font-size: 26px; line-height: 1.15; }
+    .sub { font-size: 13.5px; }
+
+    .section { margin-top: 36px; padding-top: 18px; }
+    .section-name { font-size: 19px; }
+
+    /* detailed card — hide note column on mobile preview */
+    .og-d-table th:nth-child(4),
+    .og-d-table td.note { display: none; }
+
+    /* shrink the rail label so it fits a smaller aspect-ratio canvas */
+    .og-rail { padding: 12px 0; }
+    .og-rail-text { font-size: 8.5px; letter-spacing: 0.22em; }
+
+    /* meta in the masthead row collapses */
+    .og-meta { display: none; }
+    .og-top {
+      grid-template-columns: auto 1fr;
+      padding: 12px 14px;
+    }
+
+    /* thumbnail card already uses clamp(); also drop og-meta there */
+    .og.thumb .og-top { grid-template-columns: auto 1fr; }
+
+    /* thumb-preview-row stacks */
+    .thumb-preview-row { grid-template-columns: 1fr; }
+
+    .colophon {
+      flex-direction: column;
+      gap: 6px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <p class="eyebrow">Odds Primer · World Cup 2026 · OG card studio</p>
+  <h1 class="title">1200 × 630 social cards</h1>
+  <p class="sub">Two surfaces. The detailed dossier-card holds up at link-expansion size (Slack, Discord, Twitter card view). The thumbnail variant is for feed-first contexts where the card renders at ~240px and the table goes to texture — typography carries the message instead.</p>
+
+  <!-- ==========================================================
+       SECTION 01 — DETAILED CARDS
+       ========================================================== -->
+  <section class="section">
+    <div class="section-num">01</div>
+    <h2 class="section-name">Detailed · for link expansion</h2>
+    <p class="section-sub">Slack unfurls, Discord embeds, Twitter card view — readers see the card at ~600–800px wide. The full dossier holds up. Cream only.</p>
+
+    <div class="stack">
+
+      <!-- Card 01 — match brief -->
+      <div class="card-wrap">
+        <div class="card-tag"><b>D-01</b>Match brief · Group D Day 2</div>
+        <div class="og">
+          <div class="og-top">
+            <div class="og-lock">
+              <svg viewBox="0 0 56 50" width="32" height="29" aria-hidden="true">
+                <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+                <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+                <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+                <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+                <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+              </svg>
+              <span class="og-word">Odds Primer</span>
+            </div>
+            <div class="og-edition">
+              <span class="edition-main">World Cup 2026</span>
+              <span class="pip">·</span>
+              <span class="edition-secondary">Edition 01 · Match brief</span>
+            </div>
+            <div class="og-meta">oddsprimer.com</div>
+          </div>
+
+          <div class="og-dossier">
+            <div class="og-rail"><span class="og-rail-text">WC 2026 <span class="pip">·</span> <span class="secondary">Match brief</span></span></div>
+            <div class="og-body">
+              <div class="og-d-head">
+                <div class="og-d-match">FRA <span class="vs">v</span> ARG</div>
+                <div class="og-d-meta">
+                  <span>Group D · MD2</span><span class="pip">·</span>
+                  <span>12 Jun · Azteca</span><span class="pip">·</span>
+                  <span>16:00 CT</span>
+                </div>
+              </div>
+              <p class="og-d-question">Will Argentina win in 90 minutes?</p>
+              <table class="og-d-table">
+                <thead>
+                  <tr><th>Venue</th><th class="r">Price</th><th class="r">Implied</th><th>Note</th></tr>
+                </thead>
+                <tbody>
+                  <tr class="best">
+                    <td class="venue" data-v="kalshi"><span class="dot"></span>Kalshi <span class="best-tag is-desktop">Best</span></td>
+                    <td class="r price">52¢ <span class="best-tag is-mobile">Best</span></td>
+                    <td class="r">52%</td>
+                    <td class="note">Lowest listed. Best net price.</td>
+                  </tr>
+                  <tr>
+                    <td class="venue" data-v="polymarket"><span class="dot"></span>Polymarket</td>
+                    <td class="r">54¢</td>
+                    <td class="r">54%</td>
+                    <td class="note">Volume thin pre-MD2.</td>
+                  </tr>
+                  <tr>
+                    <td class="venue" data-v="draftkings"><span class="dot"></span>DraftKings</td>
+                    <td class="r">+115</td>
+                    <td class="r">47%</td>
+                    <td class="note">Slowest line on Mbappé news.</td>
+                  </tr>
+                  <tr>
+                    <td class="venue" data-v="fanduel"><span class="dot"></span>FanDuel</td>
+                    <td class="r">+105</td>
+                    <td class="r">49%</td>
+                    <td class="note">Closest to Polymarket book-side.</td>
+                  </tr>
+                  <tr>
+                    <td class="venue" data-v="betmgm"><span class="dot"></span>BetMGM</td>
+                    <td class="r">+120</td>
+                    <td class="r">45%</td>
+                    <td class="note">Hasn't moved since lineup news.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 02 — outright -->
+      <div class="card-wrap">
+        <div class="card-tag"><b>D-02</b>Outright · price disagreement</div>
+        <div class="og">
+          <div class="og-top">
+            <div class="og-lock">
+              <svg viewBox="0 0 56 50" width="32" height="29" aria-hidden="true">
+                <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+                <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+                <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+                <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+                <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+              </svg>
+              <span class="og-word">Odds Primer</span>
+            </div>
+            <div class="og-edition">
+              <span class="edition-main">World Cup 2026</span>
+              <span class="pip">·</span>
+              <span class="edition-secondary">Edition 01 · Outright</span>
+            </div>
+            <div class="og-meta">oddsprimer.com</div>
+          </div>
+
+          <div class="og-dossier">
+            <div class="og-rail"><span class="og-rail-text">WC 2026 <span class="pip">·</span> <span class="secondary">Outright</span></span></div>
+            <div class="og-body">
+              <div class="og-d-head">
+                <div class="og-d-match">France <span class="vs">to win</span> the World Cup</div>
+                <div class="og-d-meta">
+                  <span>Outright · YES contracts</span><span class="pip">·</span>
+                  <span>6 venues</span>
+                </div>
+              </div>
+              <p class="og-d-question">Will France win the 2026 World Cup?</p>
+              <table class="og-d-table">
+                <thead>
+                  <tr><th>Venue</th><th class="r">Price</th><th class="r">Implied</th><th>Note</th></tr>
+                </thead>
+                <tbody>
+                  <tr class="best">
+                    <td class="venue" data-v="kalshi"><span class="dot"></span>Kalshi <span class="best-tag is-desktop">Best</span></td>
+                    <td class="r price">32¢ <span class="best-tag is-mobile">Best</span></td>
+                    <td class="r">32%</td>
+                    <td class="note">Best net price after fees.</td>
+                  </tr>
+                  <tr>
+                    <td class="venue" data-v="polymarket"><span class="dot"></span>Polymarket</td>
+                    <td class="r">29¢</td>
+                    <td class="r">29%</td>
+                    <td class="note">Lowest listed.</td>
+                  </tr>
+                  <tr>
+                    <td class="venue" data-v="draftkings"><span class="dot"></span>DraftKings</td>
+                    <td class="r">+150</td>
+                    <td class="r">41%</td>
+                    <td class="note">Pricing France 12pt above Polymarket.</td>
+                  </tr>
+                  <tr>
+                    <td class="venue" data-v="fanduel"><span class="dot"></span>FanDuel</td>
+                    <td class="r">+170</td>
+                    <td class="r">37%</td>
+                    <td class="note">Slow to move from opening line.</td>
+                  </tr>
+                  <tr>
+                    <td class="venue" data-v="betmgm"><span class="dot"></span>BetMGM</td>
+                    <td class="r">+200</td>
+                    <td class="r">33%</td>
+                    <td class="note">Widening this week.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 03 — opening match (formerly dark; now cream) -->
+      <div class="card-wrap">
+        <div class="card-tag"><b>D-03</b>Opening match · altitude</div>
+        <div class="og">
+          <div class="og-top">
+            <div class="og-lock">
+              <svg viewBox="0 0 56 50" width="32" height="29" aria-hidden="true">
+                <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+                <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+                <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+                <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+                <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+              </svg>
+              <span class="og-word">Odds Primer</span>
+            </div>
+            <div class="og-edition">
+              <span class="edition-main">World Cup 2026</span>
+              <span class="pip">·</span>
+              <span class="edition-secondary">Edition 01 · Match brief</span>
+            </div>
+            <div class="og-meta">oddsprimer.com</div>
+          </div>
+
+          <div class="og-dossier">
+            <div class="og-rail"><span class="og-rail-text">WC 2026 <span class="pip">·</span> <span class="secondary">Match brief</span></span></div>
+            <div class="og-body">
+              <div class="og-d-head">
+                <div class="og-d-match">MEX <span class="vs">v</span> RSA</div>
+                <div class="og-d-meta">
+                  <span>Group A · MD1 · Opening match</span><span class="pip">·</span>
+                  <span>11 Jun · Azteca · 2,240m</span>
+                </div>
+              </div>
+              <p class="og-d-question">Will Mexico win at home, at altitude?</p>
+              <table class="og-d-table">
+                <thead>
+                  <tr><th>Venue</th><th class="r">Price</th><th class="r">Implied</th><th>Note</th></tr>
+                </thead>
+                <tbody>
+                  <tr class="best">
+                    <td class="venue" data-v="kalshi"><span class="dot"></span>Kalshi <span class="best-tag is-desktop">Best</span></td>
+                    <td class="r price">62¢ <span class="best-tag is-mobile">Best</span></td>
+                    <td class="r">62%</td>
+                    <td class="note">Best net price.</td>
+                  </tr>
+                  <tr>
+                    <td class="venue" data-v="polymarket"><span class="dot"></span>Polymarket</td>
+                    <td class="r">64¢</td>
+                    <td class="r">64%</td>
+                    <td class="note">Lowest listed book-side.</td>
+                  </tr>
+                  <tr>
+                    <td class="venue" data-v="draftkings"><span class="dot"></span>DraftKings</td>
+                    <td class="r">−170</td>
+                    <td class="r">63%</td>
+                    <td class="note">Implied prob in line with markets.</td>
+                  </tr>
+                  <tr>
+                    <td class="venue" data-v="fanduel"><span class="dot"></span>FanDuel</td>
+                    <td class="r">−165</td>
+                    <td class="r">62%</td>
+                    <td class="note empty">—</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==========================================================
+       SECTION 02 — THUMBNAIL VARIANT
+       ========================================================== -->
+  <section class="section">
+    <div class="section-num">02</div>
+    <h2 class="section-name">Thumbnail · for feed-first contexts</h2>
+    <p class="section-sub">In a Twitter / Threads / LinkedIn feed, the OG card renders at roughly 240px wide. At that size, the dossier table goes to texture — readers can't parse rows, they just see a grid. The thumbnail variant trades the table for typography: giant match line, giant price, one spread fact. Same 1200×630 canvas, different visual hierarchy.</p>
+
+    <div class="stack">
+
+      <!-- T-01 — FRA v ARG -->
+      <div class="card-wrap">
+        <div class="card-tag"><b>T-01</b>Match · big match line + best price</div>
+        <div class="og thumb">
+          <div class="og-top">
+            <div class="og-lock">
+              <svg viewBox="0 0 56 50" width="32" height="29" aria-hidden="true">
+                <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+                <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+                <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+                <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+                <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+              </svg>
+              <span class="og-word">Odds Primer</span>
+            </div>
+            <div class="og-edition">
+              <span class="edition-main">World Cup 2026</span>
+              <span class="pip">·</span>
+              <span class="edition-secondary">Edition 01</span>
+            </div>
+            <div class="og-meta">oddsprimer.com</div>
+          </div>
+          <div class="og-thumb-body">
+            <h2 class="og-thumb-match">FRA <span class="vs">v</span> ARG</h2>
+            <p class="og-thumb-question">Argentina to win in 90 minutes</p>
+            <p class="og-thumb-price-label">Best net price</p>
+            <div class="og-thumb-price">52¢</div>
+            <p class="og-thumb-price-source"><b>Kalshi</b></p>
+          </div>
+          <div class="og-thumb-foot">
+            <span class="og-thumb-spread">Spread <span class="pts">8 points</span><span class="soft">across 6 venues</span></span>
+            <span class="og-thumb-source">12 Jun · Azteca · 16:00 CT</span>
+          </div>
+        </div>
+        <div class="thumb-preview-row">
+          <div class="og thumb" style="aspect-ratio: 1200/630;">
+            <div class="og-top">
+              <div class="og-lock">
+                <svg viewBox="0 0 56 50" width="14" height="13" aria-hidden="true">
+                  <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="2.5"/>
+                  <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+                  <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+                  <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+                  <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+                </svg>
+                <span class="og-word" style="font-size:9px;">Odds Primer</span>
+              </div>
+              <div class="og-edition" style="font-size:6px; letter-spacing:0.14em;">
+                <span class="edition-main" style="letter-spacing:0.18em;">World Cup 2026</span>
+              </div>
+              <div class="og-meta" style="font-size:6px;">oddsprimer.com</div>
+            </div>
+            <div class="og-thumb-body" style="padding: 16px 20px; gap: 4px;">
+              <h2 class="og-thumb-match" style="font-size:24px;">FRA <span class="vs">v</span> ARG</h2>
+              <p class="og-thumb-question" style="font-size:11px;">Argentina to win in 90 minutes</p>
+              <p class="og-thumb-price-label" style="font-size:7.5px; letter-spacing:0.18em; margin-top:6px;">Best net price</p>
+              <div class="og-thumb-price" style="font-size:32px; border-bottom-width:2px; padding-bottom:1px; margin-top:1px;">52¢</div>
+              <p class="og-thumb-price-source" style="font-size:7.5px; letter-spacing:0.14em; margin-top:3px;"><b>Kalshi</b></p>
+            </div>
+            <div class="og-thumb-foot" style="padding: 8px 20px;">
+              <span class="og-thumb-spread" style="font-size:7.5px; letter-spacing:0.1em;">Spread <span class="pts">8 pts</span><span class="soft">/ 6 venues</span></span>
+              <span class="og-thumb-source" style="font-size:6px;">12 Jun · Azteca</span>
+            </div>
+          </div>
+          <div class="thumb-preview-tag">
+            <b>As seen at 240px feed width.</b><br>
+            "Best net price" / "52¢" / "Kalshi" survives the compression. The label-above-number reading order keeps the editorial frame ("we're calling out the best price") in front of the tout-friendly number.
+          </div>
+        </div>
+      </div>
+
+      <!-- T-02 — France outright -->
+      <div class="card-wrap">
+        <div class="card-tag"><b>T-02</b>Outright · big number</div>
+        <div class="og thumb">
+          <div class="og-top">
+            <div class="og-lock">
+              <svg viewBox="0 0 56 50" width="32" height="29" aria-hidden="true">
+                <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+                <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+                <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+                <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+                <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+              </svg>
+              <span class="og-word">Odds Primer</span>
+            </div>
+            <div class="og-edition">
+              <span class="edition-main">World Cup 2026</span>
+              <span class="pip">·</span>
+              <span class="edition-secondary">Edition 01</span>
+            </div>
+            <div class="og-meta">oddsprimer.com</div>
+          </div>
+          <div class="og-thumb-body">
+            <h2 class="og-thumb-match">France <span class="vs">to win</span> the World Cup</h2>
+            <p class="og-thumb-question">An outright market priced six different ways.</p>
+            <p class="og-thumb-price-label">Best net price</p>
+            <div class="og-thumb-price">32¢</div>
+            <p class="og-thumb-price-source"><b>Kalshi</b></p>
+          </div>
+          <div class="og-thumb-foot">
+            <span class="og-thumb-spread">Spread <span class="pts">12 points</span><span class="soft">across 6 venues</span></span>
+            <span class="og-thumb-source">Refreshed 14:08 ET · 6 May 2026</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- T-03 — opening match -->
+      <div class="card-wrap">
+        <div class="card-tag"><b>T-03</b>Opening match · altitude</div>
+        <div class="og thumb">
+          <div class="og-top">
+            <div class="og-lock">
+              <svg viewBox="0 0 56 50" width="32" height="29" aria-hidden="true">
+                <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+                <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+                <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+                <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+                <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+              </svg>
+              <span class="og-word">Odds Primer</span>
+            </div>
+            <div class="og-edition">
+              <span class="edition-main">World Cup 2026</span>
+              <span class="pip">·</span>
+              <span class="edition-secondary">Edition 01</span>
+            </div>
+            <div class="og-meta">oddsprimer.com</div>
+          </div>
+          <div class="og-thumb-body">
+            <h2 class="og-thumb-match">MEX <span class="vs">v</span> RSA</h2>
+            <p class="og-thumb-question">Mexico, at 2,240m, in the opening match.</p>
+            <p class="og-thumb-price-label">Best net price</p>
+            <div class="og-thumb-price">62¢</div>
+            <p class="og-thumb-price-source"><b>Kalshi</b></p>
+          </div>
+          <div class="og-thumb-foot">
+            <span class="og-thumb-spread">Spread <span class="pts">2 points</span><span class="soft">across 4 venues</span></span>
+            <span class="og-thumb-source">11 Jun · Azteca · Opening match</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <span>Odds Primer · WC 2026 Edition · OG card studio · v0.3 (detailed + thumbnail)</span>
+    <span>3 detailed · 3 thumbnail · cream only</span>
+  </footer>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>How We Make Money — Explained Simply</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    background: #fdf9f3;
+    color: #2a2a2a;
+    line-height: 1.55;
+    padding: 48px 24px 96px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 48px; }
+  h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.5px; }
+  .sub { font-size: 17px; color: #7a6a55; margin-top: 8px; }
+
+  .intro {
+    background: #fff;
+    border: 1px solid #e9dfcf;
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-bottom: 36px;
+    font-size: 17px;
+  }
+  .intro strong { background: #fff4c2; padding: 1px 4px; border-radius: 3px; }
+
+  .piece {
+    background: #fff;
+    border: 1px solid #e9dfcf;
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 14px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .piece .icon {
+    width: 64px; height: 64px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: #f4ead9;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .piece h2 { font-size: 20px; margin-bottom: 4px; }
+  .piece .label { font-size: 13px; color: #9a8970; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .piece p { font-size: 16px; color: #3a3a3a; }
+  .piece ul { margin-top: 10px; padding-left: 20px; font-size: 15px; color: #4a4a4a; }
+  .piece ul li { margin-bottom: 4px; }
+
+  .arrow {
+    text-align: center;
+    font-size: 13px;
+    color: #9a8970;
+    padding: 6px 0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .arrow::before { content: "↓  "; font-size: 18px; color: #c8a96a; }
+
+  .robot { background: #fff9e6; border-color: #f0d888; }
+  .robot .icon { background: #f0d888; }
+  .robot em { background: #fff0b0; padding: 2px 6px; border-radius: 4px; font-style: normal; }
+
+  .us { background: #e8f4ef; border-color: #a8cdb9; }
+  .us .icon { background: #a8cdb9; }
+
+  h2.section { font-size: 24px; margin: 48px 0 16px; }
+
+  .tiers { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .tier {
+    background: #fff;
+    border: 1px solid #e9dfcf;
+    border-radius: 14px;
+    padding: 22px 24px;
+  }
+  .tier h3 { font-size: 17px; margin-bottom: 8px; }
+  .tier .price { font-size: 20px; font-weight: 700; color: #2e6b4e; margin-bottom: 12px; }
+  .tier p { font-size: 15px; color: #3a3a3a; margin-bottom: 8px; }
+  .tier .role { font-size: 13px; color: #7a6a55; font-style: italic; }
+  .tier.small { border-left: 6px solid #a8cdb9; }
+  .tier.big { border-left: 6px solid #2e6b4e; background: #f2faf5; }
+
+  .plan {
+    margin-top: 18px;
+    background: #fff4c2;
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-size: 16px;
+  }
+
+  .customers { background: #fff; border: 1px solid #e9dfcf; border-radius: 14px; padding: 22px 26px; list-style: none; }
+  .customers li { padding: 10px 0; border-bottom: 1px dashed #e9dfcf; font-size: 16px; }
+  .customers li:last-child { border-bottom: none; }
+  .note { font-size: 14px; color: #7a6a55; margin-top: 12px; font-style: italic; }
+
+  .summary {
+    background: #2e6b4e;
+    color: #fff;
+    border-radius: 14px;
+    padding: 28px;
+    margin-top: 36px;
+    text-align: center;
+  }
+  .summary h2 { font-size: 16px; opacity: 0.85; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+  .summary p { font-size: 20px; line-height: 1.5; }
+
+  @media (max-width: 560px) {
+    .tiers { grid-template-columns: 1fr; }
+    .piece { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>How We Make Money</h1>
+    <p class="sub">Adi's prediction-market business — explained like a farmer's market</p>
+  </header>
+
+  <div class="intro">
+    <p>Imagine a farmer's market where people trade <strong>bets on whether things will happen</strong> — "will it rain Saturday," "will this team win," "will this election turn out a certain way." The problem: most stalls are empty. Shoppers walk up wanting to buy or sell — and there's nobody on the other side. That's the opportunity.</p>
+  </div>
+
+  <!-- PIECE 1: MARKET -->
+  <div class="piece">
+    <div class="icon">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="#8a6b2a" stroke-width="2">
+        <path d="M4 12 L16 4 L28 12 L28 28 L4 28 Z"/>
+        <line x1="4" y1="12" x2="28" y2="12"/>
+        <rect x="13" y="18" width="6" height="10"/>
+      </svg>
+    </div>
+    <div>
+      <h2>The Farmer's Market</h2>
+      <p class="label">Kalshi · Polymarket · Sportsbooks · New Venues</p>
+      <p>Brings the shoppers. Runs the ads. Owns the app and the brand. <strong>We don't need to attract customers — they do.</strong></p>
+    </div>
+  </div>
+
+  <div class="arrow">shoppers arrive at the market</div>
+
+  <!-- PIECE 2: SHOPPERS -->
+  <div class="piece">
+    <div class="icon">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="#8a6b2a" stroke-width="2">
+        <circle cx="10" cy="10" r="3"/>
+        <path d="M6 28 L6 18 L14 18 L14 28"/>
+        <circle cx="22" cy="10" r="3"/>
+        <path d="M18 28 L18 18 L26 18 L26 28"/>
+      </svg>
+    </div>
+    <div>
+      <h2>The Shoppers</h2>
+      <p class="label">Everyday traders — millions of them</p>
+      <p>They want to place a bet. They walk up to a stall and want to buy or sell. Today, the stall is often empty, so they leave disappointed.</p>
+    </div>
+  </div>
+
+  <div class="arrow">they walk up to a stall</div>
+
+  <!-- PIECE 3: THE ROBOT -->
+  <div class="piece robot">
+    <div class="icon">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="#8a6b2a" stroke-width="2">
+        <rect x="8" y="10" width="16" height="14" rx="2"/>
+        <circle cx="13" cy="16" r="1.5" fill="#8a6b2a"/>
+        <circle cx="19" cy="16" r="1.5" fill="#8a6b2a"/>
+        <line x1="16" y1="4" x2="16" y2="10"/>
+        <circle cx="16" cy="4" r="1.5" fill="#8a6b2a"/>
+        <line x1="12" y1="24" x2="12" y2="28"/>
+        <line x1="20" y1="24" x2="20" y2="28"/>
+      </svg>
+    </div>
+    <div>
+      <h2>Our Robot in the Stall</h2>
+      <p class="label">The product we build</p>
+      <p>Our software sits in every empty stall and tells the shopper: <em>"I'll buy from you, or I'll sell to you — your choice."</em> Every trade, we take a tiny cut.</p>
+      <ul>
+        <li>Always offers a fair price, both ways</li>
+        <li>Watches its own risk so it doesn't get blown up</li>
+        <li>Never sleeps — works nights, weekends, holidays</li>
+        <li>Small cuts × millions of trades = real money</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="arrow">we build &amp; operate the robot</div>
+
+  <!-- PIECE 4: US -->
+  <div class="piece us">
+    <div class="icon">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="#1a5038" stroke-width="2">
+        <rect x="5" y="8" width="22" height="14" rx="2"/>
+        <line x1="5" y1="22" x2="27" y2="22"/>
+        <line x1="12" y1="26" x2="20" y2="26"/>
+        <line x1="16" y1="22" x2="16" y2="26"/>
+      </svg>
+    </div>
+    <div>
+      <h2>Us — Adi &amp; Partner</h2>
+      <p class="label">PredictionEdge (working name)</p>
+      <p>We build the robot. We sell it. Eventually we run it for customers. Two of us, a side-project cadence, leveraging Adi's Playtech background and the partner's B2B tech chops.</p>
+    </div>
+  </div>
+
+  <!-- REVENUE SECTION -->
+  <h2 class="section">Two Ways We Get Paid</h2>
+
+  <div class="tiers">
+    <div class="tier small">
+      <h3>Tier A — License the Robot</h3>
+      <p class="price">$5K–$50K / month / customer</p>
+      <p>We sell our robot as software. The customer plugs it into their own system and runs it themselves. We never touch their money.</p>
+      <p class="role">Like selling Shopify to shopkeepers — easy, safe, smaller paychecks.</p>
+    </div>
+    <div class="tier big">
+      <h3>Tier B — Run the Robot</h3>
+      <p class="price">$20K–$200K / month + share of profits</p>
+      <p>The customer hires us to operate the robot on their behalf. They provide the money to trade with; we keep a fee plus a share of what the robot earns.</p>
+      <p class="role">Where the real money lives. Bigger paychecks, bigger responsibility.</p>
+    </div>
+  </div>
+
+  <div class="plan">
+    <strong>The plan:</strong> start with Tier A (fast to sell, low risk). Once a customer trusts us, upsell them to Tier B. Same robot, same customer — just a bigger contract.
+  </div>
+
+  <!-- CUSTOMERS -->
+  <h2 class="section">Who Buys From Us</h2>
+  <ul class="customers">
+    <li><strong>Sportsbooks</strong> launching prediction-market sections — DraftKings, FanDuel, Fanatics. They already have millions of customers ready to trade.</li>
+    <li><strong>New prediction-market startups</strong> — they need liquidity to launch. Our robot makes their market work from day one.</li>
+    <li><strong>Professional trading firms</strong> — prop shops and quant funds who trade prediction markets as a business.</li>
+  </ul>
+  <p class="note">Rule: we only sell to customers who already bring their own shoppers. Our robot can't fill empty stalls in a ghost town.</p>
+
+  <!-- SUMMARY -->
+  <div class="summary">
+    <h2>The Whole Thing, In One Sentence</h2>
+    <p>We sell the robot that fills the empty stalls — so every time someone in the prediction-market world wants to trade, there's someone on the other side, and every trade pays us a small cut.</p>
+  </div>
+
+</div>
+</body>
+</html>

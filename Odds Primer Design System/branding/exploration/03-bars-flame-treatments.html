@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bars · Flame treatments · Odds Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700;8..60,900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF7F0;
+    --ink: #0E2240;
+    --ink-soft: #3D4F6A;
+    --rule: #D9D2BE;
+    --flame: #D9461C;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body { font-family: var(--serif); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+
+  .page { max-width: 1240px; margin: 0 auto; padding: 48px 36px 96px; }
+
+  .eyebrow {
+    font-family: var(--sans); font-weight: 500;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 6px;
+  }
+  h1.page-title {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 32px; line-height: 1.15; letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+  .page-sub {
+    max-width: 64ch; font-size: 14.5px;
+    color: var(--ink-soft); margin: 0 0 36px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+
+  .cell {
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 24px 24px 20px;
+    display: flex; flex-direction: column;
+  }
+
+  .cell-head {
+    display: flex; align-items: baseline; gap: 12px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 10px; margin-bottom: 18px;
+  }
+  .cell-id {
+    font-family: var(--mono); font-weight: 500;
+    font-size: 12px; color: var(--flame);
+    letter-spacing: 0.06em;
+  }
+  .cell-name {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 17px; line-height: 1.2;
+    margin: 0;
+  }
+  .cell-bet {
+    font-family: var(--sans); font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: 4px 0 16px;
+  }
+
+  .stage {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 96px;
+    padding: 12px;
+    background: var(--paper);
+    border: 1px dashed var(--rule);
+    margin-bottom: 14px;
+  }
+
+  .strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--rule);
+    margin-bottom: 14px;
+  }
+  .strip-half {
+    padding: 14px 16px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 14px;
+    min-height: 64px;
+  }
+  .strip-half + .strip-half { border-left: 1px solid var(--rule); }
+  .strip-half.dark { background: var(--ink); }
+  .strip-half .lbl {
+    font-family: var(--mono); font-size: 9.5px;
+    color: var(--ink-soft); letter-spacing: 0.04em;
+  }
+  .strip-half.dark .lbl { color: #8FA0BD; }
+
+  .lock { display: inline-flex; align-items: center; gap: 12px; }
+  .word {
+    font-family: var(--sans); font-weight: 700;
+    letter-spacing: -0.01em; color: var(--ink);
+    font-size: 26px;
+  }
+  .strip-half.dark .word { color: var(--paper); }
+
+  .note {
+    font-family: var(--sans); font-size: 11.5px;
+    color: var(--ink-soft);
+    border-top: 1px dashed var(--rule);
+    padding-top: 10px;
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 4px 10px;
+  }
+  .note b { color: var(--ink); font-weight: 600; }
+
+  footer.colophon {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--ink);
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex; justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <p class="eyebrow">Odds Primer · Brand · Bars · Round 3</p>
+  <h1 class="page-title">Marking the flame bar — without the caret</h1>
+  <p class="page-sub">You didn't like the arrow above the orange bar. Five alternatives that keep the meaningful-heights thesis but mark the flame bar differently — or not at all. Same bar geometry across all cells (heights 22 · 38 · 65 · 30) so the only variable is how the flame bar is called out.</p>
+
+  <div class="grid">
+
+    <!-- ============================================
+         B0 — Caret control (the one you didn't like)
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">B0</span>
+        <h3 class="cell-name">Caret · control (rejected)</h3>
+      </div>
+      <p class="cell-bet">For reference. The caret you didn't like, kept here so you can compare against the alternatives.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <svg viewBox="0 0 56 52" width="64" height="58" aria-hidden="true">
+            <polygon points="25,0 33,0 29,5" fill="#D9461C"/>
+            <line x1="2" y1="48" x2="54" y2="48" stroke="#0E2240" stroke-width="1.25"/>
+            <rect x="6"  y="34" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="24" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="10" width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="30" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="word">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-half">
+          <svg viewBox="0 0 56 52" width="34" height="31">
+            <polygon points="25,0 33,0 29,5" fill="#D9461C"/>
+            <line x1="2" y1="48" x2="54" y2="48" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="34" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="24" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="10" width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="30" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <svg viewBox="0 0 56 52" width="17" height="16">
+            <polygon points="25,0 33,0 29,5" fill="#D9461C"/>
+            <line x1="2" y1="48" x2="54" y2="48" stroke="#0E2240" stroke-width="3"/>
+            <rect x="6"  y="34" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="24" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="10" width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="30" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="lbl">32 / 16</span>
+        </div>
+        <div class="strip-half dark">
+          <svg viewBox="0 0 56 52" width="44" height="40">
+            <polygon points="25,0 33,0 29,5" fill="#D9461C"/>
+            <line x1="2" y1="48" x2="54" y2="48" stroke="#FAF7F0" stroke-width="1.25"/>
+            <rect x="6"  y="34" width="6" height="14" fill="#FAF7F0"/>
+            <rect x="16" y="24" width="6" height="24" fill="#FAF7F0"/>
+            <rect x="26" y="10" width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="30" width="6" height="18" fill="#FAF7F0"/>
+          </svg>
+          <span class="word" style="font-size:18px;">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Status</b><span>Rejected. Reference only — what we're moving away from.</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         B1 — Bare (no accent mark at all)
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">B1</span>
+        <h3 class="cell-name">Bare · let the bar speak</h3>
+      </div>
+      <p class="cell-bet">No accent mark. The flame bar's height + flame color does all the work. Cleanest read. Most editorial.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <svg viewBox="0 0 56 50" width="64" height="56" aria-hidden="true">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="word">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-half">
+          <svg viewBox="0 0 56 50" width="34" height="30">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <svg viewBox="0 0 56 50" width="17" height="15">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="3"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="lbl">32 / 16</span>
+        </div>
+        <div class="strip-half dark">
+          <svg viewBox="0 0 56 50" width="44" height="39">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#FAF7F0" stroke-width="1.25"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#FAF7F0"/>
+            <rect x="16" y="22" width="6" height="24" fill="#FAF7F0"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#FAF7F0"/>
+          </svg>
+          <span class="word" style="font-size:18px;">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Asks</b><span>Does the mark need anything beyond color and height? Or are we over-engineering?</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         B2 — Flame underline (under the flame bar's baseline)
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">B2</span>
+        <h3 class="cell-name">Flame underline</h3>
+      </div>
+      <p class="cell-bet">A flame segment <em>under</em> the baseline rule, directly below the flame bar. Echoes the product's "best price = bold ink + flame underline" semantic. Beneath, never above.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <svg viewBox="0 0 56 50" width="64" height="56" aria-hidden="true">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            <!-- flame underline -->
+            <rect x="23" y="48" width="12" height="2" fill="#D9461C"/>
+          </svg>
+          <span class="word">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-half">
+          <svg viewBox="0 0 56 50" width="34" height="30">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            <rect x="23" y="48" width="12" height="2" fill="#D9461C"/>
+          </svg>
+          <svg viewBox="0 0 56 50" width="17" height="15">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="3"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            <rect x="23" y="48" width="12" height="2" fill="#D9461C"/>
+          </svg>
+          <span class="lbl">32 / 16</span>
+        </div>
+        <div class="strip-half dark">
+          <svg viewBox="0 0 56 50" width="44" height="39">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#FAF7F0" stroke-width="1.25"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#FAF7F0"/>
+            <rect x="16" y="22" width="6" height="24" fill="#FAF7F0"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#FAF7F0"/>
+            <rect x="23" y="48" width="12" height="2" fill="#D9461C"/>
+          </svg>
+          <span class="word" style="font-size:18px;">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Asks</b><span>Does the underline read as part of the system (best-price gesture), or as a stray underscore?</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         B3 — Bleeds below baseline
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">B3</span>
+        <h3 class="cell-name">Bleeds below baseline</h3>
+      </div>
+      <p class="cell-bet">The flame bar extends slightly below the baseline rule — a small foot. No added shape. The flame bar is the only one that "anchors" the chart.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <svg viewBox="0 0 56 56" width="64" height="64" aria-hidden="true">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="44" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="word">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-half">
+          <svg viewBox="0 0 56 56" width="34" height="34">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="44" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <svg viewBox="0 0 56 56" width="17" height="17">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="3"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="44" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="lbl">32 / 16</span>
+        </div>
+        <div class="strip-half dark">
+          <svg viewBox="0 0 56 56" width="44" height="44">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#FAF7F0" stroke-width="1.25"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#FAF7F0"/>
+            <rect x="16" y="22" width="6" height="24" fill="#FAF7F0"/>
+            <rect x="26" y="8"  width="6" height="44" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#FAF7F0"/>
+          </svg>
+          <span class="word" style="font-size:18px;">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Asks</b><span>Subtle differentiator. Does it feel intentional, or like a pixel mistake?</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         B4 — Side tick (row indicator)
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">B4</span>
+        <h3 class="cell-name">Side tick · row indicator</h3>
+      </div>
+      <p class="cell-bet">A small flame square to the left of the bar group, level with the flame bar's top. Reads like an editorial marginalia mark — "this row is the one."</p>
+
+      <div class="stage">
+        <div class="lock">
+          <svg viewBox="0 0 60 50" width="68" height="56" aria-hidden="true">
+            <!-- side tick -->
+            <rect x="0" y="9" width="3" height="3" fill="#D9461C"/>
+            <line x1="6" y1="46" x2="58" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+            <rect x="10" y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="20" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="30" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="40" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="word">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-half">
+          <svg viewBox="0 0 60 50" width="36" height="30">
+            <rect x="0" y="9" width="3" height="3" fill="#D9461C"/>
+            <line x1="6" y1="46" x2="58" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="10" y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="20" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="30" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="40" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <svg viewBox="0 0 60 50" width="18" height="15">
+            <rect x="0" y="9" width="4" height="4" fill="#D9461C"/>
+            <line x1="6" y1="46" x2="58" y2="46" stroke="#0E2240" stroke-width="3"/>
+            <rect x="10" y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="20" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="30" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="40" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="lbl">32 / 16</span>
+        </div>
+        <div class="strip-half dark">
+          <svg viewBox="0 0 60 50" width="48" height="40">
+            <rect x="0" y="9" width="3" height="3" fill="#D9461C"/>
+            <line x1="6" y1="46" x2="58" y2="46" stroke="#FAF7F0" stroke-width="1.25"/>
+            <rect x="10" y="32" width="6" height="14" fill="#FAF7F0"/>
+            <rect x="20" y="22" width="6" height="24" fill="#FAF7F0"/>
+            <rect x="30" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="40" y="28" width="6" height="18" fill="#FAF7F0"/>
+          </svg>
+          <span class="word" style="font-size:18px;">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Asks</b><span>Does the side tick read as a deliberate marginalia gesture, or as orphan punctuation?</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         B5 — Hairline frame (editorial highlight)
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">B5</span>
+        <h3 class="cell-name">Hairline frame</h3>
+      </div>
+      <p class="cell-bet">A thin flame outline around the flame bar. Like an editorial highlight box — the way a magazine pulls a callout from the body text.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <svg viewBox="0 0 56 50" width="64" height="56" aria-hidden="true">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            <!-- hairline frame around flame bar -->
+            <rect x="23" y="5" width="12" height="44" fill="none" stroke="#D9461C" stroke-width="1"/>
+          </svg>
+          <span class="word">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-half">
+          <svg viewBox="0 0 56 50" width="34" height="30">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            <rect x="23" y="5" width="12" height="44" fill="none" stroke="#D9461C" stroke-width="1.25"/>
+          </svg>
+          <svg viewBox="0 0 56 50" width="17" height="15">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="3"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            <rect x="23" y="5" width="12" height="44" fill="none" stroke="#D9461C" stroke-width="2"/>
+          </svg>
+          <span class="lbl">32 / 16</span>
+        </div>
+        <div class="strip-half dark">
+          <svg viewBox="0 0 56 50" width="44" height="39">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#FAF7F0" stroke-width="1.25"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#FAF7F0"/>
+            <rect x="16" y="22" width="6" height="24" fill="#FAF7F0"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#FAF7F0"/>
+            <rect x="23" y="5" width="12" height="44" fill="none" stroke="#D9461C" stroke-width="1"/>
+          </svg>
+          <span class="word" style="font-size:18px;">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Asks</b><span>Does the frame elevate the bar to "the highlighted one," or does it crowd the silhouette?</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         B6 — Mono number above (editorial)
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">B6</span>
+        <h3 class="cell-name">Mono · the number itself</h3>
+      </div>
+      <p class="cell-bet">Replace the caret with the actual probability — "65" set in JetBrains Mono, in flame, above the bar. The mark is captioned, the way an editorial chart is.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <svg viewBox="0 0 56 56" width="64" height="64" aria-hidden="true">
+            <text x="29" y="6" text-anchor="middle"
+                  font-family="JetBrains Mono, monospace"
+                  font-size="6.5" font-weight="500" fill="#D9461C"
+                  letter-spacing="0.4">65</text>
+            <line x1="2" y1="50" x2="54" y2="50" stroke="#0E2240" stroke-width="1.25"/>
+            <rect x="6"  y="36" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="26" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="12" width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="32" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="word">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-half">
+          <svg viewBox="0 0 56 56" width="34" height="34">
+            <text x="29" y="6" text-anchor="middle"
+                  font-family="JetBrains Mono, monospace"
+                  font-size="6.5" font-weight="500" fill="#D9461C">65</text>
+            <line x1="2" y1="50" x2="54" y2="50" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="36" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="26" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="12" width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="32" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <svg viewBox="0 0 56 56" width="17" height="17">
+            <line x1="2" y1="50" x2="54" y2="50" stroke="#0E2240" stroke-width="3"/>
+            <rect x="6"  y="36" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="26" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="12" width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="32" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="lbl">32 · 16 (no caption at 16)</span>
+        </div>
+        <div class="strip-half dark">
+          <svg viewBox="0 0 56 56" width="44" height="44">
+            <text x="29" y="6" text-anchor="middle"
+                  font-family="JetBrains Mono, monospace"
+                  font-size="6.5" font-weight="500" fill="#D9461C">65</text>
+            <line x1="2" y1="50" x2="54" y2="50" stroke="#FAF7F0" stroke-width="1.25"/>
+            <rect x="6"  y="36" width="6" height="14" fill="#FAF7F0"/>
+            <rect x="16" y="26" width="6" height="24" fill="#FAF7F0"/>
+            <rect x="26" y="12" width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="32" width="6" height="18" fill="#FAF7F0"/>
+          </svg>
+          <span class="word" style="font-size:18px;">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Asks</b><span>Captioned chart-as-mark. Editorial, but possibly busier than the caret was — same problem in a different costume.</span>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="colophon">
+    <span>Odds Primer · Brand · Bars · Flame treatments · v0.4</span>
+    <span>1 control + 5 alternatives · no caret</span>
+  </footer>
+
+</div>
+</body>
+</html>

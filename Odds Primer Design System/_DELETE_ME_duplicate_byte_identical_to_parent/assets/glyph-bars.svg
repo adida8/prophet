@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 88" width="88" height="88" aria-label="Odds Primer mark">
+  
+  <line x1="6" y1="74" x2="82" y2="74" stroke="#0E2240" stroke-width="1.25"></line>
+  <rect x="10" y="56" width="14" height="18" fill="#0E2240"></rect>
+  <rect x="28" y="44" width="14" height="30" fill="#0E2240"></rect>
+  <rect x="46" y="22" width="14" height="52" fill="#D9461C"></rect>
+  <rect x="64" y="50" width="14" height="24" fill="#0E2240"></rect>
+</svg>

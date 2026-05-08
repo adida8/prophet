@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World Cup 2026 — Odds Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700;8..60,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF7F0;
+    --paper-warm: #F2EDE0;
+    --ink: #0E2240;
+    --ink-soft: #3D4F6A;
+    --graphite: #5A6373;
+    --graphite-soft: #828B9C;
+    --rule: #D9D2BE;
+    --rule-soft: #E6E0CE;
+    --flame: #D9461C;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --gutter: clamp(20px, 4vw, 64px);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body {
+    font-family: var(--serif);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    font-feature-settings: "kern" on;
+  }
+  .page { max-width: 1080px; margin: 0 auto; padding: 0 var(--gutter); }
+
+  /* ============ MASTHEAD ============ */
+  .mast {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    padding: 16px 0 14px;
+    gap: 24px;
+  }
+  .mast-lock { display: inline-flex; align-items: center; gap: 11px; }
+  .mast-word {
+    font-family: var(--serif); font-weight: 800;
+    font-size: 22px; letter-spacing: -0.012em;
+    color: var(--ink); line-height: 1;
+    font-feature-settings: "ss01" on;
+  }
+  .mast-center {
+    text-align: center;
+    font-family: var(--sans);
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--graphite-soft);
+  }
+  .mast-right {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--graphite-soft);
+    font-variant-numeric: tabular-nums; text-align: right;
+  }
+
+  /* ============ EDITION STRIP ============ */
+  .edition {
+    display: flex; align-items: center; justify-content: center;
+    padding: 14px var(--gutter) 12px;
+    margin: 0 calc(var(--gutter) * -1);
+    background: var(--paper-warm);
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .edition .edition-main {
+    color: var(--ink); font-weight: 700;
+    letter-spacing: 0.22em;
+  }
+  .edition .edition-secondary {
+    color: var(--ink-soft); font-weight: 500;
+  }
+  .edition .pip { color: var(--rule); margin: 0 14px; }
+
+  /* ============ NAV ============ */
+  .nav {
+    display: flex; gap: 26px;
+    padding: 14px 0 12px;
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--graphite);
+  }
+  .nav a { color: inherit; text-decoration: none; padding-bottom: 2px; }
+  .nav a.active { color: var(--ink); font-weight: 600; border-bottom: 1px solid var(--ink); }
+  .nav .updated {
+    margin-left: auto;
+    font-family: var(--serif); font-style: italic;
+    font-size: 12px; color: var(--graphite-soft);
+  }
+
+  /* ============ TODAY EYEBROW ============ */
+  .today {
+    padding: 36px 0 24px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid var(--rule);
+    flex-wrap: wrap; gap: 12px;
+  }
+  .today .lab {
+    font-family: var(--sans);
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--graphite);
+  }
+  .today .lab b {
+    color: var(--ink); font-weight: 700;
+    letter-spacing: 0.22em; margin-right: 10px;
+  }
+  .today .meta {
+    font-family: var(--mono);
+    font-size: 11px; color: var(--graphite-soft);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+  }
+
+  /* ============ DOSSIER MODULE ============ */
+  .dossier {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 0;
+    margin: 28px 0 0;
+    border: 1px solid var(--ink);
+    background: var(--paper);
+  }
+  .dossier .rail {
+    background: var(--paper-warm);
+    border-right: 1px solid var(--ink);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 14px 0 18px;
+    position: relative;
+  }
+  .dossier .rail-text {
+    font-family: var(--sans);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.32em; text-transform: uppercase;
+    color: var(--ink);
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+  }
+  .dossier .rail-text .pip { color: var(--flame); margin: 0 6px; }
+  .dossier .rail-text .secondary { color: var(--ink-soft); font-weight: 600; letter-spacing: 0.28em; }
+
+  .dossier .body { padding: 22px 26px 22px; }
+
+  .d-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 12px; margin-bottom: 18px;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .d-match {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 22px; letter-spacing: -0.005em;
+    color: var(--ink); line-height: 1.15;
+  }
+  .d-match .vs { color: var(--graphite); font-style: italic; font-weight: 400; margin: 0 6px; }
+  .d-meta {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.06em; color: var(--graphite-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .d-meta .pip { color: var(--rule); margin: 0 8px; }
+
+  /* lead .d-question reads as the editorial prompt — first glance */
+  .d-question {
+    margin: 0 0 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule-soft);
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+  }
+  .d-question::before {
+    content: "Market question";
+    display: inline-block;
+    margin-right: 14px;
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--graphite-soft);
+    vertical-align: 4px;
+  }
+
+  /* table */
+  .d-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-feature-settings: "tnum" on, "lnum" on;
+  }
+  .d-table th {
+    text-align: left;
+    font-family: var(--sans); font-size: 10px;
+    font-weight: 600; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--graphite-soft);
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .d-table th.r { text-align: right; }
+  .d-table td {
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--rule-soft);
+    font-family: var(--mono); font-size: 14px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+  .d-table td.r { text-align: right; }
+  .d-table td.venue {
+    font-family: var(--sans); font-weight: 500;
+    font-size: 14px; letter-spacing: 0;
+    color: var(--ink);
+  }
+  /* venue dot — neutral. Solid navy = market; outlined navy = sportsbook. */
+  .d-table td.venue .dot {
+    display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; margin-right: 8px;
+    background: var(--ink); transform: translateY(-1px);
+  }
+  .d-table td.venue[data-v="draftkings"] .dot,
+  .d-table td.venue[data-v="fanduel"] .dot,
+  .d-table td.venue[data-v="betmgm"] .dot,
+  .d-table td.venue[data-v="caesars"] .dot,
+  .d-table td.venue[data-v="pinnacle"] .dot {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
+  .d-table td.note {
+    font-family: var(--serif); font-style: italic;
+    font-size: 13px; color: var(--graphite);
+    letter-spacing: 0;
+  }
+  /* em-dash on its own = system notation (no commentary), not missing copy */
+  .d-table td.note.empty {
+    font-family: var(--mono);
+    font-style: normal;
+    font-size: 12px;
+    color: var(--graphite-soft);
+    letter-spacing: 0.04em;
+  }
+  .d-table tr.best td { background: rgba(217, 70, 28, 0.04); }
+  .d-table tr.best td.venue { color: var(--ink); font-weight: 700; }
+  .d-table tr.best td.price {
+    color: var(--ink); font-weight: 600;
+    border-bottom: 2px solid var(--flame);
+  }
+  .d-table tr.best .best-tag {
+    display: inline-block;
+    margin-left: 8px;
+    font-family: var(--sans); font-weight: 600;
+    font-size: 9.5px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--flame);
+    vertical-align: 2px;
+  }
+  .d-table tr.best .best-tag.is-mobile { display: none; }
+
+  .d-foot {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid var(--rule);
+    flex-wrap: wrap; gap: 12px;
+  }
+  .d-stat {
+    font-family: var(--sans); font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .d-stat b {
+    color: var(--ink); font-weight: 600;
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    margin-right: 4px;
+  }
+  .d-source {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--graphite-soft); letter-spacing: 0.04em;
+  }
+  .d-source a {
+    color: var(--ink); text-decoration: none;
+    border-bottom: 1px solid var(--flame);
+  }
+
+  /* ============ COMPACT VARIANT ============ */
+  .dossier.compact .body { padding: 16px 22px 16px; }
+  .dossier.compact .d-match {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.008em;
+  }
+  /* compact dossiers don't get a separate question line — the .d-match IS the question */
+  .dossier.compact .d-question { display: none; }
+  .dossier.compact .d-table td { padding: 9px 8px; font-size: 13px; }
+  .dossier.compact .d-table td.note { font-size: 12px; }
+  .dossier.compact .d-foot { display: none; }
+  .dossier.compact .rail-text { font-size: 9.5px; letter-spacing: 0.28em; }
+
+  /* ============ COLOPHON ============ */
+  .colophon {
+    margin-top: 56px;
+    padding: 28px 0 48px;
+    border-top: 1px solid var(--ink);
+    font-family: var(--sans); font-size: 12px;
+    color: var(--graphite-soft);
+    display: flex; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+  }
+
+  /* ============================================================
+     MOBILE — 600px and down
+     - vertical rail → horizontal top strip
+     - notes column hidden (Venue / Price / Implied only)
+     - no horizontal scroll on the table
+     ============================================================ */
+  @media (max-width: 600px) {
+    .page { padding: 0 16px; }
+
+    .mast {
+      grid-template-columns: 1fr; text-align: center;
+      gap: 6px; padding: 14px 0 12px;
+    }
+    .mast-lock { justify-content: center; }
+    .mast-center, .mast-right { display: none; }
+
+    .edition {
+      padding: 12px 16px;
+      margin: 0 -16px;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      gap: 4px 0;
+    }
+    .edition .pip { margin: 0 8px; }
+
+    .nav {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+      gap: 18px;
+      padding: 12px 0;
+      scrollbar-width: none;
+    }
+    .nav::-webkit-scrollbar { display: none; }
+    .nav .updated { display: none; }
+
+    .today { padding: 28px 0 18px; }
+    .today .lab { font-size: 10px; letter-spacing: 0.14em; }
+    .today .meta { font-size: 10px; }
+
+    /* dossier rail → top strip */
+    .dossier {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      margin: 22px 0 0;
+    }
+    .dossier .rail {
+      border-right: 0;
+      border-bottom: 1px solid var(--ink);
+      padding: 9px 16px;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .dossier .rail-text {
+      writing-mode: horizontal-tb;
+      transform: none;
+      font-size: 10px;
+      letter-spacing: 0.24em;
+    }
+
+    .dossier .body { padding: 16px 18px 18px; }
+
+    .d-head {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+    }
+    .d-match { font-size: 18px; }
+    .d-meta { font-size: 10px; letter-spacing: 0.04em; }
+    .d-meta .pip { margin: 0 6px; }
+
+    .d-question {
+      font-size: 16px;
+      margin: 0 0 14px;
+      padding-bottom: 12px;
+    }
+    .d-question::before {
+      display: block;
+      margin: 0 0 6px;
+      vertical-align: 0;
+    }
+
+    /* table — hide note column entirely, show only Venue / Price / Implied */
+    .d-table th:nth-child(4),
+    .d-table td.note { display: none; }
+    .d-table th { font-size: 9px; padding: 5px 4px; letter-spacing: 0.14em; }
+    .d-table td { font-size: 12px; padding: 9px 4px; }
+    .d-table td.venue { font-size: 12px; }
+    .d-table tr.best .best-tag { font-size: 8.5px; letter-spacing: 0.14em; margin-left: 4px; }
+    /* mobile: move Best tag next to price; hide it from venue cell */
+    .d-table tr.best .best-tag.is-desktop { display: none; }
+    .d-table tr.best .best-tag.is-mobile { display: inline-block; }
+
+    /* d-foot stacks */
+    .d-foot {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      padding-top: 10px;
+    }
+    .d-foot .d-source { display: none; }
+
+    /* compact dossier mobile */
+    .dossier.compact .d-table td { padding: 8px 4px; }
+
+    .colophon {
+      flex-direction: column;
+      gap: 6px;
+      padding: 22px 0 36px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ===================== MASTHEAD ===================== -->
+  <header class="mast">
+    <div class="mast-lock">
+      <svg viewBox="0 0 56 50" width="42" height="38" aria-hidden="true">
+        <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+        <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+        <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+        <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+        <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+      </svg>
+      <span class="mast-word">Odds Primer</span>
+    </div>
+    <div class="mast-center">A field guide to prediction markets</div>
+    <div class="mast-right">Wed · 2026-05-06 · 14:08 ET</div>
+  </header>
+
+  <!-- ===================== EDITION STRIP ===================== -->
+  <div class="edition">
+    <span class="edition-main">World Cup 2026</span>
+    <span class="pip">·</span>
+    <span class="edition-secondary">Edition 01</span>
+    <span class="pip">·</span>
+    <span class="edition-secondary">Match markets explained</span>
+    <span class="pip">·</span>
+    <span class="edition-secondary">Group stage opens 11 Jun</span>
+  </div>
+
+  <!-- ===================== NAV ===================== -->
+  <nav class="nav">
+    <a href="#" class="active">Today</a>
+    <a href="#">Matches</a>
+    <a href="#">Outright</a>
+    <a href="#">Top scorer</a>
+    <a href="#">Reading the numbers</a>
+    <a href="#">Glossary</a>
+    <span class="updated">Updated 12 minutes ago</span>
+  </nav>
+
+  <!-- ===================== TODAY EYEBROW ===================== -->
+  <div class="today">
+    <div class="lab"><b>Today</b>5 questions · 6 venues · refreshed 14:08 ET</div>
+    <div class="meta">Wed, 6 May 2026 · MD2 in 37 days</div>
+  </div>
+
+  <!-- ===================== DOSSIER STACK ===================== -->
+
+  <!-- LEAD — full dossier (the day's biggest spread) -->
+  <div class="dossier">
+    <div class="rail"><span class="rail-text">WC 2026 <span class="pip">·</span> <span class="secondary">Match brief · Lead</span></span></div>
+    <div class="body">
+      <p class="d-question">Will Argentina win in 90 minutes?</p>
+      <div class="d-head">
+        <div class="d-match">FRA <span class="vs">v</span> ARG</div>
+        <div class="d-meta">
+          <span>Group D · MD2</span><span class="pip">·</span>
+          <span>12 Jun · Estadio Azteca</span><span class="pip">·</span>
+          <span>16:00 CT</span>
+        </div>
+      </div>
+      <table class="d-table">
+        <thead>
+          <tr><th>Venue</th><th class="r">Price</th><th class="r">Implied</th><th>Note</th></tr>
+        </thead>
+        <tbody>
+          <tr class="best">
+            <td class="venue" data-v="kalshi"><span class="dot"></span>Kalshi <span class="best-tag is-desktop">Best</span></td>
+            <td class="r price">52¢ <span class="best-tag is-mobile">Best</span></td>
+            <td class="r">52%</td>
+            <td class="note">Lowest listed. Best net price.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="polymarket"><span class="dot"></span>Polymarket</td>
+            <td class="r">54¢</td>
+            <td class="r">54%</td>
+            <td class="note">Volume thin pre-MD2.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="draftkings"><span class="dot"></span>DraftKings</td>
+            <td class="r">+115</td>
+            <td class="r">47%</td>
+            <td class="note">Slowest line to move on Mbappé news.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="fanduel"><span class="dot"></span>FanDuel</td>
+            <td class="r">+105</td>
+            <td class="r">49%</td>
+            <td class="note">Closest to Polymarket on the book side.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="betmgm"><span class="dot"></span>BetMGM</td>
+            <td class="r">+120</td>
+            <td class="r">45%</td>
+            <td class="note">Hasn't moved since the lineup confirmation.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="caesars"><span class="dot"></span>Caesars</td>
+            <td class="r">+110</td>
+            <td class="r">48%</td>
+            <td class="note empty">—</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="d-foot">
+        <div class="d-stat"><b>Spread</b><span>8 points across 6 venues</span></div>
+        <div class="d-stat"><b>Median</b><span>49%</span></div>
+        <div class="d-source">Refreshed 14:08 ET · <a href="#">view sources ↗</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 — Outright -->
+  <div class="dossier compact">
+    <div class="rail"><span class="rail-text">WC 2026 <span class="pip">·</span> <span class="secondary">Outright</span></span></div>
+    <div class="body">
+      <div class="d-head">
+        <div class="d-match">France <span class="vs">to win</span> the World Cup</div>
+        <div class="d-meta">
+          <span>Outright · YES</span><span class="pip">·</span>
+          <span>104 matches</span><span class="pip">·</span>
+          <span>Window: 4 May — 11 Jun</span>
+        </div>
+      </div>
+      <p class="d-question">Will France win the 2026 World Cup?</p>
+      <table class="d-table">
+        <thead>
+          <tr><th>Venue</th><th class="r">Price</th><th class="r">Implied</th><th>Note</th></tr>
+        </thead>
+        <tbody>
+          <tr class="best">
+            <td class="venue" data-v="kalshi"><span class="dot"></span>Kalshi <span class="best-tag is-desktop">Best</span></td>
+            <td class="r price">32¢ <span class="best-tag is-mobile">Best</span></td>
+            <td class="r">32%</td>
+            <td class="note">Best net price after fees.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="polymarket"><span class="dot"></span>Polymarket</td>
+            <td class="r">29¢</td>
+            <td class="r">29%</td>
+            <td class="note">Lowest listed.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="draftkings"><span class="dot"></span>DraftKings</td>
+            <td class="r">+150</td>
+            <td class="r">41%</td>
+            <td class="note">Pricing France 12pt above Polymarket.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="betmgm"><span class="dot"></span>BetMGM</td>
+            <td class="r">+200</td>
+            <td class="r">33%</td>
+            <td class="note">Hasn't moved since the group draw.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 03 — Opening match -->
+  <div class="dossier compact">
+    <div class="rail"><span class="rail-text">WC 2026 <span class="pip">·</span> <span class="secondary">Match brief · Opening</span></span></div>
+    <div class="body">
+      <div class="d-head">
+        <div class="d-match">Mexico <span class="vs">to win</span> the opening match</div>
+        <div class="d-meta">
+          <span>Group A · MD1</span><span class="pip">·</span>
+          <span>11 Jun · Azteca · 2,240m</span>
+        </div>
+      </div>
+      <p class="d-question">Will Mexico win at home, at altitude?</p>
+      <table class="d-table">
+        <thead>
+          <tr><th>Venue</th><th class="r">Price</th><th class="r">Implied</th><th>Note</th></tr>
+        </thead>
+        <tbody>
+          <tr class="best">
+            <td class="venue" data-v="kalshi"><span class="dot"></span>Kalshi <span class="best-tag is-desktop">Best</span></td>
+            <td class="r price">62¢ <span class="best-tag is-mobile">Best</span></td>
+            <td class="r">62%</td>
+            <td class="note">Best net price.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="polymarket"><span class="dot"></span>Polymarket</td>
+            <td class="r">64¢</td>
+            <td class="r">64%</td>
+            <td class="note">Lowest listed book-side.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="draftkings"><span class="dot"></span>DraftKings</td>
+            <td class="r">−170</td>
+            <td class="r">63%</td>
+            <td class="note">Implied probability in line with the markets.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="fanduel"><span class="dot"></span>FanDuel</td>
+            <td class="r">−165</td>
+            <td class="r">62%</td>
+            <td class="note empty">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 04 — Group winner -->
+  <div class="dossier compact">
+    <div class="rail"><span class="rail-text">WC 2026 <span class="pip">·</span> <span class="secondary">Group winner</span></span></div>
+    <div class="body">
+      <div class="d-head">
+        <div class="d-match">Spain <span class="vs">to win</span> Group F</div>
+        <div class="d-meta">
+          <span>Outright · group winner</span><span class="pip">·</span>
+          <span>Group F · ESP, KSA, NGA, NED</span>
+        </div>
+      </div>
+      <p class="d-question">Will Spain top Group F?</p>
+      <table class="d-table">
+        <thead>
+          <tr><th>Venue</th><th class="r">Price</th><th class="r">Implied</th><th>Note</th></tr>
+        </thead>
+        <tbody>
+          <tr class="best">
+            <td class="venue" data-v="kalshi"><span class="dot"></span>Kalshi <span class="best-tag is-desktop">Best</span></td>
+            <td class="r price">71¢ <span class="best-tag is-mobile">Best</span></td>
+            <td class="r">71%</td>
+            <td class="note">Best net price.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="polymarket"><span class="dot"></span>Polymarket</td>
+            <td class="r">73¢</td>
+            <td class="r">73%</td>
+            <td class="note">Pricing Netherlands as the live threat.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="draftkings"><span class="dot"></span>DraftKings</td>
+            <td class="r">−260</td>
+            <td class="r">72%</td>
+            <td class="note empty">—</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="fanduel"><span class="dot"></span>FanDuel</td>
+            <td class="r">−245</td>
+            <td class="r">71%</td>
+            <td class="note">Tightest spread to Kalshi after fees.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 05 — Top scorer -->
+  <div class="dossier compact">
+    <div class="rail"><span class="rail-text">WC 2026 <span class="pip">·</span> <span class="secondary">Top scorer</span></span></div>
+    <div class="body">
+      <div class="d-head">
+        <div class="d-match">Mbappé <span class="vs">to win</span> the Golden Boot</div>
+        <div class="d-meta">
+          <span>Outright · Golden Boot</span><span class="pip">·</span>
+          <span>104 matches · field of 24</span>
+        </div>
+      </div>
+      <p class="d-question">Will Mbappé win the 2026 Golden Boot?</p>
+      <table class="d-table">
+        <thead>
+          <tr><th>Venue</th><th class="r">Price</th><th class="r">Implied</th><th>Note</th></tr>
+        </thead>
+        <tbody>
+          <tr class="best">
+            <td class="venue" data-v="kalshi"><span class="dot"></span>Kalshi <span class="best-tag is-desktop">Best</span></td>
+            <td class="r price">14¢ <span class="best-tag is-mobile">Best</span></td>
+            <td class="r">14%</td>
+            <td class="note">Best net price after fees.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="polymarket"><span class="dot"></span>Polymarket</td>
+            <td class="r">12¢</td>
+            <td class="r">12%</td>
+            <td class="note">Lowest listed.</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="draftkings"><span class="dot"></span>DraftKings</td>
+            <td class="r">+650</td>
+            <td class="r">13%</td>
+            <td class="note empty">—</td>
+          </tr>
+          <tr>
+            <td class="venue" data-v="fanduel"><span class="dot"></span>FanDuel</td>
+            <td class="r">+700</td>
+            <td class="r">13%</td>
+            <td class="note">One point wider than DraftKings.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===================== COLOPHON ===================== -->
+  <footer class="colophon">
+    <span>Odds Primer · World Cup 2026 Edition · No tipster, no promo, no take. We compare and explain.</span>
+    <span>oddsprimer.com</span>
+  </footer>
+
+</div>
+
+</body>
+</html>
