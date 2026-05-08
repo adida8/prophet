@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Read the Game — Brand Mockup</title>
+<style>
+  @page { size: A4 portrait; margin: 18mm 16mm; }
+  :root {
+    --ink:        #0E1B2C;
+    --ink-soft:   #2B3A52;
+    --paper:      #F4EFE6;
+    --rust:       #B5471B;
+    --line:       #C8B89A;
+    --muted:      #6B7280;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body { font-family: Georgia, "Times New Roman", serif; line-height: 1.4; }
+  .sans { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  .doc { padding: 0 0 24px; }
+
+  /* MASTHEAD */
+  .masthead {
+    border-top: 4px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding: 14px 0 10px;
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  .masthead .logo {
+    font-family: Georgia, serif; font-weight: 700;
+    font-size: 36px; letter-spacing: -0.5px;
+    line-height: 1; color: var(--ink);
+  }
+  .masthead .logo .dot { color: var(--rust); }
+  .masthead .meta {
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* SECTION HEADERS */
+  .label {
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--rust); font-weight: 600;
+    margin: 18px 0 6px;
+  }
+
+  /* IDENTITY ROW */
+  .identity { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 10px; }
+  .identity h2 {
+    font-size: 32px; line-height: 1.05; margin: 4px 0 6px; font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .identity p { font-size: 11px; color: var(--ink-soft); margin: 4px 0; }
+
+  /* PALETTE */
+  .palette { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 6px; }
+  .swatch { height: 44px; border-radius: 2px; position: relative; }
+  .swatch span {
+    position: absolute; bottom: -14px; left: 0; right: 0;
+    font-family: -apple-system, sans-serif; font-size: 8px;
+    color: var(--muted); text-align: center;
+  }
+
+  /* TYPE */
+  .type-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+  .type-row .ts-serif { font-family: Georgia, serif; }
+  .type-row .ts-sans  { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  .type-row .lg { font-size: 30px; font-weight: 700; line-height: 1; }
+  .type-row .md { font-size: 14px; line-height: 1.4; margin-top: 8px; }
+  .type-row .sm { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 6px;}
+
+  /* HERO MOCK */
+  .hero {
+    background: var(--ink); color: var(--paper);
+    padding: 22px 22px 24px; margin-top: 10px;
+    border-radius: 4px;
+  }
+  .hero .kicker {
+    font-family: -apple-system, sans-serif; font-size: 9px; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--rust); margin-bottom: 8px;
+  }
+  .hero h1 {
+    font-family: Georgia, serif; font-weight: 700; font-size: 28px; line-height: 1.1;
+    margin: 0 0 12px; max-width: 95%; letter-spacing: -0.5px;
+  }
+  .hero .lede {
+    font-family: -apple-system, sans-serif; font-size: 11px; line-height: 1.5;
+    color: #C8C0AE; max-width: 90%;
+  }
+  .hero .odds-row {
+    display: flex; gap: 16px; margin-top: 12px;
+    font-family: ui-monospace, "Menlo", monospace; font-size: 13px; color: var(--paper);
+  }
+  .hero .odds-row .item { display: flex; flex-direction: column; }
+  .hero .odds-row .num { font-size: 18px; font-weight: 600; color: var(--rust); }
+  .hero .odds-row .lbl {
+    font-family: -apple-system, sans-serif; font-size: 8px;
+    letter-spacing: 1.5px; text-transform: uppercase; color: #8A8676;
+  }
+
+  /* CARDS */
+  .cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .card {
+    background: white; border: 1px solid var(--line); border-radius: 3px;
+    padding: 12px; min-height: 130px; display: flex; flex-direction: column;
+  }
+  .card .tag {
+    font-family: -apple-system, sans-serif; font-size: 8px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--rust); font-weight: 600;
+  }
+  .card h3 {
+    font-family: Georgia, serif; font-size: 15px; line-height: 1.15;
+    margin: 6px 0 8px; font-weight: 700; letter-spacing: -0.2px;
+  }
+  .card p {
+    font-family: -apple-system, sans-serif; font-size: 9.5px;
+    line-height: 1.45; color: var(--ink-soft); margin: 0;
+  }
+  .card .footer {
+    margin-top: auto; padding-top: 8px;
+    font-family: -apple-system, sans-serif; font-size: 8px;
+    text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted);
+    border-top: 1px solid var(--line); display:flex; justify-content: space-between;
+  }
+
+  /* RATIONALE */
+  .rationale {
+    margin-top: 16px; padding: 12px 14px;
+    background: white; border-left: 3px solid var(--rust);
+    font-family: -apple-system, sans-serif; font-size: 10px;
+    color: var(--ink-soft); line-height: 1.5;
+  }
+  .rationale strong { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="logo">read the game<span class="dot">.</span></div>
+    <div class="meta">brand mockup &nbsp;·&nbsp; v1 &nbsp;·&nbsp; 2026 world cup</div>
+  </div>
+
+  <!-- IDENTITY -->
+  <div class="identity">
+    <div>
+      <div class="label">Positioning</div>
+      <h2>The football read.</h2>
+      <p>An educational football oddschecker. We don't just show you the prices — we tell you what they mean, who's mispriced, and what the markets are missing. Built by people who actually watch the games.</p>
+    </div>
+    <div>
+      <div class="label">Voice</div>
+      <p style="font-size:12px; color:var(--ink); line-height:1.5;">Confident, fan-literate, idiom-native. Speaks football fluently to serious fans without freezing out casuals. Every piece of content is "a read."</p>
+      <p style="font-size:10px; color:var(--muted); margin-top:8px;"><em>"Reading the game" is what coaches praise in smart players who anticipate. We extend that to the markets.</em></p>
+    </div>
+  </div>
+
+  <!-- PALETTE -->
+  <div class="label">Palette</div>
+  <div class="palette" style="margin-bottom: 22px;">
+    <div class="swatch" style="background: var(--ink);"><span>Ink&nbsp;·&nbsp;#0E1B2C</span></div>
+    <div class="swatch" style="background: var(--ink-soft);"><span>Ink Soft&nbsp;·&nbsp;#2B3A52</span></div>
+    <div class="swatch" style="background: var(--paper); border: 1px solid var(--line);"><span>Paper&nbsp;·&nbsp;#F4EFE6</span></div>
+    <div class="swatch" style="background: var(--rust);"><span>Rust&nbsp;·&nbsp;#B5471B</span></div>
+    <div class="swatch" style="background: var(--line);"><span>Rule&nbsp;·&nbsp;#C8B89A</span></div>
+  </div>
+
+  <!-- TYPE -->
+  <div class="label">Typography</div>
+  <div class="type-row">
+    <div>
+      <div class="ts-serif lg">Anticipate the play.</div>
+      <div class="ts-serif md">Understand the price.</div>
+      <div class="sm">Display · Georgia / editorial serif</div>
+    </div>
+    <div>
+      <div class="ts-sans lg" style="font-weight:700;">The Read</div>
+      <div class="ts-sans md">Brazil –115. Argentina +130. The draw +220.</div>
+      <div class="sm">UI · system sans (Inter / SF / Helvetica)</div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="label">Homepage Hero</div>
+  <div class="hero">
+    <div class="kicker">Today's Read &nbsp;·&nbsp; World Cup Group Stage</div>
+    <h1>Brazil are favoured. The draw is the value.</h1>
+    <div class="lede">Group F preview, market read, and three numbers worth holding onto. The book is leaning toward Brazil more than the underlying form deserves — and Argentina's price is a gift if you read the second-half xG splits.</div>
+    <div class="odds-row">
+      <div class="item"><span class="num">−115</span><span class="lbl">Brazil</span></div>
+      <div class="item"><span class="num">+130</span><span class="lbl">Argentina</span></div>
+      <div class="item"><span class="num">+220</span><span class="lbl">Draw</span></div>
+      <div class="item"><span class="num">2.7%</span><span class="lbl">Book vig</span></div>
+    </div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="label">Content Cards</div>
+  <div class="cards">
+    <div class="card">
+      <div class="tag">The Read</div>
+      <h3>France vs. Germany, Group F</h3>
+      <p>Why the draw is mispriced when both sides are managing minutes ahead of the knockouts.</p>
+      <div class="footer"><span>Preview</span><span>4 min</span></div>
+    </div>
+    <div class="card">
+      <div class="tag">Explainer</div>
+      <h3>Reading Mbappé's price</h3>
+      <p>Anytime scorer odds tell you more about the bookmaker's model than they do about the player.</p>
+      <div class="footer"><span>101</span><span>3 min</span></div>
+    </div>
+    <div class="card">
+      <div class="tag">Hot Take</div>
+      <h3>What the sharps are reading</h3>
+      <p>Three lines that have moved hard since Sunday — and what the moves are telling us.</p>
+      <div class="footer"><span>Markets</span><span>2 min</span></div>
+    </div>
+  </div>
+
+  <!-- RATIONALE -->
+  <div class="rationale">
+    <strong>Why this brand.</strong> "Read the game" is already football vernacular for tactical intelligence — the educational meaning is bonus, not baggage. Editorial serif masthead reads as a <em>publication</em>, not a tipster site. Rust accent against deep ink + warm paper says <em>thoughtful</em>, not <em>betting site flashing 1XBET banners</em>. The brand promises what we actually do: explain football, including the part where the markets are involved.
+  </div>
+
+</div>
+</body>
+</html>

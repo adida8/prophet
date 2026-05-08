@@ -1,0 +1,1070 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oddsprimer Ledger — Command Center · Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700;8..60,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF7F0;
+    --paper-pure: #FFFFFF;
+    --paper-warm: #F0ECE2;
+    --paper-deep: #E8E2D2;
+    --ink: #0E2240;
+    --ink-soft: #2A3957;
+    --graphite: #3A3F47;
+    --graphite-soft: #6B7079;
+    --rule: #D9D2C0;
+    --rule-soft: #EDE7D6;
+    --flame: #D9461C;
+    --flame-deep: #A8341A;
+    --flame-tint: #F7E4DA;
+    --chart-1: #0E2240;
+    --chart-2: #D9461C;
+    --chart-3: #6B7079;
+    --chart-4: #B89968;
+    --chart-5: #2A3957;
+    --chart-6: #8A6F3D;
+    --venue-poly: #2A6FDB;
+    --venue-kalshi: #00C46A;
+    --delta-up: #4A7A5A;
+    --delta-down: #A8534A;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body {
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+  .shell { max-width: 1440px; margin: 0 auto; padding: 0 40px; }
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--graphite-soft);
+  }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 500; }
+
+  /* ============ MASTHEAD ============ */
+  .mast {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 4px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    padding: 18px 0 14px;
+  }
+  .brand { display: inline-flex; align-items: center; gap: 11px; }
+  .glyph { display: inline-flex; align-items: flex-end; gap: 3px; height: 28px; }
+  .glyph i { display: block; width: 5px; background: var(--ink); }
+  .glyph i:nth-child(1) { height: 22%; }
+  .glyph i:nth-child(2) { height: 38%; }
+  .glyph i:nth-child(3) { height: 65%; background: var(--flame); }
+  .glyph i:nth-child(4) { height: 30%; }
+  .wordmark {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .wordmark .pipe { color: var(--rule); margin: 0 8px; font-weight: 400; }
+  .wordmark .sub { font-weight: 600; color: var(--graphite); font-size: 18px; }
+  .mast-meta { display: inline-flex; align-items: center; gap: 18px; }
+  .mast-meta .timestamp {
+    font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--graphite);
+  }
+  .mast-meta .timestamp .dagger { color: var(--flame); }
+  .btn {
+    background: none;
+    border: 1px solid var(--ink);
+    padding: 7px 14px;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    transition: all 120ms;
+  }
+  .btn:hover { background: var(--ink); color: var(--paper); }
+  .btn.secondary { border-color: var(--rule); color: var(--graphite); }
+
+  /* ============ EDITION RIBBON ============ */
+  .ribbon {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--graphite);
+    border-bottom: 1px solid var(--rule);
+  }
+  .ribbon .right { display: inline-flex; gap: 24px; color: var(--graphite-soft); font-weight: 500; letter-spacing: 0.12em; }
+
+  /* ============ DOSSIER ============ */
+  .dossier {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    padding: 36px 0 24px;
+    border-bottom: 1px solid var(--rule);
+    gap: 32px;
+  }
+  .dossier .label-line {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--flame);
+    margin-bottom: 10px;
+  }
+  .dossier h1 {
+    font-family: var(--serif);
+    font-size: 56px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.02;
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  .dossier .deck {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-style: italic;
+    color: var(--graphite);
+    max-width: 56ch;
+    line-height: 1.45;
+  }
+  .dossier .meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--graphite);
+  }
+  .address-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--paper-warm);
+    padding: 6px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .address-chip .copy {
+    color: var(--graphite-soft);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+  }
+  .meta a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 2px; }
+  .meta a:hover { color: var(--flame-deep); text-decoration-color: var(--flame); }
+
+  /* ============ HERO METRICS ============ */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .hero-cell {
+    padding: 36px 32px;
+    border-right: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .hero-cell:first-child { padding-left: 0; background: var(--paper-warm); margin: 0 -2px; }
+  .hero-cell:last-child { border-right: none; padding-right: 0; }
+  .hero-cell .eyebrow { margin-bottom: 6px; }
+  .hero-value {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 56px;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-cell--accent .hero-value {
+    border-bottom: 3px solid var(--flame);
+    padding-bottom: 6px;
+    align-self: flex-start;
+  }
+  .hero-cell--small .hero-value { font-size: 40px; }
+  .hero-sub {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--graphite);
+    font-variant-numeric: tabular-nums;
+    margin-top: 6px;
+  }
+  .hero-sub .delta-up { color: var(--delta-up); font-weight: 600; }
+  .hero-sub .delta-down { color: var(--delta-down); font-weight: 600; }
+  .hero-spark { margin-top: 12px; }
+  .hero-cell .footnote {
+    font-family: var(--serif); font-style: italic; font-size: 11px;
+    color: var(--graphite-soft); margin-top: auto;
+  }
+
+  /* ============ MAIN CHART ============ */
+  .chart-section { padding: 40px 0 32px; border-bottom: 1px solid var(--rule); }
+  .section-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 24px;
+  }
+  .section-head h2 {
+    font-family: var(--serif); font-size: 28px; font-weight: 600;
+    letter-spacing: -0.005em; margin: 0 0 4px;
+  }
+  .section-head .byline {
+    font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--graphite);
+  }
+  .range-pills { display: inline-flex; gap: 0; border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; }
+  .range-pills button {
+    background: var(--paper-pure);
+    border: none;
+    border-right: 1px solid var(--rule);
+    padding: 7px 14px;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--graphite);
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .range-pills button:last-child { border-right: none; }
+  .range-pills button.active { background: var(--ink); color: var(--paper); }
+  .range-pills button:hover:not(.active) { background: var(--paper-warm); color: var(--ink); }
+
+  .main-chart-wrap {
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    padding: 24px 28px;
+    position: relative;
+  }
+  .chart-stats {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .chart-stat .label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-soft); }
+  .chart-stat .val { font-family: var(--mono); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .chart-stat .delta { font-family: var(--mono); font-size: 12px; color: var(--delta-up); }
+
+  /* ============ QUAD GRID ============ */
+  .quad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .quad-cell {
+    padding: 28px 28px 32px;
+    border-right: 1px solid var(--rule);
+  }
+  .quad-cell:last-child { border-right: none; }
+  .quad-cell .eyebrow { margin-bottom: 14px; }
+  .quad-value {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: -0.015em;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 6px;
+    line-height: 1;
+  }
+  .quad-sub {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--graphite);
+    line-height: 1.45;
+  }
+  .quad-viz { margin-top: 18px; }
+
+  /* ============ POSITIONS TABLE ============ */
+  .table-section { padding: 40px 0 24px; }
+  .filter-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  .filter-pills { display: inline-flex; gap: 6px; }
+  .filter-pills button {
+    background: none;
+    border: 1px solid var(--rule);
+    padding: 6px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--graphite);
+    letter-spacing: 0.02em;
+  }
+  .filter-pills button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .filter-pills button:hover:not(.active) { border-color: var(--ink); color: var(--ink); }
+  .table-controls {
+    font-family: var(--sans); font-size: 12px; color: var(--graphite-soft);
+    display: inline-flex; gap: 16px;
+  }
+  .table-controls a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--rule); }
+
+  table.positions {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--sans);
+  }
+  .positions thead th {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 2px solid var(--ink);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--graphite-soft);
+  }
+  .positions thead th.right { text-align: right; }
+  .positions tbody tr { transition: background 120ms; }
+  .positions tbody tr:hover { background: var(--paper-warm); }
+  .positions tbody td {
+    padding: 18px 12px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: middle;
+  }
+  .positions tbody td.right { text-align: right; }
+  .market-q {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 3px;
+    line-height: 1.3;
+    max-width: 36ch;
+  }
+  .market-meta {
+    font-family: var(--sans);
+    font-size: 10px;
+    color: var(--graphite-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .venue-dot { width: 6px; height: 6px; border-radius: 999px; display: inline-block; }
+  .venue-dot.poly { background: var(--venue-poly); }
+  .venue-dot.kalshi { background: var(--venue-kalshi); }
+  .outcome-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 2px;
+  }
+  .outcome-yes { background: var(--ink); color: var(--paper); }
+  .outcome-no { background: var(--paper-deep); color: var(--ink); border: 1px solid var(--rule); }
+  .pnl-pos { color: var(--ink); font-weight: 600; }
+  .pnl-pos.flame {
+    border-bottom: 2px solid var(--flame);
+    padding-bottom: 1px;
+    display: inline-block;
+  }
+  .pnl-neg { color: var(--graphite-soft); }
+  .view-source {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--rule);
+    text-underline-offset: 3px;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+  .view-source:hover { color: var(--flame-deep); text-decoration-color: var(--flame); }
+  .row-spark { width: 90px; height: 24px; }
+
+  /* ============ CLOSED TEASER ============ */
+  .closed-teaser {
+    padding: 24px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    background: var(--paper-warm);
+    margin: 0 -40px;
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+  .closed-teaser .left {
+    font-family: var(--serif); font-size: 16px; color: var(--ink);
+  }
+  .closed-teaser .left em { color: var(--graphite); font-style: italic; }
+  .closed-teaser .left strong { font-family: var(--mono); font-weight: 600; }
+
+  /* ============ DUAL SECTION (activity + edge) ============ */
+  .dual {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 56px;
+    padding: 48px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .dual h3 {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    letter-spacing: -0.005em;
+  }
+  .dual .byline {
+    font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--graphite);
+    margin-bottom: 20px;
+  }
+  .timeline { list-style: none; padding: 0; margin: 0; }
+  .timeline li {
+    display: grid;
+    grid-template-columns: 78px 80px 1fr auto;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    align-items: baseline;
+  }
+  .timeline li:last-child { border-bottom: none; }
+  .tl-time { font-family: var(--mono); font-size: 11px; color: var(--graphite-soft); }
+  .tl-action { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  .tl-action.buy { color: var(--ink); }
+  .tl-action.sell { color: var(--graphite); }
+  .tl-action.resolve { color: var(--flame); }
+  .tl-detail { font-family: var(--serif); font-size: 14px; color: var(--ink); }
+  .tl-detail em { color: var(--graphite); font-style: italic; }
+  .tl-amt { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--graphite); }
+
+  /* ============ EDGE ANALYSIS ============ */
+  .edge-table { width: 100%; border-collapse: collapse; }
+  .edge-table th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--graphite-soft);
+    padding: 10px 0;
+    border-bottom: 1px solid var(--ink);
+  }
+  .edge-table th.right { text-align: right; }
+  .edge-table td { padding: 14px 0; border-bottom: 1px solid var(--rule-soft); font-family: var(--mono); font-size: 13px; }
+  .edge-table td.right { text-align: right; font-variant-numeric: tabular-nums; }
+  .edge-table td.cat { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--ink); }
+  .edge-bar { display: inline-block; height: 8px; background: var(--ink); margin-right: 8px; }
+
+  /* ============ FOOTER ============ */
+  .foot {
+    padding: 32px 0 64px;
+    text-align: center;
+    font-family: var(--serif);
+    font-size: 12px;
+    font-style: italic;
+    color: var(--graphite-soft);
+  }
+  .foot .dagger { color: var(--flame); }
+  .foot .rule {
+    width: 80px; height: 1px; background: var(--rule); margin: 0 auto 20px;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ============ MASTHEAD ============ -->
+  <header class="mast">
+    <div class="brand">
+      <span class="glyph"><i></i><i></i><i></i><i></i></span>
+      <span class="wordmark">Oddsprimer<span class="pipe">·</span><span class="sub">Ledger</span></span>
+    </div>
+    <div class="mast-meta">
+      <span class="timestamp">Last refreshed 2 min ago<span class="dagger">†</span></span>
+      <button class="btn">Refresh</button>
+      <button class="btn secondary">Disconnect</button>
+    </div>
+  </header>
+
+  <!-- ============ EDITION RIBBON ============ -->
+  <div class="ribbon">
+    <span>Wallet Dossier · No. 1</span>
+    <span class="right">
+      <span>Polymarket · Polygon</span>
+      <span>Snapshot 14:32 UTC</span>
+      <span>Wed · 6 May 2026</span>
+    </span>
+  </div>
+
+  <!-- ============ DOSSIER ============ -->
+  <section class="dossier">
+    <div>
+      <div class="label-line">The Ledger</div>
+      <h1>Untitled wallet, holding fourteen open positions across four categories.</h1>
+      <p class="deck">A 53-day record of trades on Polymarket, refreshed on the hour. Click any position to read the Odds Primer brief on what's moving the market.</p>
+    </div>
+    <div class="meta">
+      <span class="address-chip">
+        <span>0x1f3a · · · a4b2</span>
+        <span class="copy">Copy</span>
+      </span>
+      <span>First seen Mar 14, 2026 · 53d ago</span>
+      <a href="#">View on Polygonscan ↗</a>
+    </div>
+  </section>
+
+  <!-- ============ HERO METRICS ============ -->
+  <section class="hero">
+    <div class="hero-cell hero-cell--accent">
+      <span class="eyebrow">Portfolio value</span>
+      <span class="hero-value">$42,847.13</span>
+      <span class="hero-sub">↑ <span class="delta-up">$1,247.40</span> over 24h · +3.0%</span>
+      <svg class="hero-spark" width="100%" height="44" viewBox="0 0 320 44" preserveAspectRatio="none">
+        <path d="M 0,38 L 20,34 L 40,36 L 60,30 L 80,32 L 100,26 L 120,28 L 140,22 L 160,24 L 180,18 L 200,20 L 220,14 L 240,16 L 260,10 L 280,12 L 300,6 L 320,8 L 320,44 L 0,44 Z"
+              fill="var(--flame-tint)" opacity="0.55"/>
+        <polyline points="0,38 20,34 40,36 60,30 80,32 100,26 120,28 140,22 160,24 180,18 200,20 220,14 240,16 260,10 280,12 300,6 320,8"
+                  fill="none" stroke="var(--ink)" stroke-width="1.6"/>
+        <circle cx="320" cy="8" r="3.5" fill="var(--flame)"/>
+      </svg>
+    </div>
+    <div class="hero-cell hero-cell--small">
+      <span class="eyebrow">All-time return</span>
+      <span class="hero-value">+$8,235</span>
+      <span class="hero-sub"><span class="delta-up">▲</span> +23.81% ROI</span>
+      <span class="footnote">Net of $342 in trading fees</span>
+    </div>
+    <div class="hero-cell hero-cell--small">
+      <span class="eyebrow">Edge realised</span>
+      <span class="hero-value">+12.4%</span>
+      <span class="hero-sub">vs market consensus at entry</span>
+      <span class="footnote">Skill, not luck — see edge analysis below</span>
+    </div>
+    <div class="hero-cell hero-cell--small">
+      <span class="eyebrow">Sharpe-like</span>
+      <span class="hero-value">2.18</span>
+      <span class="hero-sub">return per unit of drawdown</span>
+      <span class="footnote">Top decile vs sample of 8,200 wallets<span style="color: var(--flame);">‡</span></span>
+    </div>
+  </section>
+
+  <!-- ============ MAIN CHART ============ -->
+  <section class="chart-section">
+    <div class="section-head">
+      <div>
+        <h2>Portfolio value, all time</h2>
+        <div class="byline">Mar 14 — May 6, 2026 · 53 trading days · daily close</div>
+      </div>
+      <div class="range-pills">
+        <button>1W</button>
+        <button>1M</button>
+        <button>3M</button>
+        <button>6M</button>
+        <button>1Y</button>
+        <button class="active">All</button>
+      </div>
+    </div>
+    <div class="main-chart-wrap">
+      <div class="chart-stats">
+        <div class="chart-stat">
+          <div class="label">Open</div>
+          <div class="val">$34,612</div>
+        </div>
+        <div class="chart-stat">
+          <div class="label">High</div>
+          <div class="val">$43,201</div>
+        </div>
+        <div class="chart-stat">
+          <div class="label">Low</div>
+          <div class="val">$31,840</div>
+        </div>
+        <div class="chart-stat">
+          <div class="label">Last</div>
+          <div class="val">$42,847</div>
+          <div class="delta">▲ +23.8% all-time</div>
+        </div>
+        <div class="chart-stat" style="margin-left: auto;">
+          <div class="label">Best day</div>
+          <div class="val">+$2,140</div>
+          <div class="delta" style="color: var(--graphite-soft);">Apr 28 · resolved 'Lakers/Celtics Game 5'</div>
+        </div>
+      </div>
+      <svg viewBox="0 0 1280 340" preserveAspectRatio="none" style="width:100%; height: 320px; display: block;">
+        <!-- horizontal grid -->
+        <g stroke="var(--rule-soft)" stroke-width="1" stroke-dasharray="0">
+          <line x1="40" y1="40" x2="1280" y2="40"/>
+          <line x1="40" y1="110" x2="1280" y2="110"/>
+          <line x1="40" y1="180" x2="1280" y2="180"/>
+          <line x1="40" y1="250" x2="1280" y2="250"/>
+        </g>
+        <g font-family="JetBrains Mono" font-size="10" fill="var(--graphite-soft)">
+          <text x="0" y="44">$45K</text>
+          <text x="0" y="114">$40K</text>
+          <text x="0" y="184">$36K</text>
+          <text x="0" y="254">$32K</text>
+        </g>
+        <!-- area fill -->
+        <path d="M 60,260 L 110,255 L 160,250 L 210,240 L 260,235 L 310,225 L 360,215 L 410,210 L 440,225 L 470,200 L 520,195 L 570,185 L 620,178 L 660,172 L 710,160 L 760,155 L 810,140 L 860,128 L 910,118 L 960,108 L 1010,98 L 1060,88 L 1110,80 L 1160,68 L 1210,56 L 1260,42 L 1260,290 L 60,290 Z"
+              fill="var(--flame-tint)" opacity="0.45"/>
+        <!-- main line -->
+        <polyline points="60,260 110,255 160,250 210,240 260,235 310,225 360,215 410,210 440,225 470,200 520,195 570,185 620,178 660,172 710,160 760,155 810,140 860,128 910,118 960,108 1010,98 1060,88 1110,80 1160,68 1210,56 1260,42"
+                  fill="none" stroke="var(--ink)" stroke-width="2"/>
+        <!-- annotations -->
+        <g>
+          <line x1="440" y1="225" x2="440" y2="295" stroke="var(--graphite-soft)" stroke-width="0.5" stroke-dasharray="2,3"/>
+          <circle cx="440" cy="225" r="3" fill="var(--paper)" stroke="var(--graphite)" stroke-width="1.5"/>
+          <text x="445" y="313" font-family="Source Serif 4" font-style="italic" font-size="11" fill="var(--graphite)">Apr 7 · drawdown</text>
+        </g>
+        <g>
+          <line x1="860" y1="128" x2="860" y2="20" stroke="var(--flame)" stroke-width="0.5" stroke-dasharray="2,3"/>
+          <circle cx="860" cy="128" r="4" fill="var(--flame)"/>
+          <text x="864" y="16" font-family="Source Serif 4" font-style="italic" font-size="11" fill="var(--flame-deep)">Apr 28 · best day +$2,140</text>
+        </g>
+        <!-- end marker -->
+        <circle cx="1260" cy="42" r="5" fill="var(--flame)" stroke="var(--paper)" stroke-width="2"/>
+        <!-- x labels -->
+        <g font-family="JetBrains Mono" font-size="10" fill="var(--graphite-soft)">
+          <text x="60" y="332">Mar 14</text>
+          <text x="360" y="332">Mar 28</text>
+          <text x="660" y="332">Apr 11</text>
+          <text x="960" y="332">Apr 25</text>
+          <text x="1230" y="332" text-anchor="end">May 6</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============ QUAD GRID ============ -->
+  <section class="quad">
+    <div class="quad-cell">
+      <div class="eyebrow">Win rate</div>
+      <div class="quad-value">68%</div>
+      <div class="quad-sub">34 of 50 resolved markets · top quartile of active wallets</div>
+      <svg class="quad-viz" viewBox="0 0 220 80">
+        <g font-family="JetBrains Mono" font-size="9" fill="var(--graphite-soft)">
+          <text x="0" y="14">By outcome called</text>
+        </g>
+        <!-- Yes wins / Yes loses / No wins / No loses -->
+        <g transform="translate(0, 26)">
+          <rect x="0" y="0" width="80" height="14" fill="var(--ink)"/>
+          <rect x="80" y="0" width="22" height="14" fill="var(--paper-deep)" stroke="var(--rule)"/>
+          <text x="40" y="30" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--graphite-soft)">Yes · 22W / 6L</text>
+        </g>
+        <g transform="translate(110, 26)">
+          <rect x="0" y="0" width="50" height="14" fill="var(--ink)"/>
+          <rect x="50" y="0" width="40" height="14" fill="var(--paper-deep)" stroke="var(--rule)"/>
+          <text x="45" y="30" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--graphite-soft)">No · 12W / 10L</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="quad-cell">
+      <div class="eyebrow">Open exposure</div>
+      <div class="quad-value">$32,447</div>
+      <div class="quad-sub">75.7% deployed · 14 positions · max single bet $4,200</div>
+      <div class="quad-viz" style="margin-top: 22px;">
+        <div style="display: flex; height: 10px; border: 1px solid var(--rule);">
+          <div style="width: 75.7%; height: 100%; background: var(--ink);"></div>
+          <div style="width: 24.3%; height: 100%; background: var(--paper-warm);"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 6px; font-family: var(--mono); font-size: 10px; color: var(--graphite-soft);">
+          <span>Deployed $32,447</span>
+          <span>Cash $10,400</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="quad-cell">
+      <div class="eyebrow">Realised vs unrealised</div>
+      <div class="quad-value">$3,421 <span style="color: var(--graphite-soft); font-weight: 400;">·</span> $4,814</div>
+      <div class="quad-sub">Locked-in vs paper gain · 41% / 59% split</div>
+      <svg class="quad-viz" viewBox="0 0 220 38" style="margin-top: 18px;">
+        <rect x="0" y="0" width="91" height="14" fill="var(--ink)"/>
+        <rect x="91" y="0" width="129" height="14" fill="none" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="3,2"/>
+        <text x="0" y="30" font-family="JetBrains Mono" font-size="9" fill="var(--graphite-soft)">Realised</text>
+        <text x="220" y="30" text-anchor="end" font-family="JetBrains Mono" font-size="9" fill="var(--graphite-soft)">Unrealised</text>
+      </svg>
+    </div>
+
+    <div class="quad-cell">
+      <div class="eyebrow">By category</div>
+      <div class="quad-value">4 active</div>
+      <div class="quad-sub">Politics dominates allocation · 41% of deployed</div>
+      <svg class="quad-viz" viewBox="0 0 220 70" style="margin-top: 16px;">
+        <!-- Stacked horizontal bar -->
+        <g transform="translate(0, 6)">
+          <rect x="0" y="0" width="90.2" height="14" fill="var(--chart-1)"/>
+          <rect x="90.2" y="0" width="61.6" height="14" fill="var(--chart-2)"/>
+          <rect x="151.8" y="0" width="41.8" height="14" fill="var(--chart-3)"/>
+          <rect x="193.6" y="0" width="26.4" height="14" fill="var(--chart-4)"/>
+        </g>
+        <g font-family="JetBrains Mono" font-size="9" fill="var(--graphite-soft)" transform="translate(0, 38)">
+          <g><rect x="0" y="-7" width="6" height="6" fill="var(--chart-1)"/><text x="10" y="-2">Pol 41%</text></g>
+          <g transform="translate(56, 0)"><rect x="0" y="-7" width="6" height="6" fill="var(--chart-2)"/><text x="10" y="-2">Spo 28%</text></g>
+          <g transform="translate(112, 0)"><rect x="0" y="-7" width="6" height="6" fill="var(--chart-3)"/><text x="10" y="-2">Cry 19%</text></g>
+          <g transform="translate(168, 0)"><rect x="0" y="-7" width="6" height="6" fill="var(--chart-4)"/><text x="10" y="-2">Eco 12%</text></g>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============ POSITIONS TABLE ============ -->
+  <section class="table-section">
+    <div class="section-head">
+      <div>
+        <h2>Open positions</h2>
+        <div class="byline">14 active markets · $32,447 at risk · sortable by any column</div>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="filter-pills">
+        <button class="active">All · 14</button>
+        <button>Politics · 5</button>
+        <button>Sports · 4</button>
+        <button>Crypto · 3</button>
+        <button>Economic · 2</button>
+      </div>
+      <div class="table-controls">
+        <span>Sort: <a href="#">Unrealised P&L ↓</a></span>
+        <span><a href="#">Export CSV</a></span>
+      </div>
+    </div>
+
+    <table class="positions">
+      <thead>
+        <tr>
+          <th style="width: 32%;">Market</th>
+          <th>Pos.</th>
+          <th class="right">Shares</th>
+          <th class="right">Avg entry</th>
+          <th class="right">Current</th>
+          <th class="right">Value</th>
+          <th class="right">Unrealised P&L</th>
+          <th class="right">Held</th>
+          <th>30-day</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <span class="market-q">Will Donald Trump win the 2028 presidential election?</span>
+            <span class="market-meta"><span class="venue-dot poly"></span>Polymarket · Politics · 2028 GE</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">12,000</td>
+          <td class="right num">$0.34</td>
+          <td class="right num">$0.41</td>
+          <td class="right num">$4,920</td>
+          <td class="right"><span class="num pnl-pos flame">+$840 · +20.5%</span></td>
+          <td class="right num">47d</td>
+          <td><svg class="row-spark" viewBox="0 0 90 24"><polyline points="0,18 10,17 20,18 30,15 40,16 50,12 60,13 70,8 80,7 90,4" fill="none" stroke="var(--ink)" stroke-width="1.4"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr>
+          <td>
+            <span class="market-q">Will Argentina win the 2026 FIFA World Cup?</span>
+            <span class="market-meta"><span class="venue-dot poly"></span>Polymarket · Sports · WC 2026</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">8,500</td>
+          <td class="right num">$0.18</td>
+          <td class="right num">$0.24</td>
+          <td class="right num">$2,040</td>
+          <td class="right"><span class="num pnl-pos flame">+$510 · +33.3%</span></td>
+          <td class="right num">22d</td>
+          <td><svg class="row-spark" viewBox="0 0 90 24"><polyline points="0,20 10,19 20,17 30,18 40,14 50,12 60,10 70,11 80,7 90,5" fill="none" stroke="var(--ink)" stroke-width="1.4"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr>
+          <td>
+            <span class="market-q">Will the Lakers win the 2026 NBA Finals?</span>
+            <span class="market-meta"><span class="venue-dot poly"></span>Polymarket · Sports · NBA</span>
+          </td>
+          <td><span class="outcome-pill outcome-no">No</span></td>
+          <td class="right num">6,200</td>
+          <td class="right num">$0.62</td>
+          <td class="right num">$0.71</td>
+          <td class="right num">$4,402</td>
+          <td class="right"><span class="num pnl-pos">+$558 · +14.5%</span></td>
+          <td class="right num">23d</td>
+          <td><svg class="row-spark" viewBox="0 0 90 24"><polyline points="0,16 10,17 20,14 30,15 40,12 50,13 60,10 70,11 80,9 90,8" fill="none" stroke="var(--ink)" stroke-width="1.4"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr>
+          <td>
+            <span class="market-q">Will Bitcoin reach $200,000 in 2026?</span>
+            <span class="market-meta"><span class="venue-dot poly"></span>Polymarket · Crypto · BTC</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">4,000</td>
+          <td class="right num">$0.41</td>
+          <td class="right num">$0.38</td>
+          <td class="right num">$1,520</td>
+          <td class="right"><span class="num pnl-neg">−$120 · −7.3%</span></td>
+          <td class="right num">15d</td>
+          <td><svg class="row-spark" viewBox="0 0 90 24"><polyline points="0,10 10,11 20,9 30,12 40,10 50,14 60,12 70,16 80,14 90,17" fill="none" stroke="var(--graphite-soft)" stroke-width="1.4"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr>
+          <td>
+            <span class="market-q">Will the Federal Reserve cut rates at the December 2026 meeting?</span>
+            <span class="market-meta"><span class="venue-dot poly"></span>Polymarket · Economic · Fed</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">5,500</td>
+          <td class="right num">$0.55</td>
+          <td class="right num">$0.61</td>
+          <td class="right num">$3,355</td>
+          <td class="right"><span class="num pnl-pos">+$330 · +10.9%</span></td>
+          <td class="right num">31d</td>
+          <td><svg class="row-spark" viewBox="0 0 90 24"><polyline points="0,16 10,15 20,14 30,15 40,13 50,12 60,11 70,12 80,10 90,9" fill="none" stroke="var(--ink)" stroke-width="1.4"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr>
+          <td>
+            <span class="market-q">Will Ron DeSantis win the 2028 Republican primary?</span>
+            <span class="market-meta"><span class="venue-dot poly"></span>Polymarket · Politics · 2028 GOP</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">3,200</td>
+          <td class="right num">$0.12</td>
+          <td class="right num">$0.16</td>
+          <td class="right num">$512</td>
+          <td class="right"><span class="num pnl-pos flame">+$128 · +33.3%</span></td>
+          <td class="right num">38d</td>
+          <td><svg class="row-spark" viewBox="0 0 90 24"><polyline points="0,20 10,18 20,19 30,16 40,15 50,13 60,11 70,9 80,8 90,5" fill="none" stroke="var(--ink)" stroke-width="1.4"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr>
+          <td>
+            <span class="market-q">Will the Edmonton Oilers win the 2026 Stanley Cup?</span>
+            <span class="market-meta"><span class="venue-dot poly"></span>Polymarket · Sports · NHL</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">2,800</td>
+          <td class="right num">$0.28</td>
+          <td class="right num">$0.31</td>
+          <td class="right num">$868</td>
+          <td class="right"><span class="num pnl-pos">+$84 · +10.7%</span></td>
+          <td class="right num">12d</td>
+          <td><svg class="row-spark" viewBox="0 0 90 24"><polyline points="0,16 10,15 20,17 30,14 40,13 50,15 60,12 70,11 80,13 90,10" fill="none" stroke="var(--ink)" stroke-width="1.4"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr>
+          <td>
+            <span class="market-q">Will Ethereum flip Bitcoin's market cap by end of 2026?</span>
+            <span class="market-meta"><span class="venue-dot poly"></span>Polymarket · Crypto · ETH</span>
+          </td>
+          <td><span class="outcome-pill outcome-no">No</span></td>
+          <td class="right num">4,500</td>
+          <td class="right num">$0.91</td>
+          <td class="right num">$0.94</td>
+          <td class="right num">$4,230</td>
+          <td class="right"><span class="num pnl-pos">+$135 · +3.3%</span></td>
+          <td class="right num">52d</td>
+          <td><svg class="row-spark" viewBox="0 0 90 24"><polyline points="0,12 10,13 20,11 30,12 40,11 50,10 60,11 70,10 80,9 90,9" fill="none" stroke="var(--ink)" stroke-width="1.4"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr>
+          <td>
+            <span class="market-q">Will US Q3 2026 GDP growth exceed 2.5%?</span>
+            <span class="market-meta"><span class="venue-dot poly"></span>Polymarket · Economic · GDP</span>
+          </td>
+          <td><span class="outcome-pill outcome-no">No</span></td>
+          <td class="right num">3,400</td>
+          <td class="right num">$0.71</td>
+          <td class="right num">$0.68</td>
+          <td class="right num">$2,312</td>
+          <td class="right"><span class="num pnl-neg">−$102 · −4.2%</span></td>
+          <td class="right num">19d</td>
+          <td><svg class="row-spark" viewBox="0 0 90 24"><polyline points="0,8 10,9 20,11 30,10 40,12 50,11 60,13 70,12 80,14 90,15" fill="none" stroke="var(--graphite-soft)" stroke-width="1.4"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr>
+          <td>
+            <span class="market-q">Will Solana close above $300 on July 1, 2026?</span>
+            <span class="market-meta"><span class="venue-dot poly"></span>Polymarket · Crypto · SOL</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">2,100</td>
+          <td class="right num">$0.44</td>
+          <td class="right num">$0.49</td>
+          <td class="right num">$1,029</td>
+          <td class="right"><span class="num pnl-pos">+$105 · +11.4%</span></td>
+          <td class="right num">9d</td>
+          <td><svg class="row-spark" viewBox="0 0 90 24"><polyline points="0,15 10,14 20,16 30,13 40,12 50,11 60,12 70,10 80,11 90,9" fill="none" stroke="var(--ink)" stroke-width="1.4"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="closed-teaser">
+      <div class="left">
+        <em>plus</em> <strong>45 closed positions</strong> · realised <strong>+$3,421</strong> over 53 days · win rate <strong>68%</strong>
+      </div>
+      <button class="btn secondary">Show closed positions</button>
+    </div>
+  </section>
+
+  <!-- ============ ACTIVITY + EDGE ============ -->
+  <section class="dual">
+    <div>
+      <div class="eyebrow" style="margin-bottom: 8px;">The Wire</div>
+      <h3>Recent activity</h3>
+      <div class="byline">Last 24 hours · 7 events · all venues</div>
+      <ul class="timeline">
+        <li>
+          <span class="tl-time">14:32</span>
+          <span class="tl-action buy">Buy</span>
+          <span class="tl-detail">+1,200 shares <em>Yes</em> · Will Trump win 2028? <em>@</em> $0.41</span>
+          <span class="tl-amt">−$492.00</span>
+        </li>
+        <li>
+          <span class="tl-time">12:18</span>
+          <span class="tl-action sell">Sell</span>
+          <span class="tl-detail">−800 shares <em>Yes</em> · Will Powell remain Fed Chair? <em>@</em> $0.78</span>
+          <span class="tl-amt">+$624.00</span>
+        </li>
+        <li>
+          <span class="tl-time">09:44</span>
+          <span class="tl-action resolve">Resolve</span>
+          <span class="tl-detail">Will Lakers/Celtics Game 5 go to OT? <em>resolved</em> Yes · paid 1.0</span>
+          <span class="tl-amt">+$2,140.00</span>
+        </li>
+        <li>
+          <span class="tl-time">Yesterday</span>
+          <span class="tl-action buy">Buy</span>
+          <span class="tl-detail">+2,000 shares <em>Yes</em> · Solana to close above $300 July 1 <em>@</em> $0.44</span>
+          <span class="tl-amt">−$880.00</span>
+        </li>
+        <li>
+          <span class="tl-time">Yesterday</span>
+          <span class="tl-action sell">Sell</span>
+          <span class="tl-detail">−1,500 shares <em>No</em> · Will OpenAI IPO in 2026? <em>@</em> $0.83</span>
+          <span class="tl-amt">+$1,245.00</span>
+        </li>
+        <li>
+          <span class="tl-time">2 days ago</span>
+          <span class="tl-action buy">Buy</span>
+          <span class="tl-detail">+800 shares <em>Yes</em> · Edmonton to win Stanley Cup <em>@</em> $0.31</span>
+          <span class="tl-amt">−$248.00</span>
+        </li>
+        <li>
+          <span class="tl-time">3 days ago</span>
+          <span class="tl-action resolve">Resolve</span>
+          <span class="tl-detail">Will Bitcoin close above $90K April 30? <em>resolved</em> Yes · paid 1.0</span>
+          <span class="tl-amt">+$420.00</span>
+        </li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="eyebrow" style="margin-bottom: 8px;">The Honest Mirror</div>
+      <h3>Edge analysis</h3>
+      <div class="byline">Were you right, or just lucky? · resolved markets only</div>
+      <table class="edge-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th class="right">Markets</th>
+            <th class="right">Win rate</th>
+            <th class="right">Avg edge</th>
+            <th class="right">Verdict</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cat">Politics</td>
+            <td class="right">22</td>
+            <td class="right">73%</td>
+            <td class="right" style="color: var(--ink); font-weight: 600;">+18.4%</td>
+            <td class="right" style="font-family: var(--serif); font-style: italic; color: var(--flame-deep);">Skill</td>
+          </tr>
+          <tr>
+            <td class="cat">Sports</td>
+            <td class="right">14</td>
+            <td class="right">64%</td>
+            <td class="right" style="color: var(--ink); font-weight: 600;">+11.2%</td>
+            <td class="right" style="font-family: var(--serif); font-style: italic; color: var(--flame-deep);">Skill</td>
+          </tr>
+          <tr>
+            <td class="cat">Crypto</td>
+            <td class="right">8</td>
+            <td class="right">50%</td>
+            <td class="right">+2.1%</td>
+            <td class="right" style="font-family: var(--serif); font-style: italic; color: var(--graphite);">Coin-flip</td>
+          </tr>
+          <tr>
+            <td class="cat">Economic</td>
+            <td class="right">6</td>
+            <td class="right">67%</td>
+            <td class="right" style="color: var(--ink); font-weight: 600;">+9.8%</td>
+            <td class="right" style="font-family: var(--serif); font-style: italic; color: var(--flame-deep);">Skill</td>
+          </tr>
+          <tr style="background: var(--paper-warm);">
+            <td class="cat" style="font-weight: 600; font-style: normal;">Overall</td>
+            <td class="right" style="font-weight: 600;">50</td>
+            <td class="right" style="font-weight: 600;">68%</td>
+            <td class="right" style="color: var(--ink); font-weight: 700;">+12.4%</td>
+            <td class="right" style="font-family: var(--serif); color: var(--flame-deep); font-weight: 600;">Edge holds</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--graphite); margin-top: 18px; line-height: 1.5;">
+        Edge is the difference between your average entry price and the resolved outcome price. A positive edge across many markets is the signal of skill. Crypto reads as a coin-flip — consider whether to keep allocating there.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="foot">
+    <div class="rule"></div>
+    <p style="margin: 0 0 6px;"><span class="dagger">†</span> Polymarket data via on-chain reads on Polygon mainnet. Refresh every 5 min on view, 15 min in background.</p>
+    <p style="margin: 0;"><span class="dagger">‡</span> Sharpe-like metric compares this wallet's all-time return to its maximum drawdown across the same window. Sample of 8,200 active Polymarket wallets, refreshed weekly.</p>
+    <p style="margin: 18px 0 0; font-family: var(--sans); font-size: 11px; color: var(--graphite-soft); letter-spacing: 0.08em; text-transform: uppercase;">
+      Oddsprimer Ledger · Edition No. 1 · 2026
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>

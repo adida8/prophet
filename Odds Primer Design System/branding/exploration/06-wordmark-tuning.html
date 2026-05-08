@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wordmark tuning · Odds Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700;8..60,800;8..60,900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF7F0;
+    --ink: #0E2240;
+    --ink-soft: #3D4F6A;
+    --rule: #D9D2BE;
+    --flame: #D9461C;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body { font-family: var(--serif); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+
+  .page { max-width: 1180px; margin: 0 auto; padding: 48px 36px 96px; }
+
+  .eyebrow {
+    font-family: var(--sans); font-weight: 500;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 6px;
+  }
+  h1.page-title {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 32px; line-height: 1.15; letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+  .page-sub {
+    max-width: 64ch; font-size: 14.5px;
+    color: var(--ink-soft); margin: 0 0 36px;
+  }
+
+  .section {
+    border-top: 1px solid var(--ink);
+    padding: 24px 0 36px;
+  }
+  .section-num {
+    font-family: var(--mono); font-weight: 500;
+    font-size: 12px; color: var(--flame);
+    letter-spacing: 0.08em; margin-bottom: 6px;
+  }
+  .section-name {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 20px; letter-spacing: -0.005em;
+    margin: 0 0 6px;
+  }
+  .section-sub {
+    font-family: var(--sans); font-size: 13px;
+    color: var(--ink-soft); margin: 0 0 22px;
+    max-width: 64ch;
+  }
+
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 880px) { .grid-4 { grid-template-columns: 1fr; } }
+
+  .cell {
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 22px;
+    display: flex; flex-direction: column;
+  }
+  .cell-id {
+    font-family: var(--mono); font-weight: 500;
+    font-size: 11px; color: var(--flame);
+    letter-spacing: 0.08em;
+  }
+  .cell-name {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 15px; line-height: 1.2;
+    margin: 2px 0 4px;
+  }
+  .cell-sub {
+    font-family: var(--sans); font-size: 11.5px;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+  }
+  .cell-stage {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 110px;
+    padding: 12px;
+    background: var(--paper);
+    border: 1px dashed var(--rule);
+  }
+
+  .lock { display: inline-flex; align-items: center; gap: 12px; }
+  .word-itight {
+    font-family: var(--sans); font-weight: 700;
+    letter-spacing: -0.01em; color: var(--ink);
+  }
+  .word-serif {
+    font-family: var(--serif); font-weight: 700;
+    letter-spacing: -0.012em; color: var(--ink);
+    font-feature-settings: "ss01" on;
+  }
+
+  /* masthead row */
+  .masthead {
+    height: 56px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 18px;
+    background: var(--paper);
+  }
+  .masthead .edition {
+    font-family: var(--sans); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .masthead .right {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .live-dot::before {
+    content: ""; display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--flame);
+    margin-right: 6px; transform: translateY(-1px);
+  }
+  .live-italic {
+    font-family: var(--serif);
+    font-style: italic; font-weight: 400;
+    color: var(--ink-soft);
+  }
+  .live-underline {
+    border-bottom: 1.5px solid var(--flame);
+    padding-bottom: 1px;
+  }
+
+  .masthead-row {
+    border: 1px solid var(--rule);
+    margin-bottom: 12px;
+  }
+  .masthead-label {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.1em; color: var(--flame);
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper);
+    display: flex; gap: 12px; align-items: baseline;
+  }
+  .masthead-label b {
+    color: var(--ink); font-weight: 600;
+    font-family: var(--sans); letter-spacing: 0;
+    text-transform: none; font-size: 12px;
+  }
+
+  .live-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 880px) { .live-grid { grid-template-columns: 1fr; } }
+
+  .question {
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    padding: 20px 22px;
+    margin-top: 24px;
+  }
+  .question .q-eyebrow {
+    font-family: var(--sans); font-weight: 600;
+    font-size: 11px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--flame);
+    margin-bottom: 8px;
+  }
+  .question .q-head {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 18px; line-height: 1.3;
+    margin: 0 0 8px;
+  }
+  .question .q-body {
+    font-family: var(--sans); font-size: 13px;
+    color: var(--ink-soft); line-height: 1.55;
+  }
+  .question code {
+    font-family: var(--mono); font-size: 12px;
+    color: var(--ink); background: #F2EDE0;
+    padding: 1px 6px;
+  }
+
+  footer.colophon {
+    margin-top: 48px; padding-top: 20px;
+    border-top: 1px solid var(--ink);
+    font-family: var(--sans); font-size: 12px;
+    color: var(--ink-soft);
+    display: flex; justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <p class="eyebrow">Odds Primer · Brand · Round 4 · Wordmark tuning</p>
+  <h1 class="page-title">Tuning the wordmark — and the masthead's live state</h1>
+  <p class="page-sub">Locked: bare bars + meaningful heights. Open: the wordmark may read too SaaS, the masthead's flame "live" dot may read too sportsbook. Four wordmark variants and four live-state treatments to test.</p>
+
+  <!-- =====================================================
+       1. WORDMARK VARIANTS
+       ===================================================== -->
+  <section class="section">
+    <div class="section-num">01</div>
+    <h2 class="section-name">Wordmark variants — primary lockup</h2>
+    <p class="section-sub">Same glyph everywhere. Only the wordmark typeface and proportion change. Variant A is the current locked direction (control).</p>
+
+    <div class="grid-4">
+
+      <!-- A: Current control -->
+      <div class="cell">
+        <div class="cell-id">A · current</div>
+        <h3 class="cell-name">Inter Tight 700 · full size</h3>
+        <p class="cell-sub">The locked direction. Sans wordmark at full proportion.</p>
+        <div class="cell-stage">
+          <div class="lock">
+            <svg viewBox="0 0 56 50" width="64" height="58" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word-itight" style="font-size:34px;">Odds Primer</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- B: Inter Tight smaller -->
+      <div class="cell">
+        <div class="cell-id">B · trim</div>
+        <h3 class="cell-name">Inter Tight 700 · 8% smaller</h3>
+        <p class="cell-sub">Same typeface, wordmark trimmed 8%. Glyph proportionally larger. Less SaaS-shouty.</p>
+        <div class="cell-stage">
+          <div class="lock">
+            <svg viewBox="0 0 56 50" width="68" height="61" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word-itight" style="font-size:31px;">Odds Primer</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- C: Serif wordmark -->
+      <div class="cell">
+        <div class="cell-id">C · editorial</div>
+        <h3 class="cell-name">Source Serif 4 · 800</h3>
+        <p class="cell-sub">Wordmark in the headline serif. Reads as masthead, not product chrome. Most editorial direction.</p>
+        <div class="cell-stage">
+          <div class="lock">
+            <svg viewBox="0 0 56 50" width="64" height="58" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word-serif" style="font-size:36px; font-weight:800;">Odds Primer</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- D: Serif smaller -->
+      <div class="cell">
+        <div class="cell-id">D · editorial-trim</div>
+        <h3 class="cell-name">Source Serif 4 · 800 · 8% smaller</h3>
+        <p class="cell-sub">C with the wordmark trimmed 8%. Glyph and wordmark in closer balance — feels most like a magazine flag.</p>
+        <div class="cell-stage">
+          <div class="lock">
+            <svg viewBox="0 0 56 50" width="68" height="61" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word-serif" style="font-size:33px; font-weight:800;">Odds Primer</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =====================================================
+       2. WORDMARK VARIANTS — IN MASTHEAD
+       ===================================================== -->
+  <section class="section">
+    <div class="section-num">02</div>
+    <h2 class="section-name">Same four variants — in masthead</h2>
+    <p class="section-sub">The real test. Each in a 56px masthead with the edition strip, so you can see how each typeface holds up against the small caps.</p>
+
+    <!-- Variant A masthead -->
+    <div class="masthead-row">
+      <div class="masthead-label"><b>A</b> Inter Tight 700 · 18px wordmark · 38px glyph</div>
+      <div class="masthead">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <svg viewBox="0 0 56 50" width="38" height="35" aria-hidden="true">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="word-itight" style="font-size:18px;">Odds Primer</span>
+          <span style="height:16px;width:1px;background:var(--rule);margin:0 4px"></span>
+          <span class="edition">World Cup 2026 · Vol. 1</span>
+        </div>
+        <span class="right live-dot">FRA v ARG · live</span>
+      </div>
+    </div>
+
+    <!-- Variant B masthead -->
+    <div class="masthead-row">
+      <div class="masthead-label"><b>B</b> Inter Tight 700 · 16.5px wordmark · 42px glyph (glyph-led)</div>
+      <div class="masthead">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <svg viewBox="0 0 56 50" width="42" height="38" aria-hidden="true">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="word-itight" style="font-size:16.5px;">Odds Primer</span>
+          <span style="height:14px;width:1px;background:var(--rule);margin:0 4px"></span>
+          <span class="edition">World Cup 2026 · Vol. 1</span>
+        </div>
+        <span class="right live-dot">FRA v ARG · live</span>
+      </div>
+    </div>
+
+    <!-- Variant C masthead -->
+    <div class="masthead-row">
+      <div class="masthead-label"><b>C</b> Source Serif 4 · 800 · 20px wordmark · 38px glyph (editorial)</div>
+      <div class="masthead">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <svg viewBox="0 0 56 50" width="38" height="35" aria-hidden="true">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="word-serif" style="font-size:20px; font-weight:800;">Odds Primer</span>
+          <span style="height:16px;width:1px;background:var(--rule);margin:0 4px"></span>
+          <span class="edition">World Cup 2026 · Vol. 1</span>
+        </div>
+        <span class="right live-dot">FRA v ARG · live</span>
+      </div>
+    </div>
+
+    <!-- Variant D masthead -->
+    <div class="masthead-row">
+      <div class="masthead-label"><b>D</b> Source Serif 4 · 800 · 18px wordmark · 42px glyph (magazine flag)</div>
+      <div class="masthead">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <svg viewBox="0 0 56 50" width="42" height="38" aria-hidden="true">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="word-serif" style="font-size:18px; font-weight:800;">Odds Primer</span>
+          <span style="height:14px;width:1px;background:var(--rule);margin:0 4px"></span>
+          <span class="edition">World Cup 2026 · Vol. 1</span>
+        </div>
+        <span class="right live-dot">FRA v ARG · live</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       3. LIVE STATE — calmer treatments
+       ===================================================== -->
+  <section class="section">
+    <div class="section-num">03</div>
+    <h2 class="section-name">Live state — calmer treatments</h2>
+    <p class="section-sub">The flame dot next to "live" risks reading sportsbook. Four alternatives, using variant A for consistency. The dot is the only thing that changes.</p>
+
+    <div class="live-grid">
+
+      <!-- L0: control -->
+      <div class="masthead-row">
+        <div class="masthead-label"><b>L0</b> control · flame dot</div>
+        <div class="masthead">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <svg viewBox="0 0 56 50" width="32" height="29" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word-itight" style="font-size:16px;">Odds Primer</span>
+          </div>
+          <span class="right live-dot">FRA v ARG · live</span>
+        </div>
+      </div>
+
+      <!-- L1: text only -->
+      <div class="masthead-row">
+        <div class="masthead-label"><b>L1</b> text only · no dot</div>
+        <div class="masthead">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <svg viewBox="0 0 56 50" width="32" height="29" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word-itight" style="font-size:16px;">Odds Primer</span>
+          </div>
+          <span class="right">FRA v ARG · live</span>
+        </div>
+      </div>
+
+      <!-- L2: italic in serif -->
+      <div class="masthead-row">
+        <div class="masthead-label"><b>L2</b> italic serif · "in play"</div>
+        <div class="masthead">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <svg viewBox="0 0 56 50" width="32" height="29" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word-itight" style="font-size:16px;">Odds Primer</span>
+          </div>
+          <span style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">FRA v ARG · <span class="live-italic" style="font-size:13px;">in play</span></span>
+        </div>
+      </div>
+
+      <!-- L3: flame underline -->
+      <div class="masthead-row">
+        <div class="masthead-label"><b>L3</b> flame underline · "live"</div>
+        <div class="masthead">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <svg viewBox="0 0 56 50" width="32" height="29" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word-itight" style="font-size:16px;">Odds Primer</span>
+          </div>
+          <span class="right">FRA v ARG · <span class="live-underline">live</span></span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =====================================================
+       4. SEPARATE QUESTION: VENUE LINK COPY
+       ===================================================== -->
+  <section class="section">
+    <div class="section-num">04</div>
+    <h2 class="section-name">Separate question — venue link copy</h2>
+    <p class="section-sub">Not a logo question, but flagged in the same review. The design system locks <code>"Open on [venue] ↗"</code> as the venue handoff phrase. Review proposes <code>"View source on [venue]"</code> or <code>"Compare on [venue]"</code> as further from the transaction.</p>
+
+    <div class="question">
+      <div class="q-eyebrow">Decide separately</div>
+      <h3 class="q-head">Should we keep "Open on Kalshi" or move to "View source on Kalshi" / "Compare on Kalshi"?</h3>
+      <p class="q-body">This touches the design system's locked rules, not the logo. <b>"Open on"</b> is neutral but does direct the user to the venue. <b>"View source"</b> reframes the venue as a citation, not a destination — fits the patient-teacher voice. <b>"Compare on"</b> only makes sense if the user is going to the venue to <em>verify</em> our comparison, which they're not. Recommendation: revisit "Open on" → "View source on" as a system-wide change, but treat as separate from the logo lock.</p>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <span>Odds Primer · Brand · Wordmark tuning · v0.5</span>
+    <span>4 wordmark variants · 4 live treatments · 1 separate question</span>
+  </footer>
+
+</div>
+</body>
+</html>

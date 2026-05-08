@@ -1,0 +1,42 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"></head><body>
+<div class="card">
+  <div style="margin-bottom:14px;"><span class="eyebrow">Brand · Chart primitives · charts ARE the art</span></div>
+  <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:18px;">
+    <!-- horizontal stack -->
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px;">Implied %</div>
+      <div style="display:flex; height:14px; border:1px solid var(--rule); border-radius:2px; overflow:hidden;">
+        <div style="width:34%; background:var(--ink);"></div>
+        <div style="width:22%; background:var(--graphite);"></div>
+        <div style="width:18%; background:var(--flame);"></div>
+        <div style="width:14%; background:#B89968;"></div>
+        <div style="width:12%; background:var(--paper-deep);"></div>
+      </div>
+      <div style="margin-top:6px; font-family:var(--font-sans); font-size:10px; color:var(--graphite-soft); display:flex; gap:8px;"><span>Brazil 34</span><span>Argentina 22</span><span style="color:var(--flame);">France 18</span></div>
+    </div>
+    <!-- sparkline -->
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px;">7-day movement</div>
+      <svg width="100%" height="40" viewBox="0 0 200 40" preserveAspectRatio="none">
+        <polyline fill="none" stroke="#0E2240" stroke-width="1.5" points="0,28 25,24 50,26 75,18 100,20 125,14 150,12 175,16 200,10"/>
+        <circle cx="200" cy="10" r="3" fill="#D9461C"/>
+      </svg>
+      <div class="mono" style="font-size:11px; color:var(--graphite-soft);">14¢ → 16¢ (+2)</div>
+    </div>
+    <!-- venue dots -->
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px;">Disagreement</div>
+      <svg width="100%" height="40" viewBox="0 0 200 40">
+        <line x1="0" y1="20" x2="200" y2="20" stroke="#D9D2C0" stroke-width="1"/>
+        <circle cx="60" cy="20" r="4" fill="#00C46A"/>
+        <circle cx="74" cy="20" r="4" fill="#2A6FDB"/>
+        <circle cx="92" cy="20" r="4" fill="#6B7079"/>
+        <circle cx="100" cy="20" r="4" fill="#6B7079"/>
+        <text x="60" y="36" font-family="JetBrains Mono" font-size="9" fill="#6B7079">14¢</text>
+        <text x="170" y="36" font-family="JetBrains Mono" font-size="9" fill="#6B7079" text-anchor="end">16¢</text>
+      </svg>
+      <div style="font-family:var(--font-serif); font-size:11px; color:var(--graphite); font-style:italic;">2¢ spread across 4 venues</div>
+    </div>
+  </div>
+</div>
+</body></html>

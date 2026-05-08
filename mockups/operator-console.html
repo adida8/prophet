@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1440" />
+<title>Prophet MM — Operator Console</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --panel: #11141b;
+    --panel-2: #161a23;
+    --line: #1f2533;
+    --line-2: #2a3142;
+    --text: #e6e9f2;
+    --text-dim: #8b93a7;
+    --text-mute: #5a6275;
+    --accent: #5cf2c2;
+    --accent-2: #7aa2ff;
+    --warn: #ffb547;
+    --bad: #ff5d6c;
+    --good: #5cf2c2;
+    --buy: #4ade80;
+    --sell: #f87171;
+    --chip: #1d2230;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); color: var(--text); margin: 0; padding: 0; font: 12px/1.4 -apple-system, "SF Pro Text", Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .mono { font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  .pos { color: var(--good); }
+  .neg { color: var(--bad); }
+  .dim { color: var(--text-dim); }
+  .mute { color: var(--text-mute); }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 999px; background: var(--chip); color: var(--text-dim); font-size: 10.5px; font-weight: 500; letter-spacing: .02em; border: 1px solid var(--line-2); }
+  .chip.live { background: rgba(92,242,194,.08); color: var(--good); border-color: rgba(92,242,194,.25); }
+  .chip.demo { background: rgba(255,181,71,.08); color: var(--warn); border-color: rgba(255,181,71,.25); }
+  .chip.bad { background: rgba(255,93,108,.08); color: var(--bad); border-color: rgba(255,93,108,.25); }
+  .chip.kalshi { color: #b8c2ff; border-color: #2a3142; }
+  .chip.poly { color: #c79bff; border-color: #2a3142; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--good); display: inline-block; box-shadow: 0 0 8px currentColor; }
+  .dot.warn { background: var(--warn); }
+  .dot.bad { background: var(--bad); }
+
+  /* ── Layout ─────────────────────────────────────────────── */
+  .app { display: grid; grid-template-columns: 56px 1fr; grid-template-rows: 48px 1fr; min-height: 100vh; }
+  .topbar { grid-column: 1 / 3; display: flex; align-items: center; gap: 12px; padding: 0 14px; border-bottom: 1px solid var(--line); background: linear-gradient(#11141b, #0d1017); }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 600; letter-spacing: .04em; }
+  .brand .glyph { width: 22px; height: 22px; border-radius: 6px; background: conic-gradient(from 200deg, #5cf2c2, #7aa2ff, #c79bff, #5cf2c2); display: grid; place-items: center; color: #0b0d12; font-weight: 800; font-size: 12px; }
+  .brand .name { font-size: 13px; }
+  .brand .name span { color: var(--text-dim); font-weight: 400; }
+  .topbar .sep { width: 1px; height: 20px; background: var(--line); }
+  .topbar .ctx { display: flex; align-items: center; gap: 8px; color: var(--text-dim); font-size: 11.5px; }
+  .topbar .right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .nav-btn { color: var(--text-dim); padding: 4px 10px; border-radius: 6px; cursor: pointer; }
+  .nav-btn:hover { background: var(--panel-2); color: var(--text); }
+  .killbtn { background: linear-gradient(#3a1218, #25090d); border: 1px solid #5a1a23; color: #ffb1bb; padding: 6px 12px; border-radius: 6px; font-weight: 600; letter-spacing: .03em; cursor: pointer; font-size: 11px; }
+  .killbtn:hover { background: linear-gradient(#4a1820, #2e0c12); }
+  .user { width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, #7aa2ff, #c79bff); display: grid; place-items: center; color: #0b0d12; font-weight: 700; font-size: 11px; }
+
+  .sidebar { border-right: 1px solid var(--line); background: #0d1017; padding: 10px 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .sb { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 8px; color: var(--text-mute); cursor: pointer; }
+  .sb:hover { background: var(--panel-2); color: var(--text); }
+  .sb.active { background: rgba(92,242,194,.08); color: var(--accent); }
+  .sb svg { width: 18px; height: 18px; }
+  .sb.spacer { flex: 1; }
+
+  .main { padding: 14px; display: grid; grid-template-columns: 1fr 380px; grid-template-rows: auto 1fr auto; gap: 12px; min-width: 0; }
+
+  /* ── KPI strip ─────────────────────────────────────────── */
+  .kpis { grid-column: 1 / 3; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .kpi .lbl { font-size: 10.5px; color: var(--text-mute); text-transform: uppercase; letter-spacing: .08em; }
+  .kpi .val { font-size: 20px; font-weight: 600; margin-top: 4px; letter-spacing: -.01em; }
+  .kpi .sub { font-size: 11px; margin-top: 2px; color: var(--text-dim); display: flex; gap: 8px; align-items: baseline; }
+  .kpi.accent .val { color: var(--accent); }
+
+  /* ── Panels ────────────────────────────────────────────── */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; min-width: 0; }
+  .panel > header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .panel > header h3 { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text); }
+  .panel > header .right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .panel > header .ctrl { color: var(--text-mute); cursor: pointer; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+  .panel > header .ctrl:hover { background: var(--panel-2); color: var(--text); }
+  .panel > header .tabs { display: flex; gap: 2px; }
+  .panel > header .tabs .tab { padding: 4px 10px; border-radius: 5px; color: var(--text-mute); cursor: pointer; font-size: 11px; }
+  .panel > header .tabs .tab.active { background: var(--panel-2); color: var(--text); }
+
+  .col-left { display: grid; grid-template-rows: 1fr auto; gap: 12px; min-width: 0; }
+  .col-right { display: grid; grid-template-rows: auto auto 1fr; gap: 12px; min-width: 0; }
+
+  /* ── Markets table ────────────────────────────────────── */
+  .markets-wrap { overflow: hidden; }
+  .filters { display: flex; gap: 6px; padding: 8px 14px; border-bottom: 1px solid var(--line); background: #0f131a; }
+  .filters .pill { padding: 3px 9px; border-radius: 999px; background: transparent; border: 1px solid var(--line-2); color: var(--text-dim); cursor: pointer; font-size: 10.5px; }
+  .filters .pill.on { background: rgba(122,162,255,.1); color: var(--accent-2); border-color: rgba(122,162,255,.3); }
+  .filters .search { margin-left: auto; background: var(--panel-2); border: 1px solid var(--line-2); color: var(--text); padding: 3px 10px; border-radius: 5px; width: 220px; font-size: 11px; }
+  table.markets { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  table.markets thead th { position: sticky; top: 0; background: #0f131a; color: var(--text-mute); font-weight: 500; text-transform: uppercase; font-size: 10px; letter-spacing: .08em; padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--line); }
+  table.markets thead th:first-child, table.markets thead th.l { text-align: left; }
+  table.markets tbody td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: right; }
+  table.markets tbody td:first-child, table.markets tbody td.l { text-align: left; }
+  table.markets tbody tr:hover { background: rgba(255,255,255,.02); }
+  .ticker { font-weight: 600; color: var(--text); }
+  .ticker .meta { display: block; color: var(--text-mute); font-weight: 400; font-size: 10.5px; margin-top: 1px; }
+  .quote { display: inline-flex; gap: 4px; font-family: "SF Mono", monospace; font-variant-numeric: tabular-nums; }
+  .quote .bid { color: var(--buy); }
+  .quote .ask { color: var(--sell); }
+  .quote .x { color: var(--text-mute); }
+  .edge { font-family: "SF Mono", monospace; font-weight: 600; }
+  .edge.pos { color: var(--good); }
+  .edge.neg { color: var(--bad); }
+  .stat { display: inline-flex; align-items: center; gap: 5px; }
+
+  .pnl-panel { min-height: 0; }
+  .pnl-chart { padding: 10px 14px 14px; }
+
+  /* ── Right column panels ─────────────────────────────── */
+  .corr { padding: 0; }
+  .event { padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .event:last-child { border-bottom: none; }
+  .event .head { display: flex; gap: 8px; align-items: baseline; }
+  .event .head .src { color: var(--text-mute); font-size: 10.5px; margin-left: auto; }
+  .event .body { font-size: 11.5px; color: var(--text); margin-top: 4px; }
+  .event .impact { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .event .impact .m { font-size: 10.5px; padding: 2px 7px; background: var(--panel-2); border: 1px solid var(--line-2); border-radius: 4px; color: var(--text-dim); }
+  .event .actions { margin-top: 10px; display: flex; gap: 6px; }
+  .event button { background: var(--panel-2); border: 1px solid var(--line-2); color: var(--text); padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; }
+  .event button.primary { background: rgba(92,242,194,.1); border-color: rgba(92,242,194,.3); color: var(--good); }
+
+  .risk { padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .risk .row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px dashed var(--line); font-size: 11px; }
+  .risk .row:last-child { border-bottom: none; }
+  .risk .row .lbl { color: var(--text-dim); }
+  .risk .row .v { font-family: "SF Mono", monospace; font-weight: 600; }
+  .risk .bar { height: 4px; background: var(--panel-2); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+  .risk .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+  .risk .heat { display: grid; grid-template-columns: 80px 1fr 50px; gap: 8px; align-items: center; font-size: 11px; padding: 5px 0; }
+  .risk .heat .name { color: var(--text-dim); }
+  .risk .heat .v { text-align: right; font-family: "SF Mono", monospace; }
+
+  .alerts { padding: 0; overflow: hidden; }
+  .alert { padding: 9px 14px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 50px 1fr auto; gap: 10px; align-items: baseline; font-size: 11px; }
+  .alert .t { color: var(--text-mute); font-family: "SF Mono", monospace; font-size: 10.5px; }
+  .alert .msg b { color: var(--text); font-weight: 600; }
+  .alert .pill { padding: 1px 6px; border-radius: 4px; font-size: 9.5px; letter-spacing: .04em; text-transform: uppercase; }
+  .alert .pill.fill { background: rgba(74,222,128,.08); color: var(--buy); }
+  .alert .pill.fill-s { background: rgba(248,113,113,.08); color: var(--sell); }
+  .alert .pill.warn { background: rgba(255,181,71,.1); color: var(--warn); }
+  .alert .pill.kill { background: rgba(255,93,108,.1); color: var(--bad); }
+  .alert .pill.info { background: rgba(122,162,255,.1); color: var(--accent-2); }
+
+  /* ── Strategy footer ─────────────────────────────────── */
+  .strategies { grid-column: 1 / 3; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .strat { background: var(--panel-2); border: 1px solid var(--line-2); border-radius: 6px; padding: 10px 12px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; }
+  .strat .name { font-weight: 600; font-size: 12px; }
+  .strat .tag { font-size: 10px; color: var(--text-mute); text-transform: uppercase; letter-spacing: .08em; grid-column: 1 / 3; }
+  .strat .params { grid-column: 1 / 3; display: flex; gap: 14px; flex-wrap: wrap; font-size: 10.5px; color: var(--text-dim); }
+  .strat .params b { color: var(--text); font-weight: 600; font-family: "SF Mono", monospace; }
+  .strat .toggle { width: 32px; height: 18px; background: var(--bg); border: 1px solid var(--line-2); border-radius: 999px; position: relative; cursor: pointer; }
+  .strat .toggle::after { content: ""; position: absolute; top: 1px; left: 1px; width: 14px; height: 14px; border-radius: 50%; background: var(--text-mute); transition: all .15s; }
+  .strat.on .toggle { background: rgba(92,242,194,.15); border-color: rgba(92,242,194,.4); }
+  .strat.on .toggle::after { left: 15px; background: var(--accent); box-shadow: 0 0 6px rgba(92,242,194,.6); }
+  .strat .pnl { font-family: "SF Mono", monospace; font-weight: 600; font-size: 13px; }
+
+  /* ── Mini sparks via inline svg ─────────────────────── */
+  .spark { vertical-align: middle; }
+  svg .grid { stroke: var(--line); stroke-width: 1; }
+  svg .axis { fill: var(--text-mute); font: 10px "SF Mono", monospace; }
+
+  /* ── Banner ─────────────────────────────────────────── */
+  .banner { grid-column: 1 / 3; background: linear-gradient(90deg, rgba(255,181,71,.08), transparent); border: 1px solid rgba(255,181,71,.25); border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; gap: 10px; font-size: 11.5px; color: #ffd9a3; }
+  .banner b { color: #fff; }
+  .banner .right { margin-left: auto; display: flex; gap: 8px; }
+  .banner button { background: rgba(255,181,71,.12); border: 1px solid rgba(255,181,71,.3); color: #ffd9a3; padding: 4px 12px; border-radius: 5px; font-size: 11px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ════════ TOPBAR ════════ -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="glyph">P</div>
+      <div class="name">Prophet MM <span>/ Operator Console</span></div>
+    </div>
+    <div class="sep"></div>
+    <div class="ctx">
+      <span class="chip kalshi"><span class="dot"></span> Kalshi DEMO</span>
+      <span class="chip poly"><span class="dot"></span> Polymarket</span>
+      <span class="chip demo">PAPER</span>
+    </div>
+    <div class="sep"></div>
+    <div class="ctx mono">
+      <span class="dim">NAV</span>&nbsp;<b>$ 1,247,830.14</b>
+      <span class="dim" style="margin-left:14px">Today</span>&nbsp;<b class="pos">+$3,420.18&nbsp;(+0.27%)</b>
+    </div>
+
+    <div class="right">
+      <div class="nav-btn">Docs</div>
+      <div class="nav-btn">Audit log</div>
+      <button class="killbtn">⏻&nbsp;&nbsp;KILL ALL QUOTES</button>
+      <div class="user">AD</div>
+    </div>
+  </div>
+
+  <!-- ════════ SIDEBAR ════════ -->
+  <div class="sidebar">
+    <div class="sb active" title="Dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+    </div>
+    <div class="sb" title="Markets">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-7"/></svg>
+    </div>
+    <div class="sb" title="Strategies">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8 6h8M6 8v8M18 8v8M8 18h8"/></svg>
+    </div>
+    <div class="sb" title="Risk">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/></svg>
+    </div>
+    <div class="sb" title="Reports">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6"/></svg>
+    </div>
+    <div class="sb spacer"></div>
+    <div class="sb" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </div>
+  </div>
+
+  <!-- ════════ MAIN ════════ -->
+  <div class="main">
+
+    <!-- Banner -->
+    <div class="banner">
+      <span class="dot warn"></span>
+      <span><b>Correlated event detected</b> · CPI print released 08:30 ET — auto-widened spreads on 14 macro markets · model recalibrating (12s)</span>
+      <div class="right">
+        <button>Override</button>
+        <button>Dismiss</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="kpi">
+        <div class="lbl">Net P&amp;L · Today</div>
+        <div class="val pos mono">+$3,420</div>
+        <div class="sub"><span class="pos">▲ 0.27%</span><span class="dim">vs $1.25M NAV</span></div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">Edge captured</div>
+        <div class="val mono">182 <span class="dim" style="font-size:13px">bps</span></div>
+        <div class="sub"><span class="dim">avg fill vs fair</span></div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">Open quotes</div>
+        <div class="val mono">487</div>
+        <div class="sub"><span class="dim">across</span> <span>62 markets · 2 venues</span></div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">Fill rate · 1h</div>
+        <div class="val mono">71.4%</div>
+        <div class="sub"><span class="pos">▲ 4.1pp</span><span class="dim">vs 24h avg</span></div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">Inventory</div>
+        <div class="val mono">$ 84.2k</div>
+        <div class="sub"><span class="dim">14% of cap · max $600k</span></div>
+      </div>
+      <div class="kpi accent">
+        <div class="lbl">Sharpe · 30d</div>
+        <div class="val mono">3.41</div>
+        <div class="sub"><span class="pos">▲ 0.18</span><span class="dim">vs prior 30d</span></div>
+      </div>
+    </div>
+
+    <!-- LEFT COLUMN: Markets + P&L -->
+    <div class="col-left">
+
+      <!-- Markets -->
+      <div class="panel markets-wrap">
+        <header>
+          <h3>Active Markets</h3>
+          <span class="chip"><span class="dot"></span> 62 streaming · 0.18ms p50</span>
+          <div class="right">
+            <div class="ctrl">⤓ Export</div>
+            <div class="ctrl">⊕ Add market</div>
+          </div>
+        </header>
+        <div class="filters">
+          <span class="pill on">All</span>
+          <span class="pill">Sports</span>
+          <span class="pill">Politics</span>
+          <span class="pill">Macro</span>
+          <span class="pill">Crypto</span>
+          <span class="pill">Entertainment</span>
+          <span class="pill">⚠︎ Throttled (3)</span>
+          <input class="search" placeholder="Search ticker, e.g. KXNFL…" />
+        </div>
+        <table class="markets">
+          <thead>
+            <tr>
+              <th class="l">Market</th>
+              <th class="l">Venue</th>
+              <th>Mid</th>
+              <th>Our quote (Yes)</th>
+              <th>Spread</th>
+              <th>Edge</th>
+              <th>Inv (¢)</th>
+              <th>Fills 1h</th>
+              <th>Last</th>
+              <th class="l">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="l"><span class="ticker">KXNFL-26WK17-KCBUF<span class="meta">Chiefs def. Bills · Sun 4:25pm</span></span></td>
+              <td class="l"><span class="chip kalshi">Kalshi</span></td>
+              <td class="mono">52¢</td>
+              <td><span class="quote"><span class="bid">51</span><span class="x">×</span><span class="ask">53</span></span></td>
+              <td class="mono">2¢</td>
+              <td class="edge pos">+38 bps</td>
+              <td class="mono">+1,240</td>
+              <td class="mono">47</td>
+              <td class="mono dim">2s ago</td>
+              <td class="l"><span class="chip live"><span class="dot"></span> quoting</span></td>
+            </tr>
+            <tr>
+              <td class="l"><span class="ticker">KXFEDDECISION-26JUN-25BPS<span class="meta">Fed cuts 25bps in June</span></span></td>
+              <td class="l"><span class="chip kalshi">Kalshi</span></td>
+              <td class="mono">68¢</td>
+              <td><span class="quote"><span class="bid">67</span><span class="x">×</span><span class="ask">69</span></span></td>
+              <td class="mono">2¢</td>
+              <td class="edge pos">+24 bps</td>
+              <td class="mono neg">−820</td>
+              <td class="mono">112</td>
+              <td class="mono dim">1s ago</td>
+              <td class="l"><span class="chip warn" style="background:rgba(255,181,71,.08);color:var(--warn);border-color:rgba(255,181,71,.25)"><span class="dot warn"></span> recalibrating</span></td>
+            </tr>
+            <tr>
+              <td class="l"><span class="ticker">trump-2028-republican-nominee<span class="meta">Trump GOP nominee 2028</span></span></td>
+              <td class="l"><span class="chip poly">Polymarket</span></td>
+              <td class="mono">14¢</td>
+              <td><span class="quote"><span class="bid">13</span><span class="x">×</span><span class="ask">15</span></span></td>
+              <td class="mono">2¢</td>
+              <td class="edge pos">+19 bps</td>
+              <td class="mono">+340</td>
+              <td class="mono">28</td>
+              <td class="mono dim">9s ago</td>
+              <td class="l"><span class="chip live"><span class="dot"></span> quoting</span></td>
+            </tr>
+            <tr>
+              <td class="l"><span class="ticker">KXBTC-26EOM-150K<span class="meta">BTC ≥ $150k by EOM</span></span></td>
+              <td class="l"><span class="chip kalshi">Kalshi</span></td>
+              <td class="mono">31¢</td>
+              <td><span class="quote"><span class="bid">30</span><span class="x">×</span><span class="ask">32</span></span></td>
+              <td class="mono">2¢</td>
+              <td class="edge pos">+11 bps</td>
+              <td class="mono">+90</td>
+              <td class="mono">19</td>
+              <td class="mono dim">12s ago</td>
+              <td class="l"><span class="chip live"><span class="dot"></span> quoting</span></td>
+            </tr>
+            <tr>
+              <td class="l"><span class="ticker">KXSCOTUS-KALSHI-CERT<span class="meta">SCOTUS grants cert in Kalshi case 2026</span></span></td>
+              <td class="l"><span class="chip kalshi">Kalshi</span></td>
+              <td class="mono">64¢</td>
+              <td><span class="quote"><span class="bid">62</span><span class="x">×</span><span class="ask">66</span></span></td>
+              <td class="mono">4¢</td>
+              <td class="edge neg">−6 bps</td>
+              <td class="mono">−40</td>
+              <td class="mono">3</td>
+              <td class="mono dim">1m ago</td>
+              <td class="l"><span class="chip bad"><span class="dot bad"></span> adverse-flow</span></td>
+            </tr>
+            <tr>
+              <td class="l"><span class="ticker">KXCPI-26APR-OVER<span class="meta">CPI YoY &gt; 3.2% · Apr release</span></span></td>
+              <td class="l"><span class="chip kalshi">Kalshi</span></td>
+              <td class="mono">42¢</td>
+              <td><span class="quote dim"><span>—</span><span class="x">×</span><span>—</span></span></td>
+              <td class="mono dim">—</td>
+              <td class="edge dim">paused</td>
+              <td class="mono">+520</td>
+              <td class="mono">81</td>
+              <td class="mono dim">just now</td>
+              <td class="l"><span class="chip warn" style="background:rgba(255,181,71,.08);color:var(--warn);border-color:rgba(255,181,71,.25)"><span class="dot warn"></span> news halt · 12s</span></td>
+            </tr>
+            <tr>
+              <td class="l"><span class="ticker">KXOSCAR-26-BESTPIC-OPPNHMR<span class="meta">"The Brutalist" wins Best Picture</span></span></td>
+              <td class="l"><span class="chip kalshi">Kalshi</span></td>
+              <td class="mono">22¢</td>
+              <td><span class="quote"><span class="bid">21</span><span class="x">×</span><span class="ask">23</span></span></td>
+              <td class="mono">2¢</td>
+              <td class="edge pos">+14 bps</td>
+              <td class="mono neg">−210</td>
+              <td class="mono">8</td>
+              <td class="mono dim">31s ago</td>
+              <td class="l"><span class="chip live"><span class="dot"></span> quoting</span></td>
+            </tr>
+            <tr>
+              <td class="l"><span class="ticker">recession-2026-q4<span class="meta">US recession declared Q4 2026</span></span></td>
+              <td class="l"><span class="chip poly">Polymarket</span></td>
+              <td class="mono">19¢</td>
+              <td><span class="quote"><span class="bid">18</span><span class="x">×</span><span class="ask">20</span></span></td>
+              <td class="mono">2¢</td>
+              <td class="edge pos">+22 bps</td>
+              <td class="mono">+660</td>
+              <td class="mono">36</td>
+              <td class="mono dim">5s ago</td>
+              <td class="l"><span class="chip live"><span class="dot"></span> quoting</span></td>
+            </tr>
+            <tr>
+              <td class="l"><span class="ticker">KXNBA-26FIN-BOSDEN<span class="meta">Celtics def. Nuggets in Finals</span></span></td>
+              <td class="l"><span class="chip kalshi">Kalshi</span></td>
+              <td class="mono">58¢</td>
+              <td><span class="quote"><span class="bid">57</span><span class="x">×</span><span class="ask">59</span></span></td>
+              <td class="mono">2¢</td>
+              <td class="edge pos">+9 bps</td>
+              <td class="mono">+180</td>
+              <td class="mono">14</td>
+              <td class="mono dim">22s ago</td>
+              <td class="l"><span class="chip live"><span class="dot"></span> quoting</span></td>
+            </tr>
+            <tr>
+              <td class="l"><span class="ticker">KXETH-26EOM-5K<span class="meta">ETH ≥ $5k by EOM</span></span></td>
+              <td class="l"><span class="chip kalshi">Kalshi</span></td>
+              <td class="mono">27¢</td>
+              <td><span class="quote"><span class="bid">26</span><span class="x">×</span><span class="ask">28</span></span></td>
+              <td class="mono">2¢</td>
+              <td class="edge pos">+8 bps</td>
+              <td class="mono">+45</td>
+              <td class="mono">6</td>
+              <td class="mono dim">44s ago</td>
+              <td class="l"><span class="chip live"><span class="dot"></span> quoting</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- P&L chart -->
+      <div class="panel pnl-panel" style="height:240px;">
+        <header>
+          <h3>P&amp;L · Intraday</h3>
+          <div class="tabs">
+            <div class="tab">1h</div>
+            <div class="tab active">Today</div>
+            <div class="tab">7d</div>
+            <div class="tab">30d</div>
+            <div class="tab">YTD</div>
+          </div>
+          <div class="right">
+            <span class="chip" style="color:#5cf2c2;border-color:rgba(92,242,194,.3);background:rgba(92,242,194,.05)">Kalshi +$2,810</span>
+            <span class="chip" style="color:#c79bff;border-color:rgba(199,155,255,.3);background:rgba(199,155,255,.05)">Poly +$610</span>
+          </div>
+        </header>
+        <div class="pnl-chart">
+          <svg viewBox="0 0 880 170" width="100%" height="170" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="pnlfill" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#5cf2c2" stop-opacity=".25"/>
+                <stop offset="100%" stop-color="#5cf2c2" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- grid -->
+            <line class="grid" x1="40" y1="20" x2="40" y2="150"/>
+            <line class="grid" x1="40" y1="150" x2="870" y2="150"/>
+            <line class="grid" x1="40" y1="115" x2="870" y2="115" stroke-dasharray="2,4"/>
+            <line class="grid" x1="40" y1="85"  x2="870" y2="85"  stroke-dasharray="2,4"/>
+            <line class="grid" x1="40" y1="55"  x2="870" y2="55"  stroke-dasharray="2,4"/>
+            <text class="axis" x="6" y="153">$0</text>
+            <text class="axis" x="0" y="118">+1k</text>
+            <text class="axis" x="0" y="88">+2k</text>
+            <text class="axis" x="0" y="58">+3k</text>
+            <text class="axis" x="40"  y="167">09:30</text>
+            <text class="axis" x="190" y="167">10:30</text>
+            <text class="axis" x="340" y="167">11:30</text>
+            <text class="axis" x="490" y="167">12:30</text>
+            <text class="axis" x="640" y="167">13:30</text>
+            <text class="axis" x="790" y="167">14:30</text>
+
+            <!-- area + line, monotonic-ish realistic curve -->
+            <path d="M40,150 L70,148 L100,144 L130,141 L160,138 L190,128 L220,123 L250,118 L280,114 L310,118 L340,108 L370,102 L400,98 L430,90 L460,98 L490,92 L520,82 L550,76 L580,68 L610,72 L640,62 L670,55 L700,52 L730,48 L760,44 L790,42 L820,38 L850,34 L870,32 L870,150 Z"
+                  fill="url(#pnlfill)"/>
+            <path d="M40,150 L70,148 L100,144 L130,141 L160,138 L190,128 L220,123 L250,118 L280,114 L310,118 L340,108 L370,102 L400,98 L430,90 L460,98 L490,92 L520,82 L550,76 L580,68 L610,72 L640,62 L670,55 L700,52 L730,48 L760,44 L790,42 L820,38 L850,34 L870,32"
+                  fill="none" stroke="#5cf2c2" stroke-width="1.6"/>
+
+            <!-- Poly -->
+            <path d="M40,150 L100,150 L160,148 L220,146 L280,143 L340,142 L400,138 L460,138 L520,135 L580,130 L640,126 L700,124 L760,120 L820,118 L870,116"
+                  fill="none" stroke="#c79bff" stroke-width="1.4" stroke-dasharray="3,3" opacity=".9"/>
+
+            <!-- Event marker -->
+            <line x1="430" y1="20" x2="430" y2="150" stroke="#ffb547" stroke-width="1" stroke-dasharray="2,3" opacity=".6"/>
+            <circle cx="430" cy="90" r="3" fill="#ffb547"/>
+            <text class="axis" x="436" y="34" fill="#ffb547">CPI 08:30 ET</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: correlated events / risk / alerts -->
+    <div class="col-right">
+
+      <!-- Correlated events -->
+      <div class="panel corr">
+        <header>
+          <h3>Correlated-Event Monitor</h3>
+          <span class="chip"><span class="dot"></span> 14 sources</span>
+          <div class="right"><div class="ctrl">⚙</div></div>
+        </header>
+
+        <div class="event">
+          <div class="head">
+            <span class="chip" style="color:#ffb547;border-color:rgba(255,181,71,.3);background:rgba(255,181,71,.08)">MACRO · CPI</span>
+            <span class="src">Reuters · 08:30:02 ET</span>
+          </div>
+          <div class="body">
+            CPI prints <b>+0.4% MoM</b> (cons +0.3%). Model flagged as <b>high-impact</b>;
+            spreads auto-widened on 14 correlated markets.
+          </div>
+          <div class="impact">
+            <span class="m">KXFEDDECISION-26JUN</span>
+            <span class="m">KXCPI-26APR-OVER</span>
+            <span class="m">KX10Y-26EOM</span>
+            <span class="m">recession-2026-q4</span>
+            <span class="m">+10 more</span>
+          </div>
+          <div class="actions">
+            <button class="primary">Hold widen 60s</button>
+            <button>Resume now</button>
+          </div>
+        </div>
+
+        <div class="event">
+          <div class="head">
+            <span class="chip" style="color:#7aa2ff;border-color:rgba(122,162,255,.3);background:rgba(122,162,255,.08)">SPORTS · Inj.</span>
+            <span class="src">ESPN · 08:14 ET</span>
+          </div>
+          <div class="body">
+            <b>Mahomes</b> listed questionable for Sun. Implied prob shifted -3.2pts on KCBUF.
+          </div>
+          <div class="impact">
+            <span class="m">KXNFL-26WK17-KCBUF</span>
+            <span class="m">KXNFL-26SBLVII-KCWIN</span>
+          </div>
+        </div>
+
+        <div class="event">
+          <div class="head">
+            <span class="chip" style="color:#c79bff;border-color:rgba(199,155,255,.3);background:rgba(199,155,255,.08)">CRYPTO</span>
+            <span class="src">Binance feed · 08:02 ET</span>
+          </div>
+          <div class="body">
+            BTC −1.8% on 5m bar. Cross-venue arb opened on KXBTC-26EOM ↔ Polymarket.
+          </div>
+          <div class="actions">
+            <button class="primary">View arb (12 bps)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk -->
+      <div class="panel">
+        <header>
+          <h3>Risk · Limits</h3>
+          <span class="chip">Half-Kelly · 2% cap</span>
+        </header>
+        <div class="risk">
+          <div>
+            <div class="row"><span class="lbl">Gross exposure</span><span class="v mono">$ 84.2k</span></div>
+            <div class="bar"><i style="width:14%"></i></div>
+            <div class="row" style="margin-top:8px"><span class="lbl">Net delta</span><span class="v mono pos">+$ 12.4k</span></div>
+            <div class="bar"><i style="width:8%;background:linear-gradient(90deg,#7aa2ff,#5cf2c2)"></i></div>
+            <div class="row" style="margin-top:8px"><span class="lbl">VaR · 95% · 1d</span><span class="v mono">$ 4,180</span></div>
+            <div class="bar"><i style="width:31%;background:linear-gradient(90deg,#ffb547,#5cf2c2)"></i></div>
+            <div class="row" style="margin-top:8px"><span class="lbl">Drawdown · 30d</span><span class="v mono neg">−1.42%</span></div>
+            <div class="bar"><i style="width:18%;background:linear-gradient(90deg,#ff5d6c,#ffb547)"></i></div>
+          </div>
+          <div>
+            <div class="lbl mute" style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Inventory by category</div>
+            <div class="heat"><span class="name">Sports</span><div class="bar"><i style="width:62%"></i></div><span class="v">$ 38.1k</span></div>
+            <div class="heat"><span class="name">Macro</span><div class="bar"><i style="width:41%;background:#ffb547"></i></div><span class="v">$ 21.4k</span></div>
+            <div class="heat"><span class="name">Politics</span><div class="bar"><i style="width:24%;background:#7aa2ff"></i></div><span class="v">$ 11.8k</span></div>
+            <div class="heat"><span class="name">Crypto</span><div class="bar"><i style="width:18%;background:#c79bff"></i></div><span class="v">$ 9.2k</span></div>
+            <div class="heat"><span class="name">Entertain.</span><div class="bar"><i style="width:8%;background:#5cf2c2"></i></div><span class="v">$ 3.7k</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div class="panel alerts">
+        <header>
+          <h3>Activity</h3>
+          <div class="tabs">
+            <div class="tab active">All</div>
+            <div class="tab">Fills</div>
+            <div class="tab">Risk</div>
+            <div class="tab">System</div>
+          </div>
+        </header>
+
+        <div class="alert">
+          <div class="t">14:32:08</div>
+          <div class="msg"><b>Filled</b> 240 @ 51¢ on KXNFL-26WK17-KCBUF · edge +38 bps</div>
+          <div><span class="pill fill">BUY</span></div>
+        </div>
+        <div class="alert">
+          <div class="t">14:32:01</div>
+          <div class="msg"><b>News halt</b> KXCPI-26APR-OVER · CPI release · auto-pause 12s</div>
+          <div><span class="pill warn">HALT</span></div>
+        </div>
+        <div class="alert">
+          <div class="t">14:31:54</div>
+          <div class="msg"><b>Filled</b> 180 @ 53¢ on KXNFL-26WK17-KCBUF · edge +28 bps</div>
+          <div><span class="pill fill-s">SELL</span></div>
+        </div>
+        <div class="alert">
+          <div class="t">14:31:47</div>
+          <div class="msg"><b>Spread widened</b> on KXSCOTUS-KALSHI-CERT · adverse-flow score 0.78</div>
+          <div><span class="pill warn">RISK</span></div>
+        </div>
+        <div class="alert">
+          <div class="t">14:31:33</div>
+          <div class="msg"><b>Strategy resumed</b> · X-Venue Arb · cooldown elapsed</div>
+          <div><span class="pill info">SYS</span></div>
+        </div>
+        <div class="alert">
+          <div class="t">14:31:18</div>
+          <div class="msg"><b>Filled</b> 90 @ 19¢ on recession-2026-q4 · edge +22 bps</div>
+          <div><span class="pill fill">BUY</span></div>
+        </div>
+        <div class="alert">
+          <div class="t">14:30:50</div>
+          <div class="msg"><b>Inventory limit hit</b> on KXFEDDECISION-26JUN · skewed quote -1¢</div>
+          <div><span class="pill warn">RISK</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ STRATEGY FOOTER ════════ -->
+    <div class="strategies">
+      <div class="strat on">
+        <div class="name">Yes/No Imbalance v3 <span class="dim" style="font-weight:400;font-size:11px">· 38 markets</span></div>
+        <div class="toggle"></div>
+        <div class="tag">Primary · Kalshi + Polymarket</div>
+        <div class="params">
+          <span>spread <b>2¢</b></span>
+          <span>edge ≥ <b>10 bps</b></span>
+          <span>max inv <b>$25k</b></span>
+          <span>recheck <b>500ms</b></span>
+        </div>
+        <div class="pnl pos">+$2,118</div>
+      </div>
+
+      <div class="strat on">
+        <div class="name">X-Venue Arb <span class="dim" style="font-weight:400;font-size:11px">· 14 pairs</span></div>
+        <div class="toggle"></div>
+        <div class="tag">Cross-venue · Kalshi ↔ Poly</div>
+        <div class="params">
+          <span>min spread <b>5 bps</b></span>
+          <span>max leg <b>$10k</b></span>
+          <span>latency cap <b>250ms</b></span>
+          <span>auto-hedge <b>on</b></span>
+        </div>
+        <div class="pnl pos">+$946</div>
+      </div>
+
+      <div class="strat on">
+        <div class="name">Macro News-Hedge <span class="dim" style="font-weight:400;font-size:11px">· 14 markets</span></div>
+        <div class="toggle"></div>
+        <div class="tag">Defensive · auto-widen on event</div>
+        <div class="params">
+          <span>halt window <b>15s</b></span>
+          <span>widen factor <b>3×</b></span>
+          <span>sources <b>14</b></span>
+          <span>last fired <b>00:38</b></span>
+        </div>
+        <div class="pnl pos">+$214</div>
+      </div>
+
+      <div class="strat">
+        <div class="name">Sports Closing-Line v1 <span class="dim" style="font-weight:400;font-size:11px">· paused</span></div>
+        <div class="toggle"></div>
+        <div class="tag">Disabled · awaiting backtest sign-off</div>
+        <div class="params">
+          <span>cutover <b>T-15min</b></span>
+          <span>edge ≥ <b>20 bps</b></span>
+          <span>backtest <b>+1.8% / 30d</b></span>
+          <span>review by <b>R. Chen</b></span>
+        </div>
+        <div class="pnl dim">$0</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

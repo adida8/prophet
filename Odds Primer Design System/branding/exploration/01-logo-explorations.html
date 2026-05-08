@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logo Explorations · Odds Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700;8..60,900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF7F0;
+    --paper-2: #F2EDE0;
+    --ink: #0E2240;
+    --ink-soft: #3D4F6A;
+    --rule: #D9D2BE;
+    --flame: #D9461C;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body { font-family: var(--serif); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+
+  .page { max-width: 1140px; margin: 0 auto; padding: 56px 40px 96px; }
+
+  /* page header */
+  .eyebrow {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 8px;
+  }
+  h1.page-title {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 38px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+  }
+  .page-sub {
+    max-width: 64ch;
+    font-size: 16px;
+    color: var(--ink-soft);
+    margin: 0 0 40px;
+  }
+
+  hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 32px 0; }
+
+  /* direction card */
+  .dir {
+    border-top: 1px solid var(--ink);
+    padding: 28px 0 56px;
+  }
+  .dir-head {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .dir-letter {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .dir-letter .accent { color: var(--flame); }
+  .dir-name {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: -0.005em;
+    margin: 0;
+  }
+  .dir-bet {
+    font-family: var(--sans);
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin: 4px 0 0;
+    max-width: 60ch;
+  }
+
+  /* layout */
+  .grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 880px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 28px;
+    position: relative;
+  }
+  .panel.dark { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .panel-tag {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .panel.dark .panel-tag { color: #B7C2D6; }
+
+  .panel-row { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+  .panel-row + .panel-row { margin-top: 28px; padding-top: 24px; border-top: 1px dashed var(--rule); }
+  .panel.dark .panel-row + .panel-row { border-top-color: #1F3458; }
+
+  .lockup-stage {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 140px; width: 100%;
+  }
+
+  /* favicon stack */
+  .fav-row {
+    display: flex; align-items: end; gap: 22px;
+    padding: 12px 0;
+  }
+  .fav-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .fav-cell .lbl {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+  }
+  .panel.dark .fav-cell .lbl { color: #8FA0BD; }
+
+  /* masthead simulation */
+  .masthead {
+    height: 56px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px;
+    background: var(--paper);
+  }
+  .masthead .edition {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .masthead .live {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .masthead .live::before {
+    content: "";
+    display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--flame);
+    margin-right: 6px;
+    transform: translateY(-1px);
+  }
+
+  /* social card */
+  .social {
+    aspect-ratio: 1200 / 630;
+    width: 100%;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 6%;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .social .sc-eyebrow {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .social .sc-headline {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(18px, 2.6vw, 30px);
+    line-height: 1.18;
+    letter-spacing: -0.005em;
+    max-width: 26ch;
+  }
+  .social .sc-foot {
+    display: flex; justify-content: space-between; align-items: end;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  /* shared lockup typography */
+  .word-itight {
+    font-family: var(--sans);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .word-serif {
+    font-family: var(--serif);
+    font-weight: 700;
+    letter-spacing: -0.012em;
+    color: var(--ink);
+    font-feature-settings: "ss01" on;
+  }
+  .panel.dark .word-itight, .panel.dark .word-serif { color: var(--paper); }
+
+  /* ============ DIRECTION A — bars =============== */
+  .a-glyph { display: inline-block; }
+  .a-lock { display: inline-flex; align-items: center; gap: 14px; }
+  .a-lock .word-itight { font-size: 38px; }
+
+  /* ============ DIRECTION B — typographic =============== */
+  .b-lock {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 60px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+  }
+  .b-lock .dot { color: var(--flame); }
+  .panel.dark .b-lock { color: var(--paper); }
+  .b-fav {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: -0.04em;
+    position: relative;
+    padding: 0 4px 4px;
+  }
+  .b-fav .ul {
+    position: absolute; left: 4px; right: 4px; bottom: 0;
+    height: 2px; background: var(--flame);
+  }
+  .panel.dark .b-fav { color: var(--paper); }
+
+  /* ============ DIRECTION C — dagger =============== */
+  .c-lock { display: inline-flex; align-items: baseline; gap: 18px; }
+  .c-dagger {
+    font-family: var(--serif);
+    font-weight: 700;
+    color: var(--flame);
+    font-size: 64px;
+    line-height: 0.9;
+    transform: translateY(6px);
+  }
+  .c-lock .word-serif { font-size: 42px; }
+  .c-fav {
+    font-family: var(--serif);
+    font-weight: 700;
+    color: var(--flame);
+    line-height: 1;
+  }
+
+  /* ============ DIRECTION D — monogram =============== */
+  .d-stamp {
+    display: inline-flex; flex-direction: column; align-items: center;
+  }
+  .d-frame {
+    border: 1px solid var(--ink);
+    padding: 12px 22px;
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 42px;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    line-height: 1;
+    position: relative;
+  }
+  .d-frame .dot {
+    position: absolute;
+    top: 50%; right: -5px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--flame);
+    transform: translateY(-50%);
+  }
+  .d-name {
+    margin-top: 10px;
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .panel.dark .d-frame { border-color: var(--paper); color: var(--paper); }
+  .panel.dark .d-name { color: #B7C2D6; }
+
+  /* notes block */
+  .notes {
+    margin-top: 16px;
+    font-family: var(--sans);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    row-gap: 6px;
+    column-gap: 14px;
+  }
+  .notes b { color: var(--ink); font-weight: 600; }
+
+  footer.colophon {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ink);
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex; justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <p class="eyebrow">Odds Primer · Brand</p>
+  <h1 class="page-title">Logo explorations</h1>
+  <p class="page-sub">Four directions, each tested across the surfaces that matter: primary lockup, favicon (16/32px), inverted on navy, masthead in context, and a 1200×630 social card. Pick the direction that survives all five.</p>
+
+  <!-- =========================================================
+       DIRECTION A — BARS, PROPERLY DRAWN
+       ========================================================= -->
+  <section class="dir">
+    <div class="dir-head">
+      <div class="dir-letter">A</div>
+      <div>
+        <h2 class="dir-name">Bars, properly drawn</h2>
+        <p class="dir-bet">The bet: chart-as-mark is right, we just hadn't drawn it well. Custom rhythm, baseline rule, and a "best" overscore on the flame bar — the same semantic that lives inside the product.</p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <span class="panel-tag">Primary lockup · 320px</span>
+        <div class="lockup-stage">
+          <div class="a-lock">
+            <!-- glyph: 4 bars on baseline, third in flame, with overscore -->
+            <svg class="a-glyph" viewBox="0 0 56 44" width="64" height="50" aria-label="Odds Primer glyph">
+              <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+              <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+              <line x1="24" y1="4" x2="34" y2="4" stroke="#D9461C" stroke-width="1.25"/>
+              <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word-itight">Odds Primer</span>
+          </div>
+        </div>
+        <div class="panel-row">
+          <div class="fav-row">
+            <div class="fav-cell">
+              <svg viewBox="0 0 56 44" width="48" height="38">
+                <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="1.5"/>
+                <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+                <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+                <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+                <line x1="24" y1="4" x2="34" y2="4" stroke="#D9461C" stroke-width="1.5"/>
+                <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+              </svg>
+              <span class="lbl">32px</span>
+            </div>
+            <div class="fav-cell">
+              <svg viewBox="0 0 56 44" width="24" height="19">
+                <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="2.5"/>
+                <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+                <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+                <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+                <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+              </svg>
+              <span class="lbl">16px</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel dark">
+        <span class="panel-tag">Inverted</span>
+        <div class="lockup-stage">
+          <div class="a-lock">
+            <svg viewBox="0 0 56 44" width="56" height="44">
+              <line x1="2" y1="40" x2="54" y2="40" stroke="#FAF7F0" stroke-width="1.25"/>
+              <rect x="6"  y="26" width="6" height="14" fill="#FAF7F0"/>
+              <rect x="16" y="18" width="6" height="22" fill="#FAF7F0"/>
+              <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+              <line x1="24" y1="4" x2="34" y2="4" stroke="#D9461C" stroke-width="1.25"/>
+              <rect x="36" y="22" width="6" height="18" fill="#FAF7F0"/>
+            </svg>
+            <span class="word-itight" style="font-size:34px">Odds Primer</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="grid-column: 1 / -1; padding: 0;">
+        <span class="panel-tag" style="top:14px; right:16px;">Masthead in context</span>
+        <div class="masthead">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <svg viewBox="0 0 56 44" width="34" height="27">
+              <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="1.5"/>
+              <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+              <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+              <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word-itight" style="font-size:18px">Odds Primer</span>
+            <span style="height:18px;width:1px;background:var(--rule);margin:0 4px"></span>
+            <span class="edition">World Cup 2026 · Vol. 1</span>
+          </div>
+          <div class="live">FRA v ARG · live</div>
+        </div>
+      </div>
+
+      <div class="panel" style="grid-column: 1 / -1;">
+        <span class="panel-tag">Social card · 1200 × 630</span>
+        <div class="social">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <svg viewBox="0 0 56 44" width="42" height="33">
+              <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="1.5"/>
+              <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+              <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+              <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word-itight" style="font-size:22px">Odds Primer</span>
+          </div>
+          <div class="sc-headline">Will France win the 2026 World Cup? Six markets disagree by <span style="color:var(--flame); border-bottom:2px solid var(--flame);">11 points.</span></div>
+          <div class="sc-foot">
+            <span>oddsprimer.com</span>
+            <span>World Cup 2026 · Vol. 1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <b>Strength</b><span>System-coherent — the mark IS the chart pattern that runs through every page.</span>
+      <b>Risk</b><span>Four bars is a generic data-product shape; needs the overscore + baseline rule to feel proprietary.</span>
+      <b>WC mark</b><span>Easy: bars sit above an "EDITION 1" rule, no redraw needed.</span>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       DIRECTION B — TYPOGRAPHIC ONLY
+       ========================================================= -->
+  <section class="dir">
+    <div class="dir-head">
+      <div class="dir-letter">B</div>
+      <div>
+        <h2 class="dir-name">Typographic only</h2>
+        <p class="dir-bet">The bet: a publication doesn't need a glyph — the wordmark IS the brand. Source Serif 4 Black, magazine-flag treatment, flame as a single end-mark dot. Maximum editorial register.</p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <span class="panel-tag">Primary lockup</span>
+        <div class="lockup-stage">
+          <div class="b-lock">Odds Primer<span class="dot">.</span></div>
+        </div>
+        <div class="panel-row">
+          <div class="fav-row">
+            <div class="fav-cell">
+              <div class="b-fav" style="font-size:32px;">O<span class="ul"></span></div>
+              <span class="lbl">32px</span>
+            </div>
+            <div class="fav-cell">
+              <div class="b-fav" style="font-size:18px;">O<span class="ul"></span></div>
+              <span class="lbl">16px</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel dark">
+        <span class="panel-tag">Inverted</span>
+        <div class="lockup-stage">
+          <div class="b-lock" style="font-size:48px;">Odds Primer<span class="dot">.</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="grid-column: 1 / -1; padding: 0;">
+        <span class="panel-tag" style="top:14px; right:16px;">Masthead in context</span>
+        <div class="masthead">
+          <div style="display:flex; align-items:baseline; gap:12px;">
+            <span class="b-lock" style="font-size:22px;">Odds Primer<span class="dot">.</span></span>
+            <span style="height:14px;width:1px;background:var(--rule);margin:0 4px;align-self:center"></span>
+            <span class="edition">World Cup 2026 · Vol. 1</span>
+          </div>
+          <div class="live">FRA v ARG · live</div>
+        </div>
+      </div>
+
+      <div class="panel" style="grid-column: 1 / -1;">
+        <span class="panel-tag">Social card · 1200 × 630</span>
+        <div class="social">
+          <span class="b-lock" style="font-size:30px;">Odds Primer<span class="dot">.</span></span>
+          <div class="sc-headline">Will France win the 2026 World Cup? Six markets disagree by <span style="color:var(--flame); border-bottom:2px solid var(--flame);">11 points.</span></div>
+          <div class="sc-foot">
+            <span>oddsprimer.com</span>
+            <span>World Cup 2026 · Vol. 1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <b>Strength</b><span>Furthest from sports-betting / fintech aesthetic. Reads as a publication on first glance.</span>
+      <b>Risk</b><span>No favicon-able mark — the "O" treatment is borrowed identity, weaker than a real glyph at 16px.</span>
+      <b>WC mark</b><span>Add a hairline-rule edition strip below the wordmark; no glyph variant to manage.</span>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       DIRECTION C — FOOTNOTE DAGGER
+       ========================================================= -->
+  <section class="dir">
+    <div class="dir-head">
+      <div class="dir-letter"><span class="accent">†</span></div>
+      <div>
+        <h2 class="dir-name">Footnote dagger</h2>
+        <p class="dir-bet">The bet: the dagger is already the most distinctive native gesture in the product — every footnote, every "see source." Make † the mark. The brand becomes literally "the source-noted prediction-market explainer."</p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <span class="panel-tag">Primary lockup</span>
+        <div class="lockup-stage">
+          <div class="c-lock">
+            <span class="c-dagger">†</span>
+            <span class="word-serif">Odds Primer</span>
+          </div>
+        </div>
+        <div class="panel-row">
+          <div class="fav-row">
+            <div class="fav-cell">
+              <span class="c-fav" style="font-size:36px;">†</span>
+              <span class="lbl">32px</span>
+            </div>
+            <div class="fav-cell">
+              <span class="c-fav" style="font-size:20px;">†</span>
+              <span class="lbl">16px</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel dark">
+        <span class="panel-tag">Inverted</span>
+        <div class="lockup-stage">
+          <div class="c-lock">
+            <span class="c-dagger">†</span>
+            <span class="word-serif">Odds Primer</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="grid-column: 1 / -1; padding: 0;">
+        <span class="panel-tag" style="top:14px; right:16px;">Masthead in context</span>
+        <div class="masthead">
+          <div style="display:flex; align-items:baseline; gap:12px;">
+            <span style="font-family:var(--serif); color:var(--flame); font-size:24px; font-weight:700; transform:translateY(2px); display:inline-block;">†</span>
+            <span class="word-serif" style="font-size:20px;">Odds Primer</span>
+            <span style="height:14px;width:1px;background:var(--rule);margin:0 4px;align-self:center"></span>
+            <span class="edition">World Cup 2026 · Vol. 1</span>
+          </div>
+          <div class="live">FRA v ARG · live</div>
+        </div>
+      </div>
+
+      <div class="panel" style="grid-column: 1 / -1;">
+        <span class="panel-tag">Social card · 1200 × 630</span>
+        <div class="social">
+          <div style="display:flex; align-items:baseline; gap:14px;">
+            <span style="font-family:var(--serif); color:var(--flame); font-size:46px; font-weight:700; line-height:0.9;">†</span>
+            <span class="word-serif" style="font-size:26px;">Odds Primer</span>
+          </div>
+          <div class="sc-headline">Will France win the 2026 World Cup<span style="color:var(--flame);">†</span> Six markets disagree by <span style="color:var(--flame); border-bottom:2px solid var(--flame);">11 points.</span></div>
+          <div class="sc-foot">
+            <span>† see footnote, p.2</span>
+            <span>World Cup 2026 · Vol. 1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <b>Strength</b><span>Most distinctive direction. The mark literally means "we annotate, we explain" — perfect fit for the patient-teacher voice.</span>
+      <b>Risk</b><span>Niche / academic register. Some users won't recognize † as a footnote indicator.</span>
+      <b>WC mark</b><span>The dagger gets a quiet ‡ (double-dagger) variant for the WC edition — feels like a second-edition watermark.</span>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       DIRECTION D — QUIET MONOGRAM (OP)
+       ========================================================= -->
+  <section class="dir">
+    <div class="dir-head">
+      <div class="dir-letter">D</div>
+      <div>
+        <h2 class="dir-name">Quiet monogram</h2>
+        <p class="dir-bet">The bet: stamp a colophon, not a logo. "OP" inside a hairline frame, the way Penguin / Faber / Phaidon mark a publishing house. Sets us furthest from prediction-market peers.</p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <span class="panel-tag">Primary lockup</span>
+        <div class="lockup-stage">
+          <div class="d-stamp">
+            <div class="d-frame">OP<span class="dot"></span></div>
+            <div class="d-name">Odds Primer</div>
+          </div>
+        </div>
+        <div class="panel-row">
+          <div class="fav-row">
+            <div class="fav-cell">
+              <div class="d-frame" style="padding:6px 10px; font-size:22px;">OP</div>
+              <span class="lbl">32px</span>
+            </div>
+            <div class="fav-cell">
+              <div class="d-frame" style="padding:3px 5px; font-size:11px;">OP</div>
+              <span class="lbl">16px</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel dark">
+        <span class="panel-tag">Inverted</span>
+        <div class="lockup-stage">
+          <div class="d-stamp">
+            <div class="d-frame">OP<span class="dot"></span></div>
+            <div class="d-name">Odds Primer</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="grid-column: 1 / -1; padding: 0;">
+        <span class="panel-tag" style="top:14px; right:16px;">Masthead in context</span>
+        <div class="masthead">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="d-frame" style="padding:4px 8px; font-size:14px;">OP</div>
+            <span class="word-serif" style="font-size:18px;">Odds Primer</span>
+            <span style="height:14px;width:1px;background:var(--rule);margin:0 4px;"></span>
+            <span class="edition">World Cup 2026 · Vol. 1</span>
+          </div>
+          <div class="live">FRA v ARG · live</div>
+        </div>
+      </div>
+
+      <div class="panel" style="grid-column: 1 / -1;">
+        <span class="panel-tag">Social card · 1200 × 630</span>
+        <div class="social">
+          <div class="d-stamp" style="align-items:flex-start;">
+            <div class="d-frame" style="padding:8px 14px; font-size:24px;">OP<span class="dot"></span></div>
+          </div>
+          <div class="sc-headline">Will France win the 2026 World Cup? Six markets disagree by <span style="color:var(--flame); border-bottom:2px solid var(--flame);">11 points.</span></div>
+          <div class="sc-foot">
+            <span>Odds Primer · oddsprimer.com</span>
+            <span>World Cup 2026 · Vol. 1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <b>Strength</b><span>Reads as a publishing house, not a tech brand. Distinctive favicon — the frame survives at 16px.</span>
+      <b>Risk</b><span>May pull too far toward "publication" and lose the "60 on the publication↔product axis." Could feel old-world / formal.</span>
+      <b>WC mark</b><span>"OP · WC26" stamped in the same frame — looks like a special-edition reissue.</span>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <span>Odds Primer · Brand exploration · v0.1</span>
+    <span>4 directions · 5 surfaces each</span>
+  </footer>
+
+</div>
+</body>
+</html>

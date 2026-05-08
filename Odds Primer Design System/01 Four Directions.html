@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Odds Primer — Logo, Step 1: Four Directions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="colors_and_type.css">
+<style>
+  body {
+    background: var(--paper);
+    padding: var(--space-9) var(--gutter-page) var(--space-10);
+  }
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+
+  /* ---- masthead of this exploration doc ---- */
+  .doc-mast {
+    border-top: var(--hairline-strong);
+    border-bottom: var(--hairline);
+    padding: var(--space-4) 0 var(--space-3);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-6);
+    margin-bottom: var(--space-7);
+  }
+  .doc-mast .eyebrow {
+    font-family: var(--font-sans);
+    font-size: var(--t-micro);
+    font-weight: 600;
+    letter-spacing: var(--track-eyebrow);
+    text-transform: uppercase;
+    color: var(--graphite-soft);
+  }
+  .doc-mast h1 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: var(--t-h2);
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+  }
+  .doc-mast .meta {
+    font-family: var(--font-sans);
+    font-size: var(--t-caption);
+    color: var(--graphite-soft);
+  }
+
+  .standfirst {
+    font-family: var(--font-serif);
+    font-size: 1.1875rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    max-width: 64ch;
+    margin: 0 0 var(--space-9);
+    text-wrap: pretty;
+  }
+  .standfirst em { font-style: italic; color: var(--ink); }
+
+  /* ---- direction block ---- */
+  .direction {
+    border-top: var(--hairline);
+    padding-top: var(--space-6);
+    margin-bottom: var(--space-9);
+  }
+  .direction-head {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    align-items: baseline;
+    gap: var(--space-5);
+    margin-bottom: var(--space-7);
+  }
+  .direction-num {
+    font-family: var(--font-mono);
+    font-size: var(--t-h2);
+    font-weight: 500;
+    color: var(--graphite-soft);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .direction-title {
+    font-family: var(--font-serif);
+    font-size: var(--t-h1);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    color: var(--ink);
+    margin: 0;
+    text-wrap: balance;
+  }
+  .direction-tag {
+    font-family: var(--font-sans);
+    font-size: var(--t-micro);
+    font-weight: 600;
+    letter-spacing: var(--track-eyebrow);
+    text-transform: uppercase;
+    color: var(--graphite-soft);
+    white-space: nowrap;
+  }
+
+  .direction-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-7);
+    align-items: start;
+    padding-left: 84px;
+  }
+  @media (max-width: 900px) {
+    .direction-body { grid-template-columns: 1fr; padding-left: 0; }
+  }
+
+  .rationale {
+    font-family: var(--font-serif);
+    font-size: var(--t-body);
+    line-height: var(--lh-body);
+    color: var(--ink);
+  }
+  .rationale p { margin: 0 0 var(--space-3); }
+  .rationale .small {
+    font-family: var(--font-sans);
+    font-size: var(--t-caption);
+    color: var(--graphite-soft);
+    line-height: 1.5;
+  }
+  .rationale .risk {
+    color: var(--graphite);
+    font-style: italic;
+  }
+  .rationale .risk::before {
+    content: '‡ ';
+    color: var(--flame);
+    font-style: italic;
+    margin-right: 1px;
+  }
+
+  /* ---- specimen frames ---- */
+  .specimens {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+  .frame {
+    background: var(--paper-pure);
+    border: var(--hairline);
+    border-radius: var(--radius-3);
+    padding: var(--space-6) var(--space-6) var(--space-4);
+    position: relative;
+  }
+  .frame--mast {
+    padding: var(--space-7) var(--space-6) var(--space-6);
+  }
+  .frame-label {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--graphite-soft);
+  }
+  .frame-meta {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--graphite-soft);
+    letter-spacing: 0;
+  }
+  .frame-foot {
+    margin-top: var(--space-5);
+    padding-top: var(--space-3);
+    border-top: var(--hairline-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--graphite-soft);
+  }
+
+  /* the masthead-context demo: the wordmark next to a 48px serif headline */
+  .mast-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-7);
+    border-top: 1.25px solid var(--ink);
+    border-bottom: var(--hairline);
+    padding: 18px 0 14px;
+    flex-wrap: wrap;
+  }
+  .mast-row .head {
+    font-family: var(--font-serif);
+    font-size: 38px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .mast-row .deck {
+    font-family: var(--font-serif);
+    font-size: 14px;
+    font-style: italic;
+    color: var(--graphite);
+    line-height: 1.4;
+    max-width: 28ch;
+    margin-left: auto;
+  }
+
+  /* favicon strip */
+  .favicons {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-6);
+    padding: var(--space-3) 0 var(--space-2);
+  }
+  .fav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .fav-cell {
+    background: var(--paper);
+    border: var(--hairline);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    image-rendering: -webkit-optimize-contrast;
+  }
+  .fav-cell svg { display: block; }
+  .fav-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--graphite-soft);
+  }
+  .fav-cell--16 { width: 32px; height: 32px; }
+  .fav-cell--16 svg { width: 16px; height: 16px; }
+  .fav-cell--24 { width: 48px; height: 48px; }
+  .fav-cell--24 svg { width: 24px; height: 24px; }
+  .fav-cell--32 { width: 64px; height: 64px; }
+  .fav-cell--32 svg { width: 32px; height: 32px; }
+
+  /* ---- typographic helpers ---- */
+  .em { font-style: italic; }
+  .dim { color: var(--graphite-soft); }
+
+  /* ---- direction 1: bars ---- */
+  .wm-bars {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 14px;
+    line-height: 1;
+  }
+  .wm-bars .glyph { display: block; }
+  .wm-bars .word {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 38px;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  /* ---- direction 2: typographic-only ---- */
+  .wm-type {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 44px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--ink);
+    font-feature-settings: "liga" 1, "dlig" 1, "kern" 1;
+  }
+  .wm-type .interpunct {
+    color: var(--flame);
+    margin: 0 0.18em;
+  }
+  /* the 'tied dd' detail — fake a ligature with a hairline */
+  .wm-type .tied-dd {
+    position: relative;
+    display: inline-block;
+    letter-spacing: -0.06em;
+  }
+  .wm-type .tied-dd::after {
+    content: "";
+    position: absolute;
+    left: 0.10em;
+    right: 0.10em;
+    top: 0.30em;
+    height: 1.5px;
+    background: var(--ink);
+    border-radius: 1px;
+  }
+  /* swash variant */
+  .wm-type-alt {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 42px;
+    letter-spacing: -0.005em;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .wm-type-tight {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 40px;
+    letter-spacing: -0.045em;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  /* recommendation block */
+  .recommendation {
+    background: var(--paper-warm);
+    border-top: var(--hairline-strong);
+    border-bottom: var(--hairline-strong);
+    padding: var(--space-7) var(--space-7);
+    margin-top: var(--space-9);
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: var(--space-7);
+  }
+  @media (max-width: 900px) {
+    .recommendation { grid-template-columns: 1fr; }
+  }
+  .recommendation .eyebrow {
+    font-family: var(--font-sans);
+    font-size: var(--t-micro);
+    font-weight: 600;
+    letter-spacing: var(--track-eyebrow);
+    text-transform: uppercase;
+    color: var(--flame);
+    margin-bottom: var(--space-3);
+  }
+  .recommendation h2 {
+    font-family: var(--font-serif);
+    font-size: var(--t-h2);
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    line-height: 1.15;
+    color: var(--ink);
+    margin: 0 0 var(--space-3);
+    text-wrap: balance;
+  }
+  .recommendation .body {
+    font-family: var(--font-serif);
+    font-size: var(--t-body);
+    line-height: var(--lh-body);
+    color: var(--ink);
+  }
+  .recommendation .body p { margin: 0 0 var(--space-3); }
+  .recommendation .body p:last-child { margin: 0; }
+</style>
+</head>
+<body>
+<main class="page" data-screen-label="01 Four Directions">
+
+  <header class="doc-mast">
+    <div>
+      <div class="eyebrow">Odds Primer · Brand · Working draft</div>
+      <h1>Logo system — Step 1: one direction</h1>
+    </div>
+    <div class="meta">2026 · Vol. 1 · sheet 1 of 3</div>
+  </header>
+
+  <p class="standfirst">
+    The placeholder reads <em>Odds Primer</em> in Inter Tight 700 next to four bars, third in flame. The concept is right — <em>charts are the imagery</em> is a system rule, so the brand mark should <em>be</em> the chart. The execution isn't. Below: the direction we're taking forward — a probability-bars glyph drawn observationally, with one wordmark sketch, three favicon sizes, and the rationale beside it. The typographic-only alternate has been retired.
+  </p>
+
+  <!-- ============ DIRECTION 1 ============ -->
+  <section class="direction" data-screen-label="01a Bars properly drawn">
+    <div class="direction-head">
+      <div class="direction-num">01</div>
+      <h2 class="direction-title">Probability bars, properly drawn</h2>
+      <div class="direction-tag">on-system</div>
+    </div>
+
+    <div class="direction-body">
+      <div class="specimens">
+
+        <div class="frame frame--mast">
+          <span class="frame-label">Wordmark · masthead context</span>
+          <span class="frame-meta">38 / 14 px</span>
+          <div class="mast-row">
+            <span class="wm-bars">
+              <!-- glyph: bars on a baseline rule, irregular widths/spacings, rule extends a hair past last bar -->
+              <svg class="glyph" width="58" height="38" viewBox="0 0 58 38" aria-hidden="true">
+                <!-- bars: heights 9 / 16 / 28 / 14, widths 7 / 8 / 9 / 7 (irregular) -->
+                <rect x="0"  y="22" width="7" height="9"  fill="#0E2240"/>
+                <rect x="11" y="15" width="8" height="16" fill="#0E2240"/>
+                <rect x="23" y="3"  width="9" height="28" fill="#D9461C"/>
+                <rect x="36" y="17" width="7" height="14" fill="#0E2240"/>
+                <!-- baseline rule extends 8px past the last bar — observational, not boxed -->
+                <line x1="-2" y1="32.5" x2="50" y2="32.5" stroke="#0E2240" stroke-width="1.25"/>
+              </svg>
+              <span class="word">Odds&nbsp;Primer</span>
+            </span>
+            <span class="head">Why France slipped to 16¢</span>
+            <span class="deck">— and why Polymarket and Kalshi don't agree</span>
+          </div>
+          <div class="frame-foot">
+            <span>set against 38px Source Serif 4 headline</span>
+            <span>flame: third bar (tallest)</span>
+          </div>
+        </div>
+
+        <div class="frame">
+          <span class="frame-label">Favicon</span>
+          <span class="frame-meta">3 sizes</span>
+          <div class="favicons">
+            <!-- 16px: only THREE bars survive; the rule reads as the foundation -->
+            <div class="fav">
+              <div class="fav-cell fav-cell--16">
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <rect x="2"  y="9"  width="2.5" height="3.5" fill="#0E2240"/>
+                  <rect x="6"  y="6.5" width="2.5" height="6"   fill="#0E2240"/>
+                  <rect x="10" y="3"  width="2.5" height="9.5" fill="#D9461C"/>
+                  <line x1="1" y1="13" x2="15" y2="13" stroke="#0E2240" stroke-width="1"/>
+                </svg>
+              </div>
+              <span class="fav-label">16</span>
+            </div>
+            <div class="fav">
+              <div class="fav-cell fav-cell--24">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3"  y="13" width="3.5" height="6"  fill="#0E2240"/>
+                  <rect x="8.5" y="9"  width="3.5" height="10" fill="#0E2240"/>
+                  <rect x="14" y="3.5" width="3.5" height="15.5" fill="#D9461C"/>
+                  <line x1="1.5" y1="20" x2="22.5" y2="20" stroke="#0E2240" stroke-width="1.25"/>
+                </svg>
+              </div>
+              <span class="fav-label">24</span>
+            </div>
+            <div class="fav">
+              <div class="fav-cell fav-cell--32">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <rect x="3"  y="18" width="4" height="8"  fill="#0E2240"/>
+                  <rect x="9.5" y="13" width="4" height="13" fill="#0E2240"/>
+                  <rect x="16" y="5"  width="4" height="21" fill="#D9461C"/>
+                  <rect x="22.5" y="14" width="4" height="12" fill="#0E2240"/>
+                  <line x1="2" y1="27" x2="28" y2="27" stroke="#0E2240" stroke-width="1.25"/>
+                </svg>
+              </div>
+              <span class="fav-label">32</span>
+            </div>
+          </div>
+          <div class="frame-foot">
+            <span>at 16px the fourth bar drops — three survive + rule</span>
+            <span>thicker bars, tighter spacing</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="rationale">
+        <p><span class="dim" style="font-family:var(--font-mono);font-size:11px;letter-spacing:0.05em;">RATIONALE</span></p>
+        <p>The current concept, but observational instead of stepped. Heights <em>9 · 16 · 28 · 14</em> describe a real distribution — the kind of profile you'd see on an outright-winner chart with a favourite — not a four-step pyramid.</p>
+        <p>The baseline rule extends a hair past the last bar, the way an axis line does. That little bit of overhang is the whole detail: it tells you these are <em>data</em>, not decoration. At 38px the rule does its second job — it sits on the cap-line of <em>Odds Primer</em>, locking glyph and wordmark into one optical baseline.</p>
+        <p>Favicon test: at 16px the rightmost (shortest) bar collapses into noise, so it drops; three bars + the rule survive. The flame stays on the tallest bar, not the third.</p>
+        <p class="risk">Risk: lives in the same neighbourhood as every fintech chart logo. The escape is the irregularity and the rule — not a fourth bar.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DIRECTION 2 ============ (retired)
+  <section class="direction" data-screen-label="01b Typographic-only">
+    <div class="direction-head">
+      <div class="direction-num">02</div>
+      <h2 class="direction-title">Typographic-only wordmark</h2>
+      <div class="direction-tag">no glyph</div>
+    </div>
+
+    <div class="direction-body">
+      <div class="specimens">
+
+        <div class="frame frame--mast">
+          <span class="frame-label">Wordmark · three cuts</span>
+          <span class="frame-meta">A / B / C</span>
+
+          <!-- Cut A: Source Serif 4, with tied 'dd' -->
+          <div style="margin-top: 12px;">
+            <span class="wm-type">odds<span class="interpunct">·</span>primer</span>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--graphite-soft);margin-top:6px;letter-spacing:0;">A · Source Serif 4, all-lowercase, interpunct in flame</div>
+
+          <!-- Cut B: tightened Inter Tight -->
+          <div style="margin-top: 22px;">
+            <span class="wm-type-tight">Odds&nbsp;Primer</span>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--graphite-soft);margin-top:6px;letter-spacing:0;">B · Inter Tight 700, tracking −0.045em</div>
+
+          <!-- Cut C: italic Source Serif 4 -->
+          <div style="margin-top: 22px;">
+            <span class="wm-type-alt">Odds <em style="font-style:italic;">Primer</em></span>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--graphite-soft);margin-top:6px;letter-spacing:0;">C · Source Serif 4, italic 'Primer' (n+1 / Drift cut)</div>
+
+          <div class="frame-foot">
+            <span>three options for the masthead-only direction</span>
+            <span>no glyph</span>
+          </div>
+        </div>
+
+        <div class="frame">
+          <span class="frame-label">Favicon</span>
+          <span class="frame-meta">3 sizes</span>
+          <div class="favicons">
+            <!-- 16px: a single 'O' or 'op' lockup — the lowercase 'op' is the tightest -->
+            <div class="fav">
+              <div class="fav-cell fav-cell--16">
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <text x="8" y="13" text-anchor="middle"
+                        font-family="'Source Serif 4', Georgia, serif"
+                        font-weight="600" font-size="14"
+                        fill="#0E2240" letter-spacing="-0.06em">op</text>
+                </svg>
+              </div>
+              <span class="fav-label">16</span>
+            </div>
+            <div class="fav">
+              <div class="fav-cell fav-cell--24">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <text x="12" y="19" text-anchor="middle"
+                        font-family="'Source Serif 4', Georgia, serif"
+                        font-weight="600" font-size="20"
+                        fill="#0E2240" letter-spacing="-0.06em">op</text>
+                  <line x1="3" y1="21.5" x2="21" y2="21.5" stroke="#D9461C" stroke-width="1"/>
+                </svg>
+              </div>
+              <span class="fav-label">24</span>
+            </div>
+            <div class="fav">
+              <div class="fav-cell fav-cell--32">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <text x="16" y="25" text-anchor="middle"
+                        font-family="'Source Serif 4', Georgia, serif"
+                        font-weight="600" font-size="26"
+                        fill="#0E2240" letter-spacing="-0.06em">op</text>
+                  <line x1="4" y1="28.5" x2="28" y2="28.5" stroke="#D9461C" stroke-width="1.25"/>
+                </svg>
+              </div>
+              <span class="fav-label">32</span>
+            </div>
+          </div>
+          <div class="frame-foot">
+            <span>'op' lowercase — initials as a tied pair</span>
+            <span>flame appears at 24/32 as the rule</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="rationale">
+        <p><span class="dim" style="font-family:var(--font-mono);font-size:11px;letter-spacing:0.05em;">RATIONALE</span></p>
+        <p>The masthead <em>is</em> the brand. No glyph to age, no glyph to misuse, no glyph to redraw at 16px — just letterforms that earn the position. This is the Drift / n+1 / Penguin Modern Classics move: restraint reads as confidence.</p>
+        <p>Three cuts to test. <strong>A</strong> goes all-lowercase with an interpunct (the system separator already in use), in editorial serif — quiet, modern, magazine-y. <strong>B</strong> keeps the placeholder's sans tone but tightens the cut so it stops looking like a corporate logotype. <strong>C</strong> italicises 'Primer' the way a journal italicises a kicker — the most overtly literary.</p>
+        <p>Favicon crops to the wordmark's first character — a single lowercase <em>o</em> sitting on a flame hairline rule that quotes the masthead. Drawn fresh at each pixel size; not downscaled.</p>
+        <p class="risk">Risk: looks under-designed at first glance. Win condition: a real custom-cut detail (the tied <em>dd</em>, a swash <em>P</em>, an inktrap on the <em>m</em>) that you only notice at 38px+.</p>
+      </div>
+    </div>
+  </section>
+  ============ DIRECTION 2 retired ============ -->
+
+  <!-- ============ RECOMMENDATION ============ -->
+  <aside class="recommendation" data-screen-label="01z Recommendation">
+    <div>
+      <div class="eyebrow">Decision</div>
+      <h2>Direction 01 — probability bars, properly drawn.</h2>
+    </div>
+    <div class="body">
+      <p>The bars-glyph stays. The system rule is <em>charts are the imagery</em>, and a brand mark that <em>is</em> a chart — observed, not stepped — is the most direct expression of that rule. The irregular heights (9 · 16 · 28 · 14) and the rule that overhangs the last bar are the whole detail: they tell you these are data, not decoration.</p>
+      <p>The fintech-neighbourhood risk is real, but the escape is built in: irregularity, the overhanging axis, and the flame on the tallest bar (not the third). At 38px the rule sits on the cap-line of <em>Odds Primer</em> and locks glyph and wordmark into one optical baseline. At 16px the shortest bar drops; three bars and the rule survive.</p>
+      <p>Step 2 builds the eight artifacts on this direction — wordmark lockups, favicon set, masthead variants, dark-surface treatment.</p>
+    </div>
+  </aside>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Touchline — Brand Mockup</title>
+<style>
+  @page { size: A4 portrait; margin: 18mm 16mm; }
+  :root {
+    --bg:        #FFFFFF;
+    --ink:       #0B0B0B;
+    --ink-soft:  #2C2C2C;
+    --grass:     #1F4D2E;
+    --chalk:     #EFEFEA;
+    --accent:    #C9A227;
+    --line:      #D6D6D0;
+    --muted:     #6E6E66;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+  body { font-family: "Times New Roman", Times, Georgia, serif; line-height: 1.4; }
+  .sans { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+
+  /* MASTHEAD — broadsheet feel */
+  .masthead {
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding: 18px 0 10px; margin-bottom: 4px;
+    text-align: center; position: relative;
+  }
+  .masthead .preline {
+    font-family: -apple-system, sans-serif;
+    font-size: 8px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 6px;
+  }
+  .masthead .logo {
+    font-family: "Times New Roman", Times, serif; font-weight: 700;
+    font-style: italic; font-size: 44px; letter-spacing: 0.5px;
+    line-height: 1; color: var(--ink);
+  }
+  .masthead .strap {
+    font-family: -apple-system, sans-serif;
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--ink-soft); margin-top: 8px;
+  }
+  .masthead .strap em { color: var(--grass); font-style: normal; font-weight: 600; }
+  .meta-row {
+    border-bottom: 1px solid var(--ink); padding: 6px 0;
+    display: flex; justify-content: space-between;
+    font-family: -apple-system, sans-serif; font-size: 8px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--muted);
+  }
+
+  /* LABELS */
+  .label {
+    font-family: -apple-system, sans-serif;
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--grass); font-weight: 700;
+    margin: 18px 0 6px;
+  }
+
+  /* IDENTITY */
+  .identity { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 10px; }
+  .identity h2 {
+    font-family: "Times New Roman", serif; font-style: italic;
+    font-size: 30px; line-height: 1.05; font-weight: 700; letter-spacing: -0.3px;
+    margin: 4px 0 6px;
+  }
+  .identity p {
+    font-family: -apple-system, sans-serif;
+    font-size: 11px; color: var(--ink-soft); margin: 4px 0;
+  }
+
+  /* PALETTE */
+  .palette { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 22px; }
+  .swatch { height: 44px; border-radius: 1px; position: relative; }
+  .swatch span {
+    position: absolute; bottom: -14px; left: 0; right: 0; font-size: 8px;
+    color: var(--muted); text-align: center;
+    font-family: -apple-system, sans-serif;
+  }
+
+  /* TYPE */
+  .type-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+  .ts-serif-italic {
+    font-family: "Times New Roman", Times, serif;
+    font-style: italic; font-size: 28px; font-weight: 700; line-height: 1; letter-spacing: -0.4px;
+  }
+  .ts-sans-caps {
+    font-family: -apple-system, sans-serif;
+    font-size: 14px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+  }
+  .sm {
+    font-family: -apple-system, sans-serif;
+    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted); margin-top: 8px;
+  }
+
+  /* HERO — feature article look */
+  .hero {
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    padding: 16px 0 18px; margin-top: 8px;
+  }
+  .hero .kicker {
+    font-family: -apple-system, sans-serif;
+    font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--grass); font-weight: 700; margin-bottom: 8px;
+  }
+  .hero h1 {
+    font-family: "Times New Roman", serif; font-style: italic;
+    font-size: 30px; font-weight: 700; line-height: 1.05; letter-spacing: -0.5px;
+    margin: 0 0 10px; max-width: 95%;
+  }
+  .hero .byline {
+    font-family: -apple-system, sans-serif;
+    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px;
+  }
+  .hero .lede {
+    font-family: "Times New Roman", serif; font-size: 13px; line-height: 1.55;
+    color: var(--ink-soft); max-width: 92%;
+  }
+  .hero .dropcap {
+    font-size: 38px; font-weight: 700; line-height: 0.85;
+    color: var(--ink); padding-right: 4px; vertical-align: -3px;
+  }
+
+  /* CARDS */
+  .cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .card {
+    border-top: 2px solid var(--ink); padding: 10px 0 0;
+    display: flex; flex-direction: column; min-height: 130px;
+  }
+  .card .tag {
+    font-family: -apple-system, sans-serif;
+    font-size: 8px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--grass); font-weight: 700;
+  }
+  .card h3 {
+    font-family: "Times New Roman", serif; font-style: italic;
+    font-size: 16px; line-height: 1.15; margin: 6px 0 8px; font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+  .card p {
+    font-family: -apple-system, sans-serif;
+    font-size: 9.5px; line-height: 1.45; color: var(--ink-soft); margin: 0;
+  }
+  .card .footer {
+    margin-top: auto; padding-top: 8px;
+    font-family: -apple-system, sans-serif; font-size: 8px;
+    text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted);
+    display:flex; justify-content: space-between;
+    border-top: 1px solid var(--line);
+  }
+
+  /* RATIONALE */
+  .rationale {
+    margin-top: 16px; padding: 12px 14px;
+    background: var(--chalk); border-left: 3px solid var(--grass);
+    font-family: -apple-system, sans-serif; font-size: 10px;
+    color: var(--ink-soft); line-height: 1.5;
+  }
+  .rationale strong { color: var(--ink); }
+  .rationale .warn { color: #B5471B; font-weight: 700; }
+</style>
+</head>
+<body>
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="preline">Est. 2026 &nbsp;·&nbsp; Football, called from the side</div>
+    <div class="logo">The Touchline</div>
+    <div class="strap">Reading <em>football</em>, calling <em>the markets</em></div>
+  </div>
+  <div class="meta-row">
+    <span>Vol. 1 · No. 1</span>
+    <span>Brand mockup · v1</span>
+    <span>World Cup 2026</span>
+  </div>
+
+  <!-- IDENTITY -->
+  <div class="identity">
+    <div>
+      <div class="label">Positioning</div>
+      <h2>From the touchline.</h2>
+      <p>A football publication for fans who want to understand the markets the way pundits read the match. Editorial-first, written from the sideline, never from the betting slip.</p>
+    </div>
+    <div>
+      <div class="label">Voice</div>
+      <p style="font-size:12px; color:var(--ink); line-height:1.5; font-family: -apple-system, sans-serif;">Pundit-from-the-sideline. Observational, journalistic, slightly literary. Reads like a column you'd find in a Saturday football supplement.</p>
+      <p style="font-size:10px; color:var(--muted); margin-top:8px; font-family: -apple-system, sans-serif;"><em>"Touchline take," "from the touchline," "called from the line" — every piece is a vantage point.</em></p>
+    </div>
+  </div>
+
+  <!-- PALETTE -->
+  <div class="label">Palette</div>
+  <div class="palette">
+    <div class="swatch" style="background: var(--ink);"><span>Ink&nbsp;·&nbsp;#0B0B0B</span></div>
+    <div class="swatch" style="background: var(--bg); border: 1px solid var(--line);"><span>Paper&nbsp;·&nbsp;#FFFFFF</span></div>
+    <div class="swatch" style="background: var(--grass);"><span>Grass&nbsp;·&nbsp;#1F4D2E</span></div>
+    <div class="swatch" style="background: var(--accent);"><span>Brass&nbsp;·&nbsp;#C9A227</span></div>
+    <div class="swatch" style="background: var(--chalk); border: 1px solid var(--line);"><span>Chalk&nbsp;·&nbsp;#EFEFEA</span></div>
+  </div>
+
+  <!-- TYPE -->
+  <div class="label">Typography</div>
+  <div class="type-row">
+    <div>
+      <div class="ts-serif-italic">From the touchline</div>
+      <div class="sm">Display · Editorial serif italic (Cormorant / Times)</div>
+    </div>
+    <div>
+      <div class="ts-sans-caps">THE TOUCHLINE TAKE</div>
+      <div class="sm">UI · System sans, all caps, wide tracking</div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="label">Homepage Hero</div>
+  <div class="hero">
+    <div class="kicker">From the Touchline &nbsp;·&nbsp; Group F</div>
+    <h1>The book has Brazil too short. We have a different view.</h1>
+    <div class="byline">By the Touchline Desk &nbsp;·&nbsp; 4 min read</div>
+    <div class="lede"><span class="dropcap">T</span>hree matchdays from the knockouts, the markets are pricing Brazil as the most likely side to lift the cup. Watching them in the flesh tells a different story — one with more rhythm than ruthlessness, and a defence that looks short on options when it matters.</div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="label">Content Cards</div>
+  <div class="cards">
+    <div class="card">
+      <div class="tag">From the Touchline</div>
+      <h3>Argentina &ndash; France preview</h3>
+      <p>Why the second halves matter more than the lineups when reading this market.</p>
+      <div class="footer"><span>Preview</span><span>4 min</span></div>
+    </div>
+    <div class="card">
+      <div class="tag">Touchline Notes</div>
+      <h3>Three calls on Group B</h3>
+      <p>The under, the underdog, and the under-priced. A weekly column from the desk.</p>
+      <div class="footer"><span>Markets</span><span>3 min</span></div>
+    </div>
+    <div class="card">
+      <div class="tag">The Take</div>
+      <h3>The Mbappé question</h3>
+      <p>The top scorer market is rewarding hype. We argue why the books are wrong.</p>
+      <div class="footer"><span>Players</span><span>5 min</span></div>
+    </div>
+  </div>
+
+  <!-- RATIONALE -->
+  <div class="rationale">
+    <strong>Why this brand.</strong> "The Touchline" reads as a publication first, brand second — broadsheet typography, editorial italic masthead, grass-and-brass palette nods to a stadium without screaming football. Tone is closer to a Saturday supplement column than a betting feed, which is exactly the educational position we want. <span class="warn">Major caveat:</span> a competing football media brand <em>The Touchline</em> already operates with ~1.5M followers on X (@TouchlineX, thetouchline.co.uk), plus a separate newsletter at thetouchline.co. Brand collision risk is real and the .com / strong domain situation is poor. This brand wears beautifully but you'd be sharing a name with a much bigger incumbent in the same vertical.
+  </div>
+
+</body>
+</html>

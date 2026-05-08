@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bars · Iterations · Odds Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700;8..60,900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF7F0;
+    --paper-2: #F2EDE0;
+    --ink: #0E2240;
+    --ink-soft: #3D4F6A;
+    --rule: #D9D2BE;
+    --flame: #D9461C;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body { font-family: var(--serif); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+
+  .page { max-width: 1240px; margin: 0 auto; padding: 48px 36px 96px; }
+
+  .eyebrow {
+    font-family: var(--sans); font-weight: 500;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 6px;
+  }
+  h1.page-title {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 32px; line-height: 1.15; letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+  .page-sub {
+    max-width: 64ch; font-size: 14.5px;
+    color: var(--ink-soft); margin: 0 0 36px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+
+  .cell {
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 24px 24px 20px;
+    display: flex; flex-direction: column;
+  }
+
+  .cell-head {
+    display: flex; align-items: baseline; gap: 12px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 10px; margin-bottom: 18px;
+  }
+  .cell-id {
+    font-family: var(--mono); font-weight: 500;
+    font-size: 12px; color: var(--flame);
+    letter-spacing: 0.06em;
+  }
+  .cell-name {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 17px; line-height: 1.2;
+    margin: 0;
+  }
+  .cell-bet {
+    font-family: var(--sans); font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: 4px 0 16px;
+  }
+
+  .stage {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 96px;
+    padding: 12px;
+    background: var(--paper);
+    border: 1px dashed var(--rule);
+    margin-bottom: 14px;
+  }
+
+  .strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--rule);
+    margin-bottom: 14px;
+  }
+  .strip-half {
+    padding: 14px 16px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 14px;
+    min-height: 64px;
+  }
+  .strip-half + .strip-half { border-left: 1px solid var(--rule); }
+  .strip-half.dark { background: var(--ink); }
+  .strip-half .lbl {
+    font-family: var(--mono); font-size: 9.5px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .strip-half.dark .lbl { color: #8FA0BD; }
+
+  .lock {
+    display: inline-flex; align-items: center; gap: 12px;
+  }
+  .lock-stack {
+    display: inline-flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .word {
+    font-family: var(--sans); font-weight: 700;
+    letter-spacing: -0.01em; color: var(--ink);
+    font-size: 26px;
+  }
+  .word-sm {
+    font-family: var(--sans); font-weight: 600;
+    font-size: 9px; letter-spacing: 0.24em;
+    text-transform: uppercase; color: var(--ink);
+  }
+  .strip-half.dark .word, .strip-half.dark .word-sm { color: var(--paper); }
+
+  .colophon-row {
+    font-family: var(--mono); font-size: 9px;
+    color: var(--ink-soft);
+    letter-spacing: 0.12em;
+    margin-top: 4px;
+    text-align: center;
+  }
+
+  .note {
+    font-family: var(--sans); font-size: 11.5px;
+    color: var(--ink-soft);
+    border-top: 1px dashed var(--rule);
+    padding-top: 10px;
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 4px 10px;
+  }
+  .note b { color: var(--ink); font-weight: 600; }
+
+  /* page footer */
+  footer.colophon {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--ink);
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex; justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <p class="eyebrow">Odds Primer · Brand · Direction A</p>
+  <h1 class="page-title">Bars — six iterations on the chart-as-mark</h1>
+  <p class="page-sub">Each cell asks one question. All share: cream paper, navy ink, dustier flame as the single accent. Pick the one (or two) you want to combine.</p>
+
+  <div class="grid">
+
+    <!-- ============================================
+         A0 — Control (the one you already have)
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">A0</span>
+        <h3 class="cell-name">Control · current draft</h3>
+      </div>
+      <p class="cell-bet">4 bars on baseline rule, flame bar overscored. The starting point.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <svg viewBox="0 0 56 44" width="64" height="50" aria-hidden="true">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="1.25"/>
+            <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+            <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+            <line x1="24" y1="4" x2="34" y2="4" stroke="#D9461C" stroke-width="1.25"/>
+            <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="word">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-half">
+          <svg viewBox="0 0 56 44" width="36" height="28">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+            <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+            <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <svg viewBox="0 0 56 44" width="18" height="14">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="2.5"/>
+            <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+            <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+            <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="lbl">32 / 16</span>
+        </div>
+        <div class="strip-half dark">
+          <svg viewBox="0 0 56 44" width="46" height="36">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#FAF7F0" stroke-width="1.25"/>
+            <rect x="6"  y="26" width="6" height="14" fill="#FAF7F0"/>
+            <rect x="16" y="18" width="6" height="22" fill="#FAF7F0"/>
+            <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+            <line x1="24" y1="4" x2="34" y2="4" stroke="#D9461C" stroke-width="1.25"/>
+            <rect x="36" y="22" width="6" height="18" fill="#FAF7F0"/>
+          </svg>
+          <span class="word" style="font-size:18px;">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Asks</b><span>The baseline reference. What we're iterating against.</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         A1 — Sparkline crown
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">A1</span>
+        <h3 class="cell-name">Sparkline crown</h3>
+      </div>
+      <p class="cell-bet">Bars + a connecting line dotting their tops. Marries the system's two main visual elements: bars and sparklines.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <svg viewBox="0 0 56 44" width="64" height="50" aria-hidden="true">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="1.25"/>
+            <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+            <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+            <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+            <!-- crown line -->
+            <polyline points="9,26 19,18 29,6 39,22" fill="none" stroke="#0E2240" stroke-width="1" stroke-linejoin="round" opacity="0.55"/>
+            <circle cx="9"  cy="26" r="1.6" fill="#0E2240"/>
+            <circle cx="19" cy="18" r="1.6" fill="#0E2240"/>
+            <circle cx="29" cy="6"  r="2"   fill="#D9461C"/>
+            <circle cx="39" cy="22" r="1.6" fill="#0E2240"/>
+          </svg>
+          <span class="word">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-half">
+          <svg viewBox="0 0 56 44" width="36" height="28">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+            <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+            <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+            <polyline points="9,26 19,18 29,6 39,22" fill="none" stroke="#0E2240" stroke-width="1.25"/>
+            <circle cx="29" cy="6" r="2.2" fill="#D9461C"/>
+          </svg>
+          <svg viewBox="0 0 56 44" width="18" height="14">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="2.5"/>
+            <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+            <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+            <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+            <circle cx="29" cy="6" r="3" fill="#D9461C"/>
+          </svg>
+          <span class="lbl">32 / 16</span>
+        </div>
+        <div class="strip-half dark">
+          <svg viewBox="0 0 56 44" width="46" height="36">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#FAF7F0" stroke-width="1.25"/>
+            <rect x="6"  y="26" width="6" height="14" fill="#FAF7F0"/>
+            <rect x="16" y="18" width="6" height="22" fill="#FAF7F0"/>
+            <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+            <rect x="36" y="22" width="6" height="18" fill="#FAF7F0"/>
+            <polyline points="9,26 19,18 29,6 39,22" fill="none" stroke="#FAF7F0" stroke-width="1" opacity="0.55"/>
+            <circle cx="29" cy="6" r="2" fill="#D9461C"/>
+          </svg>
+          <span class="word" style="font-size:18px;">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Asks</b><span>Does the crown line make it more proprietary, or noisier at small sizes?</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         A2 — Caret indicator (best-price gesture)
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">A2</span>
+        <h3 class="cell-name">Caret indicator</h3>
+      </div>
+      <p class="cell-bet">A small flame caret pointing down at the flame bar — same gesture the product uses to mark "best price." The mark literally <em>says</em> what we do.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <svg viewBox="0 0 56 50" width="64" height="56" aria-hidden="true">
+            <!-- caret -->
+            <polygon points="26,0 32,0 29,4" fill="#D9461C"/>
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="24" width="6" height="22" fill="#0E2240"/>
+            <rect x="26" y="10" width="6" height="36" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="word">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-half">
+          <svg viewBox="0 0 56 50" width="38" height="33">
+            <polygon points="26,0 32,0 29,4" fill="#D9461C"/>
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="24" width="6" height="22" fill="#0E2240"/>
+            <rect x="26" y="10" width="6" height="36" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <svg viewBox="0 0 56 50" width="18" height="16">
+            <polygon points="25,0 33,0 29,5" fill="#D9461C"/>
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="3"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="24" width="6" height="22" fill="#0E2240"/>
+            <rect x="26" y="10" width="6" height="36" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="lbl">32 / 16</span>
+        </div>
+        <div class="strip-half dark">
+          <svg viewBox="0 0 56 50" width="48" height="42">
+            <polygon points="26,0 32,0 29,4" fill="#D9461C"/>
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#FAF7F0" stroke-width="1.25"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#FAF7F0"/>
+            <rect x="16" y="24" width="6" height="22" fill="#FAF7F0"/>
+            <rect x="26" y="10" width="6" height="36" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#FAF7F0"/>
+          </svg>
+          <span class="word" style="font-size:18px;">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Asks</b><span>Does the caret read as "we mark the best price" or as a stray accent?</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         A3 — Ladder rungs
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">A3</span>
+        <h3 class="cell-name">Ladder rungs</h3>
+      </div>
+      <p class="cell-bet">Each bar gets a horizontal cap — like rungs of an odds ladder. Native to the betting/markets register without being casino-loud.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <svg viewBox="0 0 56 44" width="64" height="50" aria-hidden="true">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="1.25"/>
+            <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+            <rect x="3"  y="24" width="12" height="2" fill="#0E2240"/>
+            <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+            <rect x="13" y="16" width="12" height="2" fill="#0E2240"/>
+            <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+            <rect x="23" y="4"  width="12" height="2" fill="#D9461C"/>
+            <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+            <rect x="33" y="20" width="12" height="2" fill="#0E2240"/>
+          </svg>
+          <span class="word">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-half">
+          <svg viewBox="0 0 56 44" width="36" height="28">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+            <rect x="3"  y="24" width="12" height="2" fill="#0E2240"/>
+            <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+            <rect x="13" y="16" width="12" height="2" fill="#0E2240"/>
+            <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+            <rect x="23" y="4"  width="12" height="2" fill="#D9461C"/>
+            <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+            <rect x="33" y="20" width="12" height="2" fill="#0E2240"/>
+          </svg>
+          <svg viewBox="0 0 56 44" width="18" height="14">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="3"/>
+            <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+            <rect x="3"  y="22" width="12" height="3" fill="#0E2240"/>
+            <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+            <rect x="13" y="14" width="12" height="3" fill="#0E2240"/>
+            <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+            <rect x="23" y="2"  width="12" height="3" fill="#D9461C"/>
+            <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+            <rect x="33" y="18" width="12" height="3" fill="#0E2240"/>
+          </svg>
+          <span class="lbl">32 / 16</span>
+        </div>
+        <div class="strip-half dark">
+          <svg viewBox="0 0 56 44" width="46" height="36">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#FAF7F0" stroke-width="1.25"/>
+            <rect x="6"  y="26" width="6" height="14" fill="#FAF7F0"/>
+            <rect x="3"  y="24" width="12" height="2" fill="#FAF7F0"/>
+            <rect x="16" y="18" width="6" height="22" fill="#FAF7F0"/>
+            <rect x="13" y="16" width="12" height="2" fill="#FAF7F0"/>
+            <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+            <rect x="23" y="4"  width="12" height="2" fill="#D9461C"/>
+            <rect x="36" y="22" width="6" height="18" fill="#FAF7F0"/>
+            <rect x="33" y="20" width="12" height="2" fill="#FAF7F0"/>
+          </svg>
+          <span class="word" style="font-size:18px;">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Asks</b><span>Do the caps add information, or just clutter the silhouette at favicon size?</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         A4 — Trio (three stocky bars)
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">A4</span>
+        <h3 class="cell-name">Trio · stocky weight</h3>
+      </div>
+      <p class="cell-bet">Three wider bars instead of four. Heavier weight, more iconic — reads less "analytics dashboard," more "civic monument." Survives at 16px.</p>
+
+      <div class="stage">
+        <div class="lock">
+          <svg viewBox="0 0 48 44" width="58" height="52" aria-hidden="true">
+            <line x1="2" y1="40" x2="46" y2="40" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="5"  y="22" width="10" height="18" fill="#0E2240"/>
+            <rect x="19" y="6"  width="10" height="34" fill="#D9461C"/>
+            <rect x="33" y="16" width="10" height="24" fill="#0E2240"/>
+          </svg>
+          <span class="word">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-half">
+          <svg viewBox="0 0 48 44" width="34" height="31">
+            <line x1="2" y1="40" x2="46" y2="40" stroke="#0E2240" stroke-width="1.75"/>
+            <rect x="5"  y="22" width="10" height="18" fill="#0E2240"/>
+            <rect x="19" y="6"  width="10" height="34" fill="#D9461C"/>
+            <rect x="33" y="16" width="10" height="24" fill="#0E2240"/>
+          </svg>
+          <svg viewBox="0 0 48 44" width="17" height="15">
+            <line x1="2" y1="40" x2="46" y2="40" stroke="#0E2240" stroke-width="3"/>
+            <rect x="5"  y="22" width="10" height="18" fill="#0E2240"/>
+            <rect x="19" y="6"  width="10" height="34" fill="#D9461C"/>
+            <rect x="33" y="16" width="10" height="24" fill="#0E2240"/>
+          </svg>
+          <span class="lbl">32 / 16</span>
+        </div>
+        <div class="strip-half dark">
+          <svg viewBox="0 0 48 44" width="44" height="40">
+            <line x1="2" y1="40" x2="46" y2="40" stroke="#FAF7F0" stroke-width="1.5"/>
+            <rect x="5"  y="22" width="10" height="18" fill="#FAF7F0"/>
+            <rect x="19" y="6"  width="10" height="34" fill="#D9461C"/>
+            <rect x="33" y="16" width="10" height="24" fill="#FAF7F0"/>
+          </svg>
+          <span class="word" style="font-size:18px;">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Asks</b><span>Does fewer-and-fatter make it more iconic, or lose the chart-pattern read?</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         A5 — Meaningful heights
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">A5</span>
+        <h3 class="cell-name">Meaningful heights</h3>
+      </div>
+      <p class="cell-bet">Bar heights are real probability values: 22 · 38 · 65 · 30. The colophon shows them in mono. The mark is not arbitrary — it's a market.</p>
+
+      <div class="stage">
+        <div class="lock-stack">
+          <div class="lock">
+            <svg viewBox="0 0 56 44" width="64" height="50" aria-hidden="true">
+              <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="1.25"/>
+              <!-- heights: 22→13, 38→22, 65→33, 30→17 -->
+              <rect x="6"  y="27" width="6" height="13" fill="#0E2240"/>
+              <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+              <rect x="26" y="7"  width="6" height="33" fill="#D9461C"/>
+              <rect x="36" y="23" width="6" height="17" fill="#0E2240"/>
+            </svg>
+            <span class="word">Odds Primer</span>
+          </div>
+          <div class="colophon-row">22 · 38 · <span style="color:#D9461C; font-weight:500;">65</span> · 30</div>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-half">
+          <svg viewBox="0 0 56 44" width="36" height="28">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="27" width="6" height="13" fill="#0E2240"/>
+            <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+            <rect x="26" y="7"  width="6" height="33" fill="#D9461C"/>
+            <rect x="36" y="23" width="6" height="17" fill="#0E2240"/>
+          </svg>
+          <svg viewBox="0 0 56 44" width="18" height="14">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="2.5"/>
+            <rect x="6"  y="27" width="6" height="13" fill="#0E2240"/>
+            <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+            <rect x="26" y="7"  width="6" height="33" fill="#D9461C"/>
+            <rect x="36" y="23" width="6" height="17" fill="#0E2240"/>
+          </svg>
+          <span class="lbl">32 / 16</span>
+        </div>
+        <div class="strip-half dark">
+          <svg viewBox="0 0 56 44" width="46" height="36">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#FAF7F0" stroke-width="1.25"/>
+            <rect x="6"  y="27" width="6" height="13" fill="#FAF7F0"/>
+            <rect x="16" y="18" width="6" height="22" fill="#FAF7F0"/>
+            <rect x="26" y="7"  width="6" height="33" fill="#D9461C"/>
+            <rect x="36" y="23" width="6" height="17" fill="#FAF7F0"/>
+          </svg>
+          <span class="word" style="font-size:18px;">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Asks</b><span>The colophon row is the proprietary move — does it elevate the mark or distract from it?</span>
+      </div>
+    </div>
+
+    <!-- ============================================
+         A6 — Stacked colophon
+         ============================================ -->
+    <div class="cell">
+      <div class="cell-head">
+        <span class="cell-id">A6</span>
+        <h3 class="cell-name">Stacked · colophon</h3>
+      </div>
+      <p class="cell-bet">Glyph above, "ODDS PRIMER" small-caps below. Reads as a publisher's stamp, not a tech logo. Best for footer / about / venue handoff card.</p>
+
+      <div class="stage">
+        <div class="lock-stack">
+          <svg viewBox="0 0 56 44" width="74" height="58" aria-hidden="true">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="1.25"/>
+            <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+            <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+            <line x1="24" y1="4" x2="34" y2="4" stroke="#D9461C" stroke-width="1.25"/>
+            <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="word-sm" style="font-size:11px; letter-spacing:0.32em;">Odds Primer</span>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-half">
+          <div class="lock-stack">
+            <svg viewBox="0 0 56 44" width="40" height="32">
+              <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="1.5"/>
+              <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+              <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+              <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+            </svg>
+          </div>
+          <svg viewBox="0 0 56 44" width="18" height="14">
+            <line x1="2" y1="40" x2="54" y2="40" stroke="#0E2240" stroke-width="2.5"/>
+            <rect x="6"  y="26" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="18" width="6" height="22" fill="#0E2240"/>
+            <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+            <rect x="36" y="22" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="lbl">32 / 16</span>
+        </div>
+        <div class="strip-half dark">
+          <div class="lock-stack">
+            <svg viewBox="0 0 56 44" width="44" height="34">
+              <line x1="2" y1="40" x2="54" y2="40" stroke="#FAF7F0" stroke-width="1.25"/>
+              <rect x="6"  y="26" width="6" height="14" fill="#FAF7F0"/>
+              <rect x="16" y="18" width="6" height="22" fill="#FAF7F0"/>
+              <rect x="26" y="6"  width="6" height="34" fill="#D9461C"/>
+              <line x1="24" y1="4" x2="34" y2="4" stroke="#D9461C" stroke-width="1.25"/>
+              <rect x="36" y="22" width="6" height="18" fill="#FAF7F0"/>
+            </svg>
+            <span class="word-sm" style="font-size:9px; letter-spacing:0.3em; color:var(--paper);">Odds Primer</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Asks</b><span>Should the masthead use stacked or inline? Stacked feels more publication, inline more product.</span>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="colophon">
+    <span>Odds Primer · Brand · Bars iterations · v0.2</span>
+    <span>1 control + 6 iterations</span>
+  </footer>
+
+</div>
+</body>
+</html>

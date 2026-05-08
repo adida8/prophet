@@ -11,3 +11,7 @@ node_modules/
 .claude/
 
 data/*.db
+
+# Office app lockfiles (LibreOffice / Excel)
+.~lock.*#
+~$*

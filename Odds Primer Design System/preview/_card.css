@@ -1,0 +1,37 @@
+/* Card-shared styles for preview/*.html */
+@import url('../colors_and_type.css');
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+}
+
+.card {
+  width: 700px;
+  padding: 24px 28px;
+  background: var(--paper);
+  font-family: var(--font-sans);
+  color: var(--ink);
+  box-sizing: border-box;
+}
+
+.card-pure {
+  background: var(--paper-pure);
+}
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--graphite-soft);
+}
+
+.row { display: flex; gap: 12px; align-items: center; }
+.col { display: flex; flex-direction: column; gap: 12px; }
+.tabular { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.serif { font-family: var(--font-serif); }
+.sans { font-family: var(--font-sans); }

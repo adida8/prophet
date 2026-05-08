@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Scout — Brand Mockup</title>
+<style>
+  @page { size: A4 portrait; margin: 18mm 16mm; }
+  :root {
+    --bg:        #F5F4EE;
+    --ink:       #1B2419;
+    --ink-soft:  #3A4A36;
+    --moss:      #4F5D3F;
+    --signal:    #C24F2A;
+    --line:      #B7B6A8;
+    --muted:     #6B7165;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+  body { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; line-height: 1.4; }
+  .mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
+
+  /* MASTHEAD */
+  .masthead {
+    border-top: 6px double var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding: 14px 0 12px; margin-bottom: 6px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo-block { display: flex; align-items: center; gap: 10px; }
+  .reticle {
+    width: 28px; height: 28px; border: 1.5px solid var(--ink); border-radius: 50%;
+    position: relative; flex-shrink: 0;
+  }
+  .reticle::before, .reticle::after {
+    content: ''; position: absolute; background: var(--ink);
+  }
+  .reticle::before { top: 50%; left: -4px; right: -4px; height: 1px; }
+  .reticle::after  { left: 50%; top: -4px; bottom: -4px; width: 1px; }
+  .reticle .dot {
+    position: absolute; top: 50%; left: 50%;
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--signal); transform: translate(-50%, -50%);
+  }
+  .logo {
+    font-family: -apple-system, sans-serif;
+    font-weight: 800; font-size: 24px; letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+  .logo .article {
+    font-weight: 400; letter-spacing: 2px; color: var(--moss); font-size: 16px; margin-right: 4px;
+  }
+  .meta { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--moss); }
+
+  /* LABELS */
+  .label {
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--signal); font-weight: 700;
+    margin: 18px 0 6px;
+  }
+
+  /* IDENTITY */
+  .identity { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 10px; }
+  .identity h2 {
+    font-size: 30px; line-height: 1.05; font-weight: 800; letter-spacing: -0.4px;
+    margin: 4px 0 6px; text-transform: uppercase;
+  }
+  .identity p { font-size: 11px; color: var(--ink-soft); margin: 4px 0; }
+
+  /* PALETTE */
+  .palette { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .swatch { height: 44px; border-radius: 1px; position: relative; }
+  .swatch span {
+    position: absolute; bottom: -14px; left: 0; right: 0; font-size: 8px;
+    color: var(--muted); text-align: center;
+  }
+
+  /* TYPE */
+  .type-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+  .ts-display { font-size: 28px; font-weight: 800; letter-spacing: -0.3px; line-height: 1; text-transform: uppercase;}
+  .ts-mono { font-family: ui-monospace, Menlo, monospace; font-size: 14px; line-height: 1.4; }
+  .sm { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
+
+  /* HERO — scout report aesthetic */
+  .hero {
+    background: white; border: 1px solid var(--line); padding: 18px 20px 20px; margin-top: 8px;
+    border-left: 4px solid var(--moss);
+  }
+  .hero .stamp {
+    display: inline-block; font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: white; background: var(--moss); padding: 3px 8px; font-weight: 700;
+  }
+  .hero h1 {
+    font-size: 24px; font-weight: 800; line-height: 1.1; margin: 10px 0 8px;
+    text-transform: uppercase; letter-spacing: -0.3px;
+  }
+  .hero .meta-row {
+    display: flex; gap: 16px; font-family: ui-monospace, Menlo, monospace;
+    font-size: 10px; color: var(--ink-soft); margin-top: 8px;
+    border-top: 1px dashed var(--line); padding-top: 10px;
+  }
+  .hero .meta-row .k { color: var(--moss); font-weight: 700; }
+  .hero .lede { font-size: 11px; line-height: 1.5; color: var(--ink-soft); max-width: 95%; }
+
+  /* CARDS */
+  .cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .card {
+    background: white; border: 1px solid var(--line); padding: 12px;
+    min-height: 130px; display: flex; flex-direction: column;
+    border-top: 3px solid var(--moss);
+  }
+  .card .tag {
+    font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--moss); font-weight: 700;
+  }
+  .card h3 {
+    font-size: 14px; font-weight: 800; text-transform: uppercase;
+    line-height: 1.15; margin: 6px 0 8px; letter-spacing: -0.1px;
+  }
+  .card p { font-size: 9.5px; line-height: 1.45; color: var(--ink-soft); margin: 0; }
+  .card .footer {
+    margin-top: auto; padding-top: 8px;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 8px; color: var(--muted);
+    border-top: 1px solid var(--line); display: flex; justify-content: space-between;
+  }
+
+  /* RATIONALE */
+  .rationale {
+    margin-top: 16px; padding: 12px 14px;
+    background: white; border-left: 3px solid var(--signal);
+    font-size: 10px; color: var(--ink-soft); line-height: 1.5;
+  }
+  .rationale strong { color: var(--ink); }
+</style>
+</head>
+<body>
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="logo-block">
+      <div class="reticle"><div class="dot"></div></div>
+      <div class="logo"><span class="article">THE</span>SCOUT</div>
+    </div>
+    <div class="meta">brand mockup &nbsp;·&nbsp; v1 &nbsp;·&nbsp; wc 2026</div>
+  </div>
+
+  <!-- IDENTITY -->
+  <div class="identity">
+    <div>
+      <div class="label">Positioning</div>
+      <h2>Eyes on the game.<br>Eyes on the odds.</h2>
+      <p>A football scout's report on the markets. We file scout reports — on teams, fixtures, and the prices the books are putting on them — for fans who want to read more than just the line.</p>
+    </div>
+    <div>
+      <div class="label">Voice</div>
+      <p style="font-size:12px; color:var(--ink); line-height:1.5;">Observational. Evaluative. The voice of someone with a notebook on the touchline making notes for the match-day briefing.</p>
+      <p style="font-size:10px; color:var(--muted); margin-top:8px;"><em>"Scouted" is the verb. Each fixture gets a scout report. Each market gets a scout's call.</em></p>
+    </div>
+  </div>
+
+  <!-- PALETTE -->
+  <div class="label">Palette</div>
+  <div class="palette" style="margin-bottom: 22px;">
+    <div class="swatch" style="background: var(--ink);"><span>Ink&nbsp;·&nbsp;#1B2419</span></div>
+    <div class="swatch" style="background: var(--moss);"><span>Moss&nbsp;·&nbsp;#4F5D3F</span></div>
+    <div class="swatch" style="background: var(--bg); border: 1px solid var(--line);"><span>Stone&nbsp;·&nbsp;#F5F4EE</span></div>
+    <div class="swatch" style="background: var(--signal);"><span>Signal&nbsp;·&nbsp;#C24F2A</span></div>
+    <div class="swatch" style="background: var(--line);"><span>Rule&nbsp;·&nbsp;#B7B6A8</span></div>
+  </div>
+
+  <!-- TYPE -->
+  <div class="label">Typography</div>
+  <div class="type-row">
+    <div>
+      <div class="ts-display">SCOUT REPORT</div>
+      <div style="font-size:11px; margin-top:8px; line-height:1.4;">Heavy condensed sans for headers. Reads like a tactical briefing, not a tipster.</div>
+      <div class="sm">Display · Inter Black / Helvetica condensed</div>
+    </div>
+    <div>
+      <div class="ts-mono">FIX. 14 · BRA v ARG · 21:00</div>
+      <div class="ts-mono" style="font-size:11px; margin-top:6px; color:var(--ink-soft);">spread −115 / +130 / +220</div>
+      <div class="sm">Data · ui-mono / Menlo / IBM Plex Mono</div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="label">Homepage Hero</div>
+  <div class="hero">
+    <div class="stamp">Scout Report &nbsp;·&nbsp; Group F</div>
+    <h1>Brazil's path to the final, scouted.</h1>
+    <div class="lede">Three things the markets are missing about Tite's side, what to back, what to fade, and where the value sits in the futures markets ahead of Matchday Two.</div>
+    <div class="meta-row">
+      <span><span class="k">FIX</span> 14 · BRA v ARG</span>
+      <span><span class="k">CALL</span> Argentina +130</span>
+      <span><span class="k">CONF</span> medium</span>
+      <span><span class="k">EDGE</span> +4.2%</span>
+    </div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="label">Content Cards</div>
+  <div class="cards">
+    <div class="card">
+      <div class="tag">Scout Report</div>
+      <h3>Group D, scouted</h3>
+      <p>Three lines worth a closer look in Group D before Matchday Two — and one to leave on the shelf.</p>
+      <div class="footer"><span>Markets</span><span>5 min</span></div>
+    </div>
+    <div class="card">
+      <div class="tag">Pre-Match</div>
+      <h3>England v USA, brief</h3>
+      <p>What the lineup tells you about the game state — and why the under is the better-priced side.</p>
+      <div class="footer"><span>Preview</span><span>3 min</span></div>
+    </div>
+    <div class="card">
+      <div class="tag">The Call</div>
+      <h3>Mbappé vs Haaland</h3>
+      <p>The scout's call on the WC top scorer market: who's mispriced and why the books are leaning the wrong way.</p>
+      <div class="footer"><span>Players</span><span>4 min</span></div>
+    </div>
+  </div>
+
+  <!-- RATIONALE -->
+  <div class="rationale">
+    <strong>Why this brand.</strong> Scouting culture in football is its own register — observational, evaluative, written down in notebooks. <em>The Scout</em> positions us as the fan with the better eye, not the gambler with the better tip. Reticle motif + scout-report stamp give the visual identity a recognisable structure across every piece of content. <strong>Caveat:</strong> the football "scout" space is crowded — Scouted, FM Scout, Scout.com legacy — and the brand would have to fight for SEO oxygen against existing publications.
+  </div>
+
+</body>
+</html>

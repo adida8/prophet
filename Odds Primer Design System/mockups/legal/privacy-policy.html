@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy policy — Odds Primer</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  body { padding: 48px 0 96px; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter-page); }
+
+  /* ---------- masthead (matches fixtures-board) ---------- */
+  .masthead {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;
+    border-top: 2px solid var(--ink); border-bottom: var(--hairline);
+    padding: 14px 0 12px; margin-bottom: 28px;
+    gap: 24px;
+  }
+  .masthead .left  { font-family: var(--font-serif); font-size: 18px; font-weight: 800; letter-spacing: -0.012em; color: var(--ink); }
+  .masthead .center { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft); text-align: center; }
+  .masthead .right { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft); text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* ---------- title block ---------- */
+  .title-block {
+    display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 56px; margin-bottom: 36px; align-items: end;
+  }
+  .h-eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-bottom: 8px;
+  }
+  h1.title {
+    font-family: var(--font-serif); font-size: clamp(40px, 4.6vw, 60px);
+    font-weight: 600; line-height: 1.04; letter-spacing: -0.02em;
+    margin: 0 0 14px; color: var(--ink); text-wrap: balance;
+  }
+  .deck {
+    font-family: var(--font-serif); font-size: 16px; line-height: 1.55;
+    color: var(--ink); margin: 0; max-width: 56ch;
+  }
+  .deck em { color: var(--flame); font-style: normal; font-weight: 600; }
+
+  /* ---------- placeholder banner ---------- */
+  .placeholder-banner {
+    background: var(--paper-warm);
+    border-top: 2px solid var(--flame); border-bottom: var(--hairline);
+    padding: 16px 20px; margin: 0 0 40px;
+    display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: baseline;
+  }
+  .placeholder-banner .tag {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--flame-deep);
+    white-space: nowrap;
+  }
+  .placeholder-banner .msg {
+    font-family: var(--font-serif); font-style: italic; font-size: 14px;
+    color: var(--graphite); line-height: 1.5;
+  }
+
+  /* ---------- meta strip (effective dates) ---------- */
+  .meta-strip {
+    border-top: var(--hairline); border-bottom: var(--hairline);
+    padding: 12px 0; margin-bottom: 40px;
+    display: flex; gap: 36px; flex-wrap: wrap;
+  }
+  .meta-strip .item { display: flex; flex-direction: column; gap: 2px; }
+  .meta-strip .lbl {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .meta-strip .val {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 13px; color: var(--ink);
+  }
+
+  /* ---------- two-column body ---------- */
+  .body-grid {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 64px;
+    align-items: start;
+  }
+
+  /* ---------- left: section index ---------- */
+  .toc {
+    position: sticky; top: 32px;
+    border-top: 2px solid var(--ink);
+    padding-top: 14px;
+  }
+  .toc .lbl {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-bottom: 14px;
+  }
+  .toc ol {
+    list-style: none; padding: 0; margin: 0;
+    counter-reset: toc;
+  }
+  .toc li {
+    counter-increment: toc;
+    border-top: var(--hairline);
+    padding: 8px 0;
+    font-family: var(--font-sans); font-size: 13px; line-height: 1.35;
+  }
+  .toc li:last-child { border-bottom: var(--hairline); }
+  .toc li a {
+    text-decoration: none; color: var(--ink);
+    display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: baseline;
+  }
+  .toc li a::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+    color: var(--graphite-soft); letter-spacing: 0.04em;
+  }
+  .toc li a:hover { color: var(--flame-deep); }
+  .toc li a:hover::before { color: var(--flame); }
+
+  /* ---------- right: prose body ---------- */
+  .prose {
+    font-family: var(--font-serif);
+    font-size: 17px; line-height: 1.6;
+    color: var(--ink);
+    max-width: 64ch;
+  }
+  .prose .lede {
+    font-size: 19px; line-height: 1.55;
+    color: var(--ink); margin: 0 0 32px;
+    border-left: 2px solid var(--flame);
+    padding-left: 18px;
+  }
+  .prose section { margin-bottom: 44px; }
+  .prose section:last-child { margin-bottom: 0; }
+  .prose h2 {
+    font-family: var(--font-serif); font-size: 24px; font-weight: 600;
+    line-height: 1.2; letter-spacing: -0.005em; color: var(--ink);
+    margin: 0 0 4px;
+    display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: baseline;
+  }
+  .prose h2::before {
+    content: attr(data-num);
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 12px; font-weight: 500; color: var(--flame);
+    letter-spacing: 0.04em;
+  }
+  .prose .h-rule { border-top: var(--hairline); margin: 14px 0 18px; }
+  .prose h3 {
+    font-family: var(--font-sans); font-size: 14px; font-weight: 700;
+    color: var(--ink); margin: 22px 0 6px;
+  }
+  .prose p { margin: 0 0 14px; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose ul {
+    margin: 0 0 16px; padding-left: 22px;
+    font-family: var(--font-serif);
+  }
+  .prose ul li { margin-bottom: 6px; }
+  .prose ul li::marker { color: var(--flame); }
+  .prose strong { font-weight: 600; color: var(--ink); }
+  .prose em { font-style: italic; }
+  .prose .pl {
+    /* placeholder bracketed value */
+    font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+    color: var(--flame-deep); background: var(--flame-tint);
+    padding: 1px 5px; border-radius: 2px; letter-spacing: 0.02em;
+  }
+  .prose a {
+    color: var(--ink);
+    text-decoration: underline; text-decoration-color: var(--flame);
+    text-underline-offset: 3px; text-decoration-thickness: 1px;
+  }
+  .prose a:hover { color: var(--flame-deep); }
+
+  /* ---------- footer ---------- */
+  footer.foot {
+    margin-top: 80px;
+    border-top: 2px solid var(--ink);
+    padding-top: 22px;
+    display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: baseline;
+  }
+  footer.foot .left {
+    font-family: var(--font-serif); font-size: 13px; font-style: italic;
+    color: var(--graphite); max-width: 60ch; line-height: 1.5;
+  }
+  footer.foot .right {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 980px) {
+    .title-block { grid-template-columns: 1fr; gap: 20px; }
+    .body-grid { grid-template-columns: 1fr; gap: 32px; }
+    .toc { position: static; }
+    footer.foot { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    .placeholder-banner { grid-template-columns: 1fr; gap: 6px; }
+    .meta-strip { gap: 20px; }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+
+    <div class="masthead">
+      <span class="left">Odds Primer</span>
+      <span class="center">Site policy · World Cup 2026 edition</span>
+      <span class="right">Legal</span>
+    </div>
+
+    <div class="title-block">
+      <div>
+        <div class="h-eyebrow">Site policy · Privacy</div>
+        <h1 class="title">How we handle your data, in plain language.</h1>
+      </div>
+      <p class="deck">Odds Primer is an <em>educational publication</em>. We do not take wagers, hold funds, or execute trades. This page sets out what we collect when you visit and what we do with it.</p>
+    </div>
+
+    <div class="placeholder-banner">
+      <span class="tag">Placeholder · pre-launch</span>
+      <span class="msg">Generic placeholder copy intended for review by counsel before launch. Bracketed values such as <code style="font-family: var(--font-mono); font-size: 12.5px; background: var(--paper-pure); padding: 1px 5px; border-radius: 2px;">[DATE]</code> and <code style="font-family: var(--font-mono); font-size: 12.5px; background: var(--paper-pure); padding: 1px 5px; border-radius: 2px;">[REGION]</code> are intentional and must be filled in before publishing.</span>
+    </div>
+
+    <div class="meta-strip">
+      <div class="item">
+        <span class="lbl">Effective</span>
+        <span class="val">[DATE]</span>
+      </div>
+      <div class="item">
+        <span class="lbl">Last updated</span>
+        <span class="val">[DATE]</span>
+      </div>
+      <div class="item">
+        <span class="lbl">Publisher</span>
+        <span class="val">Adi Dagan t/a Odds Primer</span>
+      </div>
+      <div class="item">
+        <span class="lbl">Status</span>
+        <span class="val">Sole trader · pre-incorporation</span>
+      </div>
+      <div class="item">
+        <span class="lbl">Contact</span>
+        <span class="val">privacy@oddsprimer.example</span>
+      </div>
+    </div>
+
+    <div class="body-grid">
+
+      <!-- left: section index -->
+      <aside class="toc" aria-label="Sections">
+        <div class="lbl">Sections</div>
+        <ol>
+          <li><a href="#s1">Who we are</a></li>
+          <li><a href="#s2">Information we collect</a></li>
+          <li><a href="#s3">How we use it</a></li>
+          <li><a href="#s4">Legal bases</a></li>
+          <li><a href="#s5">Sharing &amp; disclosure</a></li>
+          <li><a href="#s6">Cookies</a></li>
+          <li><a href="#s7">Data retention</a></li>
+          <li><a href="#s8">Your rights</a></li>
+          <li><a href="#s9">Security</a></li>
+          <li><a href="#s10">International transfers</a></li>
+          <li><a href="#s11">Children</a></li>
+          <li><a href="#s12">Changes</a></li>
+          <li><a href="#s13">Contact</a></li>
+        </ol>
+      </aside>
+
+      <!-- right: prose -->
+      <article class="prose">
+
+        <p class="lede">This Privacy Policy explains how Odds Primer (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) collects, uses, and shares information about you when you use the Odds Primer website and related services (the &ldquo;Service&rdquo;). When you act on something you read here, you do so on a third-party venue under that venue's terms.</p>
+
+        <section id="s1">
+          <h2 data-num="01">Who we are</h2>
+          <div class="h-rule"></div>
+          <p>Odds Primer is an editorial project published by <strong>Adi Dagan</strong>, an individual operating under the trading name &ldquo;Odds Primer&rdquo; from <span class="pl">[CITY, COUNTRY]</span>. There is no separate legal entity behind the Service; Adi Dagan is the publisher, operator, and data controller for the purposes of applicable data-protection law.</p>
+          <p>Correspondence: <span class="pl">[SERVICE ADDRESS]</span>. Questions about this policy: <a href="mailto:privacy@oddsprimer.example">privacy@oddsprimer.example</a>.</p>
+        </section>
+
+        <section id="s2">
+          <h2 data-num="02">Information we collect</h2>
+          <div class="h-rule"></div>
+          <p>We collect three categories of information.</p>
+          <h3>Information you give us</h3>
+          <p>When you sign up for our newsletter, create an account, or contact us, we collect the data you provide &mdash; typically an email address, and any message content you send.</p>
+          <h3>Information collected automatically</h3>
+          <p>When you visit the Service we collect standard log data: IP address, device and browser type, referring page, pages viewed, and timestamps. We use cookies and similar technologies for session continuity, preference storage, and aggregate analytics. See section&nbsp;06.</p>
+          <h3>Information from third parties</h3>
+          <p>If you arrive from, or click through to, a partner venue (for example, a prediction-market operator), we may receive limited referral metadata. We do <em>not</em> receive your account information, balances, or trading activity from those venues.</p>
+        </section>
+
+        <section id="s3">
+          <h2 data-num="03">How we use your information</h2>
+          <div class="h-rule"></div>
+          <p>We use the information described above to:</p>
+          <ul>
+            <li>operate, maintain, and improve the Service;</li>
+            <li>send you the newsletter or other communications you have requested, and let you opt out at any time;</li>
+            <li>understand which content is read and which is not, in aggregate, so we can prioritise editorial work;</li>
+            <li>detect, prevent, and address abuse, fraud, or technical issues;</li>
+            <li>comply with legal obligations.</li>
+          </ul>
+          <p>We do <strong>not</strong> sell personal information. We do <strong>not</strong> share personal information with advertisers for advertising targeting.</p>
+        </section>
+
+        <section id="s4">
+          <h2 data-num="04">Legal bases for processing</h2>
+          <div class="h-rule"></div>
+          <p>Where applicable data-protection law requires a legal basis, we rely on:</p>
+          <ul>
+            <li><strong>Consent</strong> &mdash; for marketing emails and non-essential cookies.</li>
+            <li><strong>Legitimate interests</strong> &mdash; for security, fraud prevention, aggregate analytics, and improving the Service.</li>
+            <li><strong>Contract</strong> &mdash; to provide a service you have requested.</li>
+            <li><strong>Legal obligation</strong> &mdash; where we are required to retain or disclose data.</li>
+          </ul>
+        </section>
+
+        <section id="s5">
+          <h2 data-num="05">Sharing and disclosure</h2>
+          <div class="h-rule"></div>
+          <p>We share information only with: service providers who process data on our behalf (hosting, email delivery, analytics) under written contracts that limit their use of the data; authorities, when required by law or to protect rights and safety; and any successor entity in the event of a merger, acquisition, or asset sale.</p>
+          <p>When you click a venue handoff link (&ldquo;View source on [venue]&rdquo;), you leave the Service and the destination's privacy practices apply. We do not transmit your personal data to the venue beyond what your browser sends in a normal outbound link (referrer header).</p>
+        </section>
+
+        <section id="s6">
+          <h2 data-num="06">Cookies and similar technologies</h2>
+          <div class="h-rule"></div>
+          <p>We use a small number of cookies. Strictly necessary cookies keep the Service functional. Preference cookies remember your settings. Analytics cookies help us understand aggregate usage. You can refuse non-essential cookies at the consent banner or in your browser settings; refusing analytics cookies will not break the Service.</p>
+          <p>A current cookie inventory is published at <span class="pl">[/cookies]</span>.</p>
+        </section>
+
+        <section id="s7">
+          <h2 data-num="07">Data retention</h2>
+          <div class="h-rule"></div>
+          <p>We retain personal data only as long as needed for the purposes described above, or as required by law. Account data is kept for the life of the account plus <span class="pl">[N]</span> months. Newsletter subscriber data is kept until you unsubscribe. Server logs are kept for <span class="pl">[N]</span> days.</p>
+        </section>
+
+        <section id="s8">
+          <h2 data-num="08">Your rights</h2>
+          <div class="h-rule"></div>
+          <p>Depending on where you live, you may have the right to access, correct, delete, port, or restrict processing of your personal data, and to object to processing or withdraw consent. To exercise any of these rights, email <span class="pl">[privacy@oddsprimer.example]</span>. We respond within the period required by your local law. You also have the right to lodge a complaint with your local data-protection authority.</p>
+        </section>
+
+        <section id="s9">
+          <h2 data-num="09">Security</h2>
+          <div class="h-rule"></div>
+          <p>We use technical and organisational measures appropriate to the sensitivity of the data we hold, including transport encryption (HTTPS), restricted access to production systems, and routine review of our providers. No system is perfectly secure; we encourage you to use a strong, unique password and to keep it confidential.</p>
+        </section>
+
+        <section id="s10">
+          <h2 data-num="10">International transfers</h2>
+          <div class="h-rule"></div>
+          <p>Our infrastructure is hosted in <span class="pl">[REGION]</span>. Where data is transferred outside your country, we rely on safeguards permitted by applicable law, such as standard contractual clauses.</p>
+        </section>
+
+        <section id="s11">
+          <h2 data-num="11">Children</h2>
+          <div class="h-rule"></div>
+          <p>The Service is not directed to children under <span class="pl">[AGE]</span>, and we do not knowingly collect personal information from them. If you believe a child has provided us with personal information, contact <span class="pl">[privacy@oddsprimer.example]</span> and we will delete it.</p>
+        </section>
+
+        <section id="s12">
+          <h2 data-num="12">Changes to this policy</h2>
+          <div class="h-rule"></div>
+          <p>We will update this policy when our practices change. We will post the revised version with a new effective date and, where the change is material, notify subscribers by email.</p>
+        </section>
+
+        <section id="s13">
+          <h2 data-num="13">Contact</h2>
+          <div class="h-rule"></div>
+          <p>Adi Dagan, trading as &ldquo;Odds Primer&rdquo;<br>
+          <span class="pl">[SERVICE ADDRESS]</span>, <span class="pl">[CITY, COUNTRY]</span><br>
+          <a href="mailto:privacy@oddsprimer.example">privacy@oddsprimer.example</a></p>
+        </section>
+
+      </article>
+
+    </div>
+
+    <footer class="foot">
+      <div class="left">Odds Primer is a publication, not a venue. We point at prices; we don't move them. Read the <a href="terms-and-conditions.html">Terms &amp; Conditions</a> for what that means in practice.</div>
+      <div class="right">&copy; [YEAR] Odds Primer</div>
+    </footer>
+
+  </main>
+</body>
+</html>

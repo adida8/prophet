@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>France vs. Denmark · 18 June — Odds Primer</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 var(--gutter-page); }
+
+  .scoreboard {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 28px;
+    align-items: center;
+    padding: 32px 0 28px;
+  }
+  .team { display: flex; flex-direction: column; gap: 6px; }
+  .team-name { font-family: var(--font-serif); font-weight: 600; font-size: 36px; letter-spacing: -0.01em; color: var(--ink); line-height: 1; }
+  .team-meta { font-family: var(--font-sans); font-size: 12px; color: var(--graphite); letter-spacing: 0.04em; text-transform: uppercase; }
+  .team.right { text-align: right; align-items: flex-end; }
+  .vs {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 14px; color: var(--graphite-soft);
+    padding: 0 4px;
+    text-align: center;
+  }
+  .kickoff {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 18px; color: var(--ink); font-weight: 500;
+  }
+
+  .meta-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    padding: 14px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: var(--graphite);
+  }
+  .meta-strip dt {
+    font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--graphite-soft); font-size: 11px;
+    margin-bottom: 3px;
+  }
+  .meta-strip dd { margin: 0; color: var(--ink); font-weight: 500; }
+
+  .market-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 56px;
+    align-items: start;
+  }
+  @media (max-width: 940px) { .market-grid { grid-template-columns: 1fr; gap: 28px; } }
+
+  .market-block {
+    padding: 32px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .market-block:first-of-type { border-top: 1px solid var(--ink); }
+  .market-block h2 {
+    font-family: var(--font-serif); font-weight: 600; font-size: 26px;
+    letter-spacing: -0.005em; line-height: 1.2; margin: 0 0 6px;
+    color: var(--ink); text-wrap: balance;
+  }
+  .market-deck {
+    font-family: var(--font-serif); font-style: italic; font-size: 15px;
+    line-height: 1.5; color: var(--graphite); margin: 0 0 18px;
+    max-width: 60ch;
+  }
+  .market-eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--graphite-soft); margin-bottom: 8px;
+  }
+
+  .three-way {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .three-way > div {
+    padding: 18px 20px;
+    border-right: 1px solid var(--rule);
+  }
+  .three-way > div:last-child { border-right: 0; }
+  .three-way .label {
+    font-family: var(--font-sans); font-weight: 600; font-size: 13px;
+    color: var(--ink); margin-bottom: 4px;
+  }
+  .three-way .pct {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 28px; font-weight: 600; color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .three-way .meta {
+    font-family: var(--font-sans); font-size: 11px;
+    color: var(--graphite-soft); margin-top: 2px;
+  }
+  .three-way .fav { background: var(--flame-tint); }
+  .three-way .fav .pct { color: var(--flame-deep); }
+  .three-way .fav .label { display: flex; align-items: center; gap: 8px; }
+  .three-way .fav .label::after {
+    content: "Favorite";
+    font-family: var(--font-sans); font-size: 10px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    background: var(--flame); color: var(--paper);
+    padding: 2px 7px; border-radius: 999px;
+  }
+
+  /* Sidebar */
+  .sidebar { position: sticky; top: 110px; }
+  .sidebar-card {
+    padding: 18px 20px;
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+  }
+  .sidebar-card + .sidebar-card { margin-top: 14px; }
+
+  /* Compact comparison table inline */
+  .table-head, .table-row {
+    display: grid;
+    grid-template-columns: 1fr 90px 90px 80px 80px;
+    align-items: center;
+    padding: 12px 16px;
+  }
+  .table-row { min-height: 48px; }
+  .table-head { padding: 10px 16px; }
+  .table-head {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--graphite-soft);
+    border-bottom: 1px solid var(--rule);
+  }
+  .table-row {
+    border-bottom: 1px solid var(--rule-soft);
+    font-family: var(--font-sans); font-size: 14px;
+  }
+  .table-row.best { background: var(--flame-tint); font-weight: 600; }
+  .table-row .num {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .venue-cell { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .venue-cell-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .venue-native {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 11px; color: var(--graphite-soft);
+    margin-left: 18px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .open-link {
+    font-family: var(--font-sans); font-size: 12px; color: var(--ink);
+    text-decoration: underline; text-decoration-color: var(--rule);
+    text-underline-offset: 3px; text-align: right;
+    white-space: nowrap;
+  }
+  .best-tag {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    background: var(--flame); color: var(--paper);
+    padding: 2px 7px; border-radius: 999px;
+  }
+
+  .table-wrap {
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .delta-pos { color: var(--ink-soft); }
+  .delta-neg { color: var(--graphite); }
+
+  .footnote-italic {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 13px; color: var(--graphite); margin-top: 10px;
+  }
+
+  /* Form bars */
+  .form-row { display: flex; gap: 4px; }
+  .form-cell {
+    width: 18px; height: 18px; border-radius: 2px;
+    font-family: var(--font-sans); font-size: 10px; font-weight: 600;
+    color: var(--paper); display: flex; align-items: center; justify-content: center;
+  }
+  .form-cell.W { background: var(--ink); }
+  .form-cell.D { background: var(--graphite-soft); }
+  .form-cell.L { background: var(--paper-deep); color: var(--graphite); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="Wordmark.jsx"></script>
+<script type="text/babel" src="Masthead.jsx"></script>
+<script type="text/babel" src="Glossary.jsx"></script>
+
+<script type="text/babel">
+const VENUE_DOT = {
+  Polymarket: "var(--venue-polymarket)",
+  Kalshi:     "var(--venue-kalshi)",
+  DraftKings: "var(--venue-sportsbook)",
+  FanDuel:    "var(--venue-sportsbook)",
+  BetMGM:     "var(--venue-sportsbook)",
+};
+
+const fmtDelta = (d) => {
+  if (d == null) return "—";
+  const s = d > 0 ? "+" : d < 0 ? "−" : "";
+  return `${s}${Math.abs(d).toFixed(1)}`;
+};
+
+const Table = ({ rows, columns = ["Venue", "Price", "Implied", "7d Δ", ""] }) => {
+  const bestImp = Math.max(...rows.map(r => r.impliedNum ?? 0));
+  return (
+    <div className="table-wrap">
+      <div className="table-head">
+        <div>{columns[0]}</div>
+        <div style={{ textAlign: "right" }}>{columns[1]}</div>
+        <div style={{ textAlign: "right" }}>{columns[2]}</div>
+        <div style={{ textAlign: "right" }}>{columns[3]}</div>
+        <div></div>
+      </div>
+      {rows.map((r, i) => {
+        const isBest = r.impliedNum === bestImp;
+        return (
+          <div key={i} className={"table-row" + (isBest ? " best" : "")}>
+            <div className="venue-cell">
+              <div className="venue-cell-row">
+                <span className="dot" style={{ background: VENUE_DOT[r.venue] || "var(--graphite)" }} />
+                <span>{r.venue}</span>
+                {isBest && <span className="best-tag">Best</span>}
+              </div>
+              {r.native && <span className="venue-native">{r.native}</span>}
+            </div>
+            <div className="num">{r.price}</div>
+            <div className="num">{r.implied}</div>
+            <div className={"num " + (r.delta7d > 0 ? "delta-pos" : r.delta7d < 0 ? "delta-neg" : "")} style={{ fontSize: 13 }}>{fmtDelta(r.delta7d)}</div>
+            <div className="open-link">Open ↗</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const App = () => {
+  const [tab, setTab] = React.useState("matches");
+
+  // Three-way result market
+  const winner = {
+    france:    { pct: "61%",  imp: 61, fav: true,  meta: "+ extra time" },
+    draw:      { pct: "23%",  imp: 23, fav: false, meta: "90 min only" },
+    denmark:   { pct: "16%",  imp: 16, fav: false, meta: "+ extra time" },
+  };
+
+  const winnerRows = [
+    { venue: "Polymarket", price: "61¢",  implied: "61.0%", impliedNum: 61.0, delta7d: 0.8 },
+    { venue: "Kalshi",     price: "59¢",  implied: "59.0%", impliedNum: 59.0, delta7d: -0.3 },
+    { venue: "DraftKings", price: "−155", implied: "60.8%", impliedNum: 60.8, delta7d: 0.4, native: "−155" },
+    { venue: "FanDuel",    price: "−145", implied: "59.2%", impliedNum: 59.2, delta7d: 0.2, native: "−145" },
+    { venue: "BetMGM",     price: "−160", implied: "61.5%", impliedNum: 61.5, delta7d: 0.6, native: "−160" },
+  ];
+
+  const totalsRows = [
+    { venue: "Polymarket", price: "54¢",  implied: "54.0%", impliedNum: 54.0, delta7d: 1.2 },
+    { venue: "DraftKings", price: "−110", implied: "52.4%", impliedNum: 52.4, delta7d: -0.8, native: "O 2.5 −110" },
+    { venue: "FanDuel",    price: "−115", implied: "53.5%", impliedNum: 53.5, delta7d: 0.0, native: "O 2.5 −115" },
+    { venue: "BetMGM",     price: "−105", implied: "51.2%", impliedNum: 51.2, delta7d: -0.4, native: "O 2.5 −105" },
+  ];
+
+  const scorerRows = [
+    { player: "Kylian Mbappé",     price: "+165", implied: "37.7%", impliedNum: 37.7, team: "France"  },
+    { player: "Rasmus Højlund",    price: "+450", implied: "18.2%", impliedNum: 18.2, team: "Denmark" },
+    { player: "Ousmane Dembélé",   price: "+550", implied: "15.4%", impliedNum: 15.4, team: "France"  },
+    { player: "Marcus Thuram",     price: "+625", implied: "13.8%", impliedNum: 13.8, team: "France"  },
+    { player: "Christian Eriksen", price: "+800", implied: "11.1%", impliedNum: 11.1, team: "Denmark" },
+  ];
+
+  return (
+    <>
+      <Masthead tab={tab} onTab={setTab} updated="4 min ago" live={true} />
+
+      {/* Match scoreboard / hero */}
+      <section style={{ padding: "24px var(--gutter-page) 0" }}>
+        <div className="container">
+          <div className="op-eyebrow" style={{ marginBottom: 6 }}>WORLD CUP 2026 · GROUP D · MATCHDAY 2</div>
+          <div className="scoreboard">
+            <div className="team">
+              <span className="team-name">France</span>
+              <span className="team-meta">Group D · 1 played · 1W 0D 0L</span>
+              <span className="form-row" style={{ marginTop: 4 }}>
+                <span className="form-cell W">W</span>
+                <span className="form-cell W">W</span>
+                <span className="form-cell D">D</span>
+                <span className="form-cell W">W</span>
+                <span className="form-cell W">W</span>
+              </span>
+            </div>
+            <div className="vs">
+              <div className="kickoff">18 JUN · 21:00 CET</div>
+              <div style={{ marginTop: 4, fontFamily: "var(--font-sans)", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--graphite-soft)" }}>Munich</div>
+            </div>
+            <div className="team right">
+              <span className="team-name">Denmark</span>
+              <span className="team-meta">Group D · 1 played · 0W 1D 0L</span>
+              <span className="form-row" style={{ marginTop: 4, justifyContent: "flex-end" }}>
+                <span className="form-cell L">L</span>
+                <span className="form-cell W">W</span>
+                <span className="form-cell D">D</span>
+                <span className="form-cell W">W</span>
+                <span className="form-cell L">L</span>
+              </span>
+            </div>
+          </div>
+          <dl className="meta-strip">
+            <div>
+              <dt>Stadium</dt>
+              <dd>Allianz Arena, Munich · 75,000</dd>
+            </div>
+            <div>
+              <dt>Referee</dt>
+              <dd>Anthony Taylor (ENG)</dd>
+            </div>
+            <div>
+              <dt>Venues compared</dt>
+              <dd>5 · Polymarket, Kalshi, DK, FD, BetMGM</dd>
+            </div>
+            <div>
+              <dt>Last priced</dt>
+              <dd>4 minutes ago</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section style={{ padding: "0 var(--gutter-page) 80px", marginTop: 32 }}>
+        <div className="container">
+          <div className="market-grid">
+
+            {/* Markets column */}
+            <div>
+              <div className="op-eyebrow" style={{ marginBottom: 12 }}>The markets · 4 priced</div>
+
+              {/* Market 1: Match winner */}
+              <article className="market-block">
+                <div className="market-eyebrow">Market 1 · Match result (90 min + ET)</div>
+                <h2>Who wins the match?</h2>
+                <p className="market-deck">France enters as a clear favorite, but the 2¢ Polymarket–Kalshi spread on the favorite is wider than usual — Kalshi's volume on this match is thin.</p>
+                <div className="three-way">
+                  <div className="fav">
+                    <div className="label">France</div>
+                    <div className="pct">61%</div>
+                    <div className="meta">{winner.france.meta}</div>
+                  </div>
+                  <div>
+                    <div className="label">Draw</div>
+                    <div className="pct" style={{ color: "var(--ink-soft)" }}>23%</div>
+                    <div className="meta">{winner.draw.meta}</div>
+                  </div>
+                  <div>
+                    <div className="label">Denmark</div>
+                    <div className="pct" style={{ color: "var(--ink-soft)" }}>16%</div>
+                    <div className="meta">{winner.denmark.meta}</div>
+                  </div>
+                </div>
+                <Table rows={winnerRows} />
+                <div className="footnote-italic">
+                  Kalshi's price is 2¢ below Polymarket on the favorite — usually a sign of thinner volume rather than a different read on the match.
+                </div>
+              </article>
+
+              {/* Market 2: Total goals */}
+              <article className="market-block">
+                <div className="market-eyebrow">Market 2 · Total goals · Over/Under 2.5</div>
+                <h2>Will there be three or more goals?</h2>
+                <p className="market-deck">A coin-flip market. Polymarket leans slightly to "over"; the books are split. On a market this close, the venue with the highest implied "yes" payout is genuinely the best price.</p>
+                <Table rows={totalsRows} />
+                <div className="footnote-italic">
+                  When implied probability is near 50%, even a 1–2¢ price difference is meaningful — small edges on coin-flips compound.
+                </div>
+              </article>
+
+              {/* Market 3: BTTS */}
+              <article className="market-block">
+                <div className="market-eyebrow">Market 3 · Both teams to score</div>
+                <h2>Will both teams score?</h2>
+                <p className="market-deck">Denmark's defense has been steady; France has scored in 14 of their last 15 matches. The market is priced near 50/50.</p>
+                <div className="three-way" style={{ gridTemplateColumns: "1fr 1fr" }}>
+                  <div className="fav">
+                    <div className="label">Yes</div>
+                    <div className="pct">53%</div>
+                    <div className="meta">Polymarket consensus</div>
+                  </div>
+                  <div>
+                    <div className="label">No</div>
+                    <div className="pct" style={{ color: "var(--ink-soft)" }}>47%</div>
+                    <div className="meta">Polymarket consensus</div>
+                  </div>
+                </div>
+              </article>
+
+              {/* Market 4: First scorer */}
+              <article className="market-block">
+                <div className="market-eyebrow">Market 4 · First goalscorer · Top 5</div>
+                <h2>Who scores first?</h2>
+                <p className="market-deck">Sportsbook-only market — the prediction venues don't price first scorer. We list the top five by sportsbook consensus; payout structure varies.</p>
+                <div className="table-wrap">
+                  <div className="table-head" style={{ gridTemplateColumns: "1fr 80px 80px 80px", gap: 12 }}>
+                    <div>Player</div>
+                    <div style={{ textAlign: "right" }}>Price</div>
+                    <div style={{ textAlign: "right" }}>Implied</div>
+                    <div></div>
+                  </div>
+                  {scorerRows.map((r, i) => {
+                    const best = i === 0;
+                    return (
+                      <div key={i} className={"table-row" + (best ? " best" : "")} style={{ gridTemplateColumns: "1fr 80px 80px 80px", gap: 12 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flexWrap: "wrap" }}>
+                          <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--graphite-soft)", width: 16, flex: "none" }}>{i+1}.</span>
+                          <span style={{ fontWeight: best ? 600 : 500 }}>{r.player}</span>
+                          <span style={{ fontSize: 11, color: "var(--graphite)", fontStyle: "italic" }}>{r.team}</span>
+                          {best && <span className="best-tag">Favorite</span>}
+                        </div>
+                        <div className="num">{r.price}</div>
+                        <div className="num">{r.implied}</div>
+                        <div className="open-link">Compare ↗</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="footnote-italic">
+                  Sportsbook implied probabilities sum to more than 100% across all players — that excess is the book's margin (the "vig").
+                </div>
+              </article>
+            </div>
+
+            {/* Sidebar */}
+            <aside className="sidebar">
+              <div className="sidebar-card">
+                <div className="op-eyebrow" style={{ marginBottom: 8 }}>How to read this</div>
+                <p style={{ fontFamily: "var(--font-serif)", fontSize: 14, lineHeight: 1.55, color: "var(--ink)", margin: 0 }}>
+                  Each market is the same question priced in different ways. The flame highlight marks the best implied probability for "yes" on that outcome. We don't tell you to bet there — we show you it exists.
+                </p>
+              </div>
+
+              <div className="sidebar-card">
+                <div className="op-eyebrow" style={{ marginBottom: 8 }}>Why this match matters</div>
+                <p style={{ fontFamily: "var(--font-serif)", fontSize: 14, lineHeight: 1.55, color: "var(--ink)", margin: 0 }}>
+                  Group D's tightest fixture. France enters as favorite; Denmark needs a result after a draw with Tunisia. A French win all but settles the group.
+                </p>
+              </div>
+
+              <div className="sidebar-card">
+                <GlossaryEntry
+                  term="Three-way line"
+                  mark="P(W/D/L)"
+                  def="Football matches end in a draw ~25% of the time, so the market prices three outcomes — home win, draw, away win — instead of two. Implied probabilities sum to ~100% on prediction venues; sportsbooks add margin."
+                />
+              </div>
+
+              <div className="sidebar-card">
+                <div className="op-eyebrow" style={{ marginBottom: 10 }}>Movement · last 7 days</div>
+                <div style={{ fontFamily: "var(--font-serif)", fontSize: 13, lineHeight: 1.55, color: "var(--ink)" }}>
+                  France <span className="op-num" style={{ fontFamily: "var(--font-mono)", color: "var(--ink-soft)" }}>+0.8</span><br/>
+                  Draw <span className="op-num" style={{ fontFamily: "var(--font-mono)", color: "var(--graphite)" }}>−0.3</span><br/>
+                  Denmark <span className="op-num" style={{ fontFamily: "var(--font-mono)", color: "var(--graphite)" }}>−0.5</span>
+                </div>
+                <div style={{ marginTop: 10, fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: 12, color: "var(--graphite)" }}>
+                  Polymarket, percentage points.
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <footer style={{
+        padding: "32px var(--gutter-page) 56px",
+        borderTop: "1px solid var(--rule)",
+      }}>
+        <div className="container" style={{
+          display: "flex", justifyContent: "space-between", alignItems: "baseline",
+          flexWrap: "wrap", gap: 18,
+        }}>
+          <Wordmark size={20} />
+          <div style={{
+            fontFamily: "var(--font-serif)", fontStyle: "italic",
+            fontSize: 13, color: "var(--graphite)", maxWidth: "48ch",
+          }}>
+            We compare prices across venues and explain in plain English what the market means. We don't tip. We don't take fees. We don't sell anything.
+          </div>
+          <div className="op-eyebrow" style={{ color: "var(--graphite)" }}>Vol. 1 · World Cup 2026</div>
+        </div>
+      </footer>
+    </>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

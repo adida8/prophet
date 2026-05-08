@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Domain shortlist — Prophet</title>
+<style>
+  @page { size: A4 portrait; margin: 14mm 14mm; }
+  :root {
+    --paper:    #FFFFFF;
+    --ink:      #0E2240;
+    --orange:   #FF5A1F;
+    --graphite: #3A3F47;
+    --rule:     #F0ECE2;
+    --warm:     #FCFAF5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink);
+    font-family: -apple-system, "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 9.5px; line-height: 1.45; }
+  .mono { font-family: ui-monospace, "JetBrains Mono", Menlo, monospace; }
+
+  /* MASTHEAD */
+  .masthead { border-top: 6px double var(--ink); border-bottom: 1px solid var(--ink);
+    padding: 12px 0 10px; margin-bottom: 14px;
+    display: flex; justify-content: space-between; align-items: center; }
+  .logo-block { display: flex; align-items: center; gap: 10px; }
+  .reticle { width: 28px; height: 28px; border: 1.5px solid var(--ink); border-radius: 50%;
+    position: relative; flex-shrink: 0; }
+  .reticle::before, .reticle::after { content: ''; position: absolute; background: var(--ink); }
+  .reticle::before { top: 50%; left: -4px; right: -4px; height: 1px; }
+  .reticle::after  { left: 50%; top: -4px; bottom: -4px; width: 1px; }
+  .reticle .dot { position: absolute; top: 50%; left: 50%; width: 5px; height: 5px;
+    border-radius: 50%; background: var(--orange); transform: translate(-50%,-50%); }
+  .title { font-size: 19px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    line-height: 1; margin-bottom: 3px; }
+  .meta { font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--graphite); }
+
+  /* PALETTE STRIP */
+  .palette-row { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; }
+  .palette-row .label { font-size: 7.5px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--graphite); white-space: nowrap; min-width: 70px; }
+  .palette { display: flex; gap: 3px; flex: 1; height: 22px; border: 1px solid var(--ink); }
+  .palette div { flex: 1; position: relative; }
+  .palette div span { position: absolute; bottom: -13px; left: 0; right: 0; text-align: center;
+    font-size: 6.5px; letter-spacing: 0.5px; color: var(--graphite); font-family: ui-monospace, Menlo, monospace; }
+
+  /* WEDGE LINE */
+  .wedge-line { font-size: 9.5px; line-height: 1.5; color: var(--graphite);
+    margin: 22px 0 14px; max-width: 95%; }
+  .wedge-line strong { color: var(--ink); }
+
+  /* SECTION HEAD */
+  .section-head { display: flex; align-items: baseline; gap: 12px; margin: 16px 0 10px;
+    border-bottom: 1px solid var(--ink); padding-bottom: 5px; }
+  .section-head h2 { font-size: 12px; font-weight: 800; letter-spacing: 1.8px;
+    text-transform: uppercase; margin: 0; }
+  .section-head .price { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--orange); font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+  .section-head .note { font-size: 8.5px; color: var(--graphite); margin-left: auto;
+    font-style: italic; }
+
+  /* CARDS */
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; margin-bottom: 4px; }
+  .card { border: 1px solid var(--ink); padding: 9px 10px;
+    display: flex; flex-direction: column; min-height: 116px; background: var(--paper); }
+  .card.match { border-left: 4px solid var(--orange); }
+  .card .domain { font-weight: 800; font-size: 14px; letter-spacing: -0.2px;
+    color: var(--ink); margin-bottom: 5px; line-height: 1; }
+  .card .read { font-size: 8.5px; line-height: 1.4; color: var(--graphite);
+    flex: 1; margin-bottom: 6px; }
+  .card .read strong { color: var(--ink); }
+  .card .tags { display: flex; flex-wrap: wrap; gap: 3px; }
+  .card .tag { font-size: 6.5px; letter-spacing: 1px; text-transform: uppercase;
+    padding: 1.5px 5px; border: 0.8px solid var(--graphite); color: var(--graphite); font-weight: 600; }
+  .card .tag.warn { color: var(--orange); border-color: var(--orange); }
+  .card .wordmark { font-size: 7px; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--ink); font-weight: 700; margin-top: 7px; padding-top: 6px;
+    border-top: 1px dashed var(--rule); }
+  .card .wordmark em { color: var(--orange); font-style: normal; }
+
+  /* FRAMING */
+  .framing { margin-top: 16px; padding: 12px 14px 10px; background: var(--warm);
+    border-left: 4px solid var(--orange); }
+  .framing h3 { font-size: 9px; letter-spacing: 1.8px; text-transform: uppercase;
+    color: var(--ink); margin: 0 0 4px; }
+  .framing p { margin: 0 0 7px; font-size: 9px; line-height: 1.55; color: var(--graphite); }
+  .framing p:last-child { margin-bottom: 0; }
+  .framing strong { color: var(--ink); }
+  .framing em { color: var(--orange); font-style: normal; font-weight: 700; }
+</style>
+</head>
+<body>
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="logo-block">
+      <div class="reticle"><div class="dot"></div></div>
+      <div>
+        <div class="title">Domain Shortlist</div>
+        <div class="meta">Prophet · 2026-05-02 · for Adi &amp; Faktor</div>
+      </div>
+    </div>
+    <div class="meta" style="text-align: right;">
+      9 candidates · 2 price tiers<br>
+      WC 2026 launch · brand to lock by Mon
+    </div>
+  </div>
+
+  <!-- PALETTE STRIP -->
+  <div class="palette-row">
+    <div class="label">Locked palette</div>
+    <div class="palette">
+      <div style="background:#FFFFFF; border-right: 1px solid var(--rule);"><span>#FFFFFF · paper</span></div>
+      <div style="background:#0E2240;"><span style="color:#FFFFFF;">#0E2240 · ink</span></div>
+      <div style="background:#FF5A1F;"><span style="color:#FFFFFF;">#FF5A1F · flare</span></div>
+      <div style="background:#3A3F47;"><span style="color:#FFFFFF;">#3A3F47 · graphite</span></div>
+      <div style="background:#F0ECE2;"><span>#F0ECE2 · rule</span></div>
+    </div>
+  </div>
+
+  <!-- WEDGE -->
+  <div class="wedge-line">
+    <strong>The brand we're naming.</strong> Educational oddschecker for football fans, framed as scout reports
+    on fixtures and markets. Anti-tipster, anti-gambling-promo. Premium publication feel. Reticle/scope as
+    system glyph. Modern sans, no broadsheet serif. Launch is the 2026 World Cup.
+    <strong>Each domain below is a different brand name</strong> — picking the URL is picking the wordmark,
+    not just the address.
+  </div>
+
+  <!-- $180 PREMIUM TIER -->
+  <div class="section-head">
+    <h2>Premium tier</h2>
+    <span class="price">$180 / 2 yr · .ai</span>
+    <span class="note">A directional brand bet — only worth it if the name becomes the lock-in.</span>
+  </div>
+
+  <div class="grid-3">
+
+    <div class="card match">
+      <div class="domain">thescoutroom.ai</div>
+      <div class="read">A coach's tactical war-room. <strong>Locks the entire scout-report system into the URL.</strong>
+        Strongest fit for the existing "The Scout" wordmark direction we've been mocking up.</div>
+      <div class="tags">
+        <span class="tag">Football-native</span>
+        <span class="tag">Scout system</span>
+        <span class="tag">Editorial</span>
+      </div>
+      <div class="wordmark">→ Wordmark: <em>The Scout Room</em> / The Scout</div>
+    </div>
+
+    <div class="card">
+      <div class="domain">scoutroom.ai</div>
+      <div class="read">Same metaphor without the article. <strong>Cleaner URL, weaker as a wordmark</strong>
+        — editorial brands generally lean on "The." Slight downgrade vs the article-led variant.</div>
+      <div class="tags">
+        <span class="tag">Football-native</span>
+        <span class="tag">Scout system</span>
+      </div>
+      <div class="wordmark">→ Wordmark: <em>Scout Room</em></div>
+    </div>
+
+    <div class="card">
+      <div class="domain">oddsprimer.ai</div>
+      <div class="read">Most explicit on the educational wedge — "primer" reads as teaching tool.
+        <strong>Direct on positioning but loses football-native warmth.</strong>
+        "Odds" leans market-vocabulary; risks pulling tone toward gambling-promo despite the educational frame.</div>
+      <div class="tags">
+        <span class="tag">Educational</span>
+        <span class="tag">Direct-wedge</span>
+        <span class="tag warn">Generic</span>
+      </div>
+      <div class="wordmark">→ Wordmark: <em>Odds Primer</em></div>
+    </div>
+
+    <div class="card">
+      <div class="domain">scoutline.ai</div>
+      <div class="read">Scouting + touchline / data line / lineup. <strong>Subtle football reference, slightly abstract.</strong>
+        Less obvious payoff than scoutroom — the audience has to do the work to land it.</div>
+      <div class="tags">
+        <span class="tag">Football-native</span>
+        <span class="tag">Scout system</span>
+        <span class="tag warn">Abstract</span>
+      </div>
+      <div class="wordmark">→ Wordmark: <em>Scoutline</em></div>
+    </div>
+
+    <div class="card">
+      <div class="domain">thepitchline.ai</div>
+      <div class="read">Triple read: football pitch + the betting line + a "pitch" (argument). <strong>Clever wordplay.</strong>
+        Risk: "pitch" carries sales-pitch connotations next to a betting market — subtle promo undertone.</div>
+      <div class="tags">
+        <span class="tag">Football-native</span>
+        <span class="tag">Wordplay</span>
+        <span class="tag warn">"Pitch" risk</span>
+      </div>
+      <div class="wordmark">→ Wordmark: <em>The Pitch Line</em></div>
+    </div>
+
+    <div class="card">
+      <div class="domain">thestand.ai</div>
+      <div class="read">Football stands + editorial "taking a stand." <strong>Strongest publication brand of the .ai set.</strong>
+        Multi-sport extension easy. Less directly tied to the existing scout-report system.</div>
+      <div class="tags">
+        <span class="tag">Editorial</span>
+        <span class="tag">Multi-sport</span>
+        <span class="tag">Publication</span>
+      </div>
+      <div class="wordmark">→ Wordmark: <em>The Stand</em></div>
+    </div>
+
+  </div>
+
+
+  <!-- $10 STANDARD TIER -->
+  <div class="section-head">
+    <h2>Standard tier</h2>
+    <span class="price">$10 / 2 yr · .com</span>
+    <span class="note">Defensive locks — cheap enough to register all of, even if you only use one.</span>
+  </div>
+
+  <div class="grid-3">
+
+    <div class="card">
+      <div class="domain">oddsprimer.com</div>
+      <div class="read">Same name as the .ai version at <strong>1/18 the cost.</strong>
+        .com is universal; .ai signals "tech / AI-native" — weaker fit for an educational-oddschecker pivot.
+        Pick this over the .ai unless the brand specifically wants the AI signal.</div>
+      <div class="tags">
+        <span class="tag">Educational</span>
+        <span class="tag">Standard TLD</span>
+        <span class="tag">Direct-wedge</span>
+      </div>
+      <div class="wordmark">→ Wordmark: <em>Odds Primer</em></div>
+    </div>
+
+    <div class="card match">
+      <div class="domain">themorningxi.com</div>
+      <div class="read">Football XI (starting eleven) + morning newsletter. <strong>Beautiful publication framing
+        — implies daily content cadence.</strong> Strongest pure-publication brand in the entire shortlist.</div>
+      <div class="tags">
+        <span class="tag">Football-native</span>
+        <span class="tag">Editorial</span>
+        <span class="tag">Daily cadence</span>
+      </div>
+      <div class="wordmark">→ Wordmark: <em>The Morning XI</em></div>
+    </div>
+
+    <div class="card">
+      <div class="domain">themorning11.com</div>
+      <div class="read">Same idea as themorningxi but with a numeric "11." <strong>Easier to spell and say,
+        loses some elegance</strong> — "XI" is more memorable in a wordmark than "11." Workable as a backup or alt.</div>
+      <div class="tags">
+        <span class="tag">Football-native</span>
+        <span class="tag">Editorial</span>
+        <span class="tag">Backup</span>
+      </div>
+      <div class="wordmark">→ Wordmark: <em>The Morning 11</em></div>
+    </div>
+
+  </div>
+
+
+  <!-- DECISION FRAMING -->
+  <div class="framing">
+    <h3>Decision frame</h3>
+    <p>The economic question is misleading. <strong>$180 vs $10 isn't really 18× more expensive</strong> — it's
+       a directional brand commitment vs a defensive lock. Cheap .com domains are insurance you can register all
+       of and only use one. The .ai shortlist is a live commitment to a wordmark — only worth $180 each
+       <strong>if</strong> the name actually becomes the brand.</p>
+    <p><strong>Suggested move.</strong> Lock <em>themorningxi.com</em> + <em>oddsprimer.com</em> for ~$20 total
+       as defensive insurance regardless of where this lands. Then pick one .ai <strong>if and only if</strong>
+       a name on that list is the wordmark you commit to. Strongest .ai candidates:
+       <em>thescoutroom.ai</em> (if "The Scout" is the lock-in name and we keep mocking up the scout-report system)
+       or <em>thestand.ai</em> (if the brand needs maximum editorial flexibility and easier multi-sport extension).</p>
+    <p><strong>Open question for Faktor.</strong> Of the seven names — <em>The Scout · Scout Room · Odds Primer ·
+       Scoutline · The Pitch Line · The Stand · The Morning XI</em> — which one feels like a publication you'd
+       want to read on a Saturday morning? That's the lock-in.</p>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,171 @@
+{
+  "version": "1.0",
+  "_note": "polarity: 'same' = YES on both means the same outcome. 'inverted' = YES on Kalshi = NO on Polymarket. Run scripts/generate_mappings.py with live Kalshi creds to add more pairs.",
+  "mappings": [
+    {
+      "id": "fed-apr2026-nochange",
+      "title": "Fed holds rates at April 2026 meeting",
+      "category": "economy",
+      "polarity": "same",
+      "kalshi": {
+        "ticker": "KXFED-26APR30-T5",
+        "title": "Fed holds rates Apr 2026"
+      },
+      "polymarket": {
+        "id": "669662",
+        "title": "Will there be no change in Fed interest rates after the April 2026 meeting?"
+      },
+      "verified": false,
+      "notes": "Verify Kalshi ticker — check KXFED event for exact no-change strike"
+    },
+    {
+      "id": "fed-apr2026-cut25",
+      "title": "Fed cuts 25 bps at April 2026 meeting",
+      "category": "economy",
+      "polarity": "same",
+      "kalshi": {
+        "ticker": "KXFED-26APR30-T4",
+        "title": "Fed cuts 25bps Apr 2026"
+      },
+      "polymarket": {
+        "id": "669661",
+        "title": "Will the Fed decrease interest rates by 25 bps after the April 2026 meeting?"
+      },
+      "verified": false,
+      "notes": "Verify Kalshi ticker strike level"
+    },
+    {
+      "id": "fed-apr2026-cut50",
+      "title": "Fed cuts 50+ bps at April 2026 meeting",
+      "category": "economy",
+      "polarity": "same",
+      "kalshi": null,
+      "polymarket": {
+        "id": "669660",
+        "title": "Will the Fed decrease interest rates by 50+ bps after the April 2026 meeting?"
+      },
+      "verified": false,
+      "notes": "Add Kalshi ticker if KXFED has a 50bps market"
+    },
+    {
+      "id": "fed-apr2026-hike25",
+      "title": "Fed hikes 25+ bps at April 2026 meeting",
+      "category": "economy",
+      "polarity": "same",
+      "kalshi": null,
+      "polymarket": {
+        "id": "669663",
+        "title": "Will the Fed increase interest rates by 25+ bps after the April 2026 meeting?"
+      },
+      "verified": false,
+      "notes": "Add Kalshi ticker if available"
+    },
+    {
+      "id": "btc-150k-april",
+      "title": "Bitcoin reaches $150K in April 2026",
+      "category": "crypto",
+      "polarity": "same",
+      "kalshi": {
+        "ticker": "KXBTC-26APR30-B150000",
+        "title": "BTC above $150K by Apr 30 2026"
+      },
+      "polymarket": {
+        "id": "1823769",
+        "title": "Will Bitcoin reach $150,000 in April?"
+      },
+      "verified": false,
+      "notes": "Verify exact Kalshi KXBTC ticker for $150K strike"
+    },
+    {
+      "id": "nba-celtics-2026",
+      "title": "Boston Celtics win 2026 NBA Finals",
+      "category": "sports",
+      "polarity": "same",
+      "kalshi": null,
+      "polymarket": {
+        "id": "553862",
+        "title": "Will the Boston Celtics win the 2026 NBA Finals?"
+      },
+      "verified": false,
+      "notes": "Add Kalshi NBA Finals ticker once identified"
+    },
+    {
+      "id": "nba-cavaliers-2026",
+      "title": "Cleveland Cavaliers win 2026 NBA Finals",
+      "category": "sports",
+      "polarity": "same",
+      "kalshi": null,
+      "polymarket": {
+        "id": "553857",
+        "title": "Will the Cleveland Cavaliers win the 2026 NBA Finals?"
+      },
+      "verified": false,
+      "notes": "Add Kalshi NBA Finals ticker once identified"
+    },
+    {
+      "id": "nba-spurs-2026",
+      "title": "San Antonio Spurs win 2026 NBA Finals",
+      "category": "sports",
+      "polarity": "same",
+      "kalshi": null,
+      "polymarket": {
+        "id": "553866",
+        "title": "Will the San Antonio Spurs win the 2026 NBA Finals?"
+      },
+      "verified": false,
+      "notes": "Add Kalshi ticker — Spurs are a longshot; check if Kalshi has this"
+    },
+    {
+      "id": "fifa-usa-2026",
+      "title": "USA wins 2026 FIFA World Cup",
+      "category": "sports",
+      "polarity": "same",
+      "kalshi": null,
+      "polymarket": {
+        "id": "558943",
+        "title": "Will USA win the 2026 FIFA World Cup?"
+      },
+      "verified": false,
+      "notes": "Add Kalshi KXWC or similar ticker"
+    },
+    {
+      "id": "iran-deal-apr22",
+      "title": "US–Iran permanent peace deal by April 22, 2026",
+      "category": "politics",
+      "polarity": "same",
+      "kalshi": null,
+      "polymarket": {
+        "id": "1919417",
+        "title": "US x Iran permanent peace deal by April 22, 2026?"
+      },
+      "verified": false,
+      "notes": "High volume geopolitical. Check Kalshi for Iran deal market"
+    },
+    {
+      "id": "hormuz-normal-apr",
+      "title": "Strait of Hormuz traffic returns to normal by end of April",
+      "category": "politics",
+      "polarity": "same",
+      "kalshi": null,
+      "polymarket": {
+        "id": "1540766",
+        "title": "Strait of Hormuz traffic returns to normal by end of April?"
+      },
+      "verified": false,
+      "notes": "Check if Kalshi has a Hormuz/shipping market"
+    },
+    {
+      "id": "trump-out-apr",
+      "title": "Trump leaves presidency by April 30, 2026",
+      "category": "politics",
+      "polarity": "same",
+      "kalshi": null,
+      "polymarket": {
+        "id": "1733817",
+        "title": "Trump out as President by April 30?"
+      },
+      "verified": false,
+      "notes": "Very low probability market. Kalshi likely has this."
+    }
+  ]
+}

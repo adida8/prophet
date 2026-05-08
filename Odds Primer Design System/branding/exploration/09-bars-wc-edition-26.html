@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WC 2026 edition · the "26" treatment · Odds Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF7F0;
+    --ink: #0E2240;
+    --ink-soft: #3D4F6A;
+    --rule: #D9D2BE;
+    --flame: #D9461C;
+    --flame-deep: #B33414;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body { font-family: var(--serif); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+
+  .page { max-width: 1240px; margin: 0 auto; padding: 48px 36px 96px; }
+
+  .eyebrow {
+    font-family: var(--sans); font-weight: 500;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 6px;
+  }
+  h1.page-title {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 32px; line-height: 1.15; letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+  .page-sub {
+    max-width: 64ch; font-size: 14.5px;
+    color: var(--ink-soft); margin: 0 0 36px;
+  }
+
+  .section {
+    border-top: 1px solid var(--ink);
+    padding: 28px 0 48px;
+  }
+  .section-num {
+    font-family: var(--mono); font-weight: 500;
+    font-size: 12px; color: var(--flame);
+    letter-spacing: 0.08em; margin-bottom: 6px;
+  }
+  .section-name {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 22px; letter-spacing: -0.005em;
+    margin: 0 0 6px;
+  }
+  .section-sub {
+    font-family: var(--sans); font-size: 13px;
+    color: var(--ink-soft); margin: 0 0 22px;
+    max-width: 64ch;
+  }
+
+  /* ============================================
+     HERO — the big "26" with bars nested between
+     ============================================ */
+  .hero {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 72px 32px 56px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero.dark { background: var(--ink); border-color: var(--ink); }
+  .hero.flame { background: var(--flame); border-color: var(--flame); }
+
+  .h-26 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    line-height: 0.85;
+    margin-bottom: 28px;
+  }
+  .h-digit {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 280px;
+    letter-spacing: -0.04em;
+    line-height: 0.85;
+    color: var(--ink);
+    font-feature-settings: "ss01" on;
+  }
+  .hero.dark .h-digit { color: var(--paper); }
+  .hero.flame .h-digit { color: var(--paper); }
+
+  .h-glyph-slot {
+    /* the bars sit in front of, and between, the digits */
+    width: 0;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+    position: relative;
+  }
+  .h-glyph-slot svg {
+    margin: 0 -34px;  /* pull both digits toward the glyph; bars sit between */
+    z-index: 2;
+    position: relative;
+  }
+
+  .h-wordmark {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .h-word {
+    font-family: var(--serif); font-weight: 800;
+    font-size: 36px; letter-spacing: -0.012em;
+    color: var(--ink); line-height: 1;
+    font-feature-settings: "ss01" on;
+  }
+  .hero.dark .h-word, .hero.flame .h-word { color: var(--paper); }
+
+  .h-deck {
+    font-family: var(--sans); font-weight: 600;
+    font-size: 11px; letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .hero.dark .h-deck { color: #B7C2D6; }
+  .hero.flame .h-deck { color: rgba(250,247,240,0.85); }
+
+  .h-deck .pip { color: var(--flame); }
+  .hero.dark .h-deck .pip { color: var(--flame); }
+  .hero.flame .h-deck .pip { color: var(--paper); }
+
+  /* variants grid */
+  .vgrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  @media (max-width: 980px) { .vgrid { grid-template-columns: 1fr; } }
+
+  .vcell {
+    border: 1px solid var(--rule);
+    padding: 32px 24px 22px;
+    background: var(--paper);
+    overflow: hidden;
+    text-align: center;
+  }
+  .vcell.dark { background: var(--ink); border-color: var(--ink); }
+  .vcell.flame { background: var(--flame); border-color: var(--flame); }
+  .vcell-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--flame);
+    letter-spacing: 0.1em;
+    margin-bottom: 14px;
+    text-align: left;
+  }
+  .vcell.dark .vcell-tag { color: #FF8456; }
+  .vcell.flame .vcell-tag { color: var(--ink); }
+
+  .v-26 {
+    display: inline-flex; align-items: center; justify-content: center;
+    line-height: 0.85;
+    margin-bottom: 14px;
+  }
+  .v-digit {
+    font-family: var(--serif); font-weight: 900;
+    font-size: 160px; letter-spacing: -0.04em;
+    line-height: 0.85; color: var(--ink);
+    font-feature-settings: "ss01" on;
+  }
+  .vcell.dark .v-digit { color: var(--paper); }
+  .vcell.flame .v-digit { color: var(--paper); }
+  .v-glyph-slot {
+    width: 0; display: inline-flex; align-items: center; justify-content: center;
+    z-index: 2; position: relative;
+  }
+  .v-glyph-slot svg { margin: 0 -19px; z-index: 2; position: relative; }
+
+  .v-word {
+    font-family: var(--serif); font-weight: 800;
+    font-size: 22px; letter-spacing: -0.012em;
+    color: var(--ink); line-height: 1;
+    font-feature-settings: "ss01" on;
+  }
+  .vcell.dark .v-word, .vcell.flame .v-word { color: var(--paper); }
+
+  /* MASTHEAD compact */
+  .masthead {
+    height: 56px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 18px;
+    background: var(--paper);
+  }
+  .masthead .live {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-soft);
+  }
+
+  .m-26 {
+    display: inline-flex; align-items: center; line-height: 0.85;
+  }
+  .m-digit {
+    font-family: var(--serif); font-weight: 900;
+    font-size: 36px; letter-spacing: -0.04em;
+    line-height: 0.85; color: var(--ink);
+    font-feature-settings: "ss01" on;
+  }
+  .m-glyph-slot { width: 0; display: inline-flex; align-items: center; justify-content: center; }
+  .m-glyph-slot svg { margin: 0 -8px; z-index: 2; position: relative; }
+
+  .m-word {
+    font-family: var(--serif); font-weight: 800;
+    font-size: 18px; letter-spacing: -0.012em;
+    color: var(--ink); line-height: 1;
+    font-feature-settings: "ss01" on;
+  }
+
+  .mast-wrap { border: 1px solid var(--rule); }
+  .mast-tag {
+    font-family: var(--mono); font-size: 9.5px;
+    letter-spacing: 0.1em; color: var(--flame);
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper);
+  }
+
+  /* SOCIAL CARD — 1200x630 */
+  .social {
+    aspect-ratio: 1200 / 630;
+    width: 100%;
+    background: var(--paper);
+    padding: 5%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    position: relative;
+  }
+  .social.dark { background: var(--ink); color: var(--paper); }
+  .sc-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    font-family: var(--sans); font-weight: 600;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .social.dark .sc-top { color: #B7C2D6; }
+  .sc-center { display: flex; align-items: center; justify-content: center; }
+  .sc-26 {
+    display: inline-flex; align-items: center; line-height: 0.85;
+  }
+  .sc-digit {
+    font-family: var(--serif); font-weight: 900;
+    font-size: clamp(120px, 18vw, 220px);
+    letter-spacing: -0.04em;
+    line-height: 0.85; color: var(--ink);
+    font-feature-settings: "ss01" on;
+  }
+  .social.dark .sc-digit { color: var(--paper); }
+  .sc-glyph-slot { width: 0; display: inline-flex; align-items: center; justify-content: center; }
+  .sc-glyph-slot svg { margin: 0 clamp(-30px, -2.5vw, -22px); z-index: 2; position: relative; }
+
+  .sc-bottom {
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .sc-word {
+    font-family: var(--serif); font-weight: 800;
+    font-size: clamp(20px, 2.4vw, 28px);
+    letter-spacing: -0.012em; color: var(--ink);
+    font-feature-settings: "ss01" on;
+  }
+  .social.dark .sc-word { color: var(--paper); }
+  .sc-meta {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink-soft); text-align: right;
+  }
+  .social.dark .sc-meta { color: #B7C2D6; }
+
+  /* notes */
+  .ref-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 880px) { .ref-row { grid-template-columns: 1fr; } }
+  .ref-cell {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 18px 22px;
+  }
+  .ref-cell .lab {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.12em; color: var(--flame);
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .ref-cell .copy {
+    font-family: var(--sans); font-size: 13px;
+    color: var(--ink-soft); line-height: 1.55;
+  }
+  .ref-cell .copy b { color: var(--ink); }
+
+  footer.colophon {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--ink);
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex; justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <p class="eyebrow">Odds Primer · Brand · WC 2026 edition · &ldquo;26&rdquo; treatment</p>
+  <h1 class="page-title">The "26" treatment — translating the FIFA energy</h1>
+  <p class="page-sub">FIFA's 2026 mark sets a giant "26" behind the gold trophy. The trophy is their hero asset; the digits frame it. For us, the <em>bars glyph</em> plays the trophy's role — our hero. Big "26" framing the bars, "Odds Primer" anchored below.</p>
+
+  <div class="ref-row">
+    <div class="ref-cell">
+      <div class="lab">Reference</div>
+      <div class="copy">FIFA's hero treatment is <b>massive "26" digits</b> + <b>trophy nested between</b> + <b>FIFA wordmark below</b>. The trophy partly eclipses the digits — it sits <em>in front</em>.</div>
+    </div>
+    <div class="ref-cell">
+      <div class="lab">Translation</div>
+      <div class="copy">Same construction in our system: <b>massive "26"</b> + <b>bars glyph nested between</b> + <b>"Odds Primer" wordmark below</b>. The bars sit in front of the digits — flame third bar reads against the "2" or the "6" depending on negative space.</div>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       1. HERO — the primary "26" lockup
+       ===================================================== -->
+  <section class="section">
+    <div class="section-num">01</div>
+    <h2 class="section-name">Primary hero lockup</h2>
+    <p class="section-sub">For the WC hub homepage, the launch announcement card, and the OG card. Goes loud — the digits and bars together are the hero, the wordmark is the attribution.</p>
+
+    <div class="hero">
+      <div class="h-26">
+        <span class="h-digit">2</span>
+        <span class="h-glyph-slot">
+          <svg viewBox="0 0 56 50" width="170" height="152" aria-hidden="true">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+        </span>
+        <span class="h-digit">6</span>
+      </div>
+      <div class="h-wordmark">
+        <span class="h-word">Odds Primer</span>
+        <span class="h-deck">FIFA World Cup <span class="pip">·</span> United States <span class="pip">·</span> Canada <span class="pip">·</span> México</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       2. COLOR / WEIGHT VARIANTS
+       ===================================================== -->
+  <section class="section">
+    <div class="section-num">02</div>
+    <h2 class="section-name">Variants</h2>
+    <p class="section-sub">Same construction, different reads. The dark variant is most FIFA-faithful (white type on near-black). The flame variant is most ownable. Cream is the system default.</p>
+
+    <div class="vgrid">
+
+      <!-- V1 — cream (default) -->
+      <div class="vcell">
+        <div class="vcell-tag">V1 · cream · system default</div>
+        <div class="v-26">
+          <span class="v-digit">2</span>
+          <span class="v-glyph-slot">
+            <svg viewBox="0 0 56 50" width="100" height="89" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+          </span>
+          <span class="v-digit">6</span>
+        </div>
+        <div class="v-word">Odds Primer</div>
+      </div>
+
+      <!-- V2 — dark / FIFA-faithful -->
+      <div class="vcell dark">
+        <div class="vcell-tag">V2 · navy · FIFA-faithful</div>
+        <div class="v-26">
+          <span class="v-digit">2</span>
+          <span class="v-glyph-slot">
+            <svg viewBox="0 0 56 50" width="100" height="89" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#FAF7F0" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#FAF7F0"/>
+              <rect x="16" y="22" width="6" height="24" fill="#FAF7F0"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#FAF7F0"/>
+            </svg>
+          </span>
+          <span class="v-digit">6</span>
+        </div>
+        <div class="v-word">Odds Primer</div>
+      </div>
+
+      <!-- V3 — flame -->
+      <div class="vcell flame">
+        <div class="vcell-tag">V3 · flame · loudest</div>
+        <div class="v-26">
+          <span class="v-digit">2</span>
+          <span class="v-glyph-slot">
+            <svg viewBox="0 0 56 50" width="100" height="89" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#FAF7F0" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#FAF7F0"/>
+              <rect x="16" y="22" width="6" height="24" fill="#FAF7F0"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#0E2240"/>
+              <rect x="36" y="28" width="6" height="18" fill="#FAF7F0"/>
+            </svg>
+          </span>
+          <span class="v-digit">6</span>
+        </div>
+        <div class="v-word">Odds Primer</div>
+      </div>
+
+      <!-- V4 — flame "26" on cream (digits in flame) -->
+      <div class="vcell">
+        <div class="vcell-tag">V4 · flame digits on cream · most ownable</div>
+        <div class="v-26">
+          <span class="v-digit" style="color:var(--flame);">2</span>
+          <span class="v-glyph-slot">
+            <svg viewBox="0 0 56 50" width="100" height="89" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+          </span>
+          <span class="v-digit" style="color:var(--flame);">6</span>
+        </div>
+        <div class="v-word">Odds Primer</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =====================================================
+       3. SCALED — masthead + small applications
+       ===================================================== -->
+  <section class="section">
+    <div class="section-num">03</div>
+    <h2 class="section-name">Scaled — masthead</h2>
+    <p class="section-sub">At masthead size the construction holds: bars sit between a smaller "26", wordmark to the right (not below). The "26" replaces the right-side edition strip during WC.</p>
+
+    <div class="mast-wrap">
+      <div class="mast-tag">Masthead · WC edition</div>
+      <div class="masthead">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <span class="m-26">
+            <span class="m-digit">2</span>
+            <span class="m-glyph-slot">
+              <svg viewBox="0 0 56 50" width="36" height="32" aria-hidden="true">
+                <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+                <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+                <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+                <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+                <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+              </svg>
+            </span>
+            <span class="m-digit">6</span>
+          </span>
+          <span class="m-word">Odds Primer</span>
+          <span style="height:14px;width:1px;background:var(--rule);margin:0 4px"></span>
+          <span style="font-family:var(--sans); font-size:10px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-soft);">FIFA World Cup · Edition I</span>
+        </div>
+        <span class="live">FRA v ARG · live</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       4. SOCIAL / OG card
+       ===================================================== -->
+  <section class="section">
+    <div class="section-num">04</div>
+    <h2 class="section-name">Social / OG card · 1200 × 630</h2>
+    <p class="section-sub">The "26" treatment goes loud at hero scale. Two color reads — cream system default, and the FIFA-faithful navy.</p>
+
+    <div style="display:grid; grid-template-columns: 1fr; gap: 18px;">
+
+      <!-- Cream -->
+      <div style="border:1px solid var(--rule);">
+        <div class="social">
+          <div class="sc-top">
+            <span>Odds Primer · WC 2026 Edition</span>
+            <span>oddsprimer.com</span>
+          </div>
+          <div class="sc-center">
+            <span class="sc-26">
+              <span class="sc-digit">2</span>
+              <span class="sc-glyph-slot">
+                <svg viewBox="0 0 56 50" width="135" height="120" aria-hidden="true">
+                  <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+                  <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+                  <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+                  <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+                  <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+                </svg>
+              </span>
+              <span class="sc-digit">6</span>
+            </span>
+          </div>
+          <div class="sc-bottom">
+            <span class="sc-word">Odds Primer</span>
+            <span class="sc-meta">FIFA World Cup · United States | Canada | México</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navy / FIFA-faithful -->
+      <div style="border:1px solid var(--ink);">
+        <div class="social dark">
+          <div class="sc-top">
+            <span>Odds Primer · WC 2026 Edition</span>
+            <span>oddsprimer.com</span>
+          </div>
+          <div class="sc-center">
+            <span class="sc-26">
+              <span class="sc-digit">2</span>
+              <span class="sc-glyph-slot">
+                <svg viewBox="0 0 56 50" width="135" height="120" aria-hidden="true">
+                  <line x1="2" y1="46" x2="54" y2="46" stroke="#FAF7F0" stroke-width="1.25"/>
+                  <rect x="6"  y="32" width="6" height="14" fill="#FAF7F0"/>
+                  <rect x="16" y="22" width="6" height="24" fill="#FAF7F0"/>
+                  <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+                  <rect x="36" y="28" width="6" height="18" fill="#FAF7F0"/>
+                </svg>
+              </span>
+              <span class="sc-digit">6</span>
+            </span>
+          </div>
+          <div class="sc-bottom">
+            <span class="sc-word">Odds Primer</span>
+            <span class="sc-meta">FIFA World Cup · United States | Canada | México</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =====================================================
+       5. NOTES
+       ===================================================== -->
+  <section class="section">
+    <div class="section-num">05</div>
+    <h2 class="section-name">What this gets us — and what to watch</h2>
+    <div class="ref-row">
+      <div class="ref-cell">
+        <div class="lab">Strengths</div>
+        <div class="copy">
+          The bars stop being a small mark and start being the <b>tournament hero</b>.<br><br>
+          The "26" is a direct reference to FIFA's hero treatment — <b>borrowed authority</b> on a launch surface, but expressed in our own visual language.<br><br>
+          Construction <b>scales cleanly</b>: hero (280px digit) → social card (~200px) → masthead (36px). The bars-between-digits relationship survives.
+        </div>
+      </div>
+      <div class="ref-cell">
+        <div class="lab">Watchouts</div>
+        <div class="copy">
+          <b>Trademark.</b> "26" alone is not FIFA's mark, but the construction (digit + central asset + below-wordmark) <em>is</em> FIFA's. Worth a quick legal sense-check before launch.<br><br>
+          <b>Editioned, not skinned.</b> Reserve this treatment for WC-specific surfaces (hub, OG cards, special-issue articles). The default brand stays the locked v2 lockup.<br><br>
+          <b>Color discipline.</b> V3 (flame everywhere) is loud but flame loses its "best price" meaning when it's used decoratively at scale. Keep flame on the third bar wherever it appears.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <span>Odds Primer · Brand · WC 2026 edition · "26" treatment · v0.3</span>
+    <span>Hero + 4 variants + masthead + 2 social cards</span>
+  </footer>
+
+</div>
+</body>
+</html>

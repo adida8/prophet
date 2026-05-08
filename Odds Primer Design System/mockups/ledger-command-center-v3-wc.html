@@ -1,0 +1,1677 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oddsprimer Ledger — WC 2026 Edition · Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700;8..60,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF7F0;
+    --paper-pure: #FFFFFF;
+    --paper-warm: #F0ECE2;
+    --paper-deep: #E8E2D2;
+    --ink: #0E2240;
+    --ink-soft: #2A3957;
+    --graphite: #3A3F47;
+    --graphite-soft: #6B7079;
+    --rule: #D9D2C0;
+    --rule-soft: #EDE7D6;
+    --flame: #D9461C;
+    --flame-deep: #A8341A;
+    --flame-tint: #F7E4DA;
+    --chart-1: #0E2240;
+    --chart-2: #D9461C;
+    --chart-3: #6B7079;
+    --chart-4: #B89968;
+    --chart-5: #2A3957;
+    --chart-6: #8A6F3D;
+    --venue-poly: #2A6FDB;
+    --venue-kalshi: #00C46A;
+    --delta-up: #4A7A5A;
+    --delta-down: #A8534A;
+    /* Bet-type colors — outright is the anchor, player is the buzz */
+    --bet-outright: #0E2240;   /* navy ink */
+    --bet-player:   #D9461C;   /* flame */
+    --bet-team:     #B89968;   /* warm tan */
+    --bet-match:    #2A6FDB;   /* polymarket blue */
+    /* heatmap ramp */
+    --heat-0: #F0ECE2;
+    --heat-1: #E8DDC4;
+    --heat-2: #DCC298;
+    --heat-3: #D9826B;
+    --heat-4: #D9461C;
+    --heat-down: #BFB9AB;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body {
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+  .shell { max-width: 1440px; margin: 0 auto; padding: 0 40px; }
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--graphite-soft);
+  }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 500; }
+
+  /* ============ LIVE TICKER ============ */
+  .ticker {
+    background: var(--ink);
+    color: var(--paper);
+    overflow: hidden;
+    border-bottom: 4px solid var(--flame);
+    position: relative;
+  }
+  .ticker .strip {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 36px;
+    width: max-content;
+    animation: scroll 50s linear infinite;
+  }
+  .ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 22px;
+    border-right: 1px solid rgba(255,255,255,0.12);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .ticker-item .label { color: rgba(255,247,240,0.55); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+  .ticker-item .price { color: var(--paper); }
+  .ticker-item .delta-up   { color: #92D6A4; font-weight: 600; }
+  .ticker-item .delta-down { color: #E89A8A; font-weight: 600; }
+  .ticker-item .dot { width: 7px; height: 7px; border-radius: 999px; }
+  .ticker-item .dot.poly { background: var(--venue-poly); }
+  @keyframes scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .live-pill {
+    position: absolute;
+    left: 16px; top: 50%; transform: translateY(-50%);
+    background: var(--flame); color: var(--paper);
+    padding: 4px 10px;
+    font-family: var(--sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    z-index: 2;
+    display: inline-flex; align-items: center; gap: 8px;
+    border-radius: 2px;
+  }
+  .live-pill::before {
+    content: ''; width: 7px; height: 7px; border-radius: 999px;
+    background: var(--paper);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  /* ============ MASTHEAD ============ */
+  .mast {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--rule);
+    padding: 18px 0 14px;
+  }
+  .brand { display: inline-flex; align-items: center; gap: 11px; }
+  .glyph { display: inline-flex; align-items: flex-end; gap: 3px; height: 28px; }
+  .glyph i { display: block; width: 5px; background: var(--ink); }
+  .glyph i:nth-child(1) { height: 22%; }
+  .glyph i:nth-child(2) { height: 38%; }
+  .glyph i:nth-child(3) { height: 65%; background: var(--flame); }
+  .glyph i:nth-child(4) { height: 30%; }
+  .wordmark {
+    font-family: var(--serif); font-weight: 800; font-size: 22px;
+    letter-spacing: -0.01em; color: var(--ink);
+  }
+  .wordmark .pipe { color: var(--rule); margin: 0 8px; font-weight: 400; }
+  .wordmark .sub { font-weight: 600; color: var(--graphite); font-size: 18px; }
+  .mast-meta { display: inline-flex; align-items: center; gap: 18px; }
+  .mast-meta .timestamp { font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--graphite); }
+  .mast-meta .timestamp .dagger { color: var(--flame); }
+  .btn {
+    background: var(--ink); border: 1px solid var(--ink);
+    padding: 8px 16px;
+    font-family: var(--sans); font-size: 11px; font-weight: 700;
+    color: var(--paper); cursor: pointer;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    border-radius: 2px; transition: all 120ms;
+  }
+  .btn:hover { background: var(--flame); border-color: var(--flame); }
+  .btn.secondary { background: none; color: var(--graphite); border-color: var(--rule); }
+  .btn.secondary:hover { background: none; color: var(--ink); border-color: var(--ink); }
+
+  /* ============ COVER STRIP ============ */
+  .cover {
+    background: var(--paper-warm);
+    border-bottom: 4px solid var(--flame);
+    padding: 26px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover-inner {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 32px;
+  }
+  .cover-edition {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink);
+    padding: 6px 14px;
+    border: 2px solid var(--ink);
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .cover-title {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: 56px;
+    letter-spacing: -0.02em;
+    line-height: 0.95;
+    color: var(--ink);
+    text-align: center;
+    margin: 0;
+  }
+  .cover-title .tm {
+    font-family: var(--serif); font-weight: 600; font-size: 14px;
+    color: var(--flame); vertical-align: super; letter-spacing: 0; margin-left: 4px;
+  }
+  .cover-countdown {
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--ink);
+    text-align: right;
+  }
+  .cover-countdown .num { font-size: 36px; line-height: 1; letter-spacing: -0.02em; }
+  .cover-countdown .label {
+    font-family: var(--sans); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite);
+    margin-top: 2px;
+  }
+  .cover-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--graphite);
+  }
+  .cover-meta .hosts { color: var(--ink); }
+  .cover-meta .dot { width: 4px; height: 4px; border-radius: 999px; background: var(--rule); display: inline-block; margin: 0 12px; vertical-align: middle; }
+
+  /* ============ HERO ============ */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper);
+  }
+  .hero-main {
+    padding: 44px 40px 36px;
+    border-right: 1px solid var(--rule);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-main .label-line {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: var(--sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--flame); margin-bottom: 24px;
+  }
+  .hero-main .label-line .live-dot {
+    width: 8px; height: 8px; border-radius: 999px; background: var(--flame);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .hero-value-row { display: flex; align-items: baseline; gap: 24px; margin-bottom: 16px; }
+  .hero-value {
+    font-family: var(--mono); font-weight: 700; font-size: 88px;
+    letter-spacing: -0.035em; color: var(--ink); line-height: 0.95;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-value .cents { font-size: 56px; color: var(--graphite); font-weight: 600; }
+  .hero-delta-stack { display: flex; flex-direction: column; gap: 2px; }
+  .hero-delta-big {
+    font-family: var(--mono); font-size: 22px; font-weight: 700;
+    color: var(--delta-up); font-variant-numeric: tabular-nums;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .hero-delta-meta {
+    font-family: var(--sans); font-size: 12px; color: var(--graphite); font-weight: 500;
+  }
+  .hero-spark-row {
+    margin-top: 24px; border-top: 1px dashed var(--rule); padding-top: 20px;
+    display: flex; align-items: center; gap: 28px;
+  }
+  .hero-spark-row .label {
+    font-family: var(--sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft);
+    min-width: 60px;
+  }
+  .hero-spark-row svg { flex: 1; }
+
+  .hero-side { padding: 36px 40px; display: flex; flex-direction: column; gap: 16px; }
+  .stat-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .stat-card {
+    background: var(--paper-pure); border: 1px solid var(--rule);
+    padding: 16px 18px; border-radius: 2px; position: relative;
+  }
+  .stat-card.accent { border-left: 4px solid var(--flame); }
+  .stat-card.accent-blue { border-left: 4px solid var(--venue-poly); }
+  .stat-card.accent-tan { border-left: 4px solid var(--chart-4); }
+  .stat-card .eyebrow { margin-bottom: 8px; }
+  .stat-card .val {
+    font-family: var(--mono); font-weight: 700; font-size: 26px;
+    letter-spacing: -0.015em; line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .stat-card .sub {
+    font-family: var(--serif); font-style: italic; font-size: 12px; color: var(--graphite);
+    margin-top: 6px;
+  }
+  .stat-card.streak {
+    background: linear-gradient(135deg, var(--flame-tint) 0%, var(--paper-pure) 70%);
+    border: 1px solid var(--flame);
+    border-left-width: 4px;
+  }
+  .stat-card.streak .val { color: var(--flame-deep); display: inline-flex; align-items: baseline; gap: 8px; }
+  .stat-card.streak .val .badge {
+    font-family: var(--sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--paper);
+    background: var(--flame); padding: 3px 8px; border-radius: 2px;
+  }
+
+  /* ============ DOSSIER LINE ============ */
+  .dossier-line {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--rule);
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 32px;
+  }
+  .dossier-line h1 {
+    font-family: var(--serif); font-size: 22px; font-weight: 600;
+    letter-spacing: -0.005em; line-height: 1.2; margin: 0; max-width: 70ch;
+  }
+  .dossier-line h1 strong { font-weight: 700; }
+  .dossier-line .meta {
+    font-family: var(--mono); font-size: 12px; color: var(--graphite);
+    white-space: nowrap;
+  }
+  .address-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--paper-pure); padding: 4px 10px;
+    border: 1px solid var(--rule); border-radius: 2px;
+    font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--ink);
+  }
+  .address-chip .copy {
+    color: var(--graphite-soft); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer;
+  }
+
+  /* ============ MOVERS ============ */
+  .movers {
+    display: grid; grid-template-columns: 200px 1fr; gap: 32px;
+    padding: 28px 0; border-bottom: 1px solid var(--rule);
+  }
+  .movers .head {
+    display: flex; flex-direction: column; justify-content: center;
+    border-right: 1px solid var(--rule); padding-right: 32px;
+  }
+  .movers .head .title {
+    font-family: var(--serif); font-size: 22px; font-weight: 600;
+    letter-spacing: -0.005em; line-height: 1.1; margin-bottom: 4px;
+  }
+  .movers .head .byline {
+    font-family: var(--serif); font-style: italic; font-size: 12px; color: var(--graphite);
+  }
+  .movers .grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  }
+  .mover {
+    border: 1px solid var(--rule); background: var(--paper-pure);
+    padding: 14px 16px; position: relative;
+  }
+  .mover.up { border-left: 4px solid var(--flame); }
+  .mover.down { border-left: 4px solid var(--graphite); }
+  .mover .bet-tag {
+    font-family: var(--sans); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 4px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .mover .bet-tag::before { content: ''; width: 6px; height: 6px; border-radius: 999px; }
+  .mover.bet-out .bet-tag { color: var(--bet-outright); }
+  .mover.bet-out .bet-tag::before { background: var(--bet-outright); }
+  .mover.bet-pl .bet-tag { color: var(--bet-player); }
+  .mover.bet-pl .bet-tag::before { background: var(--bet-player); }
+  .mover.bet-tm .bet-tag { color: var(--bet-team); }
+  .mover.bet-tm .bet-tag::before { background: var(--bet-team); }
+  .mover.bet-mt .bet-tag { color: var(--bet-match); }
+  .mover.bet-mt .bet-tag::before { background: var(--bet-match); }
+  .mover .q {
+    font-family: var(--serif); font-size: 13px; font-weight: 500;
+    line-height: 1.3; color: var(--ink); margin-bottom: 8px;
+  }
+  .mover .deltabig {
+    font-family: var(--mono); font-size: 22px; font-weight: 700;
+    letter-spacing: -0.01em; line-height: 1;
+  }
+  .mover.up .deltabig { color: var(--flame-deep); }
+  .mover.down .deltabig { color: var(--graphite); }
+  .mover .meta {
+    font-family: var(--mono); font-size: 11px; color: var(--graphite-soft);
+    margin-top: 6px;
+  }
+  .mover .liveflag {
+    position: absolute; top: 10px; right: 10px;
+    font-family: var(--sans); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--flame);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .mover .liveflag::before {
+    content: ''; width: 6px; height: 6px; border-radius: 999px; background: var(--flame);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  /* ============ MAIN CHART ============ */
+  .chart-section { padding: 36px 0; border-bottom: 1px solid var(--rule); }
+  .section-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 22px;
+  }
+  .section-head h2 {
+    font-family: var(--serif); font-size: 30px; font-weight: 600;
+    letter-spacing: -0.005em; margin: 0 0 4px;
+  }
+  .section-head .byline {
+    font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--graphite);
+  }
+  .range-pills { display: inline-flex; gap: 0; border: 1px solid var(--ink); border-radius: 2px; overflow: hidden; }
+  .range-pills button {
+    background: var(--paper-pure); border: none; border-right: 1px solid var(--rule);
+    padding: 8px 14px;
+    font-family: var(--sans); font-size: 11px; font-weight: 700;
+    color: var(--graphite); cursor: pointer;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .range-pills button:last-child { border-right: none; }
+  .range-pills button.active { background: var(--ink); color: var(--paper); }
+  .range-pills button:hover:not(.active) { background: var(--flame-tint); color: var(--ink); }
+
+  .chart-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
+  .main-chart-wrap {
+    background: var(--paper-pure); border: 1px solid var(--rule); padding: 24px 28px;
+  }
+  .chart-stats {
+    display: flex; gap: 28px; margin-bottom: 16px;
+    padding-bottom: 16px; border-bottom: 1px solid var(--rule-soft);
+  }
+  .chart-stat .label { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft); }
+  .chart-stat .val { font-family: var(--mono); font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .chart-stat .delta { font-family: var(--mono); font-size: 11px; color: var(--delta-up); font-weight: 600; }
+
+  /* HEATMAP */
+  .heatmap-card {
+    background: var(--paper-pure); border: 1px solid var(--rule);
+    padding: 20px 22px; display: flex; flex-direction: column;
+  }
+  .heatmap-card .head { margin-bottom: 14px; }
+  .heatmap-card .head h3 {
+    font-family: var(--serif); font-size: 17px; font-weight: 600; margin: 0 0 2px;
+  }
+  .heatmap-card .head .byline {
+    font-family: var(--serif); font-style: italic; font-size: 11px; color: var(--graphite);
+  }
+  .heat-grid {
+    display: grid; grid-template-columns: repeat(9, 1fr);
+    gap: 3px;
+  }
+  .heat-cell { aspect-ratio: 1; border-radius: 2px; position: relative; min-height: 24px; }
+  .heat-cell:hover::after {
+    content: attr(data-tooltip);
+    position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: var(--paper);
+    padding: 4px 8px; font-size: 10px; font-family: var(--mono);
+    white-space: nowrap; border-radius: 2px; z-index: 10;
+  }
+  .heat-legend {
+    margin-top: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--mono); font-size: 10px; color: var(--graphite-soft);
+  }
+  .heat-legend .scale { display: inline-flex; gap: 3px; }
+  .heat-legend .scale span { width: 14px; height: 10px; border-radius: 1px; }
+
+  /* ============ QUAD ============ */
+  .quad {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .quad-cell {
+    padding: 26px 24px 28px; border-right: 1px solid var(--rule);
+    position: relative;
+  }
+  .quad-cell:last-child { border-right: none; }
+  .quad-cell.glow {
+    background: linear-gradient(180deg, var(--flame-tint) 0%, var(--paper) 60%);
+  }
+  .quad-cell .eyebrow { margin-bottom: 12px; }
+  .quad-value {
+    font-family: var(--mono); font-weight: 700; font-size: 32px;
+    letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+    margin-bottom: 6px; line-height: 1;
+  }
+  .quad-value .accent { color: var(--flame-deep); }
+  .quad-sub {
+    font-family: var(--serif); font-style: italic; font-size: 13px;
+    color: var(--graphite); line-height: 1.45;
+  }
+  .quad-viz { margin-top: 16px; }
+
+  /* ============ POSITIONS TABLE ============ */
+  .table-section { padding: 40px 0 12px; }
+  .filter-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  .filter-pills { display: inline-flex; gap: 6px; }
+  .filter-pills button {
+    background: none; border: 1px solid var(--rule);
+    padding: 7px 16px; border-radius: 999px;
+    cursor: pointer;
+    font-family: var(--sans); font-size: 12px; font-weight: 600;
+    color: var(--graphite); letter-spacing: 0.02em;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .filter-pills button .dot { width: 6px; height: 6px; border-radius: 999px; }
+  .filter-pills button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .filter-pills button:hover:not(.active) { border-color: var(--ink); color: var(--ink); }
+
+  table.positions { width: 100%; border-collapse: collapse; font-family: var(--sans); }
+  .positions thead th {
+    text-align: left; padding: 12px 14px;
+    background: var(--ink); color: var(--paper);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .positions thead th.right { text-align: right; }
+  .positions thead th:first-child { padding-left: 24px; }
+  .positions thead th:last-child { padding-right: 24px; }
+  .positions tbody tr {
+    transition: background 120ms;
+    border-left: 4px solid transparent;
+  }
+  .positions tbody tr.bet-out { border-left-color: var(--bet-outright); }
+  .positions tbody tr.bet-pl { border-left-color: var(--bet-player); }
+  .positions tbody tr.bet-tm { border-left-color: var(--bet-team); }
+  .positions tbody tr.bet-mt { border-left-color: var(--bet-match); }
+  .positions tbody tr:hover { background: var(--paper-warm); }
+  .positions tbody tr.hot { background: var(--flame-tint); }
+  .positions tbody tr.hot:hover { background: #F0D5C5; }
+  .positions tbody td {
+    padding: 16px 14px; border-bottom: 1px solid var(--rule);
+    vertical-align: middle;
+  }
+  .positions tbody td.right { text-align: right; }
+  .positions tbody td:first-child { padding-left: 20px; }
+  .positions tbody td:last-child { padding-right: 24px; }
+  .market-q {
+    font-family: var(--serif); font-weight: 500; font-size: 15px;
+    color: var(--ink); display: block; margin-bottom: 4px;
+    line-height: 1.3; max-width: 38ch;
+  }
+  .market-q .live-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: var(--sans); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--flame);
+    margin-left: 8px; vertical-align: middle;
+  }
+  .market-q .live-tag::before {
+    content: ''; width: 5px; height: 5px; border-radius: 999px; background: var(--flame);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .market-meta {
+    font-family: var(--sans); font-size: 10px; color: var(--graphite-soft);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-weight: 600;
+  }
+  .venue-dot { width: 6px; height: 6px; border-radius: 999px; display: inline-block; }
+  .venue-dot.poly { background: var(--venue-poly); }
+  .venue-dot.manual { background: var(--ink); }
+  .market-meta .manual-tag {
+    font-family: var(--sans); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--paper);
+    background: var(--ink); padding: 2px 6px; border-radius: 2px;
+  }
+  .bet-chip {
+    display: inline-block; padding: 1px 7px; border-radius: 2px;
+    font-family: var(--sans); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--paper);
+  }
+  .bet-chip.out { background: var(--bet-outright); }
+  .bet-chip.pl { background: var(--bet-player); }
+  .bet-chip.tm { background: var(--bet-team); }
+  .bet-chip.mt { background: var(--bet-match); }
+  .outcome-pill {
+    display: inline-flex; align-items: center;
+    padding: 4px 10px;
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; border-radius: 2px;
+  }
+  .outcome-yes { background: var(--ink); color: var(--paper); }
+  .outcome-no { background: var(--paper-deep); color: var(--ink); border: 1px solid var(--rule); }
+  .pnl-pos { color: var(--ink); font-weight: 700; }
+  .pnl-pos.flame {
+    background: var(--flame); color: var(--paper);
+    padding: 3px 8px; border-radius: 2px; display: inline-block;
+  }
+  .pnl-pos.warm {
+    background: var(--flame-tint); padding: 3px 8px; border-radius: 2px;
+    display: inline-block; color: var(--flame-deep);
+  }
+  .pnl-neg { color: var(--graphite-soft); }
+  .pnl-neg.cool {
+    background: var(--paper-warm); padding: 3px 8px; border-radius: 2px;
+    display: inline-block;
+  }
+  .view-source {
+    font-family: var(--sans); font-size: 11px; color: var(--ink);
+    text-decoration: underline; text-decoration-color: var(--rule);
+    text-underline-offset: 3px; white-space: nowrap;
+    letter-spacing: 0.02em; font-weight: 600;
+  }
+  .view-source:hover { color: var(--flame-deep); text-decoration-color: var(--flame); }
+  .row-spark { width: 100px; height: 26px; }
+
+  /* ============ CLOSED TEASER ============ */
+  .closed-teaser {
+    padding: 22px 24px;
+    margin: 0 -40px;
+    background: var(--ink); color: var(--paper);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .closed-teaser .left { font-family: var(--serif); font-size: 16px; }
+  .closed-teaser .left strong { font-family: var(--mono); font-weight: 700; color: var(--paper); }
+  .closed-teaser .left em { color: rgba(250,247,240,0.55); font-style: italic; }
+  .closed-teaser .left .pop { color: #F0D5C5; font-family: var(--mono); font-weight: 700; }
+  .closed-teaser .btn { background: var(--flame); border-color: var(--flame); }
+  .closed-teaser .btn:hover { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+
+  /* ============ DUAL ============ */
+  .dual {
+    display: grid; grid-template-columns: 1.2fr 1fr; gap: 56px;
+    padding: 48px 0; border-bottom: 1px solid var(--rule);
+  }
+  .dual h3 {
+    font-family: var(--serif); font-size: 26px; font-weight: 600;
+    margin: 0 0 4px; letter-spacing: -0.005em;
+  }
+  .dual .byline {
+    font-family: var(--serif); font-style: italic; font-size: 13px;
+    color: var(--graphite); margin-bottom: 20px;
+  }
+  .timeline { list-style: none; padding: 0; margin: 0; }
+  .timeline li {
+    display: grid; grid-template-columns: 78px 80px 1fr auto; gap: 16px;
+    padding: 14px 0; border-bottom: 1px solid var(--rule-soft);
+    align-items: baseline; position: relative;
+  }
+  .timeline li::before {
+    content: ''; position: absolute; left: 86px; top: 0; bottom: 0; width: 2px;
+    background: var(--rule-soft);
+  }
+  .timeline li:first-child::before { top: 50%; }
+  .timeline li:last-child::before { bottom: 50%; }
+  .timeline li:last-child { border-bottom: none; }
+  .tl-time { font-family: var(--mono); font-size: 11px; color: var(--graphite-soft); }
+  .tl-action {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 2px; align-self: center;
+    text-align: center; min-width: 70px; position: relative; z-index: 1;
+  }
+  .tl-action.buy { background: var(--ink); color: var(--paper); }
+  .tl-action.sell { background: var(--paper-deep); color: var(--ink); border: 1px solid var(--rule); }
+  .tl-action.resolve { background: var(--flame); color: var(--paper); }
+  .tl-detail { font-family: var(--serif); font-size: 14px; color: var(--ink); }
+  .tl-detail em { color: var(--graphite); font-style: italic; }
+  .tl-amt { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+  .tl-amt.pos { color: var(--delta-up); }
+  .tl-amt.neg { color: var(--delta-down); }
+  .tl-amt.win { color: var(--flame-deep); font-weight: 700; }
+
+  /* ============ EDGE ============ */
+  .edge-table { width: 100%; border-collapse: collapse; }
+  .edge-table th {
+    text-align: left;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--graphite-soft);
+    padding: 10px 0; border-bottom: 2px solid var(--ink);
+  }
+  .edge-table th.right { text-align: right; }
+  .edge-table td {
+    padding: 14px 0; border-bottom: 1px solid var(--rule-soft);
+    font-family: var(--mono); font-size: 13px; vertical-align: middle;
+  }
+  .edge-table td.right { text-align: right; font-variant-numeric: tabular-nums; }
+  .edge-table td.cat {
+    font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--ink);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .edge-table td.cat::before {
+    content: ''; width: 10px; height: 10px; border-radius: 2px;
+  }
+  .edge-table tr.row-out td.cat::before { background: var(--bet-outright); }
+  .edge-table tr.row-pl td.cat::before { background: var(--bet-player); }
+  .edge-table tr.row-tm td.cat::before { background: var(--bet-team); }
+  .edge-table tr.row-mt td.cat::before { background: var(--bet-match); }
+  .verdict-pill {
+    display: inline-block; padding: 4px 12px; border-radius: 999px;
+    font-family: var(--sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .verdict-pill.skill { background: var(--flame); color: var(--paper); }
+  .verdict-pill.luck { background: var(--paper-deep); color: var(--graphite); border: 1px solid var(--rule); }
+  .verdict-pill.hot { background: var(--ink); color: var(--paper); }
+
+  /* ============ ETSY WELCOME BANNER ============ */
+  .etsy-banner {
+    background: var(--paper-deep);
+    border-bottom: 1px solid var(--rule);
+  }
+  .etsy-banner-inner {
+    max-width: 1440px; margin: 0 auto; padding: 12px 40px;
+    display: flex; align-items: center; gap: 18px;
+    font-family: var(--sans); font-size: 13px; color: var(--ink);
+  }
+  .etsy-banner .pre {
+    font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--flame); font-size: 10px;
+    padding: 4px 10px; background: var(--paper); border: 1px solid var(--flame);
+    border-radius: 2px; white-space: nowrap;
+  }
+  .etsy-banner .msg { flex: 1; line-height: 1.4; }
+  .etsy-banner .msg em { font-family: var(--serif); font-style: italic; color: var(--graphite); }
+  .etsy-banner .msg strong { font-weight: 700; }
+  .etsy-banner .dismiss {
+    font-family: var(--sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--graphite-soft); cursor: pointer;
+    background: none; border: none; padding: 4px 8px;
+  }
+  .etsy-banner .dismiss:hover { color: var(--ink); }
+
+  /* ============ SOURCES ============ */
+  .sources {
+    padding: 32px 0 28px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .sources-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 18px;
+  }
+  .sources-head .left .eyebrow { margin-bottom: 2px; }
+  .sources-title {
+    font-family: var(--serif); font-size: 26px; font-weight: 600;
+    letter-spacing: -0.005em; margin: 0;
+  }
+  .sources-summary {
+    font-family: var(--mono); font-size: 12px; color: var(--graphite);
+    font-variant-numeric: tabular-nums;
+  }
+  .sources-summary .pop { color: var(--flame-deep); font-weight: 700; }
+  .sources-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .source {
+    border: 1px solid var(--rule);
+    background: var(--paper-pure);
+    padding: 16px 18px;
+    display: flex; flex-direction: column; gap: 10px;
+    border-radius: 2px;
+    border-left-width: 4px;
+    border-left-color: var(--rule);
+    position: relative;
+  }
+  .source.connected { border-left-color: var(--ink); }
+  .source.connected.ink-strong { border-left-color: var(--ink); }
+  .source.connected.poly { border-left-color: var(--venue-poly); }
+  .source.connected.flame { border-left-color: var(--flame); }
+  .source-head {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .source-icon {
+    width: 10px; height: 10px; border-radius: 999px;
+  }
+  .source-name {
+    font-family: var(--sans); font-size: 14px; font-weight: 700; color: var(--ink); flex: 1;
+  }
+  .source-status {
+    font-family: var(--sans); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 2px;
+  }
+  .source-status.status-on {
+    background: var(--ink); color: var(--paper);
+  }
+  .source-status.status-on.flame {
+    background: var(--flame); color: var(--paper);
+  }
+  .source-status.status-off {
+    background: var(--paper-warm); color: var(--graphite); border: 1px solid var(--rule);
+  }
+  .source-detail {
+    font-family: var(--serif); font-size: 12px; font-style: italic;
+    color: var(--graphite); line-height: 1.4;
+  }
+  .source-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--sans); font-size: 11px;
+    margin-top: auto; padding-top: 4px;
+  }
+  .source-count {
+    font-family: var(--mono); font-weight: 600; color: var(--ink);
+    font-size: 12px;
+  }
+  .source-action {
+    color: var(--flame-deep); text-decoration: none; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; font-size: 10px;
+  }
+  .source-action:hover { text-decoration: underline; text-decoration-color: var(--flame); }
+
+  /* ============ FOOTER ============ */
+  .foot {
+    padding: 32px 0 64px; text-align: center;
+    font-family: var(--serif); font-size: 12px; font-style: italic;
+    color: var(--graphite-soft);
+  }
+  .foot .dagger { color: var(--flame); }
+  .foot .rule { width: 80px; height: 1px; background: var(--rule); margin: 0 auto 20px; }
+</style>
+</head>
+<body>
+
+<!-- ============ LIVE TICKER ============ -->
+<div class="ticker">
+  <span class="live-pill">Live</span>
+  <div class="strip" style="padding-left: 90px;">
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Argentina ✓</span><span class="price">$0.24</span><span class="delta-up">▲ +1.8¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Brazil ✓</span><span class="price">$0.18</span><span class="delta-down">▼ −0.6¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">France ✓</span><span class="price">$0.15</span><span class="delta-up">▲ +0.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Spain ✓</span><span class="price">$0.13</span><span class="delta-up">▲ +0.2¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">England ✓</span><span class="price">$0.10</span><span class="delta-down">▼ −0.5¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Mbappé Top Scorer</span><span class="price">$0.21</span><span class="delta-up">▲ +2.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Messi to Score</span><span class="price">$0.78</span><span class="delta-up">▲ +0.7¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Final → Pens</span><span class="price">$0.18</span><span class="delta-down">▼ −0.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">USA Knockout</span><span class="price">$0.62</span><span class="delta-up">▲ +0.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">ARG Group A</span><span class="price">$0.71</span><span class="delta-up">▲ +1.2¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">ARG vs BRA Knockouts</span><span class="price">$0.51</span><span class="delta-up">▲ +0.9¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Bellingham Boot</span><span class="price">$0.11</span><span class="delta-down">▼ −0.3¢</span></span>
+    <!-- duplicate for seamless loop -->
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Argentina ✓</span><span class="price">$0.24</span><span class="delta-up">▲ +1.8¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Brazil ✓</span><span class="price">$0.18</span><span class="delta-down">▼ −0.6¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">France ✓</span><span class="price">$0.15</span><span class="delta-up">▲ +0.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Spain ✓</span><span class="price">$0.13</span><span class="delta-up">▲ +0.2¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">England ✓</span><span class="price">$0.10</span><span class="delta-down">▼ −0.5¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Mbappé Top Scorer</span><span class="price">$0.21</span><span class="delta-up">▲ +2.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Messi to Score</span><span class="price">$0.78</span><span class="delta-up">▲ +0.7¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Final → Pens</span><span class="price">$0.18</span><span class="delta-down">▼ −0.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">USA Knockout</span><span class="price">$0.62</span><span class="delta-up">▲ +0.4¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">ARG Group A</span><span class="price">$0.71</span><span class="delta-up">▲ +1.2¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">ARG vs BRA Knockouts</span><span class="price">$0.51</span><span class="delta-up">▲ +0.9¢</span></span>
+    <span class="ticker-item"><span class="dot poly"></span><span class="label">Bellingham Boot</span><span class="price">$0.11</span><span class="delta-down">▼ −0.3¢</span></span>
+  </div>
+</div>
+
+<div class="shell">
+
+  <!-- ============ MASTHEAD ============ -->
+  <header class="mast">
+    <div class="brand">
+      <span class="glyph"><i></i><i></i><i></i><i></i></span>
+      <span class="wordmark">Oddsprimer<span class="pipe">·</span><span class="sub">Ledger</span></span>
+    </div>
+    <div class="mast-meta">
+      <span class="timestamp">Wallet 0x1f3a · · · a4b2 · synced 2 min ago<span class="dagger">†</span></span>
+      <button class="btn secondary">Disconnect</button>
+      <button class="btn">Refresh</button>
+    </div>
+  </header>
+
+  <!-- ============ COVER STRIP ============ -->
+  <section class="cover">
+    <div class="cover-inner">
+      <span class="cover-edition">Edition No. 1</span>
+      <h2 class="cover-title">The World Cup 2026<span class="tm">†</span></h2>
+      <div class="cover-countdown">
+        <div class="num">38</div>
+        <div class="label">Days to kickoff</div>
+      </div>
+    </div>
+    <div class="cover-meta">
+      <span>14 positions · $32,447 open · Argentina the largest single bet</span>
+      <span class="hosts">USA <span class="dot"></span> Mexico <span class="dot"></span> Canada · 48 teams · 104 matches</span>
+    </div>
+  </section>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="hero-main">
+      <div class="label-line">
+        <span class="live-dot"></span>
+        Portfolio value · Live · Polymarket · Polygon
+      </div>
+      <div class="hero-value-row">
+        <div class="hero-value">$42,847<span class="cents">.13</span></div>
+        <div class="hero-delta-stack">
+          <div class="hero-delta-big">▲ $1,247.40</div>
+          <div class="hero-delta-meta">+3.0% over 24h · 7 trades · 1 friendly resolved</div>
+        </div>
+      </div>
+      <div class="hero-spark-row">
+        <div class="label">53d</div>
+        <svg width="100%" height="56" viewBox="0 0 600 56" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#D9461C" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#F7E4DA" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M 0,46 L 30,44 L 60,42 L 90,38 L 120,40 L 150,32 L 180,30 L 210,38 L 240,28 L 270,26 L 300,22 L 330,20 L 360,16 L 390,18 L 420,12 L 450,10 L 480,8 L 510,6 L 540,4 L 570,3 L 600,2 L 600,56 L 0,56 Z"
+                fill="url(#g1)"/>
+          <polyline points="0,46 30,44 60,42 90,38 120,40 150,32 180,30 210,38 240,28 270,26 300,22 330,20 360,16 390,18 420,12 450,10 480,8 510,6 540,4 570,3 600,2"
+                    fill="none" stroke="var(--ink)" stroke-width="2"/>
+          <circle cx="600" cy="2" r="4" fill="var(--flame)"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="hero-side">
+      <div class="stat-pair">
+        <div class="stat-card accent">
+          <div class="eyebrow">All-time return</div>
+          <div class="val">+$8,235</div>
+          <div class="sub">+23.81% ROI · 53 days</div>
+        </div>
+        <div class="stat-card accent-blue">
+          <div class="eyebrow">Edge realised</div>
+          <div class="val">+12.4%</div>
+          <div class="sub">vs consensus at entry</div>
+        </div>
+      </div>
+      <div class="stat-pair">
+        <div class="stat-card streak">
+          <div class="eyebrow" style="color: var(--flame-deep);">Hot streak</div>
+          <div class="val">5 <span class="badge">Wins</span></div>
+          <div class="sub">In a row · longest of 2026</div>
+        </div>
+        <div class="stat-card accent-tan">
+          <div class="eyebrow">Sharpe-like</div>
+          <div class="val">2.18</div>
+          <div class="sub">Top decile of 8,200 wallets</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="sources">
+    <div class="sources-head">
+      <div class="left">
+        <div class="eyebrow">Your sources</div>
+        <h3 class="sources-title">Four ways to feed Ledger</h3>
+      </div>
+      <div class="sources-summary">
+        <span class="pop">14 positions</span> · $32,447 open · last sync 2 min ago
+      </div>
+    </div>
+    <div class="sources-grid">
+      <div class="source connected poly">
+        <div class="source-head">
+          <span class="source-icon" style="background: var(--venue-poly);"></span>
+          <span class="source-name">Polymarket wallet</span>
+          <span class="source-status status-on">Connected</span>
+        </div>
+        <div class="source-detail">0x1f3a · · · a4b2 · auto-synced from Polygon every 5 min.</div>
+        <div class="source-meta">
+          <span class="source-count">11 positions</span>
+          <a href="#" class="source-action">Manage →</a>
+        </div>
+      </div>
+      <div class="source connected ink-strong">
+        <div class="source-head">
+          <span class="source-icon" style="background: var(--ink);"></span>
+          <span class="source-name">Manual entries</span>
+          <span class="source-status status-on flame">Active</span>
+        </div>
+        <div class="source-detail">For sportsbooks, friends' bets, anywhere off-chain. Spreadsheet-style row entry.</div>
+        <div class="source-meta">
+          <span class="source-count">3 positions</span>
+          <a href="#" class="source-action">+ Add row</a>
+        </div>
+      </div>
+      <div class="source">
+        <div class="source-head">
+          <span class="source-icon" style="background: var(--venue-kalshi);"></span>
+          <span class="source-name">Kalshi API key</span>
+          <span class="source-status status-off">Not connected</span>
+        </div>
+        <div class="source-detail">Paste your Kalshi API key to track election, economic, and crypto positions.</div>
+        <div class="source-meta">
+          <span class="source-count">0 positions</span>
+          <a href="#" class="source-action">Connect →</a>
+        </div>
+      </div>
+      <div class="source">
+        <div class="source-head">
+          <span class="source-icon" style="background: var(--chart-4);"></span>
+          <span class="source-name">CSV / spreadsheet</span>
+          <span class="source-status status-off">Ready</span>
+        </div>
+        <div class="source-detail">Drop a tracker spreadsheet — automatic column detection, preview before commit.</div>
+        <div class="source-meta">
+          <span class="source-count">No imports yet</span>
+          <a href="#" class="source-action">Upload →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MOVERS ============ -->
+  <section class="movers">
+    <div class="head">
+      <div class="eyebrow" style="margin-bottom: 8px;">The Floor</div>
+      <div class="title">Now moving</div>
+      <div class="byline">Top movers, last 60 minutes</div>
+    </div>
+    <div class="grid">
+      <div class="mover up bet-out">
+        <span class="liveflag">Live</span>
+        <div class="bet-tag">Outright</div>
+        <div class="q">Argentina to win World Cup 2026</div>
+        <div class="deltabig">+$252</div>
+        <div class="meta">$0.24 · ▲ +8.1% · 14K shares</div>
+      </div>
+      <div class="mover up bet-pl">
+        <span class="liveflag">Live</span>
+        <div class="bet-tag">Player prop</div>
+        <div class="q">Mbappé to be tournament top scorer</div>
+        <div class="deltabig">+$190</div>
+        <div class="meta">$0.21 · ▲ +12.6% · 9.5K shares</div>
+      </div>
+      <div class="mover up bet-tm">
+        <div class="bet-tag">Team prop</div>
+        <div class="q">Argentina &amp; Brazil to meet in knockouts</div>
+        <div class="deltabig">+$135</div>
+        <div class="meta">$0.51 · ▲ +5.6% · 4.5K shares</div>
+      </div>
+      <div class="mover down bet-mt">
+        <div class="bet-tag">Match prop</div>
+        <div class="q">Tournament top scorer to score 7+ goals</div>
+        <div class="deltabig">−$56</div>
+        <div class="meta">$0.61 · ▼ −3.2% · 2.8K shares</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MAIN CHART + HEATMAP ============ -->
+  <section class="chart-section">
+    <div class="section-head">
+      <div>
+        <h2>Portfolio value, all time</h2>
+        <div class="byline">Mar 14 — May 6, 2026 · 54 days · pre-tournament window</div>
+      </div>
+      <div class="range-pills">
+        <button>1W</button>
+        <button>1M</button>
+        <button>3M</button>
+        <button>6M</button>
+        <button>1Y</button>
+        <button class="active">All</button>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="main-chart-wrap">
+        <div class="chart-stats">
+          <div class="chart-stat"><div class="label">Open</div><div class="val">$34,612</div></div>
+          <div class="chart-stat"><div class="label">High</div><div class="val">$43,201</div></div>
+          <div class="chart-stat"><div class="label">Low</div><div class="val">$31,840</div></div>
+          <div class="chart-stat"><div class="label">Last</div><div class="val" style="color: var(--flame-deep);">$42,847</div><div class="delta">▲ +23.8% all-time</div></div>
+          <div class="chart-stat" style="margin-left: auto;">
+            <div class="label">Best day</div>
+            <div class="val">+$2,140</div>
+            <div class="delta" style="color: var(--graphite-soft);">Apr 28 · Mbappé hat-trick vs Belgium</div>
+          </div>
+        </div>
+        <svg viewBox="0 0 1280 340" preserveAspectRatio="none" style="width:100%; height: 320px; display: block;">
+          <defs>
+            <linearGradient id="bigfill" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#D9461C" stop-opacity="0.32"/>
+              <stop offset="60%" stop-color="#F7E4DA" stop-opacity="0.1"/>
+              <stop offset="100%" stop-color="#F7E4DA" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <g stroke="var(--rule-soft)" stroke-width="1">
+            <line x1="40" y1="40" x2="1280" y2="40"/>
+            <line x1="40" y1="110" x2="1280" y2="110"/>
+            <line x1="40" y1="180" x2="1280" y2="180"/>
+            <line x1="40" y1="250" x2="1280" y2="250"/>
+          </g>
+          <g font-family="JetBrains Mono" font-size="10" fill="var(--graphite-soft)">
+            <text x="0" y="44">$45K</text>
+            <text x="0" y="114">$40K</text>
+            <text x="0" y="184">$36K</text>
+            <text x="0" y="254">$32K</text>
+          </g>
+          <path d="M 60,260 L 110,255 L 160,250 L 210,240 L 260,235 L 310,225 L 360,215 L 410,210 L 440,225 L 470,200 L 520,195 L 570,185 L 620,178 L 660,172 L 710,160 L 760,155 L 810,140 L 860,128 L 910,118 L 960,108 L 1010,98 L 1060,88 L 1110,80 L 1160,68 L 1210,56 L 1260,42 L 1260,290 L 60,290 Z"
+                fill="url(#bigfill)"/>
+          <polyline points="60,260 110,255 160,250 210,240 260,235 310,225 360,215 410,210 440,225 470,200 520,195 570,185 620,178 660,172 710,160 760,155 810,140 860,128 910,118 960,108 1010,98 1060,88 1110,80 1160,68 1210,56 1260,42"
+                    fill="none" stroke="var(--ink)" stroke-width="2.5"/>
+          <!-- annotation: drawdown -->
+          <g>
+            <line x1="440" y1="225" x2="440" y2="295" stroke="var(--graphite)" stroke-width="0.8" stroke-dasharray="3,3"/>
+            <circle cx="440" cy="225" r="4" fill="var(--paper)" stroke="var(--graphite)" stroke-width="2"/>
+            <text x="445" y="313" font-family="Source Serif 4" font-style="italic" font-size="11" fill="var(--graphite)">Apr 7 · Argentina friendly draw · −7.4%</text>
+          </g>
+          <!-- annotation: streak -->
+          <g>
+            <rect x="710" y="155" width="280" height="80" fill="var(--flame-tint)" opacity="0.4"/>
+            <text x="850" y="248" text-anchor="middle" font-family="Source Serif 4" font-style="italic" font-size="11" fill="var(--flame-deep)">5-win streak · April friendlies window</text>
+          </g>
+          <!-- annotation: best day -->
+          <g>
+            <line x1="860" y1="128" x2="860" y2="20" stroke="var(--flame)" stroke-width="1.2" stroke-dasharray="3,3"/>
+            <circle cx="860" cy="128" r="5" fill="var(--flame)"/>
+            <rect x="724" y="2" width="272" height="20" fill="var(--flame)" rx="2"/>
+            <text x="860" y="16" text-anchor="middle" font-family="Inter Tight" font-weight="700" font-size="11" fill="var(--paper)" letter-spacing="1">APR 28 · MBAPPÉ HAT-TRICK · +$2,140</text>
+          </g>
+          <!-- end marker -->
+          <circle cx="1260" cy="42" r="6" fill="var(--flame)" stroke="var(--paper)" stroke-width="2.5"/>
+          <circle cx="1260" cy="42" r="11" fill="none" stroke="var(--flame)" stroke-width="1" opacity="0.5">
+            <animate attributeName="r" from="6" to="14" dur="1.6s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" from="0.6" to="0" dur="1.6s" repeatCount="indefinite"/>
+          </circle>
+          <g font-family="JetBrains Mono" font-size="10" fill="var(--graphite-soft)">
+            <text x="60" y="332">Mar 14</text>
+            <text x="360" y="332">Mar 28</text>
+            <text x="660" y="332">Apr 11</text>
+            <text x="960" y="332">Apr 25</text>
+            <text x="1230" y="332" text-anchor="end">May 6</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="heatmap-card">
+        <div class="head">
+          <h3>Daily P&L</h3>
+          <div class="byline">Last 54 days · darker = bigger gain</div>
+        </div>
+        <div class="heat-grid">
+          <!-- Row 1: Mar 14-22 -->
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Mar 14 · +$120"></div>
+          <div class="heat-cell" style="background: var(--heat-0);" data-tooltip="Mar 15 · −$30"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Mar 16 · +$240 · ARG squad"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Mar 17 · +$84"></div>
+          <div class="heat-cell" style="background: var(--heat-down);" data-tooltip="Mar 18 · −$140"></div>
+          <div class="heat-cell" style="background: var(--heat-0);" data-tooltip="Mar 19 · +$22"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Mar 20 · +$310"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Mar 21 · +$95"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Mar 22 · +$280"></div>
+
+          <!-- Row 2: Mar 23-31 -->
+          <div class="heat-cell" style="background: var(--heat-0);" data-tooltip="Mar 23 · +$18"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Mar 24 · +$110"></div>
+          <div class="heat-cell" style="background: var(--heat-3);" data-tooltip="Mar 25 · +$540 · friendly week"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Mar 26 · +$130"></div>
+          <div class="heat-cell" style="background: var(--heat-down);" data-tooltip="Mar 27 · −$220"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Mar 28 · +$420 · BRA friendly"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Mar 29 · +$310"></div>
+          <div class="heat-cell" style="background: var(--heat-0);" data-tooltip="Mar 30 · +$45"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Mar 31 · +$165"></div>
+
+          <!-- Row 3: Apr 1-9 -->
+          <div class="heat-cell" style="background: var(--heat-down);" data-tooltip="Apr 1 · −$80"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 2 · +$305"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 3 · +$125"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 4 · +$140"></div>
+          <div class="heat-cell" style="background: var(--heat-down);" data-tooltip="Apr 5 · −$310"></div>
+          <div class="heat-cell" style="background: var(--heat-down);" data-tooltip="Apr 6 · −$420 · ARG injury"></div>
+          <div class="heat-cell" style="background: var(--heat-down);" data-tooltip="Apr 7 · −$540 · drawdown low"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 8 · +$110"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 9 · +$340"></div>
+
+          <!-- Row 4: Apr 10-18 -->
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 10 · +$160"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 11 · +$295"></div>
+          <div class="heat-cell" style="background: var(--heat-3);" data-tooltip="Apr 12 · +$610 · streak begins"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 13 · +$340"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 14 · +$155"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 15 · +$280"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 16 · +$110"></div>
+          <div class="heat-cell" style="background: var(--heat-down);" data-tooltip="Apr 17 · −$120"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 18 · +$320"></div>
+
+          <!-- Row 5: Apr 19-27 -->
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 19 · +$190"></div>
+          <div class="heat-cell" style="background: var(--heat-3);" data-tooltip="Apr 20 · +$640 · ESP friendly"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 21 · +$305"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 22 · +$140"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 23 · +$390"></div>
+          <div class="heat-cell" style="background: var(--heat-3);" data-tooltip="Apr 24 · +$580"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 25 · +$310"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 26 · +$340"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 27 · +$170"></div>
+
+          <!-- Row 6: Apr 28 - May 6 -->
+          <div class="heat-cell" style="background: var(--heat-4);" data-tooltip="Apr 28 · +$2,140 · Mbappé hat-trick"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="Apr 29 · +$310"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="Apr 30 · +$135"></div>
+          <div class="heat-cell" style="background: var(--heat-3);" data-tooltip="May 1 · +$680 · ARG squad reveal"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="May 2 · +$420"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="May 3 · +$310"></div>
+          <div class="heat-cell" style="background: var(--heat-1);" data-tooltip="May 4 · +$185"></div>
+          <div class="heat-cell" style="background: var(--heat-2);" data-tooltip="May 5 · +$295"></div>
+          <div class="heat-cell" style="background: var(--heat-3); outline: 2px solid var(--flame); outline-offset: -2px;" data-tooltip="May 6 · +$1,247 · today" id="today"></div>
+        </div>
+        <div class="heat-legend">
+          <span>−$540</span>
+          <div class="scale">
+            <span style="background: var(--heat-down);"></span>
+            <span style="background: var(--heat-0);"></span>
+            <span style="background: var(--heat-1);"></span>
+            <span style="background: var(--heat-2);"></span>
+            <span style="background: var(--heat-3);"></span>
+            <span style="background: var(--heat-4);"></span>
+          </div>
+          <span>+$2,140</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUAD ============ -->
+  <section class="quad">
+    <div class="quad-cell glow">
+      <div class="eyebrow">Win rate</div>
+      <div class="quad-value"><span class="accent">68%</span></div>
+      <div class="quad-sub">34 of 50 resolved · pre-tournament markets · top quartile</div>
+      <svg class="quad-viz" viewBox="0 0 220 50">
+        <g transform="translate(0, 8)">
+          <text x="0" y="0" font-family="Inter Tight" font-size="9" font-weight="700" letter-spacing="1" fill="var(--graphite-soft)">YES CALLS · 22W / 6L · 79%</text>
+          <rect x="0" y="6" width="174" height="10" fill="var(--ink)"/>
+          <rect x="174" y="6" width="46" height="10" fill="var(--paper-deep)" stroke="var(--rule)"/>
+        </g>
+        <g transform="translate(0, 32)">
+          <text x="0" y="0" font-family="Inter Tight" font-size="9" font-weight="700" letter-spacing="1" fill="var(--graphite-soft)">NO CALLS · 12W / 10L · 55%</text>
+          <rect x="0" y="6" width="120" height="10" fill="var(--flame)"/>
+          <rect x="120" y="6" width="100" height="10" fill="var(--paper-deep)" stroke="var(--rule)"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="quad-cell">
+      <div class="eyebrow">Open exposure</div>
+      <div class="quad-value">$32,447</div>
+      <div class="quad-sub">75.7% deployed · 14 positions · max single $4,464 (England semis No)</div>
+      <div class="quad-viz" style="margin-top: 22px;">
+        <div style="display: flex; height: 14px; border: 1px solid var(--ink);">
+          <div style="width: 75.7%; background: var(--ink); position: relative;">
+            <span style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-family: var(--mono); font-size: 9px; color: var(--paper); font-weight: 700;">76%</span>
+          </div>
+          <div style="width: 24.3%; background: var(--paper-warm);"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 6px; font-family: var(--mono); font-size: 10px; color: var(--graphite-soft); font-weight: 500;">
+          <span>Deployed $32,447</span>
+          <span>Cash $10,400</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="quad-cell">
+      <div class="eyebrow">Realised vs unrealised</div>
+      <div class="quad-value">$3,421 <span style="color: var(--graphite-soft); font-weight: 400;">·</span> $4,814</div>
+      <div class="quad-sub">Locked-in vs paper · most P&L still on the table until kickoff</div>
+      <svg class="quad-viz" viewBox="0 0 220 38" style="margin-top: 18px;">
+        <rect x="0" y="0" width="91" height="14" fill="var(--ink)"/>
+        <rect x="91" y="0" width="129" height="14" fill="var(--flame-tint)" stroke="var(--flame)" stroke-dasharray="3,2"/>
+        <text x="0" y="30" font-family="JetBrains Mono" font-size="9" font-weight="600" fill="var(--ink)">Realised</text>
+        <text x="220" y="30" text-anchor="end" font-family="JetBrains Mono" font-size="9" font-weight="600" fill="var(--flame-deep)">Unrealised (paper)</text>
+      </svg>
+    </div>
+
+    <div class="quad-cell">
+      <div class="eyebrow">By bet type</div>
+      <div class="quad-value">4 types</div>
+      <div class="quad-sub">Outright biggest · 34% of allocation</div>
+      <svg class="quad-viz" viewBox="0 0 220 70" style="margin-top: 16px;">
+        <g transform="translate(0, 6)">
+          <rect x="0" y="0" width="74.8" height="16" fill="var(--bet-outright)"/>
+          <rect x="74.8" y="0" width="61.6" height="16" fill="var(--bet-team)"/>
+          <rect x="136.4" y="0" width="41.8" height="16" fill="var(--bet-player)"/>
+          <rect x="178.2" y="0" width="41.8" height="16" fill="var(--bet-match)"/>
+        </g>
+        <g font-family="Inter Tight" font-size="9" font-weight="700" letter-spacing="1" fill="var(--graphite-soft)" transform="translate(0, 42)">
+          <g><rect x="0" y="-7" width="8" height="8" fill="var(--bet-outright)"/><text x="12" y="-1">OUT · 34%</text></g>
+          <g transform="translate(58, 0)"><rect x="0" y="-7" width="8" height="8" fill="var(--bet-team)"/><text x="12" y="-1">TEAM · 28%</text></g>
+          <g transform="translate(124, 0)"><rect x="0" y="-7" width="8" height="8" fill="var(--bet-player)"/><text x="12" y="-1">PL · 19%</text></g>
+          <g transform="translate(170, 0)"><rect x="0" y="-7" width="8" height="8" fill="var(--bet-match)"/><text x="12" y="-1">MT · 19%</text></g>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============ POSITIONS ============ -->
+  <section class="table-section">
+    <div class="section-head">
+      <div>
+        <h2>Open positions</h2>
+        <div class="byline">14 World Cup 2026 markets · $32,447 at risk · bet-type-coded · live tags on movers</div>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="filter-pills">
+        <button class="active">All · 14</button>
+        <button><span class="dot" style="background: var(--bet-outright);"></span>Outright · 5</button>
+        <button><span class="dot" style="background: var(--bet-player);"></span>Player props · 3</button>
+        <button><span class="dot" style="background: var(--bet-team);"></span>Team props · 3</button>
+        <button><span class="dot" style="background: var(--bet-match);"></span>Match props · 3</button>
+      </div>
+      <div style="font-family: var(--sans); font-size: 12px; color: var(--graphite-soft); display: inline-flex; gap: 16px;">
+        <span>Sort: <a href="#" style="color: var(--ink); text-decoration: underline; text-decoration-color: var(--rule);">Unrealised P&L ↓</a></span>
+        <span><a href="#" style="color: var(--ink); text-decoration: underline; text-decoration-color: var(--rule);">Export CSV</a></span>
+      </div>
+    </div>
+
+    <table class="positions">
+      <thead>
+        <tr>
+          <th style="width: 32%;">Market</th>
+          <th>Pos.</th>
+          <th class="right">Shares</th>
+          <th class="right">Entry</th>
+          <th class="right">Now</th>
+          <th class="right">Value</th>
+          <th class="right">Unrealised</th>
+          <th class="right">Held</th>
+          <th>30-day</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="bet-out hot">
+          <td>
+            <span class="market-q">Will Argentina win the 2026 FIFA World Cup?<span class="live-tag">Live</span></span>
+            <span class="market-meta"><span class="bet-chip out">Outright</span><span class="venue-dot poly"></span>Polymarket</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">14,000</td>
+          <td class="right num">$0.18</td>
+          <td class="right num">$0.24</td>
+          <td class="right num">$3,360</td>
+          <td class="right"><span class="num pnl-pos flame">+$840 · +33.3%</span></td>
+          <td class="right num">53d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,22 11,21 22,19 33,20 44,15 55,13 66,11 77,12 88,7 100,5" fill="none" stroke="var(--ink)" stroke-width="1.6"/><circle cx="100" cy="5" r="2.5" fill="var(--flame)"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="bet-pl hot">
+          <td>
+            <span class="market-q">Will Mbappé be the WC 2026 top scorer?<span class="live-tag">Live</span></span>
+            <span class="market-meta"><span class="bet-chip pl">Player prop</span><span class="venue-dot poly"></span>Polymarket</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">9,500</td>
+          <td class="right num">$0.16</td>
+          <td class="right num">$0.21</td>
+          <td class="right num">$1,995</td>
+          <td class="right"><span class="num pnl-pos flame">+$475 · +31.3%</span></td>
+          <td class="right num">38d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,20 11,19 22,20 33,17 44,18 55,14 66,15 77,9 88,8 100,4" fill="none" stroke="var(--ink)" stroke-width="1.6"/><circle cx="100" cy="4" r="2.5" fill="var(--flame)"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="bet-tm">
+          <td>
+            <span class="market-q">Will Argentina &amp; Brazil meet in the knockout rounds?</span>
+            <span class="market-meta"><span class="bet-chip tm">Team prop</span><span class="venue-dot poly"></span>Polymarket</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">4,500</td>
+          <td class="right num">$0.42</td>
+          <td class="right num">$0.51</td>
+          <td class="right num">$2,295</td>
+          <td class="right"><span class="num pnl-pos warm">+$405 · +21.4%</span></td>
+          <td class="right num">31d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,18 11,17 22,15 33,16 44,13 55,12 66,10 77,11 88,9 100,7" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="bet-tm">
+          <td>
+            <span class="market-q">Will England reach the World Cup 2026 semi-finals?</span>
+            <span class="market-meta"><span class="bet-chip tm">Team prop</span><span class="manual-tag">Manual</span>DraftKings · entered Apr 14</span>
+          </td>
+          <td><span class="outcome-pill outcome-no">No</span></td>
+          <td class="right num">7,200</td>
+          <td class="right num">$0.55</td>
+          <td class="right num">$0.62</td>
+          <td class="right num">$4,464</td>
+          <td class="right"><span class="num pnl-pos warm">+$504 · +12.7%</span></td>
+          <td class="right num">22d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,16 11,17 22,15 33,16 44,13 55,14 66,12 77,11 88,10 100,9" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="bet-mt">
+          <td>
+            <span class="market-q">Will Argentina win Group A?</span>
+            <span class="market-meta"><span class="bet-chip mt">Match prop</span><span class="venue-dot poly"></span>Polymarket</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">2,400</td>
+          <td class="right num">$0.66</td>
+          <td class="right num">$0.71</td>
+          <td class="right num">$1,704</td>
+          <td class="right"><span class="num pnl-pos warm">+$120 · +7.6%</span></td>
+          <td class="right num">19d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,17 11,16 22,15 33,16 44,14 55,13 66,12 77,13 88,11 100,10" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="bet-out">
+          <td>
+            <span class="market-q">Will France win the 2026 FIFA World Cup?</span>
+            <span class="market-meta"><span class="bet-chip out">Outright</span><span class="venue-dot poly"></span>Polymarket</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">8,000</td>
+          <td class="right num">$0.13</td>
+          <td class="right num">$0.15</td>
+          <td class="right num">$1,200</td>
+          <td class="right"><span class="num pnl-pos warm">+$160 · +15.4%</span></td>
+          <td class="right num">42d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,17 11,16 22,17 33,15 44,14 55,15 66,13 77,12 88,11 100,9" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="bet-tm">
+          <td>
+            <span class="market-q">Will the USA reach the WC 2026 knockout round?</span>
+            <span class="market-meta"><span class="bet-chip tm">Team prop</span><span class="manual-tag">Manual</span>FanDuel · entered Apr 24</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">6,000</td>
+          <td class="right num">$0.58</td>
+          <td class="right num">$0.62</td>
+          <td class="right num">$3,720</td>
+          <td class="right"><span class="num pnl-pos">+$240 · +6.9%</span></td>
+          <td class="right num">12d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,15 11,14 22,15 33,13 44,12 55,13 66,11 77,12 88,10 100,9" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="bet-out">
+          <td>
+            <span class="market-q">Will Brazil win the 2026 FIFA World Cup?</span>
+            <span class="market-meta"><span class="bet-chip out">Outright</span><span class="venue-dot poly"></span>Polymarket</span>
+          </td>
+          <td><span class="outcome-pill outcome-no">No</span></td>
+          <td class="right num">5,500</td>
+          <td class="right num">$0.78</td>
+          <td class="right num">$0.82</td>
+          <td class="right num">$4,510</td>
+          <td class="right"><span class="num pnl-pos">+$220 · +5.1%</span></td>
+          <td class="right num">47d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,18 11,17 22,16 33,17 44,15 55,14 66,13 77,14 88,12 100,11" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="bet-pl">
+          <td>
+            <span class="market-q">Will Messi score in the WC 2026 tournament?</span>
+            <span class="market-meta"><span class="bet-chip pl">Player prop</span><span class="venue-dot poly"></span>Polymarket</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">3,200</td>
+          <td class="right num">$0.71</td>
+          <td class="right num">$0.78</td>
+          <td class="right num">$2,496</td>
+          <td class="right"><span class="num pnl-pos warm">+$224 · +9.9%</span></td>
+          <td class="right num">35d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,15 11,14 22,15 33,13 44,12 55,13 66,11 77,12 88,10 100,9" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="bet-mt">
+          <td>
+            <span class="market-q">Will the WC 2026 final go to penalties?</span>
+            <span class="market-meta"><span class="bet-chip mt">Match prop</span><span class="venue-dot poly"></span>Polymarket</span>
+          </td>
+          <td><span class="outcome-pill outcome-no">No</span></td>
+          <td class="right num">4,800</td>
+          <td class="right num">$0.78</td>
+          <td class="right num">$0.82</td>
+          <td class="right num">$3,936</td>
+          <td class="right"><span class="num pnl-pos">+$192 · +5.1%</span></td>
+          <td class="right num">28d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,16 11,15 22,17 33,15 44,14 55,15 66,13 77,12 88,13 100,11" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="bet-out">
+          <td>
+            <span class="market-q">Will Spain win the 2026 FIFA World Cup?</span>
+            <span class="market-meta"><span class="bet-chip out">Outright</span><span class="venue-dot poly"></span>Polymarket</span>
+          </td>
+          <td><span class="outcome-pill outcome-yes">Yes</span></td>
+          <td class="right num">4,000</td>
+          <td class="right num">$0.12</td>
+          <td class="right num">$0.13</td>
+          <td class="right num">$520</td>
+          <td class="right"><span class="num pnl-pos">+$40 · +8.3%</span></td>
+          <td class="right num">25d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,15 11,16 22,14 33,15 44,13 55,14 66,12 77,13 88,11 100,12" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="bet-out">
+          <td>
+            <span class="market-q">Will England win the 2026 FIFA World Cup?</span>
+            <span class="market-meta"><span class="bet-chip out">Outright</span><span class="venue-dot poly"></span>Polymarket</span>
+          </td>
+          <td><span class="outcome-pill outcome-no">No</span></td>
+          <td class="right num">3,500</td>
+          <td class="right num">$0.91</td>
+          <td class="right num">$0.94</td>
+          <td class="right num">$3,290</td>
+          <td class="right"><span class="num pnl-pos">+$105 · +3.3%</span></td>
+          <td class="right num">52d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,12 11,13 22,11 33,12 44,11 55,10 66,11 77,10 88,9 100,9" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="bet-pl">
+          <td>
+            <span class="market-q">Will Bellingham win the WC 2026 Golden Boot?</span>
+            <span class="market-meta"><span class="bet-chip pl">Player prop</span><span class="venue-dot poly"></span>Polymarket</span>
+          </td>
+          <td><span class="outcome-pill outcome-no">No</span></td>
+          <td class="right num">3,000</td>
+          <td class="right num">$0.86</td>
+          <td class="right num">$0.89</td>
+          <td class="right num">$2,670</td>
+          <td class="right"><span class="num pnl-pos">+$90 · +3.5%</span></td>
+          <td class="right num">17d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,14 11,13 22,14 33,12 44,13 55,11 66,12 77,10 88,11 100,9" fill="none" stroke="var(--ink)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+        <tr class="bet-mt">
+          <td>
+            <span class="market-q">Will the tournament's top scorer score 7+ goals?</span>
+            <span class="market-meta"><span class="bet-chip mt">Match prop</span><span class="manual-tag">Manual</span>Bet365 · entered Apr 22</span>
+          </td>
+          <td><span class="outcome-pill outcome-no">No</span></td>
+          <td class="right num">2,800</td>
+          <td class="right num">$0.65</td>
+          <td class="right num">$0.61</td>
+          <td class="right num">$1,708</td>
+          <td class="right"><span class="num pnl-neg cool">−$112 · −6.2%</span></td>
+          <td class="right num">14d</td>
+          <td><svg class="row-spark" viewBox="0 0 100 26"><polyline points="0,9 11,10 22,12 33,11 44,13 55,12 66,14 77,13 88,15 100,16" fill="none" stroke="var(--graphite-soft)" stroke-width="1.6"/></svg></td>
+          <td><a href="#" class="view-source">View source ↗</a></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="closed-teaser">
+      <div class="left">
+        <em>plus</em> <strong>45 closed positions</strong> · realised <span class="pop">+$3,421</span> over 53 days · win rate <strong>68%</strong> · longest streak <strong>5</strong>
+      </div>
+      <button class="btn">Show closed →</button>
+    </div>
+  </section>
+
+  <!-- ============ DUAL ============ -->
+  <section class="dual">
+    <div>
+      <div class="eyebrow" style="margin-bottom: 8px;">The Wire</div>
+      <h3>Recent activity</h3>
+      <div class="byline">Last 24 hours · 7 events · World Cup 2026 markets</div>
+      <ul class="timeline">
+        <li>
+          <span class="tl-time">14:32</span>
+          <span class="tl-action buy">Buy</span>
+          <span class="tl-detail">+1,200 shares <em>Yes</em> · Argentina to win WC 2026 <em>@</em> $0.24</span>
+          <span class="tl-amt neg">−$288.00</span>
+        </li>
+        <li>
+          <span class="tl-time">12:18</span>
+          <span class="tl-action sell">Sell</span>
+          <span class="tl-detail">−800 shares <em>Yes</em> · Spain to top Group F <em>@</em> $0.78</span>
+          <span class="tl-amt pos">+$624.00</span>
+        </li>
+        <li>
+          <span class="tl-time">09:44</span>
+          <span class="tl-action resolve">Won</span>
+          <span class="tl-detail">Mbappé to start vs Belgium friendly · <em>resolved</em> Yes · paid 1.0</span>
+          <span class="tl-amt win">+$2,140.00</span>
+        </li>
+        <li>
+          <span class="tl-time">Yesterday</span>
+          <span class="tl-action buy">Buy</span>
+          <span class="tl-detail">+2,000 shares <em>Yes</em> · USA to reach knockouts <em>@</em> $0.62</span>
+          <span class="tl-amt neg">−$1,240.00</span>
+        </li>
+        <li>
+          <span class="tl-time">Yesterday</span>
+          <span class="tl-action sell">Sell</span>
+          <span class="tl-detail">−1,500 shares <em>No</em> · England to reach quarter-finals <em>@</em> $0.83</span>
+          <span class="tl-amt pos">+$1,245.00</span>
+        </li>
+        <li>
+          <span class="tl-time">2d ago</span>
+          <span class="tl-action buy">Buy</span>
+          <span class="tl-detail">+800 shares <em>Yes</em> · Argentina to win Group A <em>@</em> $0.71</span>
+          <span class="tl-amt neg">−$568.00</span>
+        </li>
+        <li>
+          <span class="tl-time">3d ago</span>
+          <span class="tl-action resolve">Won</span>
+          <span class="tl-detail">Bellingham named in England 26-man squad · <em>resolved</em> Yes · paid 1.0</span>
+          <span class="tl-amt win">+$420.00</span>
+        </li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="eyebrow" style="margin-bottom: 8px;">The Honest Mirror</div>
+      <h3>Edge analysis</h3>
+      <div class="byline">Were you right, or just lucky? · resolved markets only</div>
+      <table class="edge-table">
+        <thead>
+          <tr>
+            <th>Bet type</th>
+            <th class="right">Markets</th>
+            <th class="right">Win rate</th>
+            <th class="right">Avg edge</th>
+            <th class="right">Verdict</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-out">
+            <td class="cat">Outright</td>
+            <td class="right">12</td>
+            <td class="right">67%</td>
+            <td class="right" style="color: var(--ink); font-weight: 700;">+14.2%</td>
+            <td class="right"><span class="verdict-pill skill">Skill</span></td>
+          </tr>
+          <tr class="row-pl">
+            <td class="cat">Player props</td>
+            <td class="right">8</td>
+            <td class="right">75%</td>
+            <td class="right" style="color: var(--ink); font-weight: 700;">+18.4%</td>
+            <td class="right"><span class="verdict-pill skill">Skill</span></td>
+          </tr>
+          <tr class="row-tm">
+            <td class="cat">Team props</td>
+            <td class="right">18</td>
+            <td class="right">67%</td>
+            <td class="right" style="color: var(--ink); font-weight: 700;">+11.2%</td>
+            <td class="right"><span class="verdict-pill skill">Skill</span></td>
+          </tr>
+          <tr class="row-mt">
+            <td class="cat">Match props</td>
+            <td class="right">12</td>
+            <td class="right">50%</td>
+            <td class="right">+1.8%</td>
+            <td class="right"><span class="verdict-pill luck">Coin-flip</span></td>
+          </tr>
+          <tr style="background: var(--ink);">
+            <td class="cat" style="color: var(--paper); font-style: normal; font-weight: 700;"><span style="background: var(--flame); display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 10px;"></span>Overall</td>
+            <td class="right" style="color: var(--paper); font-weight: 700;">50</td>
+            <td class="right" style="color: var(--paper); font-weight: 700;">68%</td>
+            <td class="right" style="color: #F0D5C5; font-weight: 700;">+12.4%</td>
+            <td class="right"><span class="verdict-pill hot" style="background: var(--flame);">Edge holds</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--graphite); margin-top: 18px; line-height: 1.5;">
+        Edge is the difference between average entry price and resolved outcome price. Player props are your best lane; match props read as a coin-flip — consider whether to keep allocating capital there.
+      </p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div class="rule"></div>
+    <p style="margin: 0 0 6px;"><span class="dagger">†</span> "FIFA World Cup" is a trademark of FIFA. Used here for editorial reference only. Data via Polymarket on-chain reads on Polygon mainnet.</p>
+    <p style="margin: 0;"><span class="dagger">‡</span> Sharpe-like metric compares all-time return to maximum drawdown across the same window. Sample of 8,200 active wallets.</p>
+    <p style="margin: 18px 0 0; font-family: var(--sans); font-size: 11px; color: var(--graphite-soft); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700;">
+      Oddsprimer Ledger · World Cup 2026 Edition · Issue No. 1
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>

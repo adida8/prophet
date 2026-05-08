@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bars · Locked · Odds Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700;8..60,900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF7F0;
+    --paper-2: #F2EDE0;
+    --ink: #0E2240;
+    --ink-soft: #3D4F6A;
+    --rule: #D9D2BE;
+    --flame: #D9461C;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body { font-family: var(--serif); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+
+  .page { max-width: 1140px; margin: 0 auto; padding: 56px 40px 96px; }
+
+  .eyebrow {
+    font-family: var(--sans); font-weight: 500;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 8px;
+  }
+  h1.page-title {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 38px; line-height: 1.15; letter-spacing: -0.01em;
+    margin: 0 0 12px;
+  }
+  .page-sub {
+    max-width: 64ch; font-size: 15px;
+    color: var(--ink-soft); margin: 0 0 12px;
+  }
+  .page-meta {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink-soft); margin: 0 0 40px;
+  }
+  .badge-locked {
+    display: inline-block;
+    background: var(--ink); color: var(--paper);
+    font-family: var(--sans); font-weight: 500;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 4px 10px;
+    margin-bottom: 12px;
+  }
+
+  .section {
+    border-top: 1px solid var(--ink);
+    padding: 28px 0 48px;
+  }
+  .section-head {
+    display: flex; align-items: baseline; gap: 16px;
+    margin-bottom: 24px;
+  }
+  .section-num {
+    font-family: var(--mono); font-weight: 500;
+    font-size: 12px; color: var(--flame);
+    letter-spacing: 0.08em;
+  }
+  .section-name {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 22px; letter-spacing: -0.005em;
+    margin: 0;
+  }
+  .section-sub {
+    font-family: var(--sans); font-size: 13px;
+    color: var(--ink-soft); margin: 4px 0 0;
+    max-width: 64ch;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 880px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 32px;
+    position: relative;
+  }
+  .panel.dark { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .panel.flat { padding: 0; overflow: hidden; }
+  .panel-tag {
+    position: absolute;
+    top: 12px; right: 14px;
+    font-family: var(--sans);
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .panel.dark .panel-tag { color: #B7C2D6; }
+
+  .stage {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 120px;
+  }
+
+  .lock { display: inline-flex; align-items: center; gap: 14px; }
+  .lock-stack { display: inline-flex; flex-direction: column; align-items: center; gap: 8px; }
+  .word {
+    font-family: var(--sans); font-weight: 700;
+    letter-spacing: -0.01em; color: var(--ink);
+    font-size: 38px;
+  }
+  .panel.dark .word { color: var(--paper); }
+
+  .mono-row {
+    font-family: var(--mono); font-weight: 400;
+    font-size: 11px; letter-spacing: 0.16em;
+    color: var(--ink-soft);
+  }
+  .panel.dark .mono-row { color: #B7C2D6; }
+  .mono-row .hi { color: var(--flame); font-weight: 500; }
+
+  .fav-grid {
+    display: flex; gap: 32px; align-items: end; padding: 12px 0; flex-wrap: wrap;
+  }
+  .fav-cell { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .fav-cell .lbl {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--ink-soft); letter-spacing: 0.06em;
+    text-align: center;
+  }
+
+  .masthead {
+    height: 56px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 18px;
+    background: var(--paper);
+  }
+  .masthead .edition {
+    font-family: var(--sans); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .masthead .live {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-soft);
+  }
+  .masthead .live::before {
+    content: ""; display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--flame);
+    margin-right: 6px; transform: translateY(-1px);
+  }
+
+  .social {
+    aspect-ratio: 1200 / 630;
+    width: 100%;
+    background: var(--paper);
+    padding: 6%;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative;
+  }
+  .social .sc-headline {
+    font-family: var(--serif); font-weight: 700;
+    font-size: clamp(20px, 2.8vw, 32px);
+    line-height: 1.18; letter-spacing: -0.005em;
+    max-width: 26ch;
+  }
+  .social .sc-foot {
+    display: flex; justify-content: space-between; align-items: end;
+    font-family: var(--mono); font-size: 11px; color: var(--ink-soft);
+  }
+
+  .venue-card {
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    padding: 18px 20px;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+  .venue-card .vc-eyebrow {
+    font-family: var(--sans); font-size: 10px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-soft); margin-bottom: 8px;
+  }
+  .venue-card .vc-line {
+    font-family: var(--serif); font-weight: 600;
+    font-size: 16px; line-height: 1.3;
+    margin-bottom: 12px;
+  }
+  .venue-card .vc-link {
+    font-family: var(--sans); font-weight: 500; font-size: 12px;
+    color: var(--ink); border-bottom: 1px solid var(--flame);
+    display: inline-block;
+  }
+
+  /* spec table */
+  .spec {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 8px 24px;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .spec b { color: var(--ink); font-weight: 600; }
+  .spec .row { display: contents; }
+  .spec .row > * { padding: 8px 0; border-bottom: 1px dashed var(--rule); }
+
+  footer.colophon {
+    margin-top: 48px; padding-top: 20px;
+    border-top: 1px solid var(--ink);
+    font-family: var(--sans); font-size: 12px;
+    color: var(--ink-soft);
+    display: flex; justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <p class="eyebrow">Odds Primer · Brand</p>
+  <span class="badge-locked">Locked · v1</span>
+  <h1 class="page-title">Bars — locked direction</h1>
+  <p class="page-sub">Bare bars, no accent shape. Heights map to 22 · 38 · 65 · 30 (a real probability rhythm). The flame bar's height and color do all the work. Wordmark in Inter Tight 700.</p>
+  <p class="page-meta">primary lockup · editorial variant · favicon stack · masthead · social card · venue handoff card · technical spec</p>
+
+  <!-- ====================================================
+       1. PRIMARY LOCKUP
+       ==================================================== -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <div>
+        <h2 class="section-name">Primary lockup</h2>
+        <p class="section-sub">The default mark. Inline glyph + wordmark. Used everywhere unless the surface specifically calls for the editorial or stacked variant.</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <span class="panel-tag">Cream / 380px wide</span>
+        <div class="stage">
+          <div class="lock">
+            <svg viewBox="0 0 56 50" width="76" height="68" aria-label="Odds Primer">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word">Odds Primer</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel dark">
+        <span class="panel-tag">Inverted</span>
+        <div class="stage">
+          <div class="lock">
+            <svg viewBox="0 0 56 50" width="64" height="58" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#FAF7F0" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#FAF7F0"/>
+              <rect x="16" y="22" width="6" height="24" fill="#FAF7F0"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#FAF7F0"/>
+            </svg>
+            <span class="word" style="font-size:32px">Odds Primer</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================
+       2. EDITORIAL LOCKUP (with mono row)
+       ==================================================== -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <div>
+        <h2 class="section-name">Editorial lockup</h2>
+        <p class="section-sub">For about pages, footers, longform article colophons. The mono row makes the bars legible — these are real probabilities, not decoration. Optional, never required.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <span class="panel-tag">Editorial · stacked</span>
+      <div class="stage" style="min-height:160px;">
+        <div class="lock-stack">
+          <div class="lock">
+            <svg viewBox="0 0 56 50" width="76" height="68" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="word">Odds Primer</span>
+          </div>
+          <div class="mono-row">22 · 38 · <span class="hi">65</span> · 30</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================
+       3. FAVICON STACK
+       ==================================================== -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <div>
+        <h2 class="section-name">Favicon stack</h2>
+        <p class="section-sub">At 64 / 32px the full 4-bar mark is used. At 16px the favicon falls back to a stocky trio (3 fat bars, flame middle) — fewer-and-fatter survives compression. Standard size-aware logo practice.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <span class="panel-tag">Sizes</span>
+      <div class="stage" style="justify-content:flex-start; gap: 48px; min-height:auto;">
+        <div class="fav-grid">
+          <div class="fav-cell">
+            <svg viewBox="0 0 56 50" width="64" height="58" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.25"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="lbl">64 PX · full</span>
+          </div>
+          <div class="fav-cell">
+            <svg viewBox="0 0 56 50" width="32" height="29" aria-hidden="true">
+              <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="2"/>
+              <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+              <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+              <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+              <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+            </svg>
+            <span class="lbl">32 PX · full</span>
+          </div>
+          <div class="fav-cell">
+            <svg viewBox="0 0 48 44" width="16" height="15" aria-hidden="true">
+              <line x1="2" y1="40" x2="46" y2="40" stroke="#0E2240" stroke-width="3"/>
+              <rect x="5"  y="22" width="10" height="18" fill="#0E2240"/>
+              <rect x="19" y="6"  width="10" height="34" fill="#D9461C"/>
+              <rect x="33" y="16" width="10" height="24" fill="#0E2240"/>
+            </svg>
+            <span class="lbl">16 PX · trio fallback</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================
+       4. MASTHEAD IN CONTEXT
+       ==================================================== -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <div>
+        <h2 class="section-name">Masthead in context</h2>
+        <p class="section-sub">Sticky top bar, 56px. Glyph at 35px tall, wordmark at 18px Inter Tight 700, edition strip at 11px tracked-out small caps.</p>
+      </div>
+    </div>
+
+    <div class="panel flat">
+      <div class="masthead">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <svg viewBox="0 0 56 50" width="38" height="35" aria-hidden="true">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span class="word" style="font-size:18px">Odds Primer</span>
+          <span style="height:16px;width:1px;background:var(--rule);margin:0 4px"></span>
+          <span class="edition">World Cup 2026 · Vol. 1</span>
+        </div>
+        <div class="live">FRA v ARG · live</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================
+       5. SOCIAL CARD
+       ==================================================== -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <div>
+        <h2 class="section-name">Social / OG card</h2>
+        <p class="section-sub">Stacked treatment for 1200×630. Glyph large, wordmark small caps below — reads as a publisher's stamp, leaves room for a single editorial sentence.</p>
+      </div>
+    </div>
+
+    <div class="panel flat" style="border:1px solid var(--rule);">
+      <div class="social">
+        <div class="lock-stack" style="align-items:flex-start;">
+          <svg viewBox="0 0 56 50" width="60" height="54" aria-hidden="true">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="1.5"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <div style="font-family:var(--sans); font-weight:600; font-size:11px; letter-spacing:0.28em; text-transform:uppercase; color:var(--ink);">Odds Primer</div>
+        </div>
+        <div class="sc-headline">Will France win the 2026 World Cup? Six markets disagree by <span style="color:var(--flame); border-bottom:2px solid var(--flame);">11 points.</span></div>
+        <div class="sc-foot">
+          <span>oddsprimer.com</span>
+          <span>World Cup 2026 · Vol. 1</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================
+       6. VENUE HANDOFF CARD
+       ==================================================== -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">06</span>
+      <div>
+        <h2 class="section-name">Venue handoff card</h2>
+        <p class="section-sub">Footer-of-card stamp, small. Glyph at 20px next to "Odds Primer" tracked-out, sitting beneath the venue link.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="venue-card">
+        <div class="vc-eyebrow">Best price · France to win</div>
+        <div class="vc-line">Kalshi has the best price on France to win the World Cup at <span style="color:var(--flame);">$0.32</span>.</div>
+        <a class="vc-link">Open on Kalshi ↗</a>
+        <hr style="border:0; border-top:1px solid var(--rule); margin:14px 0 12px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <svg viewBox="0 0 56 50" width="22" height="20" aria-hidden="true">
+            <line x1="2" y1="46" x2="54" y2="46" stroke="#0E2240" stroke-width="2"/>
+            <rect x="6"  y="32" width="6" height="14" fill="#0E2240"/>
+            <rect x="16" y="22" width="6" height="24" fill="#0E2240"/>
+            <rect x="26" y="8"  width="6" height="38" fill="#D9461C"/>
+            <rect x="36" y="28" width="6" height="18" fill="#0E2240"/>
+          </svg>
+          <span style="font-family:var(--sans); font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:var(--ink-soft);">Odds Primer</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================
+       7. TECHNICAL SPEC
+       ==================================================== -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">07</span>
+      <div>
+        <h2 class="section-name">Technical spec</h2>
+        <p class="section-sub">For when we ship the SVG into <code>assets/</code> and the masthead component.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="spec">
+        <div class="row"><b>viewBox (full)</b><span><code>0 0 56 50</code></span></div>
+        <div class="row"><b>viewBox (16px trio)</b><span><code>0 0 48 44</code></span></div>
+        <div class="row"><b>Bar widths</b><span>6px (full), 10px (trio)</span></div>
+        <div class="row"><b>Bar gaps</b><span>4px (full), 4px (trio)</span></div>
+        <div class="row"><b>Heights (full)</b><span>14, 24, <span style="color:var(--flame);">38</span>, 18 — mapped from 22, 38, <span style="color:var(--flame);">65</span>, 30</span></div>
+        <div class="row"><b>Heights (trio)</b><span>18, <span style="color:var(--flame);">34</span>, 24</span></div>
+        <div class="row"><b>Baseline rule</b><span>1.25px (full), 3px (16px) — navy ink, full width</span></div>
+        <div class="row"><b>Flame fill</b><span><code>#D9461C</code> · only the third bar (full) or middle bar (trio)</span></div>
+        <div class="row"><b>Ink fill</b><span><code>#0E2240</code> · all other bars + baseline rule</span></div>
+        <div class="row"><b>Inverted</b><span>Replace ink with cream <code>#FAF7F0</code>; flame stays flame</span></div>
+        <div class="row"><b>Wordmark font</b><span>Inter Tight 700 · letter-spacing −0.01em</span></div>
+        <div class="row"><b>Wordmark gap</b><span>14px from glyph right edge to wordmark cap-height baseline</span></div>
+        <div class="row"><b>Mono row (editorial)</b><span>JetBrains Mono 400 · 11px · letter-spacing 0.16em · color <code>#3D4F6A</code> with flame on "65"</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <span>Odds Primer · Brand · Bars · Locked v1</span>
+    <span>Bare · meaningful heights 22 · 38 · 65 · 30</span>
+  </footer>
+
+</div>
+</body>
+</html>
