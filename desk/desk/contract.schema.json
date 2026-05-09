@@ -1,0 +1,329 @@
+{
+  "MatchOutput": {
+    "$defs": {
+      "Competition": {
+        "additionalProperties": false,
+        "description": "League or tournament. `stage` is optional and only populated when\nmeaningful (`group_d`, `semi_final`, `matchday_8`).",
+        "properties": {
+          "code": {
+            "maxLength": 24,
+            "minLength": 2,
+            "pattern": "^[a-z0-9]+$",
+            "title": "Code",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[a-z0-9_]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Stage"
+          }
+        },
+        "required": [
+          "code",
+          "label"
+        ],
+        "title": "Competition",
+        "type": "object"
+      },
+      "Copy": {
+        "additionalProperties": false,
+        "description": "Editorial output. Voice rules enforced by explainer post-checks (PR 5).\n\nCitations are URLs of the sources Haiku referenced in the blurb.",
+        "properties": {
+          "blurb": {
+            "default": "",
+            "maxLength": 1200,
+            "minLength": 0,
+            "title": "Blurb",
+            "type": "string"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "summary": {
+            "default": "",
+            "maxLength": 400,
+            "minLength": 0,
+            "title": "Summary",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "maxLength": 120,
+            "minLength": 0,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "title": "Copy",
+        "type": "object"
+      },
+      "MarketVenue": {
+        "enum": [
+          "kalshi",
+          "polymarket"
+        ],
+        "title": "MarketVenue",
+        "type": "string"
+      },
+      "Venue": {
+        "additionalProperties": false,
+        "properties": {
+          "city": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "City",
+            "type": "string"
+          },
+          "country": {
+            "maxLength": 2,
+            "minLength": 2,
+            "pattern": "^[A-Z]{2}$",
+            "title": "Country",
+            "type": "string"
+          },
+          "stadium": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Stadium",
+            "type": "string"
+          }
+        },
+        "required": [
+          "city",
+          "stadium",
+          "country"
+        ],
+        "title": "Venue",
+        "type": "object"
+      },
+      "Verdict": {
+        "additionalProperties": false,
+        "description": "The call.\n\nPick:  side / market_venue / price / edge_pp all populated. side is the\n       team **name** (e.g. \"France\") or \"draw\" \u2014 never \"team_a\".\nPass:  side null, market_venue null, price null, edge_pp may be 0 or null.\nAvoid: side null, market_venue null, price null, edge_pp may be null.",
+        "properties": {
+          "edge_pp": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Edge Pp"
+          },
+          "market_venue": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/MarketVenue"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "price": {
+            "anyOf": [
+              {
+                "maxLength": 16,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Price"
+          },
+          "side": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Side"
+          },
+          "state": {
+            "$ref": "#/$defs/VerdictState"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "title": "Verdict",
+        "type": "object"
+      },
+      "VerdictState": {
+        "enum": [
+          "pick",
+          "pass",
+          "avoid"
+        ],
+        "title": "VerdictState",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "The published JSON for one match.\n\n`sport` is the registry key. `market_outcomes` declares which outcome\nuniverse applies to this fixture \u2014 football has draws, tennis doesn't,\nso the contract carries it explicitly.",
+    "properties": {
+      "competition": {
+        "$ref": "#/$defs/Competition"
+      },
+      "copy": {
+        "$ref": "#/$defs/Copy"
+      },
+      "kickoff_utc": {
+        "format": "date-time",
+        "title": "Kickoff Utc",
+        "type": "string"
+      },
+      "market_outcomes": {
+        "items": {
+          "enum": [
+            "a",
+            "b",
+            "draw"
+          ],
+          "type": "string"
+        },
+        "maxItems": 3,
+        "minItems": 2,
+        "title": "Market Outcomes",
+        "type": "array"
+      },
+      "match_id": {
+        "pattern": "^[a-z0-9]{2,8}-[a-z0-9]+(?:-[a-z0-9]+){2,}-\\d{8}$",
+        "title": "Match Id",
+        "type": "string"
+      },
+      "sport": {
+        "pattern": "^[a-z]+$",
+        "title": "Sport",
+        "type": "string"
+      },
+      "team_a": {
+        "maxLength": 64,
+        "minLength": 1,
+        "title": "Team A",
+        "type": "string"
+      },
+      "team_b": {
+        "maxLength": 64,
+        "minLength": 1,
+        "title": "Team B",
+        "type": "string"
+      },
+      "updated_at": {
+        "format": "date-time",
+        "title": "Updated At",
+        "type": "string"
+      },
+      "venue": {
+        "$ref": "#/$defs/Venue"
+      },
+      "verdict": {
+        "$ref": "#/$defs/Verdict"
+      }
+    },
+    "required": [
+      "match_id",
+      "sport",
+      "competition",
+      "kickoff_utc",
+      "team_a",
+      "team_b",
+      "venue",
+      "market_outcomes",
+      "verdict",
+      "updated_at"
+    ],
+    "title": "MatchOutput",
+    "type": "object"
+  },
+  "OutputIndex": {
+    "$defs": {
+      "MatchOutputIndexEntry": {
+        "additionalProperties": false,
+        "description": "One row of the index. The full `MatchOutput` lives in its own file.",
+        "properties": {
+          "kickoff_utc": {
+            "format": "date-time",
+            "title": "Kickoff Utc",
+            "type": "string"
+          },
+          "match_id": {
+            "pattern": "^[a-z0-9]{2,8}-[a-z0-9]+(?:-[a-z0-9]+){2,}-\\d{8}$",
+            "title": "Match Id",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "match_id",
+          "kickoff_utc",
+          "updated_at"
+        ],
+        "title": "MatchOutputIndexEntry",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "`index.json` published per sport, listing every match in that sport.",
+    "properties": {
+      "matches": {
+        "items": {
+          "$ref": "#/$defs/MatchOutputIndexEntry"
+        },
+        "title": "Matches",
+        "type": "array"
+      },
+      "sport": {
+        "pattern": "^[a-z]+$",
+        "title": "Sport",
+        "type": "string"
+      },
+      "updated_at": {
+        "format": "date-time",
+        "title": "Updated At",
+        "type": "string"
+      }
+    },
+    "required": [
+      "sport",
+      "matches",
+      "updated_at"
+    ],
+    "title": "OutputIndex",
+    "type": "object"
+  }
+}
