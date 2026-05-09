@@ -21,11 +21,17 @@ Pipeline:
        standard 400-pt logistic.
     5. Distribute the 1.0 probability mass across (a, draw, b) using a
        simple draw-share function that decays with |Elo diff|.
+    6. Phase A.1 — bootstrap a 90% confidence band around the triplet
+       by perturbing the Elo prior, host bonus, and altitude bonus
+       across the spec's uncertainty ranges. Forces the verdict step
+       to be honest about what it doesn't know.
 """
 
 from __future__ import annotations
 
+import hashlib
 import math
+import random
 from dataclasses import dataclass
 from typing import Optional
 
@@ -43,6 +49,24 @@ ALTITUDE_THRESHOLD_M:        float = 1000.0
 DRAW_PEAK:  float = 0.30
 DRAW_FLOOR: float = 0.10
 DRAW_DECAY_PER_ELO: float = 0.0006   # 100 Elo diff → −0.06 draw share
+
+
+# ── Phase A.1 bootstrap parameters (THE_DESK_OPTIMIZATION_SPEC §3) ─────
+#
+# The optimization spec mandates:
+#   "bootstrap the Elo lookup ±20 points, the host bonus by ±15,
+#    the altitude bonus by ±10; recompute the model 100× per match;
+#    report the 90% CI on p_a, p_draw, p_b."
+#
+# Perturbation magnitudes are uniform half-widths, applied to each
+# sample independently. Home-ground bonus uses the same ±15 as host:
+# they're the international/club analogues of the same venue uplift,
+# so v1 treats their uncertainty identically.
+BOOTSTRAP_N:                  int   = 100
+ELO_PERTURBATION:             float = 20.0
+HOST_BONUS_PERTURBATION:      float = 15.0
+HOME_BONUS_PERTURBATION:      float = 15.0
+ALTITUDE_BONUS_PERTURBATION:  float = 10.0
 
 
 # ── Inputs / outputs ────────────────────────────────────────────────────
@@ -100,11 +124,10 @@ class ModelOutput:
     # Mirror of the input flags so callers don't have to re-thread them.
     team_a_elo_source: str = "wiki"
     team_b_elo_source: str = "wiki"
-    # Confidence band — 5th/95th percentile across an Elo-jackknife grid
-    # (Phase A.3 of the trustability brief). Forces the engine to be
-    # honest about what it doesn't know: if the Elo prior is shaky, the
-    # band widens and the verdict step's lower-bound check rejects the
-    # Pick.
+    # 90% confidence band (5th/95th percentile across a 100-sample
+    # bootstrap of Elo ±20, host bonus ±15, altitude bonus ±10).
+    # Phase A.2 of the optimization spec uses the lower bound as the
+    # honest-uncertainty gate on Pick verdicts.
     p_a_lower:    float = 0.0
     p_a_upper:    float = 1.0
     p_draw_lower: float = 0.0
@@ -116,62 +139,18 @@ class ModelOutput:
 # ── Public entry point ──────────────────────────────────────────────────
 
 def compute(features: FootballFeatures) -> ModelOutput:
-    elo_a, elo_b = features.team_a_elo, features.team_b_elo
     drivers: list[Driver] = []
-
-    # ── Venue bonus ────────────────────────────────────────────────
-    if features.is_international:
-        host = features.venue_host_iso3
-        if host:
-            if features.team_a_iso3 and features.team_a_iso3.lower() == host.lower():
-                elo_a += HOST_BONUS_ELO
-                drivers.append(Driver("host nation", HOST_BONUS_ELO, "a"))
-            if features.team_b_iso3 and features.team_b_iso3.lower() == host.lower():
-                elo_b += HOST_BONUS_ELO
-                drivers.append(Driver("host nation", HOST_BONUS_ELO, "b"))
-    else:
-        stadium = (features.venue_stadium or "").strip().lower()
-        if stadium:
-            if features.team_a_home_ground and features.team_a_home_ground.strip().lower() == stadium:
-                elo_a += HOME_GROUND_BONUS_ELO
-                drivers.append(Driver("home ground", HOME_GROUND_BONUS_ELO, "a"))
-            if features.team_b_home_ground and features.team_b_home_ground.strip().lower() == stadium:
-                elo_b += HOME_GROUND_BONUS_ELO
-                drivers.append(Driver("home ground", HOME_GROUND_BONUS_ELO, "b"))
-
-    # ── Altitude bonus ─────────────────────────────────────────────
-    alt = features.venue_altitude_m or 0.0
-    if alt > ALTITUDE_THRESHOLD_M:
-        bonus = ALTITUDE_BONUS_ELO_PER_1000 * (alt - ALTITUDE_THRESHOLD_M) / 1000.0
-        if features.team_a_altitude_acclimatised:
-            elo_a += bonus
-            drivers.append(Driver("altitude (acclimatised)", bonus, "a"))
-        if features.team_b_altitude_acclimatised:
-            elo_b += bonus
-            drivers.append(Driver("altitude (acclimatised)", bonus, "b"))
-
-    # ── Elo → probabilities ────────────────────────────────────────
-    elo_diff = elo_a - elo_b
-    # Standard 400-pt logistic; expected score for team_a.
-    expected_a = 1.0 / (1.0 + math.pow(10.0, -elo_diff / 400.0))
-
-    p_draw = max(DRAW_FLOOR, DRAW_PEAK - DRAW_DECAY_PER_ELO * abs(elo_diff))
-    win_share = 1.0 - p_draw
-    p_a = expected_a * win_share
-    p_b = (1.0 - expected_a) * win_share
-
-    # Float drift safety net — renormalise so the trio sums to exactly 1.
-    s = p_a + p_draw + p_b
-    p_a, p_draw, p_b = p_a / s, p_draw / s, p_b / s
-
-    # ── Confidence band (Phase A.3) ────────────────────────────────
-    # Jackknife the Elo prior across ±50 of each side's input. We use
-    # the *base* Elo (pre-adjustment) so the perturbation doesn't
-    # double-count host / home / altitude bonuses, then re-apply them.
-    p_a_lo, p_a_hi, pd_lo, pd_hi, p_b_lo, p_b_hi = _confidence_band(
-        features=features, base_elo_a=features.team_a_elo, base_elo_b=features.team_b_elo,
-        elo_a_adj=elo_a, elo_b_adj=elo_b,
+    elo_a, elo_b = _adjusted_elos(
+        features,
+        base_elo_a=features.team_a_elo,
+        base_elo_b=features.team_b_elo,
+        record_drivers=drivers,
     )
+
+    p_a, p_draw, p_b = _probs_from_elos(elo_a, elo_b)
+
+    # ── Confidence band (Phase A.1) ────────────────────────────────
+    p_a_lo, p_a_hi, pd_lo, pd_hi, p_b_lo, p_b_hi = _confidence_band(features)
 
     return ModelOutput(
         p_a=p_a, p_draw=p_draw, p_b=p_b,
@@ -185,9 +164,62 @@ def compute(features: FootballFeatures) -> ModelOutput:
     )
 
 
-# ── Confidence-band helper ─────────────────────────────────────────────
+# ── Bonus + probability helpers ────────────────────────────────────────
 
-ELO_JACKKNIFE_GRID = (-50.0, -25.0, 0.0, 25.0, 50.0)
+def _adjusted_elos(
+    features: FootballFeatures,
+    *,
+    base_elo_a: float,
+    base_elo_b: float,
+    host_bonus: float = HOST_BONUS_ELO,
+    home_bonus: float = HOME_GROUND_BONUS_ELO,
+    altitude_per_1000: float = ALTITUDE_BONUS_ELO_PER_1000,
+    record_drivers: list[Driver] | None = None,
+) -> tuple[float, float]:
+    """Apply venue + altitude bonuses on top of base Elo.
+
+    Pulled out so the bootstrap can re-run the bonus logic with
+    perturbed constants. `record_drivers` is the live-pipeline output;
+    the bootstrap path passes None and ignores driver attribution.
+    """
+    elo_a, elo_b = base_elo_a, base_elo_b
+
+    if features.is_international:
+        host = features.venue_host_iso3
+        if host:
+            if features.team_a_iso3 and features.team_a_iso3.lower() == host.lower():
+                elo_a += host_bonus
+                if record_drivers is not None:
+                    record_drivers.append(Driver("host nation", host_bonus, "a"))
+            if features.team_b_iso3 and features.team_b_iso3.lower() == host.lower():
+                elo_b += host_bonus
+                if record_drivers is not None:
+                    record_drivers.append(Driver("host nation", host_bonus, "b"))
+    else:
+        stadium = (features.venue_stadium or "").strip().lower()
+        if stadium:
+            if features.team_a_home_ground and features.team_a_home_ground.strip().lower() == stadium:
+                elo_a += home_bonus
+                if record_drivers is not None:
+                    record_drivers.append(Driver("home ground", home_bonus, "a"))
+            if features.team_b_home_ground and features.team_b_home_ground.strip().lower() == stadium:
+                elo_b += home_bonus
+                if record_drivers is not None:
+                    record_drivers.append(Driver("home ground", home_bonus, "b"))
+
+    alt = features.venue_altitude_m or 0.0
+    if alt > ALTITUDE_THRESHOLD_M:
+        bonus = altitude_per_1000 * (alt - ALTITUDE_THRESHOLD_M) / 1000.0
+        if features.team_a_altitude_acclimatised:
+            elo_a += bonus
+            if record_drivers is not None:
+                record_drivers.append(Driver("altitude (acclimatised)", bonus, "a"))
+        if features.team_b_altitude_acclimatised:
+            elo_b += bonus
+            if record_drivers is not None:
+                record_drivers.append(Driver("altitude (acclimatised)", bonus, "b"))
+
+    return elo_a, elo_b
 
 
 def _probs_from_elos(elo_a: float, elo_b: float) -> tuple[float, float, float]:
@@ -202,42 +234,99 @@ def _probs_from_elos(elo_a: float, elo_b: float) -> tuple[float, float, float]:
     return (p_a / s, p_draw / s, p_b / s)
 
 
+# ── Confidence-band bootstrap (Phase A.1) ──────────────────────────────
+
+def _seed_for_features(features: FootballFeatures) -> int:
+    """Deterministic per-match seed so the band is reproducible.
+
+    Two runs of the same fixture yield identical bounds, which keeps
+    the verdict step deterministic and the backtest's xlsx output
+    diffable across regenerations.
+    """
+    key = "|".join(str(x) for x in (
+        features.team_a_name, features.team_b_name,
+        features.team_a_elo, features.team_b_elo,
+        features.team_a_iso3, features.team_b_iso3,
+        features.venue_host_iso3, features.venue_stadium,
+        features.venue_altitude_m,
+        features.team_a_home_ground, features.team_b_home_ground,
+        features.team_a_altitude_acclimatised, features.team_b_altitude_acclimatised,
+        features.is_international,
+    ))
+    digest = hashlib.md5(key.encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "big")
+
+
+def _percentile(sorted_vals: list[float], q: float) -> float:
+    """Linear-interpolated percentile. `q` in [0, 100]."""
+    n = len(sorted_vals)
+    if n == 0:
+        return 0.0
+    if n == 1:
+        return sorted_vals[0]
+    idx = (q / 100.0) * (n - 1)
+    lo = int(idx)
+    hi = min(lo + 1, n - 1)
+    frac = idx - lo
+    return sorted_vals[lo] + frac * (sorted_vals[hi] - sorted_vals[lo])
+
+
 def _confidence_band(
-    *,
-    features: "FootballFeatures",
-    base_elo_a: float,
-    base_elo_b: float,
-    elo_a_adj: float,
-    elo_b_adj: float,
+    features: FootballFeatures,
 ) -> tuple[float, float, float, float, float, float]:
     """Return (p_a_lo, p_a_hi, pd_lo, pd_hi, p_b_lo, p_b_hi).
 
-    Method: perturb each side's *base* Elo across ±50 in 5 steps; for
-    every (delta_a, delta_b) pair on the grid (25 combinations), compute
-    the model's probabilities; take min/max per side.
+    Bootstrap the model BOOTSTRAP_N times. Each sample independently
+    perturbs:
 
-    Perturbing the *base* Elo (not the adjusted) preserves the host /
-    home / altitude bonuses — those reflect deterministic facts about
-    the venue, not uncertainty in the team prior.
+      - Elo prior on each side by uniform(±ELO_PERTURBATION)
+      - host bonus magnitude by uniform(±HOST_BONUS_PERTURBATION)
+        (also home-ground bonus by ±HOME_BONUS_PERTURBATION; the two
+        are international/club analogues of the same venue uplift)
+      - altitude-bonus rate by uniform(±ALTITUDE_BONUS_PERTURBATION)
+
+    Lower / upper bounds are the 5th / 95th percentile of the resulting
+    p_a, p_draw, p_b distributions. Per-match seeding keeps the band
+    reproducible across runs.
     """
-    bonus_a = elo_a_adj - base_elo_a
-    bonus_b = elo_b_adj - base_elo_b
+    rng = random.Random(_seed_for_features(features))
 
     p_a_samples: list[float] = []
     p_d_samples: list[float] = []
     p_b_samples: list[float] = []
-    for da in ELO_JACKKNIFE_GRID:
-        for db in ELO_JACKKNIFE_GRID:
-            pa, pd, pb = _probs_from_elos(
-                base_elo_a + da + bonus_a,
-                base_elo_b + db + bonus_b,
-            )
-            p_a_samples.append(pa)
-            p_d_samples.append(pd)
-            p_b_samples.append(pb)
+
+    for _ in range(BOOTSTRAP_N):
+        d_elo_a = rng.uniform(-ELO_PERTURBATION, ELO_PERTURBATION)
+        d_elo_b = rng.uniform(-ELO_PERTURBATION, ELO_PERTURBATION)
+        host_b  = HOST_BONUS_ELO + rng.uniform(
+            -HOST_BONUS_PERTURBATION, HOST_BONUS_PERTURBATION
+        )
+        home_b  = HOME_GROUND_BONUS_ELO + rng.uniform(
+            -HOME_BONUS_PERTURBATION, HOME_BONUS_PERTURBATION
+        )
+        alt_b   = ALTITUDE_BONUS_ELO_PER_1000 + rng.uniform(
+            -ALTITUDE_BONUS_PERTURBATION, ALTITUDE_BONUS_PERTURBATION
+        )
+
+        elo_a_adj, elo_b_adj = _adjusted_elos(
+            features,
+            base_elo_a=features.team_a_elo + d_elo_a,
+            base_elo_b=features.team_b_elo + d_elo_b,
+            host_bonus=host_b,
+            home_bonus=home_b,
+            altitude_per_1000=alt_b,
+        )
+        pa, pd, pb = _probs_from_elos(elo_a_adj, elo_b_adj)
+        p_a_samples.append(pa)
+        p_d_samples.append(pd)
+        p_b_samples.append(pb)
+
+    p_a_samples.sort()
+    p_d_samples.sort()
+    p_b_samples.sort()
 
     return (
-        min(p_a_samples), max(p_a_samples),
-        min(p_d_samples), max(p_d_samples),
-        min(p_b_samples), max(p_b_samples),
+        _percentile(p_a_samples, 5.0),  _percentile(p_a_samples, 95.0),
+        _percentile(p_d_samples, 5.0),  _percentile(p_d_samples, 95.0),
+        _percentile(p_b_samples, 5.0),  _percentile(p_b_samples, 95.0),
     )
