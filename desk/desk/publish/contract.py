@@ -135,7 +135,7 @@ class MatchOutput(BaseModel):
     kickoff_utc:     datetime
     team_a:          Annotated[str, StringConstraints(min_length=1, max_length=64)]
     team_b:          Annotated[str, StringConstraints(min_length=1, max_length=64)]
-    venue:           Venue
+    venue:           Optional[Venue] = None    # populated when known; None for fresh-ingest stubs
     market_outcomes: list[Literal["a", "b", "draw"]] = Field(min_length=2, max_length=3)
     verdict:         Verdict
     copy:            Copy = Field(default_factory=Copy)

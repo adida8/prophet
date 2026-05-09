@@ -245,7 +245,15 @@
         "type": "string"
       },
       "venue": {
-        "$ref": "#/$defs/Venue"
+        "anyOf": [
+          {
+            "$ref": "#/$defs/Venue"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
       },
       "verdict": {
         "$ref": "#/$defs/Verdict"
@@ -258,7 +266,6 @@
       "kickoff_utc",
       "team_a",
       "team_b",
-      "venue",
       "market_outcomes",
       "verdict",
       "updated_at"
