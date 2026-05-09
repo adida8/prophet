@@ -8,12 +8,14 @@ others.
 |---|---|---|---|
 | **Prophet** | Paper-trading bot for prediction markets, plus the platform's market data engine and React dashboard | `prophet/` (or repo root for legacy code), `frontend/` | shipping; deployed to Railway |
 | **Ledger** | Connected portfolio tracker for Polymarket (Kalshi in Phase 1). Paste-a-wallet viewer at `/ledger`. | `ledger/`, `frontend/src/ledger/` | Phase 0 shipped; live on Railway |
-| **The Desk** | Verdict engine that evaluates every priced football match (WC 2026 launch wedge → club football right after) | `desk/` | PRs 1–4 + backtest harness landed; PR 5 (explainer) and PR 6 (scheduler/CLI) outstanding |
+| **The Desk** | Verdict engine that evaluates every priced football match (WC 2026 launch wedge → club football right after) | `desk/` | PR 1–4 + backtest harness + PR 4.5 sanity layer + Phase A.3 confidence band + explainer stub all landed; Haiku replacement + scheduler outstanding |
 
 Build specs live alongside the code:
 
 - `THE_DESK_SPEC.md` — six-PR build plan for The Desk
 - `THE_DESK_PR_BACKTEST_BRIEF.md` — backtest harness brief (shipped)
+- `THE_DESK_PR_4_5_BRIEF.md` — sanity layer brief (shipped)
+- `THE_DESK_TRUSTABILITY_BRIEF.md` — v1.1 trustability roadmap; Phase A landed, Phase B–E ahead
 - `ledger-phase-0-brief.md` — Phase 0 brief for Ledger
 - `Odds Primer Design System/` — voice, palette, type, components
 - `branding/bars-locked-v2.html` — locked logo (Source Serif 4 wordmark + bars glyph)
@@ -118,15 +120,37 @@ Engine that evaluates **every priced football match** (not just WC 2026). For ea
 Six-step pipeline, each independently replaceable:
 **Ingest → Features → Model → Verdict → Explainer → Publish.**
 
-### PR ladder (per `THE_DESK_SPEC.md` §4 + backtest brief)
+### PR ladder (per `THE_DESK_SPEC.md` §4 + briefs)
 
 - ✅ PR 1 — output contract + static-file publisher
 - ✅ PR 2 — fixture ingest + match identity (Polymarket gamma → 78 priced fixtures)
 - ✅ PR 3 — football model v1 (Elo + host + home + altitude)
 - ✅ PR 4 — verdict step + thresholds (end-to-end pipeline)
 - ✅ Backtest harness — `desk backtest --tournament wc-2022` + summary dashboard
-- ⬜ PR 5 — explainer (3 Haiku prompts; voice rules enforced)
+- ✅ PR 4.5 — sanity layer (liquidity filter + stub-Elo gate + Avoid edge_pp fix)
+- ✅ Phase A.3 — confidence band (Elo jackknife ±50, lower-bound Pick gate)
+- ✅ Explainer stub — templated `copy.{title,summary,blurb}` with voice-rule enforcement
+- ⬜ PR 5 — explainer Haiku replacement (needs `ANTHROPIC_API_KEY`)
 - ⬜ PR 6 — scheduler + CLI + serve
+
+### Trustability progress (Phase A of `THE_DESK_TRUSTABILITY_BRIEF.md`)
+
+| Run | Original | After PR 4.5 | After Phase A.3 |
+|---|---|---|---|
+| WC 2022 backtest Pick rate | 95% | 95% | **16%** |
+| Live engine Pick rate (78 fixtures) | 62% | 23% | **6%** |
+
+Both runs sit inside the 5–20% editorial target. Backtest dashboard's
+Selection card flips from red to green. Calibration unchanged at parity
+with the closing market (Brier 0.581 vs 0.579) — band tightened
+selection without sacrificing forecast accuracy.
+
+Every published `MatchOutput` now carries non-empty `copy.title /
+summary / blurb` in voice-checked editorial prose. Sample Pick output
+on a live WC 2026 fixture:
+
+> The model rates Bosnia and Herzegovina at 34%; the market prices that
+> side at 22%. The +11.1pp gap is the basis for the Pick.
 
 ### Backtest
 
@@ -165,7 +189,7 @@ the regenerated `desk_backtest_*.{xlsx,html}` files, push to
 ```bash
 cd desk
 python -m pip install -e ".[dev]"
-pytest                          # 101 tests, all green
+pytest                          # 146 tests, all green
 
 python -m desk sports                       # list registered sports
 python -m desk run --once                   # live pipeline → data/output/football/*.json
@@ -189,7 +213,11 @@ desk/
 │   ├── verdict/
 │   │   ├── thresholds.py             # 3.0 / 1.0 / -2.0 pp; .env override
 │   │   ├── compare.py                # MarketSnapshot.best_for(side)
-│   │   └── decide.py                 # Pick / Pass / Avoid
+│   │   ├── liquidity.py              # extreme-price guard (PR 4.5)
+│   │   └── decide.py                 # Pick / Pass / Avoid + lower-bound gate (A.3)
+│   ├── explainer/
+│   │   ├── voice.py                  # banned phrases / no exclamation / no emoji
+│   │   └── stub.py                   # templated copy until PR 5 wires Haiku
 │   ├── publish/
 │   │   ├── contract.py               # Pydantic v2 — single source of truth
 │   │   ├── writer.py                 # atomic per-match + index.json
