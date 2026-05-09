@@ -369,15 +369,15 @@
       <div class="verdict">Comparable</div>
       <div class="detail">Model Brier is within 0.0013 of the closing line — essentially a tie across this sample. Calibration is credible at v1 model depth.</div>
     </div>
-    <div class="summary-card red">
+    <div class="summary-card green">
       <div class="heading">Selection · pick discipline</div>
-      <div class="verdict">Too aggressive</div>
-      <div class="detail">61/64 (95%) Pick rate. The v1 model lacks form / weather / injury features, so it disagrees with the closing market on most fixtures. Discipline arrives with PR 5.</div>
+      <div class="verdict">Disciplined</div>
+      <div class="detail">10/64 (16%) Pick rate sits inside the 5–20% target.</div>
     </div>
-    <div class="summary-card red">
+    <div class="summary-card amber">
       <div class="heading">Bottom line</div>
-      <div class="verdict">Hold for v1.1</div>
-      <div class="detail">One axis is meaningfully behind the bar. Surface internally for review; don&#x27;t post publicly until calibration / selection settles.</div>
+      <div class="verdict">Mixed signal</div>
+      <div class="detail">Calibration and selection point in different directions — read both cards before drawing conclusions.</div>
     </div>
 <!-- BACKTEST_DATA_END:summary -->
   </div>
@@ -398,16 +398,16 @@
     <div class="kpi">
       <div class="label">Verdicts issued</div>
       <div class="value">64</div>
-      <div class="unit">61 Pick · 3 Pass · 0 Avoid</div>
+      <div class="unit">10 Pick · 54 Pass · 0 Avoid</div>
     </div>
     <div class="kpi">
       <div class="label">Mean edge on Picks</div>
-      <div class="value">+9.3</div>
+      <div class="value">+12.5</div>
       <div class="unit">percentage points</div>
     </div>
     <div class="kpi">
       <div class="label">Pick hit rate</div>
-      <div class="value">28/61</div>
+      <div class="value">4/10</div>
       <div class="unit">90′ outcomes</div>
     </div>
 <!-- BACKTEST_DATA_END:kpis -->
@@ -433,13 +433,13 @@
         <div class="verdict-mix">
           <div class="row">
             <div class="label">Pick</div>
-            <div class="bar-track"><div class="bar-fill" style="width: 95%;"></div></div>
-            <div class="count">61</div>
+            <div class="bar-track"><div class="bar-fill" style="width: 16%;"></div></div>
+            <div class="count">10</div>
           </div>
           <div class="row">
             <div class="label">Pass</div>
-            <div class="bar-track"><div class="bar-fill pass" style="width: 5%;"></div></div>
-            <div class="count">3</div>
+            <div class="bar-track"><div class="bar-fill pass" style="width: 84%;"></div></div>
+            <div class="count">54</div>
           </div>
           <div class="row">
             <div class="label">Avoid</div>
@@ -453,12 +453,12 @@
 <!-- BACKTEST_DATA_START:edge_profile -->
           <div>Iran                     <span style="color: var(--flame); font-weight: 700;">+18.2pp</span></div>
           <div>Spain                    <span style="color: var(--flame); font-weight: 700;">+17.4pp</span></div>
-          <div>Netherlands              <span style="color: var(--flame); font-weight: 700;">+16.7pp</span></div>
-          <div>Netherlands              <span style="color: var(--flame); font-weight: 700;">+16.2pp</span></div>
           <div>France                   <span style="color: var(--flame); font-weight: 700;">+16.2pp</span></div>
           <div>Brazil                   <span style="color: var(--flame); font-weight: 700;">+16.1pp</span></div>
-          <div>Portugal                 <span style="color: var(--flame); font-weight: 700;">+14.2pp</span></div>
-          <div>Argentina                <span style="color: var(--flame); font-weight: 700;">+13.7pp</span></div>
+          <div>Senegal                  <span style="color: var(--flame); font-weight: 700;">+11.0pp</span></div>
+          <div>Japan                    <span style="color: var(--flame); font-weight: 700;">+10.3pp</span></div>
+          <div>Costa Rica               <span style="color: var(--flame); font-weight: 700;">+9.6pp</span></div>
+          <div>Argentina                <span style="color: var(--flame); font-weight: 700;">+8.9pp</span></div>
 <!-- BACKTEST_DATA_END:edge_profile -->
         </div>
       </div>
@@ -496,22 +496,22 @@
         <tr>
           <td class="match">England v Iran</td>
           <td>21 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Iran</td>
-          <td class="num">+9.3pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.210</td>
           <td>England</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Senegal v Netherlands</td>
           <td>21 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Netherlands</td>
-          <td class="num">+16.7pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.241</td>
           <td>Netherlands</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">USA v Wales</td>
@@ -526,22 +526,22 @@
         <tr>
           <td class="match">Argentina v Saudi Arabia</td>
           <td>22 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Argentina</td>
-          <td class="num">+3.8pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">1.649</td>
           <td>Saudi Arabia</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Denmark v Tunisia</td>
           <td>22 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Tunisia</td>
-          <td class="num">+4.3pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">1.067</td>
           <td>draw</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Mexico v Poland</td>
@@ -556,22 +556,22 @@
         <tr>
           <td class="match">France v Australia</td>
           <td>22 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>France</td>
-          <td class="num">+9.8pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.060</td>
           <td>France</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Morocco v Croatia</td>
           <td>23 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Morocco</td>
-          <td class="num">+7.0pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.969</td>
           <td>draw</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Germany v Japan</td>
@@ -596,42 +596,42 @@
         <tr>
           <td class="match">Belgium v Canada</td>
           <td>23 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Belgium</td>
-          <td class="num">+10.5pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.118</td>
           <td>Belgium</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Switzerland v Cameroon</td>
           <td>24 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Cameroon</td>
-          <td class="num">+4.6pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.311</td>
           <td>Switzerland</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Uruguay v South Korea</td>
           <td>24 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>South Korea</td>
-          <td class="num">+6.2pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.933</td>
           <td>draw</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Portugal v Ghana</td>
           <td>24 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Portugal</td>
-          <td class="num">+12.9pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.062</td>
           <td>Portugal</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Brazil v Serbia</td>
@@ -646,162 +646,162 @@
         <tr>
           <td class="match">Wales v Iran</td>
           <td>25 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Iran</td>
-          <td class="num">+9.7pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.562</td>
           <td>Iran</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Qatar v Senegal</td>
           <td>25 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Qatar</td>
-          <td class="num">+4.2pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.390</td>
           <td>Senegal</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Netherlands v Ecuador</td>
           <td>25 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Netherlands</td>
-          <td class="num">+6.5pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">1.147</td>
           <td>draw</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">England v USA</td>
           <td>25 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>England</td>
-          <td class="num">+6.0pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">1.152</td>
           <td>draw</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Tunisia v Australia</td>
           <td>26 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Australia</td>
-          <td class="num">+6.7pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.649</td>
           <td>Australia</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Poland v Saudi Arabia</td>
           <td>26 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Poland</td>
-          <td class="num">+9.9pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.185</td>
           <td>Poland</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">France v Denmark</td>
           <td>26 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>France</td>
-          <td class="num">+8.4pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.270</td>
           <td>France</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Argentina v Mexico</td>
           <td>26 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Argentina</td>
-          <td class="num">+8.6pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.123</td>
           <td>Argentina</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Japan v Costa Rica</td>
           <td>27 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Costa Rica</td>
-          <td class="num">+9.8pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.760</td>
           <td>Costa Rica</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Belgium v Morocco</td>
           <td>27 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Belgium</td>
-          <td class="num">+10.4pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">1.185</td>
           <td>Morocco</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Croatia v Canada</td>
           <td>27 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Croatia</td>
-          <td class="num">+4.4pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.258</td>
           <td>Croatia</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Spain v Germany</td>
           <td>27 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Spain</td>
-          <td class="num">+13.6pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.854</td>
           <td>draw</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Cameroon v Serbia</td>
           <td>28 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Cameroon</td>
-          <td class="num">+5.4pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.829</td>
           <td>draw</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">South Korea v Ghana</td>
           <td>28 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>South Korea</td>
-          <td class="num">+4.5pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.824</td>
           <td>Ghana</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Brazil v Switzerland</td>
           <td>28 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Brazil</td>
-          <td class="num">+11.2pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.107</td>
           <td>Brazil</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Portugal v Uruguay</td>
           <td>28 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Portugal</td>
-          <td class="num">+9.6pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.332</td>
           <td>Portugal</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Netherlands v Qatar</td>
@@ -816,22 +816,22 @@
         <tr>
           <td class="match">Ecuador v Senegal</td>
           <td>29 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Senegal</td>
-          <td class="num">+9.2pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.540</td>
           <td>Senegal</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Wales v England</td>
           <td>29 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Wales</td>
-          <td class="num">+4.9pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.170</td>
           <td>England</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Iran v USA</td>
@@ -846,72 +846,72 @@
         <tr>
           <td class="match">Tunisia v France</td>
           <td>30 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>France</td>
-          <td class="num">+12.3pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">1.442</td>
           <td>Tunisia</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Australia v Denmark</td>
           <td>30 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Denmark</td>
-          <td class="num">+9.6pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">1.052</td>
           <td>Australia</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Poland v Argentina</td>
           <td>30 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Argentina</td>
-          <td class="num">+6.3pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.108</td>
           <td>Argentina</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Saudi Arabia v Mexico</td>
           <td>30 Nov 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Mexico</td>
-          <td class="num">+11.9pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.165</td>
           <td>Mexico</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Croatia v Belgium</td>
           <td>1 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Belgium</td>
-          <td class="num">+7.7pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.898</td>
           <td>draw</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Canada v Morocco</td>
           <td>1 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Canada</td>
-          <td class="num">+8.0pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.557</td>
           <td>Morocco</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Japan v Spain</td>
           <td>1 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Spain</td>
-          <td class="num">+3.5pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">1.159</td>
           <td>Japan</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Costa Rica v Germany</td>
@@ -926,52 +926,52 @@
         <tr>
           <td class="match">South Korea v Portugal</td>
           <td>2 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Portugal</td>
-          <td class="num">+14.2pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">1.206</td>
           <td>South Korea</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Ghana v Uruguay</td>
           <td>2 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Uruguay</td>
-          <td class="num">+11.3pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.179</td>
           <td>Uruguay</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Cameroon v Brazil</td>
           <td>2 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Brazil</td>
-          <td class="num">+7.7pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">1.564</td>
           <td>Cameroon</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Serbia v Switzerland</td>
           <td>2 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Switzerland</td>
-          <td class="num">+7.9pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.447</td>
           <td>Switzerland</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Netherlands v USA</td>
           <td>3 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Netherlands</td>
-          <td class="num">+16.2pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.157</td>
           <td>Netherlands</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Argentina v Australia</td>
@@ -986,12 +986,12 @@
         <tr>
           <td class="match">France v Poland</td>
           <td>4 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Poland</td>
-          <td class="num">+4.3pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.178</td>
           <td>France</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">England v Senegal</td>
@@ -1006,22 +1006,22 @@
         <tr>
           <td class="match">Japan v Croatia</td>
           <td>5 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Croatia</td>
-          <td class="num">+11.6pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.904</td>
           <td>draw</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Brazil v South Korea</td>
           <td>5 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Brazil</td>
-          <td class="num">+10.3pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.054</td>
           <td>Brazil</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Morocco v Spain</td>
@@ -1036,62 +1036,62 @@
         <tr>
           <td class="match">Portugal v Switzerland</td>
           <td>6 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Portugal</td>
-          <td class="num">+5.3pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.280</td>
           <td>Portugal</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Croatia v Brazil</td>
           <td>9 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Brazil</td>
-          <td class="num">+9.6pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">1.219</td>
           <td>draw</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Netherlands v Argentina</td>
           <td>9 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Argentina</td>
-          <td class="num">+7.1pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.893</td>
           <td>draw</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Morocco v Portugal</td>
           <td>10 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Portugal</td>
-          <td class="num">+12.5pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">1.224</td>
           <td>Morocco</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">England v France</td>
           <td>10 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>France</td>
-          <td class="num">+3.6pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.487</td>
           <td>France</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Argentina v Croatia</td>
           <td>13 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Argentina</td>
-          <td class="num">+13.7pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.182</td>
           <td>Argentina</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">France v Morocco</td>
@@ -1106,22 +1106,22 @@
         <tr>
           <td class="match">Croatia v Morocco</td>
           <td>17 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Croatia</td>
-          <td class="num">+8.5pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.313</td>
           <td>Croatia</td>
-          <td><span class="pill hit">Hit</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
         <tr>
           <td class="match">Argentina v France</td>
           <td>18 Dec 2022</td>
-          <td><span class="pill pick">Pick</span></td>
-          <td>Argentina</td>
-          <td class="num">+13.4pp</td>
+          <td><span class="pill pass">Pass</span></td>
+          <td>—</td>
+          <td class="num">—</td>
           <td class="num">0.824</td>
           <td>draw</td>
-          <td><span class="pill miss">Miss</span></td>
+          <td><span class="pill na">n/a</span></td>
         </tr>
 <!-- BACKTEST_DATA_END:match_table -->
       </tbody>
