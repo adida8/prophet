@@ -169,6 +169,44 @@
     width: 18px; height: 2px; background: var(--slate-deep);
   }
 
+    /* ===== Headline summary ===== */
+  .summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 800px) { .summary { grid-template-columns: 1fr; } }
+  .summary-card {
+    background: var(--card);
+    border-left: 6px solid var(--ink);
+    padding: 16px 18px;
+  }
+  .summary-card.green { border-left-color: #2a7a2a; background: #f0f7ee; }
+  .summary-card.amber { border-left-color: #c8861a; background: #fbf3df; }
+  .summary-card.red   { border-left-color: #b83a2a; background: #fbe8e3; }
+  .summary-card .heading {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--note);
+    margin-bottom: 4px;
+  }
+  .summary-card .verdict {
+    font-family: Georgia, 'Source Serif 4', serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--ink);
+    line-height: 1.15;
+    margin-bottom: 6px;
+  }
+  .summary-card .detail {
+    font-size: 13px;
+    color: var(--body);
+    line-height: 1.4;
+  }
+
   /* ===== Verdict mix bars ===== */
   .verdict-mix .row {
     display: grid;
@@ -323,6 +361,27 @@
 <!-- BACKTEST_DATA_END:disclaimer -->
   </div>
 
+  <!-- Headline summary -->
+  <div class="summary">
+<!-- BACKTEST_DATA_START:summary -->
+    <div class="summary-card amber">
+      <div class="heading">Calibration · model vs market</div>
+      <div class="verdict">Comparable</div>
+      <div class="detail">Model Brier is within 0.0013 of the closing line — essentially a tie across this sample. Calibration is credible at v1 model depth.</div>
+    </div>
+    <div class="summary-card red">
+      <div class="heading">Selection · pick discipline</div>
+      <div class="verdict">Too aggressive</div>
+      <div class="detail">61/64 (95%) Pick rate. The v1 model lacks form / weather / injury features, so it disagrees with the closing market on most fixtures. Discipline arrives with PR 5.</div>
+    </div>
+    <div class="summary-card red">
+      <div class="heading">Bottom line</div>
+      <div class="verdict">Hold for v1.1</div>
+      <div class="detail">One axis is meaningfully behind the bar. Surface internally for review; don&#x27;t post publicly until calibration / selection settles.</div>
+    </div>
+<!-- BACKTEST_DATA_END:summary -->
+  </div>
+
   <!-- KPI strip -->
   <div class="kpis">
 <!-- BACKTEST_DATA_START:kpis -->
@@ -369,25 +428,25 @@
 
       <div class="card">
         <h3>Verdict mix</h3>
-        <div class="deck">How The Desk's call broke down across the 5 matches.</div>
+<!-- BACKTEST_DATA_START:verdict_mix -->
+        <div class="deck">How The Desk's call broke down across the 64 matches.</div>
         <div class="verdict-mix">
           <div class="row">
             <div class="label">Pick</div>
-            <div class="bar-track"><div class="bar-fill" style="width: 60%;"></div></div>
-            <div class="count">3</div>
+            <div class="bar-track"><div class="bar-fill" style="width: 95%;"></div></div>
+            <div class="count">61</div>
           </div>
           <div class="row">
             <div class="label">Pass</div>
-            <div class="bar-track"><div class="bar-fill pass" style="width: 20%;"></div></div>
-            <div class="count">1</div>
+            <div class="bar-track"><div class="bar-fill pass" style="width: 5%;"></div></div>
+            <div class="count">3</div>
           </div>
           <div class="row">
             <div class="label">Avoid</div>
-            <div class="bar-track"><div class="bar-fill avoid" style="width: 20%;"></div></div>
-            <div class="count">1</div>
+            <div class="bar-track"><div class="bar-fill avoid" style="width: 0%;"></div></div>
+            <div class="count">0</div>
           </div>
-        </div>
-
+<!-- BACKTEST_DATA_END:verdict_mix -->
         <h3 style="margin-top: 28px;">Edge profile</h3>
         <div class="deck">Edge size on Pick verdicts (model probability − market implied).</div>
         <div style="font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 13px; color: var(--body); line-height: 1.9;">
