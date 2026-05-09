@@ -20,8 +20,10 @@ from __future__ import annotations
 from desk.sport import FixtureRef
 from desk.sports.football.data.elo_seed import (
     club_elo,
+    club_elo_source,
     is_altitude_acclimatised,
     national_elo,
+    national_elo_source,
 )
 from desk.sports.football.metadata.club import home_ground_of
 from desk.sports.football.metadata.fifa import (
@@ -55,18 +57,22 @@ def _club_id_from_match_id(match_id: str, *, position: int) -> str | None:
 def build_features(fx: FixtureRef) -> FootballFeatures:
     international = is_international_competition(fx.competition_code)
 
-    # ── Elo prior ──────────────────────────────────────────────────
+    # ── Elo prior + source provenance (PR 4.5) ────────────────────
     if international:
         a_iso = _team_iso3_from_match_id(fx.match_id, position=0)
         b_iso = _team_iso3_from_match_id(fx.match_id, position=1)
         a_elo = national_elo(a_iso) if a_iso else 1500.0
         b_elo = national_elo(b_iso) if b_iso else 1500.0
+        a_src = national_elo_source(a_iso) if a_iso else "stub"
+        b_src = national_elo_source(b_iso) if b_iso else "stub"
     else:
         a_id = _club_id_from_match_id(fx.match_id, position=0)
         b_id = _club_id_from_match_id(fx.match_id, position=1)
         a_iso = b_iso = None
         a_elo = club_elo(a_id) if a_id else 1500.0
         b_elo = club_elo(b_id) if b_id else 1500.0
+        a_src = club_elo_source(a_id) if a_id else "stub"
+        b_src = club_elo_source(b_id) if b_id else "stub"
 
     # ── Venue + altitude ───────────────────────────────────────────
     venue_host_iso3:    str | None   = None
@@ -120,4 +126,6 @@ def build_features(fx: FixtureRef) -> FootballFeatures:
         venue_altitude_m=venue_altitude_m,
         team_a_altitude_acclimatised=bool(a_iso) and is_altitude_acclimatised(a_iso),
         team_b_altitude_acclimatised=bool(b_iso) and is_altitude_acclimatised(b_iso),
+        team_a_elo_source=a_src,
+        team_b_elo_source=b_src,
     )

@@ -183,8 +183,15 @@ def replay_match(
 
     elo_a = get_elo(snap, match.team_a_iso3)
     elo_b = get_elo(snap, match.team_b_iso3)
+    # Provenance: "wiki" if we found a real value in the snapshot; else "stub".
+    src_a = "wiki" if match.team_a_iso3 in snap else "stub"
+    src_b = "wiki" if match.team_b_iso3 in snap else "stub"
 
+    import dataclasses
     features = _build_features(match, elo_a=elo_a, elo_b=elo_b)
+    features = dataclasses.replace(
+        features, team_a_elo_source=src_a, team_b_elo_source=src_b,
+    )
     model_out = compute_model(features)
     market = _market_snapshot_from_close(match)
 
@@ -192,6 +199,8 @@ def replay_match(
         model_p={"a": model_out.p_a, "draw": model_out.p_draw, "b": model_out.p_b},
         market=market,
         sides=("a", "draw", "b"),
+        elo_sources=(src_a, src_b),  # type: ignore[arg-type]
+        match_id=match.match_id,
         team_a=match.team_a,
         team_b=match.team_b,
         thresholds=th,

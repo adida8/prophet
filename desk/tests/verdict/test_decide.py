@@ -119,6 +119,72 @@ def test_avoid_when_every_side_below_avoid_band() -> None:
     assert v.price is None
 
 
+def test_avoid_populates_edge_pp_with_most_negative() -> None:
+    """PR 4.5 §3.2: Avoid carries the most-negative edge across sides."""
+    model_p = {"a": 0.30, "draw": 0.30, "b": 0.30}
+    market = _snap({
+        ("polymarket", "a"):    0.35,           # −5pp
+        ("polymarket", "draw"): 0.34,           # −4pp
+        ("polymarket", "b"):    0.36,           # −6pp  (most negative)
+    })
+    v = decide(
+        model_p=model_p, market=market, sides=SIDES,
+        team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+    )
+    assert v.state == VerdictState.AVOID.value
+    assert v.edge_pp is not None
+    assert v.edge_pp == pytest.approx(-6.0, abs=0.01)
+    assert v.edge_pp < 0
+
+
+# ── PR 4.5 sanity gates ───────────────────────────────────────────────
+
+def test_stub_elo_forces_pass_even_with_pick_edge() -> None:
+    """Spec §3.3: when either side's Elo is stub, force Pass."""
+    model_p = {"a": 0.50, "draw": 0.25, "b": 0.25}
+    market = _snap({
+        ("polymarket", "a"):    0.45,           # +5pp would be a Pick
+        ("polymarket", "draw"): 0.30,
+        ("polymarket", "b"):    0.25,
+    })
+    v = decide(
+        model_p=model_p, market=market, sides=SIDES,
+        team_a="A", team_b="B", thresholds=T_DEFAULT,
+        elo_sources=("clubelo", "stub"),
+    )
+    assert v.state == VerdictState.PASS.value
+
+
+def test_real_elo_does_not_force_pass() -> None:
+    model_p = {"a": 0.50, "draw": 0.25, "b": 0.25}
+    market = _snap({
+        ("polymarket", "a"):    0.45,
+        ("polymarket", "draw"): 0.30,
+        ("polymarket", "b"):    0.25,
+    })
+    v = decide(
+        model_p=model_p, market=market, sides=SIDES,
+        team_a="A", team_b="B", thresholds=T_DEFAULT,
+        elo_sources=("wiki", "wiki"),
+    )
+    assert v.state == VerdictState.PICK.value
+
+
+def test_extreme_long_shot_market_forces_pass() -> None:
+    """A market with a side at ~1% implied is illiquid."""
+    model_p = {"a": 0.50, "draw": 0.30, "b": 0.20}
+    market = _snap({
+        ("polymarket", "a"):    0.50,
+        ("polymarket", "draw"): 0.49,
+        ("polymarket", "b"):    0.01,           # ≤ 0.02 → reject as illiquid
+    })
+    v = decide(
+        model_p=model_p, market=market, sides=SIDES,
+        team_a="A", team_b="B", thresholds=T_DEFAULT,
+    )
+    assert v.state == VerdictState.PASS.value
+
+
 # ── Missing data ──────────────────────────────────────────────────────
 
 def test_missing_side_falls_back_to_pass() -> None:

@@ -69,4 +69,6 @@ class FootballSport:
             sides=MARKET_OUTCOMES_3WAY,
             team_a=fx.team_a,
             team_b=fx.team_b,
+            elo_sources=(out.team_a_elo_source, out.team_b_elo_source),  # type: ignore[arg-type]
+            match_id=fx.match_id,
         )

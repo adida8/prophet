@@ -79,6 +79,15 @@ class FootballFeatures:
     team_a_altitude_acclimatised: bool = False
     team_b_altitude_acclimatised: bool = False
 
+    # PR 4.5 — provenance flag for the verdict-step's stub-Elo gate.
+    # "wiki" / "clubelo" = real source; "stub" = v1 fixed-default
+    # fallback. The verdict step forces Pass when either side is "stub"
+    # so we don't issue confident Picks against a 1500-vs-1500 prior.
+    # TODO(v1.1): once ClubElo / FBref ingestion ships, club fixtures
+    # stop emitting "stub" and the verdict-step gate becomes inert.
+    team_a_elo_source: str = "wiki"
+    team_b_elo_source: str = "wiki"
+
 
 @dataclass(frozen=True)
 class ModelOutput:
@@ -88,6 +97,9 @@ class ModelOutput:
     elo_a_adj: float
     elo_b_adj: float
     drivers: tuple[Driver, ...] = ()
+    # Mirror of the input flags so callers don't have to re-thread them.
+    team_a_elo_source: str = "wiki"
+    team_b_elo_source: str = "wiki"
 
 
 # ── Public entry point ──────────────────────────────────────────────────
@@ -145,4 +157,6 @@ def compute(features: FootballFeatures) -> ModelOutput:
         p_a=p_a, p_draw=p_draw, p_b=p_b,
         elo_a_adj=elo_a, elo_b_adj=elo_b,
         drivers=tuple(drivers),
+        team_a_elo_source=features.team_a_elo_source,
+        team_b_elo_source=features.team_b_elo_source,
     )
