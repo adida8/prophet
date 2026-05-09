@@ -8,14 +8,16 @@ others.
 |---|---|---|---|
 | **Prophet** | Paper-trading bot for prediction markets, plus the platform's market data engine and React dashboard | `prophet/` (or repo root for legacy code), `frontend/` | shipping; deployed to Railway |
 | **Ledger** | Connected portfolio tracker for Polymarket (Kalshi in Phase 1). Paste-a-wallet viewer at `/ledger`. | `ledger/`, `frontend/src/ledger/` | Phase 0 shipped; live on Railway |
-| **The Desk** | Verdict engine that evaluates every priced football match (WC 2026 launch wedge → club football right after) | `desk/` | PR 1–4 + backtest harness + PR 4.5 sanity layer + Phase A.3 confidence band + explainer stub all landed; Haiku replacement + scheduler outstanding |
+| **The Desk** | Verdict engine that evaluates every priced football match (WC 2026 launch wedge → club football right after) | `desk/` | PRs 1–4 + backtest + 4.5 sanity + explainer stub + **optimization-spec Phase A** all landed; Phase B (form / FIFA / weather / injuries) + PR 5 Haiku + PR 6 scheduler outstanding |
 
 Build specs live alongside the code:
 
 - `THE_DESK_SPEC.md` — six-PR build plan for The Desk
 - `THE_DESK_PR_BACKTEST_BRIEF.md` — backtest harness brief (shipped)
 - `THE_DESK_PR_4_5_BRIEF.md` — sanity layer brief (shipped)
-- `THE_DESK_TRUSTABILITY_BRIEF.md` — v1.1 trustability roadmap; Phase A landed, Phase B–E ahead
+- `THE_DESK_TRUSTABILITY_BRIEF.md` — first trustability roadmap (superseded by the optimization spec)
+- `THE_DESK_OPTIMIZATION_SPEC.md` — v1.1 + v1.2 optimization spec; **Phase A landed**, B–F outstanding
+- `STATUS.md` — overnight-run briefing (refreshed when an autonomous run lands work; check it in the morning)
 - `ledger-phase-0-brief.md` — Phase 0 brief for Ledger
 - `Odds Primer Design System/` — voice, palette, type, components
 - `branding/bars-locked-v2.html` — locked logo (Source Serif 4 wordmark + bars glyph)
@@ -128,26 +130,45 @@ Six-step pipeline, each independently replaceable:
 - ✅ PR 4 — verdict step + thresholds (end-to-end pipeline)
 - ✅ Backtest harness — `desk backtest --tournament wc-2022` + summary dashboard
 - ✅ PR 4.5 — sanity layer (liquidity filter + stub-Elo gate + Avoid edge_pp fix)
-- ✅ Phase A.3 — confidence band (Elo jackknife ±50, lower-bound Pick gate)
 - ✅ Explainer stub — templated `copy.{title,summary,blurb}` with voice-rule enforcement
+- ✅ Phase A (per `THE_DESK_OPTIMIZATION_SPEC.md`) — bootstrap CI, multi-window persistence, Avoid review
 - ⬜ PR 5 — explainer Haiku replacement (needs `ANTHROPIC_API_KEY`)
 - ⬜ PR 6 — scheduler + CLI + serve
+- ⬜ Phase B (form / FIFA-rank residual / weather / injuries) — biggest Brier lever
+- ⬜ Phase C–F per optimization spec
 
-### Trustability progress (Phase A of `THE_DESK_TRUSTABILITY_BRIEF.md`)
+### Trustability progress (Phase A of `THE_DESK_OPTIMIZATION_SPEC.md`)
 
-| Run | Original | After PR 4.5 | After Phase A.3 |
-|---|---|---|---|
-| WC 2022 backtest Pick rate | 95% | 95% | **16%** |
-| Live engine Pick rate (78 fixtures) | 62% | 23% | **6%** |
+Phase A landed in four sub-phases (A.1 bootstrap CI, A.2 band tuning,
+A.3 multi-window persistence, A.4 Avoid review). Each shipped tests
+green and a regenerated dashboard. Detail in `STATUS.md`.
 
-Both runs sit inside the 5–20% editorial target. Backtest dashboard's
-Selection card flips from red to green. Calibration unchanged at parity
-with the closing market (Brier 0.581 vs 0.579) — band tightened
-selection without sacrificing forecast accuracy.
+| Pick rate | Original | After PR 4.5 | After A.1 (±20) | After A.2 (±50) |
+|---|---|---|---|---|
+| WC 2022 backtest | 95% | 95% | 77% | **47%** |
 
-Every published `MatchOutput` now carries non-empty `copy.title /
-summary / blurb` in voice-checked editorial prose. Sample Pick output
-on a live WC 2026 fixture:
+Down from 95% to 47%; not yet inside the 5–20% target. Calibration
+tied with the closing market (Brier 0.581 vs 0.579), so the dashboard
+**does not** read "Trustable" green yet — both Pick rate and Brier
+need Phase B's late-binding features. The selection-discipline ladder
+(bootstrap CI → tune → persistence → Avoid review) is now in place;
+Phase B is the next-largest lever.
+
+Phase A.3 multi-window persistence is wired but a no-op on WC 2022
+because the backtest uses one closing-market snapshot for every
+window. It activates with Phase D's walk-forward harness + per-window
+market data, or in live mode once PR 6 ships the per-match
+persistence cache.
+
+Phase A.4 documented that the Avoid rule is structurally impossible
+on single-venue normalized closing odds (per-side edges sum to 0).
+Threshold relaxed -2.0 → -1.5pp per spec; v1.2 ADR candidate to
+redefine Avoid as max-side edge ≤ avoid_pp or a market-distortion
+metric so it can fire on single-venue data.
+
+Every published `MatchOutput` carries voice-checked editorial prose
+in `copy.{title, summary, blurb}`. Sample Pick output on a live WC
+2026 fixture:
 
 > The model rates Bosnia and Herzegovina at 34%; the market prices that
 > side at 22%. The +11.1pp gap is the basis for the Pick.
