@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "asof":   "2022-11-20",
+    "source": "Approximated from World Football Elo Ratings (eloratings.net) snapshot circa 2022-11-19, the day before WC 2022 kickoff. Frozen for backtest reproducibility.",
+    "note":   "Replace with live Wikipedia revision pull when the elo loader's HTTP path is wired (TODO in historical/elo.py)."
+  },
+  "elo": {
+    "bra": 2169,
+    "arg": 2142,
+    "fra": 2080,
+    "esp": 2048,
+    "ned": 2040,
+    "por": 2040,
+    "bel": 2025,
+    "eng": 2020,
+    "ger": 1968,
+    "cro": 1920,
+    "den": 1915,
+    "uru": 1909,
+    "sui": 1881,
+    "mex": 1870,
+    "sen": 1858,
+    "pol": 1855,
+    "irn": 1818,
+    "jpn": 1812,
+    "kor": 1786,
+    "usa": 1798,
+    "ecu": 1820,
+    "wal": 1789,
+    "tun": 1729,
+    "aus": 1720,
+    "mar": 1779,
+    "cmr": 1739,
+    "srb": 1804,
+    "cri": 1741,
+    "crc": 1741,
+    "gha": 1685,
+    "qat": 1680,
+    "ksa": 1635,
+    "can": 1748
+  }
+}

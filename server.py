@@ -285,6 +285,38 @@ async def ws_dashboard(ws: WebSocket):
         _dash_clients.discard(ws)
 
 
+# ── Backtest dashboard + workbook (read-only) ─────────────────────────
+# The Desk's backtest harness writes desk_backtest_dashboard.html and
+# desk_backtest.xlsx at the project root. Expose them at stable URLs so
+# Faktor (and reviewers generally) can read the calibration story
+# without checking out the repo.
+
+PROJECT_ROOT = Path(__file__).parent
+BACKTEST_HTML = PROJECT_ROOT / "desk_backtest_dashboard.html"
+BACKTEST_XLSX = PROJECT_ROOT / "desk_backtest.xlsx"
+
+
+@app.get("/backtest", include_in_schema=False)
+@app.get("/backtest/", include_in_schema=False)
+@app.get("/backtest/dashboard.html", include_in_schema=False)
+async def backtest_dashboard():
+    if not BACKTEST_HTML.exists():
+        return {"error": "backtest dashboard not generated yet"}
+    return FileResponse(BACKTEST_HTML, media_type="text/html")
+
+
+@app.get("/backtest/dashboard.xlsx", include_in_schema=False)
+@app.get("/backtest.xlsx", include_in_schema=False)
+async def backtest_workbook():
+    if not BACKTEST_XLSX.exists():
+        return {"error": "backtest workbook not generated yet"}
+    return FileResponse(
+        BACKTEST_XLSX,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        filename="desk_backtest.xlsx",
+    )
+
+
 # ── Static frontend ───────────────────────────────────────────────────
 
 FRONTEND_DIST = Path(__file__).parent / "frontend" / "dist"

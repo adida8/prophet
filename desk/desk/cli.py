@@ -1,10 +1,11 @@
 """`desk` CLI.
 
 Sub-commands:
-    desk run [--once]    Run the engine. v1: --once is the only mode (PR 6 adds the loop).
-    desk sports          List registered sports.
-    desk match <id>      Print the current published JSON for one match.
-    desk replay <id>     PR 6+ — placeholder for as-of replay from snapshots.
+    desk run [--once]                     Run the engine. v1: --once only (PR 6 adds the loop).
+    desk sports                           List registered sports.
+    desk match <id>                       Print the current published JSON for one match.
+    desk backtest --tournament wc-2022    Replay the engine across a historical tournament.
+    desk replay <id>                      PR 6+ — placeholder for as-of replay from snapshots.
 
 Designed to be runnable two ways during development:
     python -m desk        # via the package
@@ -70,6 +71,68 @@ def _cmd_replay(args: argparse.Namespace) -> int:
     return 2
 
 
+def _cmd_backtest(args: argparse.Namespace) -> int:
+    """Run the historical backtest harness.
+
+    Lazy-imports the backtest package so the rest of the CLI is fast and
+    doesn't depend on openpyxl when only `desk run` is used.
+    """
+    from desk.backtest.runner import ALL_WINDOWS, run_backtest
+    from desk.backtest.tournaments import TOURNAMENTS
+
+    if args.all:
+        keys = sorted(TOURNAMENTS)
+    else:
+        keys = list(args.tournament or [])
+    if not keys:
+        print("Provide --tournament <key> [--tournament ...] or --all.", file=sys.stderr)
+        print(f"Known tournaments: {sorted(TOURNAMENTS)}", file=sys.stderr)
+        return 2
+
+    if args.windows:
+        windows = tuple(args.windows)
+    else:
+        windows = ALL_WINDOWS
+
+    # Walk up until we find the workbook scaffold so the resolved path is
+    # robust whether `desk` is invoked from the project root or from inside `desk/`.
+    here = Path(__file__).resolve()
+    candidate_root: Path | None = None
+    for ancestor in (*here.parents, here):
+        if (ancestor / "desk_backtest.xlsx").exists():
+            candidate_root = ancestor
+            break
+    project_root = candidate_root or here.parents[3]
+    workbook_path  = Path(args.workbook)  if args.workbook  else project_root / "desk_backtest.xlsx"
+    dashboard_path = Path(args.dashboard) if args.dashboard else project_root / "desk_backtest_dashboard.html"
+
+    try:
+        summary = run_backtest(
+            tournament_keys=keys,
+            windows=windows,
+            limit=args.limit,
+            workbook_path=workbook_path,
+            dashboard_path=dashboard_path,
+        )
+    except (ValueError, FileNotFoundError, NotImplementedError) as e:
+        print(f"backtest failed: {e}", file=sys.stderr)
+        return 2
+
+    print()
+    print(f"  tournaments       {', '.join(summary['tournaments'])}")
+    print(f"  matches           {summary['matches']}")
+    print(f"  snapshots         {summary['snapshots']}  (KO: {summary['ko_snapshots']})")
+    print(f"  mean Brier        model {summary['mean_brier']:.4f}  | "
+          f"closing market {summary['mean_market_brier']:.4f}")
+    diff = summary['mean_brier'] - summary['mean_market_brier']
+    arrow = "▲ worse" if diff > 0 else ("▼ better" if diff < 0 else "= equal")
+    print(f"                    {arrow} by {abs(diff):.4f}")
+    print(f"  verdicts          {summary['verdict_counts']}")
+    print(f"  workbook          {summary['workbook']}")
+    print(f"  dashboard         {summary['dashboard']}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="desk", description="The Desk — engine CLI.")
     p.add_argument("-v", "--verbose", action="store_true")
@@ -91,6 +154,20 @@ def build_parser() -> argparse.ArgumentParser:
     rp.add_argument("match_id")
     rp.add_argument("--as-of", required=False)
     rp.set_defaults(func=_cmd_replay)
+
+    bt = sub.add_parser("backtest", help="run the historical backtest harness")
+    bt.add_argument("--tournament", action="append",
+                    help="tournament key (repeatable); e.g. wc-2022")
+    bt.add_argument("--all", action="store_true",
+                    help="run every configured tournament")
+    bt.add_argument("--limit", type=int, default=None,
+                    help="smoke-test on first N matches per tournament")
+    bt.add_argument("--windows", nargs="+", default=None,
+                    choices=["T-38", "T-5", "T-1h", "KO"],
+                    help="restrict to the given windows; default = all four")
+    bt.add_argument("--workbook",  help="override workbook path (default: project root/desk_backtest.xlsx)")
+    bt.add_argument("--dashboard", help="override dashboard path (default: project root/desk_backtest_dashboard.html)")
+    bt.set_defaults(func=_cmd_backtest)
 
     return p
 

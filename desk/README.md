@@ -9,14 +9,13 @@ Publish — each independently replaceable.
 
 ## Status
 
-**v0.1 · PR 1** — output contract + static-file publisher.
+PR ladder per `THE_DESK_SPEC.md` §4 + `THE_DESK_PR_BACKTEST_BRIEF.md`:
 
-PR ladder per `THE_DESK_SPEC.md` §4:
-
-- [x] PR 1 — skeleton + output contract (this PR)
-- [ ] PR 2 — fixture ingest + match identity
-- [ ] PR 3 — football model v1 (Elo + host/home + altitude)
-- [ ] PR 4 — verdict step + thresholds
+- [x] PR 1 — skeleton + output contract
+- [x] PR 2 — fixture ingest + match identity
+- [x] PR 3 — football model v1 (Elo + host/home + altitude)
+- [x] PR 4 — verdict step + thresholds (end-to-end pipeline)
+- [x] **Backtest harness** — `desk backtest --tournament wc-2022`
 - [ ] PR 5 — explainer (3 Haiku prompts)
 - [ ] PR 6 — scheduler + CLI + serve
 
@@ -33,22 +32,49 @@ pytest
 ```
 desk/
 ├── desk/
-│   ├── config.py                 # env + thresholds
-│   ├── sport.py                  # Sport ABC (PR 2+)
-│   ├── publish/
-│   │   ├── contract.py           # Pydantic v2 — single source of truth
-│   │   ├── writer.py             # static-file publisher + sport-partitioned index.json
-│   │   └── etag.py               # content-hash → ETag
-│   ├── contract.schema.json      # generated; commit this
-│   ├── ingest/                   # PR 2+
-│   ├── features/                 # PR 2+
-│   ├── verdict/                  # PR 4+
-│   ├── explainer/                # PR 5+
-│   ├── sports/football/          # PR 2+
-│   └── scheduler.py              # PR 6+
-├── tests/
-└── data/output/football/         # published JSON lives here
+│   ├── config.py                 # env + thresholds + paths
+│   ├── sport.py                  # Sport ABC + FixtureRef
+│   ├── publish/                  # Pydantic contract + static-file publisher + ETag
+│   ├── ingest/                   # Source ABC + Polymarket gamma client
+│   ├── verdict/                  # MarketSnapshot + decide() + thresholds
+│   ├── sports/football/          # FootballSport + features + model + metadata
+│   ├── backtest/                 # historical loaders + replay + writers + harness
+│   ├── runner.py                 # run_once() — full live pipeline
+│   ├── cli.py                    # `desk run / sports / match / backtest / replay`
+│   └── contract.schema.json      # generated; sync-check test enforces
+├── data/
+│   ├── output/football/          # live published JSON
+│   └── backtest/                 # frozen Elo snapshots + manual CSVs
+└── tests/
 ```
+
+## Backtest
+
+```
+desk backtest --tournament wc-2022
+```
+
+Replays the engine across a frozen historical sample and writes:
+
+- `desk_backtest.xlsx` — Snapshots + Match Universe rebuilt from real
+  inputs. Brier and verdict-resolution formulas auto-recompute when
+  Excel opens the file.
+- `desk_backtest_dashboard.html` — KPI strip, reliability bins, match
+  table regenerated. Disclaimer shows the run date and competition list.
+
+Single-tournament run finishes in well under a second on
+this laptop (256 snapshots × full pipeline). Headline number printed by
+the CLI is **mean Brier vs closing-market Brier** across KO snapshots —
+the only credibility metric that matters for the prelaunch story.
+
+The historical Elo source is a frozen pre-tournament snapshot under
+`data/backtest/elo/intl/{yyyymmdd}.json`; markets come from a curated
+CSV under `data/backtest/manual/{competition}_{season}.csv`. Both are
+checked into git so the backtest is reproducible without network.
+
+Critical invariant: `desk/backtest/replay.py` never imports from
+`desk/sports/football/ingest/` — that's how we guarantee no run leaks
+today's data into a 2022 fixture.
 
 ## Output contract — quick view
 
