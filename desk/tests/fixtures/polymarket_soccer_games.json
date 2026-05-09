@@ -48,6 +48,38 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Sydney FC (-1.5)",
+        "outcomes": "[\"Sydney FC\", \"Auckland FC\"]",
+        "outcomePrices": "[\"0.493\", \"0.507\"]"
+      },
+      {
+        "question": "Sydney FC vs. Auckland FC: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.649\", \"0.351\"]"
+      },
+      {
+        "question": "Sydney FC vs. Auckland FC: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.4455\", \"0.5545\"]"
+      },
+      {
+        "question": "Sydney FC vs. Auckland FC: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.45\", \"0.55\"]"
+      },
+      {
+        "question": "Sydney FC vs. Auckland FC: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.4345\", \"0.5655\"]"
+      },
+      {
+        "question": "Sydney FC vs. Auckland FC: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.601\", \"0.399\"]"
+      }
     ]
   },
   {
@@ -96,6 +128,23 @@
         "createdAt": "2025-09-04T21:20:53.669409Z",
         "updatedAt": "2026-04-17T21:08:02.986355Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will G\u00f6ztepe SK win on 2026-01-19?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "Will G\u00f6ztepe SK vs. \u00c7aykur Rizespor end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.0015\", \"0.9985\"]"
+      },
+      {
+        "question": "Will \u00c7aykur Rizespor win on 2026-01-19?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
       }
     ]
   },
@@ -148,6 +197,33 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "FC Annecy vs. Clermont Foot 63: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "FC Annecy vs. Clermont Foot 63: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "FC Annecy vs. Clermont Foot 63: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.4895\", \"0.5105\"]"
+      },
+      {
+        "question": "FC Annecy vs. Clermont Foot 63: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "FC Annecy vs. Clermont Foot 63: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      }
     ]
   },
   {
@@ -188,6 +264,33 @@
         "createdAt": "2024-08-21T16:31:18.953213Z",
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Llaneros FC vs. CA Bucaramanga: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "Llaneros FC vs. CA Bucaramanga: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.1415\", \"0.8585\"]"
+      },
+      {
+        "question": "Llaneros FC vs. CA Bucaramanga: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Llaneros FC vs. CA Bucaramanga: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "Llaneros FC vs. CA Bucaramanga: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
       }
     ]
   },
@@ -230,6 +333,33 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "CD Concepci\u00f3n vs. O'Higgins FC: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "CD Concepci\u00f3n vs. O'Higgins FC: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.495\", \"0.505\"]"
+      },
+      {
+        "question": "CD Concepci\u00f3n vs. O'Higgins FC: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "CD Concepci\u00f3n vs. O'Higgins FC: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "CD Concepci\u00f3n vs. O'Higgins FC: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      }
     ]
   },
   {
@@ -271,6 +401,33 @@
         "updatedAt": "2026-03-09T22:28:03.358133Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Wydad Athletic Club vs. AS FAR: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.36\", \"0.64\"]"
+      },
+      {
+        "question": "Wydad Athletic Club vs. AS FAR: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Wydad Athletic Club vs. AS FAR: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Wydad Athletic Club vs. AS FAR: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.515\", \"0.485\"]"
+      },
+      {
+        "question": "Wydad Athletic Club vs. AS FAR: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.515\", \"0.485\"]"
+      }
     ]
   },
   {
@@ -311,6 +468,33 @@
         "createdAt": "2024-08-21T16:31:18.953213Z",
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Kawkab AC vs. OC Safi: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.51\", \"0.49\"]"
+      },
+      {
+        "question": "Kawkab AC vs. OC Safi: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.485\", \"0.515\"]"
+      },
+      {
+        "question": "Kawkab AC vs. OC Safi: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.515\", \"0.485\"]"
+      },
+      {
+        "question": "Kawkab AC vs. OC Safi: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.485\", \"0.515\"]"
+      },
+      {
+        "question": "Kawkab AC vs. OC Safi: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5015\", \"0.4985\"]"
       }
     ]
   },
@@ -363,6 +547,53 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "AD Ceuta FC vs. C\u00f3rdoba CF: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "AD Ceuta FC vs. C\u00f3rdoba CF: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "AD Ceuta FC vs. C\u00f3rdoba CF: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "AD Ceuta FC vs. C\u00f3rdoba CF: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "AD Ceuta FC vs. C\u00f3rdoba CF: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "Spread: AD Ceuta FC (-1.5)",
+        "outcomes": "[\"AD Ceuta FC\", \"C\u00f3rdoba CF\"]",
+        "outcomePrices": "[\"0.498\", \"0.502\"]"
+      },
+      {
+        "question": "Spread: AD Ceuta FC (-2.5)",
+        "outcomes": "[\"AD Ceuta FC\", \"C\u00f3rdoba CF\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Spread: C\u00f3rdoba CF (-1.5)",
+        "outcomes": "[\"C\u00f3rdoba CF\", \"AD Ceuta FC\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Spread: C\u00f3rdoba CF (-2.5)",
+        "outcomes": "[\"C\u00f3rdoba CF\", \"AD Ceuta FC\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      }
     ]
   },
   {
@@ -411,6 +642,23 @@
         "updatedAt": "2026-04-15T21:03:59.564806Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Houston Dynamo win on 2026-03-07?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.25\", \"0.75\"]"
+      },
+      {
+        "question": "Will New England Revolution win on 2026-03-07?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.43\", \"0.57\"]"
+      },
+      {
+        "question": "Will New England Revolution vs. Houston Dynamo end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.51\", \"0.49\"]"
+      }
     ]
   },
   {
@@ -458,6 +706,33 @@
         "slug": "mls",
         "updatedAt": "2026-04-15T21:03:59.564806Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "New England Revolution vs. Houston Dynamo: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.545\", \"0.455\"]"
+      },
+      {
+        "question": "New England Revolution vs. Houston Dynamo: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.615\", \"0.385\"]"
+      },
+      {
+        "question": "New England Revolution vs. Houston Dynamo: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.34\", \"0.66\"]"
+      },
+      {
+        "question": "New England Revolution vs. Houston Dynamo: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.21\", \"0.79\"]"
+      },
+      {
+        "question": "New England Revolution vs. Houston Dynamo: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.58\", \"0.42\"]"
       }
     ]
   },
@@ -510,6 +785,23 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Lillestr\u00f8m SK vs. Kristiansund BK end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.07\", \"0.93\"]"
+      },
+      {
+        "question": "Will Lillestr\u00f8m SK win on 2026-03-22?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.635\", \"0.365\"]"
+      },
+      {
+        "question": "Will Kristiansund BK win on 2026-03-22?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.485\", \"0.515\"]"
+      }
     ]
   },
   {
@@ -560,6 +852,23 @@
         "createdAt": "2024-08-21T16:31:18.953213Z",
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will FK Bod\u00f8/Glimt win on 2026-03-22?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.625\", \"0.375\"]"
+      },
+      {
+        "question": "Will FK Bod\u00f8/Glimt vs. Hamarkameratene end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.495\", \"0.505\"]"
+      },
+      {
+        "question": "Will Hamarkameratene win on 2026-03-22?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.34\", \"0.66\"]"
       }
     ]
   },
@@ -612,6 +921,53 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Spread: FK Bod\u00f8/Glimt (-1.5)",
+        "outcomes": "[\"FK Bod\u00f8/Glimt\", \"Hamarkameratene\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "FK Bod\u00f8/Glimt vs. Hamarkameratene: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.51\", \"0.49\"]"
+      },
+      {
+        "question": "Spread: FK Bod\u00f8/Glimt (-2.5)",
+        "outcomes": "[\"FK Bod\u00f8/Glimt\", \"Hamarkameratene\"]",
+        "outcomePrices": "[\"0.385\", \"0.615\"]"
+      },
+      {
+        "question": "Spread: Hamarkameratene (-2.5)",
+        "outcomes": "[\"Hamarkameratene\", \"FK Bod\u00f8/Glimt\"]",
+        "outcomePrices": "[\"0.038\", \"0.962\"]"
+      },
+      {
+        "question": "Spread: Hamarkameratene (-1.5)",
+        "outcomes": "[\"Hamarkameratene\", \"FK Bod\u00f8/Glimt\"]",
+        "outcomePrices": "[\"0.384\", \"0.616\"]"
+      },
+      {
+        "question": "FK Bod\u00f8/Glimt vs. Hamarkameratene: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.55\", \"0.45\"]"
+      },
+      {
+        "question": "FK Bod\u00f8/Glimt vs. Hamarkameratene: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.455\", \"0.545\"]"
+      },
+      {
+        "question": "FK Bod\u00f8/Glimt vs. Hamarkameratene: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.405\", \"0.595\"]"
+      },
+      {
+        "question": "FK Bod\u00f8/Glimt vs. Hamarkameratene: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.505\", \"0.495\"]"
+      }
     ]
   },
   {
@@ -663,6 +1019,53 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Lillestr\u00f8m SK (-1.5)",
+        "outcomes": "[\"Lillestr\u00f8m SK\", \"Kristiansund BK\"]",
+        "outcomePrices": "[\"0.485\", \"0.515\"]"
+      },
+      {
+        "question": "Spread: Kristiansund BK (-1.5)",
+        "outcomes": "[\"Kristiansund BK\", \"Lillestr\u00f8m SK\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Spread: Lillestr\u00f8m SK (-2.5)",
+        "outcomes": "[\"Lillestr\u00f8m SK\", \"Kristiansund BK\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Spread: Kristiansund BK (-2.5)",
+        "outcomes": "[\"Kristiansund BK\", \"Lillestr\u00f8m SK\"]",
+        "outcomePrices": "[\"0.49\", \"0.51\"]"
+      },
+      {
+        "question": "Lillestr\u00f8m SK vs. Kristiansund BK: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.635\", \"0.365\"]"
+      },
+      {
+        "question": "Lillestr\u00f8m SK vs. Kristiansund BK: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Lillestr\u00f8m SK vs. Kristiansund BK: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Lillestr\u00f8m SK vs. Kristiansund BK: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Lillestr\u00f8m SK vs. Kristiansund BK: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      }
     ]
   },
   {
@@ -703,6 +1106,18 @@
         "createdAt": "2024-08-21T16:31:18.953213Z",
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Odisha FC win on 2026-03-13?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Will Odisha FC vs. Odisha FC end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
       }
     ]
   },
@@ -745,6 +1160,23 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Odisha FC win on 2026-03-19?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.485\", \"0.515\"]"
+      },
+      {
+        "question": "Will Odisha FC vs. Jamshedpur FC end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.9\", \"0.1\"]"
+      },
+      {
+        "question": "Will Jamshedpur FC win on 2026-03-19?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.49\", \"0.51\"]"
+      }
     ]
   },
   {
@@ -785,6 +1217,23 @@
         "createdAt": "2024-08-21T16:31:18.953213Z",
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Chennaiyin FC win on 2026-03-22?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Will Chennaiyin FC vs. Punjab FC end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5005\", \"0.4995\"]"
+      },
+      {
+        "question": "Will Punjab FC win on 2026-03-22?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
       }
     ]
   },
@@ -837,6 +1286,23 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Iwaki FC win on 2026-03-08?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Will Iwaki FC vs. Ventforet K\u014dfu end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.4965\", \"0.5035\"]"
+      },
+      {
+        "question": "Will Ventforet K\u014dfu win on 2026-03-08?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      }
     ]
   },
   {
@@ -887,6 +1353,53 @@
         "createdAt": "2024-08-21T16:31:18.953213Z",
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Iwaki FC (-1.5)",
+        "outcomes": "[\"Iwaki FC\", \"Ventforet K\u014dfu\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Spread: Ventforet K\u014dfu (-1.5)",
+        "outcomes": "[\"Ventforet K\u014dfu\", \"Iwaki FC\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Spread: Iwaki FC (-2.5)",
+        "outcomes": "[\"Iwaki FC\", \"Ventforet K\u014dfu\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Spread: Ventforet K\u014dfu (-2.5)",
+        "outcomes": "[\"Ventforet K\u014dfu\", \"Iwaki FC\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Iwaki FC vs. Ventforet K\u014dfu: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Iwaki FC vs. Ventforet K\u014dfu: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Iwaki FC vs. Ventforet K\u014dfu: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.49\", \"0.51\"]"
+      },
+      {
+        "question": "Iwaki FC vs. Ventforet K\u014dfu: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Iwaki FC vs. Ventforet K\u014dfu: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
       }
     ]
   },
@@ -949,6 +1462,23 @@
         "updatedAt": "2026-04-17T20:31:50.149157Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Manchester City FC win on 2026-03-21?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.77\", \"0.23\"]"
+      },
+      {
+        "question": "Will Manchester City FC vs. Crystal Palace FC end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.147\", \"0.853\"]"
+      },
+      {
+        "question": "Will Crystal Palace FC win on 2026-03-21?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.09\", \"0.91\"]"
+      }
     ]
   },
   {
@@ -1010,6 +1540,53 @@
         "updatedAt": "2026-03-09T22:28:03.358133Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Manchester City FC (-1.5)",
+        "outcomes": "[\"Manchester City FC\", \"Crystal Palace FC\"]",
+        "outcomePrices": "[\"0.58\", \"0.42\"]"
+      },
+      {
+        "question": "Spread: Crystal Palace FC (-1.5)",
+        "outcomes": "[\"Crystal Palace FC\", \"Manchester City FC\"]",
+        "outcomePrices": "[\"0.0545\", \"0.9455\"]"
+      },
+      {
+        "question": "Spread: Manchester City FC (-2.5)",
+        "outcomes": "[\"Manchester City FC\", \"Crystal Palace FC\"]",
+        "outcomePrices": "[\"0.3\", \"0.7\"]"
+      },
+      {
+        "question": "Spread: Crystal Palace FC (-2.5)",
+        "outcomes": "[\"Crystal Palace FC\", \"Manchester City FC\"]",
+        "outcomePrices": "[\"0.0165\", \"0.9835\"]"
+      },
+      {
+        "question": "Manchester City FC vs. Crystal Palace FC: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.7\", \"0.355\"]"
+      },
+      {
+        "question": "Manchester City FC vs. Crystal Palace FC: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.63\", \"0.37\"]"
+      },
+      {
+        "question": "Manchester City FC vs. Crystal Palace FC: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.425\", \"0.575\"]"
+      },
+      {
+        "question": "Manchester City FC vs. Crystal Palace FC: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.28\", \"0.72\"]"
+      },
+      {
+        "question": "Manchester City FC vs. Crystal Palace FC: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.465\", \"0.535\"]"
+      }
     ]
   },
   {
@@ -1061,6 +1638,23 @@
         "updatedAt": "2026-03-09T22:28:03.358133Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Gainare Tottori win on 2026-04-05?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.495\", \"0.505\"]"
+      },
+      {
+        "question": "Will Reilac Shiga win on 2026-04-05?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.3695\", \"0.6305\"]"
+      },
+      {
+        "question": "Will Gainare Tottori vs. Reilac Shiga end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.36\", \"0.64\"]"
+      }
     ]
   },
   {
@@ -1101,6 +1695,53 @@
         "createdAt": "2024-08-21T16:31:18.953213Z",
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Cear\u00e1 SC (-1.5)",
+        "outcomes": "[\"Cear\u00e1 SC\", \"EC Juventude\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Cear\u00e1 SC vs. EC Juventude: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Cear\u00e1 SC vs. EC Juventude: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Spread: EC Juventude (-1.5)",
+        "outcomes": "[\"EC Juventude\", \"Cear\u00e1 SC\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Spread: Cear\u00e1 SC (-2.5)",
+        "outcomes": "[\"Cear\u00e1 SC\", \"EC Juventude\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Spread: EC Juventude (-2.5)",
+        "outcomes": "[\"EC Juventude\", \"Cear\u00e1 SC\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Cear\u00e1 SC vs. EC Juventude: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Cear\u00e1 SC vs. EC Juventude: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Cear\u00e1 SC vs. EC Juventude: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
       }
     ]
   },
@@ -1153,6 +1794,53 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Gainare Tottori (-1.5)",
+        "outcomes": "[\"Gainare Tottori\", \"Reilac Shiga\"]",
+        "outcomePrices": "[\"0.43\", \"0.57\"]"
+      },
+      {
+        "question": "Spread: Reilac Shiga (-1.5)",
+        "outcomes": "[\"Reilac Shiga\", \"Gainare Tottori\"]",
+        "outcomePrices": "[\"0.4\", \"0.6\"]"
+      },
+      {
+        "question": "Spread: Gainare Tottori (-2.5)",
+        "outcomes": "[\"Gainare Tottori\", \"Reilac Shiga\"]",
+        "outcomePrices": "[\"0.255\", \"0.745\"]"
+      },
+      {
+        "question": "Spread: Reilac Shiga (-2.5)",
+        "outcomes": "[\"Reilac Shiga\", \"Gainare Tottori\"]",
+        "outcomePrices": "[\"0.4\", \"0.6\"]"
+      },
+      {
+        "question": "Gainare Tottori vs. Reilac Shiga: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.555\", \"0.445\"]"
+      },
+      {
+        "question": "Gainare Tottori vs. Reilac Shiga: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.465\", \"0.535\"]"
+      },
+      {
+        "question": "Gainare Tottori vs. Reilac Shiga: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.43\", \"0.57\"]"
+      },
+      {
+        "question": "Gainare Tottori vs. Reilac Shiga: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.405\", \"0.595\"]"
+      },
+      {
+        "question": "Gainare Tottori vs. Reilac Shiga: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.505\", \"0.495\"]"
+      }
     ]
   },
   {
@@ -1203,6 +1891,23 @@
         "updatedAt": "2026-04-17T17:26:43.188791Z",
         "isCarousel": false,
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Al Shabab Saudi Club win on 2026-04-10?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.395\", \"0.605\"]"
+      },
+      {
+        "question": "Will Al Shabab Saudi Club vs. Al Ittihad Saudi Club end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.225\", \"0.775\"]"
+      },
+      {
+        "question": "Will Al Ittihad Saudi Club win on 2026-04-10?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.355\", \"0.645\"]"
       }
     ]
   },
@@ -1255,6 +1960,53 @@
         "isCarousel": false,
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Al Shabab Saudi Club (-1.5)",
+        "outcomes": "[\"Al Shabab Saudi Club\", \"Al Ittihad Saudi Club\"]",
+        "outcomePrices": "[\"0.34\", \"0.66\"]"
+      },
+      {
+        "question": "Spread: Al Ittihad Saudi Club (-1.5)",
+        "outcomes": "[\"Al Ittihad Saudi Club\", \"Al Shabab Saudi Club\"]",
+        "outcomePrices": "[\"0.345\", \"0.655\"]"
+      },
+      {
+        "question": "Spread: Al Shabab Saudi Club (-2.5)",
+        "outcomes": "[\"Al Shabab Saudi Club\", \"Al Ittihad Saudi Club\"]",
+        "outcomePrices": "[\"0.09\", \"0.91\"]"
+      },
+      {
+        "question": "Spread: Al Ittihad Saudi Club (-2.5)",
+        "outcomes": "[\"Al Ittihad Saudi Club\", \"Al Shabab Saudi Club\"]",
+        "outcomePrices": "[\"0.335\", \"0.665\"]"
+      },
+      {
+        "question": "Al Shabab Saudi Club vs. Al Ittihad Saudi Club: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.645\", \"0.355\"]"
+      },
+      {
+        "question": "Al Shabab Saudi Club vs. Al Ittihad Saudi Club: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.525\", \"0.475\"]"
+      },
+      {
+        "question": "Al Shabab Saudi Club vs. Al Ittihad Saudi Club: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.42\", \"0.58\"]"
+      },
+      {
+        "question": "Al Shabab Saudi Club vs. Al Ittihad Saudi Club: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.375\", \"0.625\"]"
+      },
+      {
+        "question": "Al Shabab Saudi Club vs. Al Ittihad Saudi Club: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.59\", \"0.41\"]"
+      }
     ]
   },
   {
@@ -1306,6 +2058,53 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Vissel K\u014dbe (-1.5)",
+        "outcomes": "[\"Vissel K\u014dbe\", \"Nagoya Grampus\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Spread: Nagoya Grampus (-1.5)",
+        "outcomes": "[\"Nagoya Grampus\", \"Vissel K\u014dbe\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Spread: Vissel K\u014dbe (-2.5)",
+        "outcomes": "[\"Vissel K\u014dbe\", \"Nagoya Grampus\"]",
+        "outcomePrices": "[\"0.4985\", \"0.5015\"]"
+      },
+      {
+        "question": "Spread: Nagoya Grampus (-2.5)",
+        "outcomes": "[\"Nagoya Grampus\", \"Vissel K\u014dbe\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Vissel K\u014dbe vs. Nagoya Grampus: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "Vissel K\u014dbe vs. Nagoya Grampus: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "Vissel K\u014dbe vs. Nagoya Grampus: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "Vissel K\u014dbe vs. Nagoya Grampus: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "Vissel K\u014dbe vs. Nagoya Grampus: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      }
     ]
   },
   {
@@ -1354,6 +2153,23 @@
         "updatedAt": "2026-04-15T21:03:59.564806Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Seattle Sounders FC win on 2026-04-12?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.47\", \"0.53\"]"
+      },
+      {
+        "question": "Will Seattle Sounders FC vs. Real Salt Lake end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.345\", \"0.655\"]"
+      },
+      {
+        "question": "Will Real Salt Lake win on 2026-04-12?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.245\", \"0.755\"]"
+      }
     ]
   },
   {
@@ -1401,6 +2217,53 @@
         "slug": "mls",
         "updatedAt": "2026-04-15T21:03:59.564806Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Seattle Sounders FC (-1.5)",
+        "outcomes": "[\"Seattle Sounders FC\", \"Real Salt Lake\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Spread: Real Salt Lake (-1.5)",
+        "outcomes": "[\"Real Salt Lake\", \"Seattle Sounders FC\"]",
+        "outcomePrices": "[\"0.405\", \"0.595\"]"
+      },
+      {
+        "question": "Spread: Seattle Sounders FC (-2.5)",
+        "outcomes": "[\"Seattle Sounders FC\", \"Real Salt Lake\"]",
+        "outcomePrices": "[\"0.385\", \"0.615\"]"
+      },
+      {
+        "question": "Seattle Sounders FC vs. Real Salt Lake: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.545\", \"0.455\"]"
+      },
+      {
+        "question": "Seattle Sounders FC vs. Real Salt Lake: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.375\", \"0.625\"]"
+      },
+      {
+        "question": "Seattle Sounders FC vs. Real Salt Lake: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.325\", \"0.675\"]"
+      },
+      {
+        "question": "Seattle Sounders FC vs. Real Salt Lake: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.565\", \"0.435\"]"
+      },
+      {
+        "question": "Spread: Real Salt Lake (-2.5)",
+        "outcomes": "[\"Real Salt Lake\", \"Seattle Sounders FC\"]",
+        "outcomePrices": "[\"0.406\", \"0.594\"]"
+      },
+      {
+        "question": "Seattle Sounders FC vs. Real Salt Lake: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
       }
     ]
   },
@@ -1451,6 +2314,23 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Peterborough United FC vs. Mansfield Town FC end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "Will Peterborough United FC win on 2026-03-28?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Will Mansfield Town FC win on 2026-03-28?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.0005\", \"0.9995\"]"
+      }
     ]
   },
   {
@@ -1499,6 +2379,53 @@
         "createdAt": "2026-03-26T22:29:37.93472Z",
         "updatedAt": "2026-04-17T20:48:44.282426Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Spread: LD Alajuelense (-1.5)",
+        "outcomes": "[\"LD Alajuelense\", \"Guadalupe FC\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "LD Alajuelense vs. Guadalupe FC: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.519\", \"0.481\"]"
+      },
+      {
+        "question": "LD Alajuelense vs. Guadalupe FC: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "LD Alajuelense vs. Guadalupe FC: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.499\"]"
+      },
+      {
+        "question": "Spread: Guadalupe FC (-1.5)",
+        "outcomes": "[\"Guadalupe FC\", \"LD Alajuelense\"]",
+        "outcomePrices": "[\"0.4305\", \"0.5695\"]"
+      },
+      {
+        "question": "Spread: LD Alajuelense (-2.5)",
+        "outcomes": "[\"LD Alajuelense\", \"Guadalupe FC\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "LD Alajuelense vs. Guadalupe FC: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "LD Alajuelense vs. Guadalupe FC: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Spread: Guadalupe FC (-2.5)",
+        "outcomes": "[\"Guadalupe FC\", \"LD Alajuelense\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
       }
     ]
   },
@@ -1549,6 +2476,53 @@
         "updatedAt": "2026-04-17T20:48:44.290495Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Aurora FC (-2.5)",
+        "outcomes": "[\"Aurora FC\", \"CD Marquense\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Aurora FC vs. CD Marquense: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.296\", \"0.704\"]"
+      },
+      {
+        "question": "Spread: CD Marquense (-1.5)",
+        "outcomes": "[\"CD Marquense\", \"Aurora FC\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Spread: CD Marquense (-2.5)",
+        "outcomes": "[\"CD Marquense\", \"Aurora FC\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Aurora FC vs. CD Marquense: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Spread: Aurora FC (-1.5)",
+        "outcomes": "[\"Aurora FC\", \"CD Marquense\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Aurora FC vs. CD Marquense: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Aurora FC vs. CD Marquense: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Aurora FC vs. CD Marquense: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      }
     ]
   },
   {
@@ -1589,6 +2563,23 @@
         "createdAt": "2024-08-21T16:31:18.953213Z",
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will AS FAR win on 2026-03-29?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.4995\", \"0.5005\"]"
+      },
+      {
+        "question": "Will Kawkab AC win on 2026-03-29?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.4985\", \"0.5015\"]"
+      },
+      {
+        "question": "Will Kawkab AC vs. AS FAR end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
       }
     ]
   },
@@ -1641,6 +2632,23 @@
         "isCarousel": false,
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will East Bengal FC win on 2026-04-24?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.55\", \"0.45\"]"
+      },
+      {
+        "question": "Will East Bengal FC vs. Punjab FC end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.25\", \"0.75\"]"
+      },
+      {
+        "question": "Will Punjab FC win on 2026-04-24?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.195\", \"0.805\"]"
+      }
     ]
   },
   {
@@ -1692,6 +2700,53 @@
         "isCarousel": false,
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Spread: East Bengal FC (-1.5)",
+        "outcomes": "[\"East Bengal FC\", \"Punjab FC\"]",
+        "outcomePrices": "[\"0.305\", \"0.695\"]"
+      },
+      {
+        "question": "Spread: Punjab FC (-1.5)",
+        "outcomes": "[\"Punjab FC\", \"East Bengal FC\"]",
+        "outcomePrices": "[\"0.065\", \"0.935\"]"
+      },
+      {
+        "question": "Spread: East Bengal FC (-2.5)",
+        "outcomes": "[\"East Bengal FC\", \"Punjab FC\"]",
+        "outcomePrices": "[\"0.185\", \"0.815\"]"
+      },
+      {
+        "question": "Spread: Punjab FC (-2.5)",
+        "outcomes": "[\"Punjab FC\", \"East Bengal FC\"]",
+        "outcomePrices": "[\"0.18\", \"0.82\"]"
+      },
+      {
+        "question": "East Bengal FC vs. Punjab FC: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.77\", \"0.23\"]"
+      },
+      {
+        "question": "East Bengal FC vs. Punjab FC: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.525\", \"0.475\"]"
+      },
+      {
+        "question": "East Bengal FC vs. Punjab FC: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.3\", \"0.7\"]"
+      },
+      {
+        "question": "East Bengal FC vs. Punjab FC: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.135\", \"0.865\"]"
+      },
+      {
+        "question": "East Bengal FC vs. Punjab FC: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.53\", \"0.47\"]"
+      }
     ]
   },
   {
@@ -1740,6 +2795,53 @@
         "createdAt": "2025-09-04T21:20:53.669409Z",
         "updatedAt": "2026-04-17T21:08:23.123282Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Cruzeiro EC (-1.5)",
+        "outcomes": "[\"Cruzeiro EC\", \"CD Universidad Cat\u00f3lica\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Spread: CD Universidad Cat\u00f3lica (-1.5)",
+        "outcomes": "[\"CD Universidad Cat\u00f3lica\", \"Cruzeiro EC\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Spread: Cruzeiro EC (-2.5)",
+        "outcomes": "[\"Cruzeiro EC\", \"CD Universidad Cat\u00f3lica\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Spread: CD Universidad Cat\u00f3lica (-2.5)",
+        "outcomes": "[\"CD Universidad Cat\u00f3lica\", \"Cruzeiro EC\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Cruzeiro EC vs. CD Universidad Cat\u00f3lica: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "Cruzeiro EC vs. CD Universidad Cat\u00f3lica: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
+      },
+      {
+        "question": "Cruzeiro EC vs. CD Universidad Cat\u00f3lica: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Cruzeiro EC vs. CD Universidad Cat\u00f3lica: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.275\", \"0.725\"]"
+      },
+      {
+        "question": "Cruzeiro EC vs. CD Universidad Cat\u00f3lica: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"1\", \"0\"]"
       }
     ]
   },
@@ -1790,6 +2892,53 @@
         "updatedAt": "2026-04-17T20:44:33.687981Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Caracas FC (-2.5)",
+        "outcomes": "[\"Caracas FC\", \"Club Independiente Petrolero\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Spread: Caracas FC (-1.5)",
+        "outcomes": "[\"Caracas FC\", \"Club Independiente Petrolero\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Spread: Club Independiente Petrolero (-1.5)",
+        "outcomes": "[\"Club Independiente Petrolero\", \"Caracas FC\"]",
+        "outcomePrices": "[\"0.1465\", \"0.8535\"]"
+      },
+      {
+        "question": "Spread: Club Independiente Petrolero (-2.5)",
+        "outcomes": "[\"Club Independiente Petrolero\", \"Caracas FC\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Caracas FC vs. Club Independiente Petrolero: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Caracas FC vs. Club Independiente Petrolero: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Caracas FC vs. Club Independiente Petrolero: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Caracas FC vs. Club Independiente Petrolero: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      },
+      {
+        "question": "Caracas FC vs. Club Independiente Petrolero: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0\", \"1\"]"
+      }
     ]
   },
   {
@@ -1838,6 +2987,23 @@
         "updatedAt": "2026-04-15T21:03:59.564806Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Seattle Sounders FC leading at halftime?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Seattle Sounders FC vs. Real Salt Lake: Draw at halftime?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Real Salt Lake leading at halftime?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      }
     ]
   },
   {
@@ -1885,6 +3051,93 @@
         "slug": "mls",
         "updatedAt": "2026-04-15T21:03:59.564806Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Exact Score: Seattle Sounders FC 2 - 1 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 1 - 1 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 1 - 0 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 2 - 0 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 3 - 1 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.49\", \"0.51\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 3 - 0 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 2 - 2 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 1 - 2 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 0 - 0 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 0 - 1 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 3 - 2 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 0 - 2 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 1 - 3 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 2 - 3 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 3 - 3 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5015\", \"0.4985\"]"
+      },
+      {
+        "question": "Exact Score: Seattle Sounders FC 0 - 3 Real Salt Lake?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.495\", \"0.505\"]"
+      },
+      {
+        "question": "Exact Score: Any Other Score?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
       }
     ]
   },
@@ -1937,6 +3190,23 @@
         "isCarousel": false,
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Mohun Bagan Super Giant win on 2026-04-26?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.64\", \"0.36\"]"
+      },
+      {
+        "question": "Will Mohun Bagan Super Giant vs. Inter Kashi FC end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.265\", \"0.735\"]"
+      },
+      {
+        "question": "Will Inter Kashi FC win on 2026-04-26?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.21\", \"0.79\"]"
+      }
     ]
   },
   {
@@ -1988,6 +3258,53 @@
         "isCarousel": false,
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Mohun Bagan Super Giant (-1.5)",
+        "outcomes": "[\"Mohun Bagan Super Giant\", \"Inter Kashi FC\"]",
+        "outcomePrices": "[\"0.46\", \"0.54\"]"
+      },
+      {
+        "question": "Spread: Inter Kashi FC (-1.5)",
+        "outcomes": "[\"Inter Kashi FC\", \"Mohun Bagan Super Giant\"]",
+        "outcomePrices": "[\"0.405\", \"0.595\"]"
+      },
+      {
+        "question": "Spread: Mohun Bagan Super Giant (-2.5)",
+        "outcomes": "[\"Mohun Bagan Super Giant\", \"Inter Kashi FC\"]",
+        "outcomePrices": "[\"0.39\", \"0.61\"]"
+      },
+      {
+        "question": "Spread: Inter Kashi FC (-2.5)",
+        "outcomes": "[\"Inter Kashi FC\", \"Mohun Bagan Super Giant\"]",
+        "outcomePrices": "[\"0.4\", \"0.6\"]"
+      },
+      {
+        "question": "Mohun Bagan Super Giant vs. Inter Kashi FC: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.68\", \"0.32\"]"
+      },
+      {
+        "question": "Mohun Bagan Super Giant vs. Inter Kashi FC: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.51\", \"0.49\"]"
+      },
+      {
+        "question": "Mohun Bagan Super Giant vs. Inter Kashi FC: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.445\", \"0.555\"]"
+      },
+      {
+        "question": "Mohun Bagan Super Giant vs. Inter Kashi FC: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.4\", \"0.6\"]"
+      },
+      {
+        "question": "Mohun Bagan Super Giant vs. Inter Kashi FC: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.51\", \"0.49\"]"
+      }
     ]
   },
   {
@@ -2037,6 +3354,23 @@
         "updatedAt": "2026-04-17T20:15:31.357039Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Galatasaray SK win on 2026-05-01?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.455\", \"0.545\"]"
+      },
+      {
+        "question": "Will Galatasaray SK vs. Trabzonspor end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.495\", \"0.505\"]"
+      },
+      {
+        "question": "Will Trabzonspor win on 2026-05-01?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.49\", \"0.51\"]"
+      }
     ]
   },
   {
@@ -2085,6 +3419,53 @@
         "createdAt": "2024-09-23T22:41:37.670714Z",
         "updatedAt": "2026-03-09T22:28:03.358133Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Galatasaray SK (-1.5)",
+        "outcomes": "[\"Galatasaray SK\", \"Trabzonspor\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Spread: Trabzonspor (-1.5)",
+        "outcomes": "[\"Trabzonspor\", \"Galatasaray SK\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Spread: Galatasaray SK (-2.5)",
+        "outcomes": "[\"Galatasaray SK\", \"Trabzonspor\"]",
+        "outcomePrices": "[\"0.49\", \"0.51\"]"
+      },
+      {
+        "question": "Spread: Trabzonspor (-2.5)",
+        "outcomes": "[\"Trabzonspor\", \"Galatasaray SK\"]",
+        "outcomePrices": "[\"0.51\", \"0.49\"]"
+      },
+      {
+        "question": "Galatasaray SK vs. Trabzonspor: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Galatasaray SK vs. Trabzonspor: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Galatasaray SK vs. Trabzonspor: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.505\", \"0.495\"]"
+      },
+      {
+        "question": "Galatasaray SK vs. Trabzonspor: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Galatasaray SK vs. Trabzonspor: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
       }
     ]
   },
@@ -2137,6 +3518,23 @@
         "isCarousel": false,
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Mohammedan SC win on 2026-05-03?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.465\", \"0.535\"]"
+      },
+      {
+        "question": "Will Mohammedan SC vs. Mumbai City FC end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.315\", \"0.685\"]"
+      },
+      {
+        "question": "Will Mumbai City FC win on 2026-05-03?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.335\", \"0.665\"]"
+      }
     ]
   },
   {
@@ -2188,6 +3586,53 @@
         "forceHide": true,
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Spread: Mohammedan SC (-1.5)",
+        "outcomes": "[\"Mohammedan SC\", \"Mumbai City FC\"]",
+        "outcomePrices": "[\"0.395\", \"0.605\"]"
+      },
+      {
+        "question": "Mohammedan SC vs. Mumbai City FC: Both Teams to Score",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.495\", \"0.505\"]"
+      },
+      {
+        "question": "Spread: Mumbai City FC (-1.5)",
+        "outcomes": "[\"Mumbai City FC\", \"Mohammedan SC\"]",
+        "outcomePrices": "[\"0.4\", \"0.6\"]"
+      },
+      {
+        "question": "Spread: Mohammedan SC (-2.5)",
+        "outcomes": "[\"Mohammedan SC\", \"Mumbai City FC\"]",
+        "outcomePrices": "[\"0.365\", \"0.635\"]"
+      },
+      {
+        "question": "Spread: Mumbai City FC (-2.5)",
+        "outcomes": "[\"Mumbai City FC\", \"Mohammedan SC\"]",
+        "outcomePrices": "[\"0.4\", \"0.6\"]"
+      },
+      {
+        "question": "Mohammedan SC vs. Mumbai City FC: O/U 1.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.655\", \"0.345\"]"
+      },
+      {
+        "question": "Mohammedan SC vs. Mumbai City FC: O/U 2.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.52\", \"0.48\"]"
+      },
+      {
+        "question": "Mohammedan SC vs. Mumbai City FC: O/U 3.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.35\", \"0.65\"]"
+      },
+      {
+        "question": "Mohammedan SC vs. Mumbai City FC: O/U 4.5",
+        "outcomes": "[\"Over\", \"Under\"]",
+        "outcomePrices": "[\"0.325\", \"0.675\"]"
+      }
     ]
   },
   {
@@ -2236,6 +3681,23 @@
         "createdAt": "2024-08-21T16:31:18.953213Z",
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Mexico win on 2026-06-11?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.655\", \"0.345\"]"
+      },
+      {
+        "question": "Will Mexico vs. South Africa end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.205\", \"0.795\"]"
+      },
+      {
+        "question": "Will South Africa win on 2026-06-11?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.145\", \"0.855\"]"
       }
     ]
   },
@@ -2286,6 +3748,23 @@
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Korea Republic vs. Czechia end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.31\", \"0.69\"]"
+      },
+      {
+        "question": "Will Czechia win on 2026-06-11?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.32\", \"0.68\"]"
+      },
+      {
+        "question": "Will Korea Republic win on 2026-06-11?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.375\", \"0.625\"]"
+      }
     ]
   },
   {
@@ -2334,6 +3813,23 @@
         "updatedAt": "2026-04-17T20:47:16.461062Z",
         "forceHide": true,
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Canada vs. Bosnia and Herzegovina end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.255\", \"0.745\"]"
+      },
+      {
+        "question": "Will Bosnia and Herzegovina win on 2026-06-12?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.22\", \"0.78\"]"
+      },
+      {
+        "question": "Will Canada win on 2026-06-12?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.54\", \"0.46\"]"
       }
     ]
   },
@@ -2384,6 +3880,23 @@
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will United States vs. Paraguay end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.255\", \"0.745\"]"
+      },
+      {
+        "question": "Will United States win on 2026-06-12?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.49\", \"0.51\"]"
+      },
+      {
+        "question": "Will Paraguay win on 2026-06-12?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.265\", \"0.735\"]"
+      }
     ]
   },
   {
@@ -2432,6 +3945,23 @@
         "createdAt": "2025-06-08T02:11:18.665669Z",
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Qatar vs. Switzerland end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.155\", \"0.845\"]"
+      },
+      {
+        "question": "Will Switzerland win on 2026-06-13?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.765\", \"0.235\"]"
+      },
+      {
+        "question": "Will Qatar win on 2026-06-13?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.0925\", \"0.9075\"]"
       }
     ]
   },
@@ -2482,6 +4012,23 @@
         "updatedAt": "2026-03-09T22:28:03.358133Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Morocco win on 2026-06-13?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.17\", \"0.83\"]"
+      },
+      {
+        "question": "Will Brazil win on 2026-06-13?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.61\", \"0.39\"]"
+      },
+      {
+        "question": "Will Brazil vs. Morocco end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.24\", \"0.76\"]"
+      }
     ]
   },
   {
@@ -2530,6 +4077,23 @@
         "createdAt": "2025-06-08T02:11:18.665669Z",
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Scotland win on 2026-06-13?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.66\", \"0.34\"]"
+      },
+      {
+        "question": "Will Haiti win on 2026-06-13?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.155\", \"0.845\"]"
+      },
+      {
+        "question": "Will Haiti vs. Scotland end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.195\", \"0.805\"]"
       }
     ]
   },
@@ -2580,6 +4144,23 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Australia vs. T\u00fcrkiye end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.255\", \"0.745\"]"
+      },
+      {
+        "question": "Will T\u00fcrkiye win on 2026-06-14?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.545\", \"0.455\"]"
+      },
+      {
+        "question": "Will Australia win on 2026-06-14?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.2\", \"0.8\"]"
+      }
     ]
   },
   {
@@ -2628,6 +4209,23 @@
         "createdAt": "2024-08-21T16:31:18.953213Z",
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Germany win on 2026-06-14?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.915\", \"0.085\"]"
+      },
+      {
+        "question": "Will Cura\u00e7ao win on 2026-06-14?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.031\", \"0.969\"]"
+      },
+      {
+        "question": "Will Germany vs. Cura\u00e7ao end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.066\", \"0.934\"]"
       }
     ]
   },
@@ -2678,6 +4276,23 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Japan win on 2026-06-14?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.27\", \"0.73\"]"
+      },
+      {
+        "question": "Will Netherlands vs. Japan end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.245\", \"0.755\"]"
+      },
+      {
+        "question": "Will Netherlands win on 2026-06-14?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.485\", \"0.515\"]"
+      }
     ]
   },
   {
@@ -2726,6 +4341,23 @@
         "createdAt": "2025-06-08T02:11:18.665669Z",
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will C\u00f4te d'Ivoire vs. Ecuador end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.33\", \"0.67\"]"
+      },
+      {
+        "question": "Will Ecuador win on 2026-06-14?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.405\", \"0.595\"]"
+      },
+      {
+        "question": "Will C\u00f4te d'Ivoire win on 2026-06-14?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.28\", \"0.72\"]"
       }
     ]
   },
@@ -2776,6 +4408,23 @@
         "updatedAt": "2026-03-09T22:28:03.358133Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Sweden win on 2026-06-14?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.5\", \"0.5\"]"
+      },
+      {
+        "question": "Will Sweden vs. Tunisia end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.29\", \"0.71\"]"
+      },
+      {
+        "question": "Will Tunisia win on 2026-06-14?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.22\", \"0.78\"]"
+      }
     ]
   },
   {
@@ -2824,6 +4473,23 @@
         "createdAt": "2025-06-08T02:11:18.665669Z",
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Spain win on 2026-06-15?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.87\", \"0.13\"]"
+      },
+      {
+        "question": "Will Spain vs. Cabo Verde end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.09\", \"0.91\"]"
+      },
+      {
+        "question": "Will Cabo Verde win on 2026-06-15?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.0675\", \"0.9325\"]"
       }
     ]
   },
@@ -2874,6 +4540,23 @@
         "updatedAt": "2026-03-09T22:28:03.358133Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Belgium vs. Egypt end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.235\", \"0.765\"]"
+      },
+      {
+        "question": "Will Egypt win on 2026-06-15?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.185\", \"0.815\"]"
+      },
+      {
+        "question": "Will Belgium win on 2026-06-15?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.585\", \"0.415\"]"
+      }
     ]
   },
   {
@@ -2922,6 +4605,23 @@
         "createdAt": "2025-06-08T02:11:18.665669Z",
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Saudi Arabia win on 2026-06-15?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.14\", \"0.86\"]"
+      },
+      {
+        "question": "Will Saudi Arabia vs. Uruguay end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.21\", \"0.79\"]"
+      },
+      {
+        "question": "Will Uruguay win on 2026-06-15?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.65\", \"0.35\"]"
       }
     ]
   },
@@ -2972,6 +4672,23 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will IR Iran win on 2026-06-15?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.555\", \"0.445\"]"
+      },
+      {
+        "question": "Will IR Iran vs. New Zealand end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.25\", \"0.75\"]"
+      },
+      {
+        "question": "Will New Zealand win on 2026-06-15?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.185\", \"0.815\"]"
+      }
     ]
   },
   {
@@ -3020,6 +4737,23 @@
         "createdAt": "2024-08-21T16:31:18.953213Z",
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will France win on 2026-06-16?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.69\", \"0.31\"]"
+      },
+      {
+        "question": "Will Senegal win on 2026-06-16?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.13\", \"0.87\"]"
+      },
+      {
+        "question": "Will France vs. Senegal end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.19\", \"0.81\"]"
       }
     ]
   },
@@ -3070,6 +4804,23 @@
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Iraq vs. Norway end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.155\", \"0.845\"]"
+      },
+      {
+        "question": "Will Iraq win on 2026-06-16?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.095\", \"0.905\"]"
+      },
+      {
+        "question": "Will Norway win on 2026-06-16?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.785\", \"0.215\"]"
+      }
     ]
   },
   {
@@ -3118,6 +4869,23 @@
         "createdAt": "2024-08-21T16:31:18.953213Z",
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Argentina vs. Algeria end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.2\", \"0.8\"]"
+      },
+      {
+        "question": "Will Algeria win on 2026-06-16?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.095\", \"0.905\"]"
+      },
+      {
+        "question": "Will Argentina win on 2026-06-16?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.695\", \"0.305\"]"
       }
     ]
   },
@@ -3168,6 +4936,23 @@
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Austria win on 2026-06-17?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.735\", \"0.265\"]"
+      },
+      {
+        "question": "Will Austria vs. Jordan end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.16\", \"0.84\"]"
+      },
+      {
+        "question": "Will Jordan win on 2026-06-17?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.105\", \"0.895\"]"
+      }
     ]
   },
   {
@@ -3216,6 +5001,23 @@
         "createdAt": "2025-06-08T02:11:18.665669Z",
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will DR Congo win on 2026-06-17?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.1\", \"0.9\"]"
+      },
+      {
+        "question": "Will Portugal win on 2026-06-17?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.765\", \"0.235\"]"
+      },
+      {
+        "question": "Will Portugal vs. DR Congo end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.16\", \"0.84\"]"
       }
     ]
   },
@@ -3266,6 +5068,23 @@
         "updatedAt": "2026-03-09T22:28:03.358133Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Croatia win on 2026-06-17?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.205\", \"0.795\"]"
+      },
+      {
+        "question": "Will England win on 2026-06-17?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.58\", \"0.42\"]"
+      },
+      {
+        "question": "Will England vs. Croatia end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.24\", \"0.76\"]"
+      }
     ]
   },
   {
@@ -3314,6 +5133,23 @@
         "createdAt": "2025-06-08T02:11:18.665669Z",
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Ghana win on 2026-06-17?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.485\", \"0.515\"]"
+      },
+      {
+        "question": "Will Ghana vs. Panama end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.255\", \"0.745\"]"
+      },
+      {
+        "question": "Will Panama win on 2026-06-17?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.265\", \"0.735\"]"
       }
     ]
   },
@@ -3364,6 +5200,23 @@
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Uzbekistan win on 2026-06-17?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.11\", \"0.89\"]"
+      },
+      {
+        "question": "Will Uzbekistan vs. Colombia end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.195\", \"0.805\"]"
+      },
+      {
+        "question": "Will Colombia win on 2026-06-17?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.695\", \"0.305\"]"
+      }
     ]
   },
   {
@@ -3412,6 +5265,23 @@
         "createdAt": "2024-09-23T22:41:37.670714Z",
         "updatedAt": "2026-03-09T22:28:03.358133Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Czechia vs. South Africa end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.305\", \"0.695\"]"
+      },
+      {
+        "question": "Will Czechia win on 2026-06-18?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.485\", \"0.515\"]"
+      },
+      {
+        "question": "Will South Africa win on 2026-06-18?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.245\", \"0.755\"]"
       }
     ]
   },
@@ -3462,6 +5332,23 @@
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Bosnia and Herzegovina win on 2026-06-18?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.185\", \"0.815\"]"
+      },
+      {
+        "question": "Will Switzerland win on 2026-06-18?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.615\", \"0.385\"]"
+      },
+      {
+        "question": "Will Switzerland vs. Bosnia and Herzegovina end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.23\", \"0.77\"]"
+      }
     ]
   },
   {
@@ -3510,6 +5397,23 @@
         "createdAt": "2024-08-21T16:31:18.953213Z",
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Canada vs. Qatar end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.255\", \"0.745\"]"
+      },
+      {
+        "question": "Will Canada win on 2026-06-18?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.615\", \"0.385\"]"
+      },
+      {
+        "question": "Will Qatar win on 2026-06-18?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.2\", \"0.8\"]"
       }
     ]
   },
@@ -3560,6 +5464,23 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Mexico vs. Korea Republic end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.29\", \"0.71\"]"
+      },
+      {
+        "question": "Will Korea Republic win on 2026-06-18?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.295\", \"0.705\"]"
+      },
+      {
+        "question": "Will Mexico win on 2026-06-18?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.475\", \"0.525\"]"
+      }
     ]
   },
   {
@@ -3608,6 +5529,23 @@
         "updatedAt": "2026-04-17T20:47:16.461062Z",
         "forceHide": true,
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will United States vs. Australia end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.275\", \"0.725\"]"
+      },
+      {
+        "question": "Will Australia win on 2026-06-19?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.285\", \"0.715\"]"
+      },
+      {
+        "question": "Will United States win on 2026-06-19?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.57\", \"0.43\"]"
       }
     ]
   },
@@ -3658,6 +5596,23 @@
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Scotland win on 2026-06-19?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.255\", \"0.745\"]"
+      },
+      {
+        "question": "Will Scotland vs. Morocco end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.295\", \"0.705\"]"
+      },
+      {
+        "question": "Will Morocco win on 2026-06-19?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.46\", \"0.54\"]"
+      }
     ]
   },
   {
@@ -3706,6 +5661,23 @@
         "createdAt": "2024-08-21T16:31:18.953213Z",
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Brazil win on 2026-06-19?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.875\", \"0.125\"]"
+      },
+      {
+        "question": "Will Brazil vs. Haiti end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.08\", \"0.92\"]"
+      },
+      {
+        "question": "Will Haiti win on 2026-06-19?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.073\", \"0.927\"]"
       }
     ]
   },
@@ -3756,6 +5728,23 @@
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will T\u00fcrkiye vs. Paraguay end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.295\", \"0.705\"]"
+      },
+      {
+        "question": "Will Paraguay win on 2026-06-19?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.265\", \"0.735\"]"
+      },
+      {
+        "question": "Will T\u00fcrkiye win on 2026-06-19?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.57\", \"0.43\"]"
+      }
     ]
   },
   {
@@ -3804,6 +5793,23 @@
         "createdAt": "2025-06-08T02:11:18.665669Z",
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Netherlands win on 2026-06-20?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.555\", \"0.445\"]"
+      },
+      {
+        "question": "Will Netherlands vs. Sweden end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.245\", \"0.755\"]"
+      },
+      {
+        "question": "Will Sweden win on 2026-06-20?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.19\", \"0.81\"]"
       }
     ]
   },
@@ -3854,6 +5860,23 @@
         "updatedAt": "2026-03-09T22:28:03.358133Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Germany win on 2026-06-20?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.645\", \"0.355\"]"
+      },
+      {
+        "question": "Will C\u00f4te d'Ivoire win on 2026-06-20?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.19\", \"0.81\"]"
+      },
+      {
+        "question": "Will Germany vs. C\u00f4te d'Ivoire end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.21\", \"0.79\"]"
+      }
     ]
   },
   {
@@ -3902,6 +5925,23 @@
         "createdAt": "2025-06-08T02:11:18.665669Z",
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Ecuador vs. Cura\u00e7ao end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.16\", \"0.84\"]"
+      },
+      {
+        "question": "Will Cura\u00e7ao win on 2026-06-20?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.105\", \"0.895\"]"
+      },
+      {
+        "question": "Will Ecuador win on 2026-06-20?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.735\", \"0.265\"]"
       }
     ]
   },
@@ -3952,6 +5992,23 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Tunisia vs. Japan end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.28\", \"0.72\"]"
+      },
+      {
+        "question": "Will Japan win on 2026-06-21?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.555\", \"0.445\"]"
+      },
+      {
+        "question": "Will Tunisia win on 2026-06-21?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.18\", \"0.82\"]"
+      }
     ]
   },
   {
@@ -4000,6 +6057,23 @@
         "createdAt": "2025-06-08T02:11:18.665669Z",
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Spain win on 2026-06-21?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.855\", \"0.145\"]"
+      },
+      {
+        "question": "Will Spain vs. Saudi Arabia end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.095\", \"0.905\"]"
+      },
+      {
+        "question": "Will Saudi Arabia win on 2026-06-21?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.09\", \"0.91\"]"
       }
     ]
   },
@@ -4050,6 +6124,23 @@
         "forceHide": true,
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will IR Iran win on 2026-06-21?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.235\", \"0.765\"]"
+      },
+      {
+        "question": "Will Belgium win on 2026-06-21?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.675\", \"0.325\"]"
+      },
+      {
+        "question": "Will Belgium vs. IR Iran end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.295\", \"0.705\"]"
+      }
     ]
   },
   {
@@ -4098,6 +6189,23 @@
         "createdAt": "2025-06-08T02:11:18.665669Z",
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Uruguay vs. Cabo Verde end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.255\", \"0.745\"]"
+      },
+      {
+        "question": "Will Uruguay win on 2026-06-21?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.65\", \"0.35\"]"
+      },
+      {
+        "question": "Will Cabo Verde win on 2026-06-21?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.16\", \"0.84\"]"
       }
     ]
   },
@@ -4148,6 +6256,23 @@
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will New Zealand win on 2026-06-21?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.205\", \"0.795\"]"
+      },
+      {
+        "question": "Will New Zealand vs. Egypt end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.24\", \"0.76\"]"
+      },
+      {
+        "question": "Will Egypt win on 2026-06-21?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.55\", \"0.45\"]"
+      }
     ]
   },
   {
@@ -4196,6 +6321,23 @@
         "createdAt": "2025-06-08T02:11:18.665669Z",
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Argentina vs. Austria end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.24\", \"0.76\"]"
+      },
+      {
+        "question": "Will Austria win on 2026-06-22?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.18\", \"0.82\"]"
+      },
+      {
+        "question": "Will Argentina win on 2026-06-22?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.615\", \"0.385\"]"
       }
     ]
   },
@@ -4246,6 +6388,23 @@
         "forceHide": true,
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will France vs. Iraq end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.11\", \"0.89\"]"
+      },
+      {
+        "question": "Will Iraq win on 2026-06-22?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.055\", \"0.945\"]"
+      },
+      {
+        "question": "Will France win on 2026-06-22?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.825\", \"0.175\"]"
+      }
     ]
   },
   {
@@ -4294,6 +6453,23 @@
         "createdAt": "2024-09-23T22:41:37.670714Z",
         "updatedAt": "2026-03-09T22:28:03.358133Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Senegal win on 2026-06-22?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.285\", \"0.715\"]"
+      },
+      {
+        "question": "Will Norway win on 2026-06-22?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.475\", \"0.525\"]"
+      },
+      {
+        "question": "Will Norway vs. Senegal end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.31\", \"0.69\"]"
       }
     ]
   },
@@ -4344,6 +6520,23 @@
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will Jordan vs. Algeria end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.26\", \"0.74\"]"
+      },
+      {
+        "question": "Will Jordan win on 2026-06-22?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.2\", \"0.8\"]"
+      },
+      {
+        "question": "Will Algeria win on 2026-06-22?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.6\", \"0.4\"]"
+      }
     ]
   },
   {
@@ -4392,6 +6585,23 @@
         "createdAt": "2025-06-08T02:11:18.665669Z",
         "updatedAt": "2026-04-17T20:58:26.597292Z",
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Portugal win on 2026-06-23?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.785\", \"0.215\"]"
+      },
+      {
+        "question": "Will Portugal vs. Uzbekistan end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.205\", \"0.795\"]"
+      },
+      {
+        "question": "Will Uzbekistan win on 2026-06-23?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.105\", \"0.895\"]"
       }
     ]
   },
@@ -4442,6 +6652,23 @@
         "updatedAt": "2026-04-17T20:33:09.955379Z",
         "requiresTranslation": false
       }
+    ],
+    "markets": [
+      {
+        "question": "Will England vs. Ghana end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.215\", \"0.785\"]"
+      },
+      {
+        "question": "Will Ghana win on 2026-06-23?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.115\", \"0.885\"]"
+      },
+      {
+        "question": "Will England win on 2026-06-23?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.7\", \"0.3\"]"
+      }
     ]
   },
   {
@@ -4490,6 +6717,23 @@
         "updatedAt": "2026-04-17T20:47:16.461062Z",
         "forceHide": true,
         "requiresTranslation": false
+      }
+    ],
+    "markets": [
+      {
+        "question": "Will Croatia win on 2026-06-23?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.665\", \"0.335\"]"
+      },
+      {
+        "question": "Will Panama win on 2026-06-23?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.115\", \"0.885\"]"
+      },
+      {
+        "question": "Will Panama vs. Croatia end in a draw?",
+        "outcomes": "[\"Yes\", \"No\"]",
+        "outcomePrices": "[\"0.255\", \"0.745\"]"
       }
     ]
   }

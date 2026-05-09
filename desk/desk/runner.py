@@ -1,8 +1,9 @@
 """Engine runner — orchestrates one full pass.
 
-`run_once()` lists fixtures from every active sport, builds a stub
-`MatchOutput` per fixture, and publishes per-match JSON + per-sport
-`index.json`. PR 4 wires real verdicts in; PR 6 puts this on a schedule.
+PR 4: pipeline is now end-to-end. For each priced fixture we build
+features, run the model, compute a verdict, and publish the resulting
+`MatchOutput`. Per-fixture failures are isolated per spec §9 — a single
+bad row never blocks the rest of the publish.
 """
 
 from __future__ import annotations
@@ -19,14 +20,20 @@ from desk.publish import (
     Venue,
     Verdict,
 )
+from desk.publish.contract import VerdictState
 from desk.sport import FixtureRef
 from desk.sports import active_sports
+from desk.verdict.compare import MarketSnapshot
 
 log = logging.getLogger("desk.runner")
 
 
-def _stub_match(fx: FixtureRef, *, now: datetime) -> MatchOutput:
-    """Translate a `FixtureRef` into a Pass-state `MatchOutput` for PR 2."""
+def _build_match(
+    fx: FixtureRef,
+    *,
+    verdict: Verdict,
+    now: datetime,
+) -> MatchOutput:
     venue = None
     if fx.venue_city and fx.venue_stadium and fx.venue_country:
         venue = Venue(
@@ -47,45 +54,63 @@ def _stub_match(fx: FixtureRef, *, now: datetime) -> MatchOutput:
         team_b=fx.team_b,
         venue=venue,
         market_outcomes=list(fx.market_outcomes),
-        verdict=Verdict(state="pass"),
+        verdict=verdict,
         updated_at=now,
     )
 
 
 def run_once(*, output_dir: Path | None = None) -> dict[str, list[Path]]:
-    """List fixtures, write stub MatchOutputs, refresh per-sport index.
-
-    Returns the set of paths written, keyed by sport. Catches per-fixture
-    failures so a single bad row doesn't block the rest of the publish.
-    """
     pub = Publisher(output_dir=Path(output_dir or config.OUTPUT_DIR))
     now = datetime.now(tz=timezone.utc)
     written: dict[str, list[Path]] = {}
 
     for sport in active_sports():
-        log.info("listing fixtures for %s", sport.code)
-        fixtures = list(sport.list_fixtures())
-        log.info("got %d fixtures for %s", len(fixtures), sport.code)
+        log.info("listing priced fixtures for %s", sport.code)
+        try:
+            pairs = list(sport.list_priced_fixtures())
+        except Exception as e:                          # noqa: BLE001 — spec §9
+            log.warning("priced ingest failed for %s: %s", sport.code, e)
+            pairs = []
+
+        log.info("got %d priced fixtures for %s", len(pairs), sport.code)
+        if not pairs:
+            written[sport.code] = []
+            continue
 
         matches: list[MatchOutput] = []
         paths: list[Path] = []
-        for fx in fixtures:
+        n_pick = n_pass = n_avoid = 0
+        for fx, snapshot in pairs:
             try:
-                m = _stub_match(fx, now=now)
-            except Exception as e:                # noqa: BLE001 — tolerated per spec §9
-                log.warning("skipping fixture %s: %s", fx.match_id, e)
+                v = sport.decide(fx, snapshot)
+            except Exception as e:                      # noqa: BLE001
+                log.warning("decide failed for %s: %s", fx.match_id, e)
+                v = Verdict(state=VerdictState.PASS)
+            try:
+                m = _build_match(fx, verdict=v, now=now)
+            except Exception as e:                      # noqa: BLE001
+                log.warning("build_match failed for %s: %s", fx.match_id, e)
                 continue
             try:
                 path, _ = pub.write_match(m)
-            except Exception as e:                # noqa: BLE001
-                log.warning("skipping write for %s: %s", fx.match_id, e)
+            except Exception as e:                      # noqa: BLE001
+                log.warning("write_match failed for %s: %s", fx.match_id, e)
                 continue
+
             matches.append(m)
             paths.append(path)
+            if v.state == VerdictState.PICK.value or v.state == VerdictState.PICK:
+                n_pick += 1
+            elif v.state == VerdictState.AVOID.value or v.state == VerdictState.AVOID:
+                n_avoid += 1
+            else:
+                n_pass += 1
 
         if matches:
             idx_path, _ = pub.write_index(sport.code, matches)
             paths.append(idx_path)
+        log.info("%s: %d pick / %d pass / %d avoid",
+                 sport.code, n_pick, n_pass, n_avoid)
         written[sport.code] = paths
 
     return written

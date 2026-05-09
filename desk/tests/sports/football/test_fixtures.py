@@ -13,7 +13,8 @@ from pathlib import Path
 import pytest
 
 from desk.publish import MatchOutput
-from desk.runner import _stub_match
+from desk.publish.contract import Verdict, VerdictState
+from desk.runner import _build_match
 from desk.sport import FixtureRef
 from desk.sports.football.fixtures import (
     SHORT_CODE,
@@ -194,9 +195,9 @@ def test_stub_match_validates_against_contract(
     fxs = fixtures_from_polymarket(polymarket_soccer_events)
     assert fxs
     now = datetime(2026, 5, 9, 12, 0, tzinfo=timezone.utc)
+    pass_verdict = Verdict(state=VerdictState.PASS)
     for fx in fxs:
-        m = _stub_match(fx, now=now)
-        # Validate by re-parsing.
+        m = _build_match(fx, verdict=pass_verdict, now=now)
         reloaded = MatchOutput.model_validate_json(m.model_dump_json())
         assert reloaded.verdict.state == "pass"
         assert reloaded.verdict.market_venue is None
@@ -235,7 +236,7 @@ def test_is_international_competition() -> None:
 
 # ── Runner: stub-match shape ─────────────────────────────────────────
 
-def test_stub_match_has_no_venue_when_fixture_lacks_one() -> None:
+def test_build_match_has_no_venue_when_fixture_lacks_one() -> None:
     fx = FixtureRef(
         match_id="fb-wc26-fra-mex-20260612",
         sport="football",
@@ -250,11 +251,15 @@ def test_stub_match_has_no_venue_when_fixture_lacks_one() -> None:
         venue_stadium=None,
         venue_country=None,
     )
-    m = _stub_match(fx, now=datetime(2026, 5, 9, 12, 0, tzinfo=timezone.utc))
+    m = _build_match(
+        fx,
+        verdict=Verdict(state=VerdictState.PASS),
+        now=datetime(2026, 5, 9, 12, 0, tzinfo=timezone.utc),
+    )
     assert m.venue is None
 
 
-def test_stub_match_has_venue_when_fixture_has_one() -> None:
+def test_build_match_has_venue_when_fixture_has_one() -> None:
     fx = FixtureRef(
         match_id="fb-wc26-fra-mex-20260612",
         sport="football",
@@ -269,7 +274,11 @@ def test_stub_match_has_venue_when_fixture_has_one() -> None:
         venue_stadium="Estadio Akron",
         venue_country="MX",
     )
-    m = _stub_match(fx, now=datetime(2026, 5, 9, 12, 0, tzinfo=timezone.utc))
+    m = _build_match(
+        fx,
+        verdict=Verdict(state=VerdictState.PASS),
+        now=datetime(2026, 5, 9, 12, 0, tzinfo=timezone.utc),
+    )
     assert m.venue is not None
     assert m.venue.city == "Guadalajara"
     assert m.venue.country == "MX"
