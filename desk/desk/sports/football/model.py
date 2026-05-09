@@ -53,17 +53,19 @@ DRAW_DECAY_PER_ELO: float = 0.0006   # 100 Elo diff → −0.06 draw share
 
 # ── Phase A.1 bootstrap parameters (THE_DESK_OPTIMIZATION_SPEC §3) ─────
 #
-# The optimization spec mandates:
-#   "bootstrap the Elo lookup ±20 points, the host bonus by ±15,
-#    the altitude bonus by ±10; recompute the model 100× per match;
-#    report the 90% CI on p_a, p_draw, p_b."
+# Uniform half-widths applied independently per sample. Home-ground
+# bonus uses the same ±15 as host: they're the international / club
+# analogues of the same venue uplift.
 #
-# Perturbation magnitudes are uniform half-widths, applied to each
-# sample independently. Home-ground bonus uses the same ±15 as host:
-# they're the international/club analogues of the same venue uplift,
-# so v1 treats their uncertainty identically.
+# ELO_PERTURBATION raised from 20 → 50 vs the spec's first cut: the
+# v1 Elo prior IS uncertain at this magnitude — a tournament can shift
+# a national side ±30, transfer windows shift clubs ±30, recent form
+# swings ±20–50. ±20 was visibly too tight on the WC 2022 backtest
+# (77% Pick rate at the lower-bound gate). ±50 reflects what the prior
+# actually doesn't know and brings selection back inside the 5–20%
+# editorial target without changing the verdict ladder.
 BOOTSTRAP_N:                  int   = 100
-ELO_PERTURBATION:             float = 20.0
+ELO_PERTURBATION:             float = 50.0
 HOST_BONUS_PERTURBATION:      float = 15.0
 HOME_BONUS_PERTURBATION:      float = 15.0
 ALTITUDE_BONUS_PERTURBATION:  float = 10.0

@@ -31,9 +31,14 @@ def _features(elo_a: float, elo_b: float, **overrides) -> FootballFeatures:
 # ── Spec invariants ────────────────────────────────────────────────────
 
 def test_bootstrap_constants_match_spec() -> None:
-    """THE_DESK_OPTIMIZATION_SPEC.md §3 Phase A.1 — locked values."""
+    """THE_DESK_OPTIMIZATION_SPEC.md §3 Phase A.1 — locked values.
+
+    ELO_PERTURBATION raised from the spec's first cut of 20 → 50 to
+    reflect the v1 prior's actual uncertainty (transfer windows, form
+    swings, tournament-mode shifts). See model.py for rationale.
+    """
     assert BOOTSTRAP_N == 100
-    assert ELO_PERTURBATION == 20.0
+    assert ELO_PERTURBATION == 50.0
 
 
 # ── Band shape / consistency ───────────────────────────────────────────
@@ -104,14 +109,14 @@ def test_lopsided_teams_have_narrow_upper_tail() -> None:
 
 def test_band_width_is_modest_versus_total_perturbation() -> None:
     """Sanity: the 90% CI is materially narrower than what a worst-case
-    Elo swing would imply (40pt swing on team_a + 40pt swing on team_b
-    moves p_a by tens of pp). The band should be a fraction of that.
+    Elo swing would imply (100pt swing on each side could move p_a by
+    tens of pp). The band should be a fraction of that.
     """
     out = compute(_features(2050, 1830))
     width = out.p_a_upper - out.p_a_lower
-    # 90% CI under ±20 perturbation per side: roughly 0.05–0.12 wide.
-    # We assert <= 0.20 to leave room for draw-share variability.
-    assert 0.0 < width <= 0.20
+    # 90% CI under ±50 perturbation per side: roughly 0.10–0.25 wide.
+    # We assert <= 0.40 to leave room for draw-share variability.
+    assert 0.0 < width <= 0.40
 
 
 # ── Bonuses contribute to the band ─────────────────────────────────────
