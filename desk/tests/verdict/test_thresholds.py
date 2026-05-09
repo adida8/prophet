@@ -14,7 +14,8 @@ def test_defaults_match_spec(monkeypatch: pytest.MonkeyPatch) -> None:
     th = Thresholds.from_env()
     assert th.pick_pp  == 3.0
     assert th.pass_pp  == 1.0
-    assert th.avoid_pp == -2.0
+    # Phase A.4: relaxed -2.0 → -1.5 per THE_DESK_OPTIMIZATION_SPEC §3.
+    assert th.avoid_pp == -1.5
 
 
 def test_env_overrides_each_threshold(monkeypatch: pytest.MonkeyPatch) -> None:
