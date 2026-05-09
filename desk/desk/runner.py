@@ -33,6 +33,7 @@ def _build_match(
     *,
     verdict: Verdict,
     now: datetime,
+    copy=None,
 ) -> MatchOutput:
     venue = None
     if fx.venue_city and fx.venue_stadium and fx.venue_country:
@@ -41,7 +42,7 @@ def _build_match(
             stadium=fx.venue_stadium,
             country=fx.venue_country,
         )
-    return MatchOutput(
+    kwargs = dict(
         match_id=fx.match_id,
         sport=fx.sport,
         competition=Competition(
@@ -57,6 +58,9 @@ def _build_match(
         verdict=verdict,
         updated_at=now,
     )
+    if copy is not None:
+        kwargs["copy"] = copy
+    return MatchOutput(**kwargs)
 
 
 def run_once(*, output_dir: Path | None = None) -> dict[str, list[Path]]:
@@ -81,13 +85,17 @@ def run_once(*, output_dir: Path | None = None) -> dict[str, list[Path]]:
         paths: list[Path] = []
         n_pick = n_pass = n_avoid = 0
         for fx, snapshot in pairs:
+            copy = None
             try:
-                v = sport.decide(fx, snapshot)
+                if hasattr(sport, "decide_and_explain"):
+                    v, copy = sport.decide_and_explain(fx, snapshot)
+                else:
+                    v = sport.decide(fx, snapshot)
             except Exception as e:                      # noqa: BLE001
                 log.warning("decide failed for %s: %s", fx.match_id, e)
                 v = Verdict(state=VerdictState.PASS)
             try:
-                m = _build_match(fx, verdict=v, now=now)
+                m = _build_match(fx, verdict=v, now=now, copy=copy)
             except Exception as e:                      # noqa: BLE001
                 log.warning("build_match failed for %s: %s", fx.match_id, e)
                 continue
