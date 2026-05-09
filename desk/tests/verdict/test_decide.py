@@ -12,7 +12,7 @@ from desk.verdict.decide import decide
 from desk.verdict.thresholds import Thresholds, current
 
 SIDES = ("a", "draw", "b")
-T_DEFAULT = Thresholds(pick_pp=3.0, pass_pp=1.0, avoid_pp=-2.0)
+T_DEFAULT = Thresholds(pick_pp=3.0, pick_lower_pp=1.0, pass_pp=1.0, avoid_pp=-2.0)
 
 
 def _snap(prices: dict[tuple[str, str], float]) -> MarketSnapshot:
