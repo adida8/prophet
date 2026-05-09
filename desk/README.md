@@ -18,7 +18,8 @@ PR ladder per `THE_DESK_SPEC.md` §4 + `THE_DESK_PR_BACKTEST_BRIEF.md`:
 - [x] **Backtest harness** — `desk backtest --tournament wc-2022`
 - [x] **PR 4.5** — sanity layer (liquidity + stub-Elo gate + Avoid edge_pp fix)
 - [x] **Phase A.3** — confidence band (Elo jackknife ±50, lower-bound Pick gate)
-- [ ] PR 5 — explainer (3 Haiku prompts)
+- [x] **Explainer stub** — templated copy.title/summary/blurb with voice-rule enforcement
+- [ ] PR 5 — explainer Haiku replacement (3 prompts; needs ANTHROPIC_API_KEY)
 - [ ] PR 6 — scheduler + CLI + serve
 
 Trustability progress (Phase A of `THE_DESK_TRUSTABILITY_BRIEF.md`):
