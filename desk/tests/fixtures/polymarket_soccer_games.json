@@ -1,0 +1,4496 @@
+[
+  {
+    "id": "113849",
+    "slug": "aus-syd-auc-2025-12-27-more-markets",
+    "title": "Sydney FC vs. Auckland FC - More Markets",
+    "startDate": "2025-12-20T18:09:06.088508Z",
+    "endDate": "2025-12-27T06:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102765",
+        "label": "Australian A-League",
+        "slug": "australian-a-league",
+        "forceShow": false,
+        "createdAt": "2025-10-22T18:39:18.718673Z",
+        "updatedAt": "2026-04-17T20:56:51.830935Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "119654",
+    "slug": "tur-goz-riz-2026-01-19",
+    "title": "G\u00f6ztepe SK vs. \u00c7aykur Rizespor",
+    "startDate": "2025-12-23T17:36:20.316623Z",
+    "endDate": "2026-01-19T17:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102564",
+        "label": "S\u00fcper Lig",
+        "slug": "tur",
+        "createdAt": "2025-09-04T21:20:53.669409Z",
+        "updatedAt": "2026-04-17T21:08:02.986355Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "155938",
+    "slug": "fr2-fca-clf-2026-01-23-more-markets",
+    "title": "FC Annecy vs. Clermont Foot 63 - More Markets",
+    "startDate": "2026-01-10T21:02:01.376476Z",
+    "endDate": "2026-01-23T19:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102871",
+        "label": "Ligue 2",
+        "slug": "ligue-2",
+        "forceShow": false,
+        "createdAt": "2025-11-18T17:19:51.612883Z",
+        "updatedAt": "2026-04-17T20:14:31.254Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "184164",
+    "slug": "col1-llf-cab-2026-01-24-more-markets",
+    "title": "Llaneros FC vs. CA Bucaramanga - More Markets",
+    "startDate": "2026-01-23T21:28:09.455543Z",
+    "endDate": "2026-01-24T21:10:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "184171",
+    "slug": "chi1-cd1-ohf-2026-02-01-more-markets",
+    "title": "CD Concepci\u00f3n vs. O'Higgins FC - More Markets",
+    "startDate": "2026-01-23T21:28:09.468085Z",
+    "endDate": "2026-02-01T15:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "184193",
+    "slug": "mar1-wac-asf-2026-01-26-more-markets",
+    "title": "Wydad Athletic Club vs. AS FAR - More Markets",
+    "startDate": "2026-01-23T21:31:47.460545Z",
+    "endDate": "2026-01-26T19:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "184194",
+    "slug": "mar1-kaa-ocs-2026-01-26-more-markets",
+    "title": "Kawkab AC vs. OC Safi - More Markets",
+    "startDate": "2026-01-23T21:31:47.461895Z",
+    "endDate": "2026-01-26T17:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "189732",
+    "slug": "es2-ceu-cor-2026-02-08-more-markets",
+    "title": "AD Ceuta FC vs. C\u00f3rdoba CF - More Markets",
+    "startDate": "2026-01-26T20:09:59.984277Z",
+    "endDate": "2026-02-08T15:15:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102866",
+        "label": "La Liga 2",
+        "slug": "la-liga-2",
+        "forceShow": false,
+        "createdAt": "2025-11-18T14:06:33.920854Z",
+        "updatedAt": "2026-04-17T20:57:31.883334Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "202605",
+    "slug": "mls-ner-hou-2026-03-07",
+    "title": "New England Revolution vs. Houston Dynamo",
+    "startDate": "2026-02-08T17:15:23.728874Z",
+    "endDate": "2026-03-07T19:30:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100100",
+        "label": "MLS",
+        "slug": "mls",
+        "updatedAt": "2026-04-15T21:03:59.564806Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "202668",
+    "slug": "mls-ner-hou-2026-03-07-more-markets",
+    "title": "New England Revolution vs. Houston Dynamo - More Markets",
+    "startDate": "2026-02-08T18:05:31.535203Z",
+    "endDate": "2026-03-07T19:30:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100100",
+        "label": "MLS",
+        "slug": "mls",
+        "updatedAt": "2026-04-15T21:03:59.564806Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "226218",
+    "slug": "nor-lil-kbk-2026-03-22",
+    "title": "Lillestr\u00f8m SK vs. Kristiansund BK",
+    "startDate": "2026-02-23T20:52:56.813829Z",
+    "endDate": "2026-03-22T16:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102651",
+        "label": "Norway Eliteserien",
+        "slug": "norway-eliteserien",
+        "forceShow": false,
+        "createdAt": "2025-10-07T15:55:48.552138Z",
+        "updatedAt": "2026-04-17T20:30:49.683622Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "226222",
+    "slug": "nor-bog-ham-2026-03-22",
+    "title": "FK Bod\u00f8/Glimt vs. Hamarkameratene",
+    "startDate": "2026-02-23T20:52:56.789796Z",
+    "endDate": "2026-03-22T18:15:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102651",
+        "label": "Norway Eliteserien",
+        "slug": "norway-eliteserien",
+        "forceShow": false,
+        "createdAt": "2025-10-07T15:55:48.552138Z",
+        "updatedAt": "2026-04-17T20:30:49.683622Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "230298",
+    "slug": "nor-bog-ham-2026-03-22-more-markets",
+    "title": "FK Bod\u00f8/Glimt vs. Hamarkameratene - More Markets",
+    "startDate": "2026-02-25T17:12:56.519094Z",
+    "endDate": "2026-03-22T18:15:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102651",
+        "label": "Norway Eliteserien",
+        "slug": "norway-eliteserien",
+        "forceShow": false,
+        "createdAt": "2025-10-07T15:55:48.552138Z",
+        "updatedAt": "2026-04-17T20:30:49.683622Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "230314",
+    "slug": "nor-lil-kbk-2026-03-22-more-markets",
+    "title": "Lillestr\u00f8m SK vs. Kristiansund BK - More Markets",
+    "startDate": "2026-02-25T17:13:12.05102Z",
+    "endDate": "2026-03-22T16:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102651",
+        "label": "Norway Eliteserien",
+        "slug": "norway-eliteserien",
+        "forceShow": false,
+        "createdAt": "2025-10-07T15:55:48.552138Z",
+        "updatedAt": "2026-04-17T20:30:49.683622Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "233129",
+    "slug": "isp-ddy-ddy-2026-03-13",
+    "title": "Odisha FC vs. Odisha FC",
+    "startDate": "2026-02-26T21:27:23.372247Z",
+    "endDate": "2026-03-13T14:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "233135",
+    "slug": "isp-ddy-jfc-2026-03-19",
+    "title": "Odisha FC vs. Jamshedpur FC",
+    "startDate": "2026-02-26T21:30:31.177033Z",
+    "endDate": "2026-03-19T14:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "233140",
+    "slug": "isp-che-pun-2026-03-22",
+    "title": "Chennaiyin FC vs. Punjab FC",
+    "startDate": "2026-02-26T21:30:31.194743Z",
+    "endDate": "2026-03-22T11:30:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "237722",
+    "slug": "j2100-iwa-ven-2026-03-08",
+    "title": "Iwaki FC vs. Ventforet K\u014dfu",
+    "startDate": "2026-02-28T22:53:44.159556Z",
+    "endDate": "2026-03-08T05:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102770",
+        "label": "Japan J2 League",
+        "slug": "japan-j2-league",
+        "forceShow": false,
+        "createdAt": "2025-10-23T20:06:31.618443Z",
+        "updatedAt": "2026-04-17T21:10:25.241115Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "237882",
+    "slug": "j2100-iwa-ven-2026-03-08-more-markets",
+    "title": "Iwaki FC vs. Ventforet K\u014dfu - More Markets",
+    "startDate": "2026-02-28T23:30:23.201657Z",
+    "endDate": "2026-03-08T05:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102770",
+        "label": "Japan J2 League",
+        "slug": "japan-j2-league",
+        "forceShow": false,
+        "createdAt": "2025-10-23T20:06:31.618443Z",
+        "updatedAt": "2026-04-17T21:10:25.241115Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "253455",
+    "slug": "epl-mac-cry-2026-03-21",
+    "title": "Manchester City FC vs. Crystal Palace FC",
+    "startDate": "2026-03-08T05:09:35.924563Z",
+    "endDate": "2026-03-21T15:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "82",
+        "label": "Premier League",
+        "slug": "premier-league",
+        "forceShow": false,
+        "publishedAt": "2023-11-02 21:17:21.654+00",
+        "createdAt": "2023-11-02T21:17:21.66Z",
+        "updatedAt": "2026-04-17T21:08:02.988086Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "306",
+        "label": "EPL",
+        "slug": "EPL",
+        "forceShow": false,
+        "publishedAt": "2023-11-02 21:53:01.244+00",
+        "createdAt": "2023-11-02T21:53:01.251Z",
+        "updatedAt": "2026-04-17T20:31:50.149157Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "253588",
+    "slug": "epl-mac-cry-2026-03-21-more-markets",
+    "title": "Manchester City FC vs. Crystal Palace FC - More Markets",
+    "startDate": "2026-03-08T06:09:18.793534Z",
+    "endDate": "2026-03-21T15:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "82",
+        "label": "Premier League",
+        "slug": "premier-league",
+        "forceShow": false,
+        "publishedAt": "2023-11-02 21:17:21.654+00",
+        "createdAt": "2023-11-02T21:17:21.66Z",
+        "updatedAt": "2026-04-17T21:08:02.988086Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "306",
+        "label": "EPL",
+        "slug": "EPL",
+        "forceShow": false,
+        "publishedAt": "2023-11-02 21:53:01.244+00",
+        "createdAt": "2023-11-02T21:53:01.251Z",
+        "updatedAt": "2026-04-17T20:31:50.149157Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "257393",
+    "slug": "j2100-gai-rei-2026-04-05",
+    "title": "Gainare Tottori vs. Reilac Shiga",
+    "startDate": "2026-03-09T21:43:24.609269Z",
+    "endDate": "2026-04-05T05:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102770",
+        "label": "Japan J2 League",
+        "slug": "japan-j2-league",
+        "forceShow": false,
+        "createdAt": "2025-10-23T20:06:31.618443Z",
+        "updatedAt": "2026-04-17T21:10:25.241115Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "257397",
+    "slug": "bra2-csc-juv-2026-03-22-more-markets",
+    "title": "Cear\u00e1 SC vs. EC Juventude - More Markets",
+    "startDate": "2026-03-09T21:39:30.479781Z",
+    "endDate": "2026-03-22T19:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "257549",
+    "slug": "j2100-gai-rei-2026-04-05-more-markets",
+    "title": "Gainare Tottori vs. Reilac Shiga - More Markets",
+    "startDate": "2026-03-09T22:23:17.137902Z",
+    "endDate": "2026-04-05T05:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102770",
+        "label": "Japan J2 League",
+        "slug": "japan-j2-league",
+        "forceShow": false,
+        "createdAt": "2025-10-23T20:06:31.618443Z",
+        "updatedAt": "2026-04-17T21:10:25.241115Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "265901",
+    "slug": "spl-sha-ith-2026-04-10",
+    "title": "Al Shabab Saudi Club vs. Al Ittihad Saudi Club",
+    "startDate": "2026-03-13T19:53:27.28332Z",
+    "endDate": "2026-04-10T18:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102650",
+        "label": "Saudi Professional League",
+        "slug": "saudi-professional-league",
+        "forceShow": false,
+        "createdAt": "2025-10-07T15:55:22.66384Z",
+        "updatedAt": "2026-04-17T17:26:43.188791Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "266888",
+    "slug": "spl-sha-ith-2026-04-10-more-markets",
+    "title": "Al Shabab Saudi Club vs. Al Ittihad Saudi Club - More Markets",
+    "startDate": "2026-03-13T23:07:51.563749Z",
+    "endDate": "2026-04-10T18:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102650",
+        "label": "Saudi Professional League",
+        "slug": "saudi-professional-league",
+        "forceShow": false,
+        "createdAt": "2025-10-07T15:55:22.66384Z",
+        "updatedAt": "2026-04-17T17:26:43.188791Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "273055",
+    "slug": "j1100-vis-ngr-2026-04-11-more-markets",
+    "title": "Vissel K\u014dbe vs. Nagoya Grampus - More Markets",
+    "startDate": "2026-03-15T15:49:31.475091Z",
+    "endDate": "2026-04-11T06:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102649",
+        "label": "Japan J League",
+        "slug": "japan-j-league",
+        "forceShow": false,
+        "createdAt": "2025-10-07T15:55:08.70255Z",
+        "updatedAt": "2026-04-17T20:45:14.616591Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "276538",
+    "slug": "mls-sea-rsl-2026-04-12",
+    "title": "Seattle Sounders FC vs. Real Salt Lake",
+    "startDate": "2026-03-16T16:16:09.277407Z",
+    "endDate": "2026-04-13T01:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100100",
+        "label": "MLS",
+        "slug": "mls",
+        "updatedAt": "2026-04-15T21:03:59.564806Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "276707",
+    "slug": "mls-sea-rsl-2026-04-12-more-markets",
+    "title": "Seattle Sounders FC vs. Real Salt Lake - More Markets",
+    "startDate": "2026-03-16T17:05:57.583704Z",
+    "endDate": "2026-04-13T01:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100100",
+        "label": "MLS",
+        "slug": "mls",
+        "updatedAt": "2026-04-15T21:03:59.564806Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "311613",
+    "slug": "el1-pet-man-2026-03-28",
+    "title": "Peterborough United FC vs. Mansfield Town FC",
+    "startDate": "2026-03-26T23:33:50.299146Z",
+    "endDate": "2026-03-28T15:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "104319",
+        "label": "League One",
+        "slug": "soccer-el1",
+        "createdAt": "2026-03-26T22:29:38.181566Z",
+        "updatedAt": "2026-04-17T20:49:04.254618Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "311886",
+    "slug": "fpd-ala-gua-2026-04-01-more-markets",
+    "title": "LD Alajuelense vs. Guadalupe FC - More Markets",
+    "startDate": "2026-03-27T00:25:52.676487Z",
+    "endDate": "2026-04-02T02:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "104318",
+        "label": "Liga Promerica",
+        "slug": "soccer-fpd",
+        "createdAt": "2026-03-26T22:29:37.93472Z",
+        "updatedAt": "2026-04-17T20:48:44.282426Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "311902",
+    "slug": "gtm-aur-mrq-2026-04-15-more-markets",
+    "title": "Aurora FC vs. CD Marquense - More Markets",
+    "startDate": "2026-03-26T23:53:39.796549Z",
+    "endDate": "2026-04-15T21:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "104322",
+        "label": "Liga Nacional Guatemala",
+        "slug": "soccer-gtm",
+        "createdAt": "2026-03-26T22:29:38.797217Z",
+        "updatedAt": "2026-04-17T20:48:44.290495Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "314891",
+    "slug": "mar1-kaa-asf-2026-03-29",
+    "title": "Kawkab AC vs. AS FAR",
+    "startDate": "2026-03-27T19:30:13.303017Z",
+    "endDate": "2026-03-29T14:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "315207",
+    "slug": "isp-ebe-pun-2026-04-24",
+    "title": "East Bengal FC vs. Punjab FC",
+    "startDate": "2026-03-27T20:22:24.699621Z",
+    "endDate": "2026-04-24T14:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "103986",
+        "label": "Indian Super League",
+        "slug": "indian-super-league",
+        "forceShow": false,
+        "createdAt": "2026-02-27T00:02:31.332666Z",
+        "updatedAt": "2026-04-17T20:33:29.999301Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "315239",
+    "slug": "isp-ebe-pun-2026-04-24-more-markets",
+    "title": "East Bengal FC vs. Punjab FC - More Markets",
+    "startDate": "2026-03-27T20:35:46.950337Z",
+    "endDate": "2026-04-24T14:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "103986",
+        "label": "Indian Super League",
+        "slug": "indian-super-league",
+        "forceShow": false,
+        "createdAt": "2026-02-27T00:02:31.332666Z",
+        "updatedAt": "2026-04-17T20:33:29.999301Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "317809",
+    "slug": "lib-cru-cat1-2026-04-15-more-markets",
+    "title": "Cruzeiro EC vs. CD Universidad Cat\u00f3lica - More Markets",
+    "startDate": "2026-03-28T13:13:31.462129Z",
+    "endDate": "2026-04-15T22:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102562",
+        "label": "Copa Libertadores",
+        "slug": "lib",
+        "createdAt": "2025-09-04T21:20:53.669409Z",
+        "updatedAt": "2026-04-17T21:08:23.123282Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "318119",
+    "slug": "sud-car1-idp-2026-04-15-more-markets",
+    "title": "Caracas FC vs. Club Independiente Petrolero - More Markets",
+    "startDate": "2026-03-28T15:13:36.106288Z",
+    "endDate": "2026-04-15T22:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102563",
+        "label": "Copa Sudamericana",
+        "slug": "sud",
+        "createdAt": "2025-09-04T21:20:53.669409Z",
+        "updatedAt": "2026-04-17T20:44:33.687981Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "322263",
+    "slug": "mls-sea-rsl-2026-04-12-halftime-result",
+    "title": "Seattle Sounders FC vs. Real Salt Lake - Halftime Result",
+    "startDate": "2026-03-29T17:40:00.983476Z",
+    "endDate": "2026-04-13T01:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100100",
+        "label": "MLS",
+        "slug": "mls",
+        "updatedAt": "2026-04-15T21:03:59.564806Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "322264",
+    "slug": "mls-sea-rsl-2026-04-12-exact-score",
+    "title": "Seattle Sounders FC vs. Real Salt Lake - Exact Score",
+    "startDate": "2026-03-29T17:49:53.347686Z",
+    "endDate": "2026-04-13T01:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100100",
+        "label": "MLS",
+        "slug": "mls",
+        "updatedAt": "2026-04-15T21:03:59.564806Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "322851",
+    "slug": "isp-mob-kas-2026-04-26",
+    "title": "Mohun Bagan Super Giant vs. Inter Kashi FC",
+    "startDate": "2026-03-29T21:49:58.838811Z",
+    "endDate": "2026-04-26T14:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "103986",
+        "label": "Indian Super League",
+        "slug": "indian-super-league",
+        "forceShow": false,
+        "createdAt": "2026-02-27T00:02:31.332666Z",
+        "updatedAt": "2026-04-17T20:33:29.999301Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "326477",
+    "slug": "isp-mob-kas-2026-04-26-more-markets",
+    "title": "Mohun Bagan Super Giant vs. Inter Kashi FC - More Markets",
+    "startDate": "2026-03-30T20:36:23.94793Z",
+    "endDate": "2026-04-26T14:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "103986",
+        "label": "Indian Super League",
+        "slug": "indian-super-league",
+        "forceShow": false,
+        "createdAt": "2026-02-27T00:02:31.332666Z",
+        "updatedAt": "2026-04-17T20:33:29.999301Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "343674",
+    "slug": "trsk-gal-tra-2026-05-01",
+    "title": "Galatasaray SK vs. Trabzonspor",
+    "startDate": "2026-04-04T16:24:19.224075Z",
+    "endDate": "2026-05-01T17:30:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "104333",
+        "label": "TFF Super Kupa",
+        "slug": "soccer-trsk",
+        "createdAt": "2026-03-26T22:29:42.057731Z",
+        "updatedAt": "2026-04-17T20:15:31.357039Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "345657",
+    "slug": "trsk-gal-tra-2026-05-01-more-markets",
+    "title": "Galatasaray SK vs. Trabzonspor - More Markets",
+    "startDate": "2026-04-05T05:51:30.308939Z",
+    "endDate": "2026-05-01T17:30:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "104333",
+        "label": "TFF Super Kupa",
+        "slug": "soccer-trsk",
+        "createdAt": "2026-03-26T22:29:42.057731Z",
+        "updatedAt": "2026-04-17T20:15:31.357039Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "347868",
+    "slug": "isp-moh-muc-2026-05-03",
+    "title": "Mohammedan SC vs. Mumbai City FC",
+    "startDate": "2026-04-05T20:24:32.073613Z",
+    "endDate": "2026-05-03T11:30:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "103986",
+        "label": "Indian Super League",
+        "slug": "indian-super-league",
+        "forceShow": false,
+        "createdAt": "2026-02-27T00:02:31.332666Z",
+        "updatedAt": "2026-04-17T20:33:29.999301Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "347898",
+    "slug": "isp-moh-muc-2026-05-03-more-markets",
+    "title": "Mohammedan SC vs. Mumbai City FC - More Markets",
+    "startDate": "2026-04-05T20:37:08.56923Z",
+    "endDate": "2026-05-03T11:30:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "103986",
+        "label": "Indian Super League",
+        "slug": "indian-super-league",
+        "forceShow": false,
+        "createdAt": "2026-02-27T00:02:31.332666Z",
+        "updatedAt": "2026-04-17T20:33:29.999301Z",
+        "isCarousel": false,
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351715",
+    "slug": "fifwc-mex-rsa-2026-06-11",
+    "title": "Mexico vs. South Africa",
+    "startDate": "2026-04-06T22:48:47.767995Z",
+    "endDate": "2026-06-11T19:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351716",
+    "slug": "fifwc-kr-cze-2026-06-11",
+    "title": "Korea Republic vs. Czechia",
+    "startDate": "2026-04-06T22:29:59.762389Z",
+    "endDate": "2026-06-12T02:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351717",
+    "slug": "fifwc-can-bih-2026-06-12",
+    "title": "Canada vs. Bosnia and Herzegovina",
+    "startDate": "2026-04-06T22:48:44.921385Z",
+    "endDate": "2026-06-12T19:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351718",
+    "slug": "fifwc-usa-par-2026-06-12",
+    "title": "United States vs. Paraguay",
+    "startDate": "2026-04-06T22:27:03.503961Z",
+    "endDate": "2026-06-13T01:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351719",
+    "slug": "fifwc-qat-che-2026-06-13",
+    "title": "Qatar vs. Switzerland",
+    "startDate": "2026-04-06T22:29:59.792044Z",
+    "endDate": "2026-06-13T19:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351720",
+    "slug": "fifwc-bra-mar-2026-06-13",
+    "title": "Brazil vs. Morocco",
+    "startDate": "2026-04-06T22:27:04.628244Z",
+    "endDate": "2026-06-13T22:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351721",
+    "slug": "fifwc-hai-sco-2026-06-13",
+    "title": "Haiti vs. Scotland",
+    "startDate": "2026-04-06T22:38:23.477997Z",
+    "endDate": "2026-06-14T01:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351722",
+    "slug": "fifwc-aus-tur-2026-06-14",
+    "title": "Australia vs. T\u00fcrkiye",
+    "startDate": "2026-04-06T22:30:00.64125Z",
+    "endDate": "2026-06-14T04:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351723",
+    "slug": "fifwc-ger-kor-2026-06-14",
+    "title": "Germany vs. Cura\u00e7ao",
+    "startDate": "2026-04-06T22:52:30.908306Z",
+    "endDate": "2026-06-14T17:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351724",
+    "slug": "fifwc-nld-jpn-2026-06-14",
+    "title": "Netherlands vs. Japan",
+    "startDate": "2026-04-06T22:46:26.529757Z",
+    "endDate": "2026-06-14T20:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351725",
+    "slug": "fifwc-civ-ecu-2026-06-14",
+    "title": "C\u00f4te d'Ivoire vs. Ecuador",
+    "startDate": "2026-04-06T22:34:39.221031Z",
+    "endDate": "2026-06-14T23:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351726",
+    "slug": "fifwc-swe-tun-2026-06-14",
+    "title": "Sweden vs. Tunisia",
+    "startDate": "2026-04-06T22:27:04.361232Z",
+    "endDate": "2026-06-15T02:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351727",
+    "slug": "fifwc-esp-cvi-2026-06-15",
+    "title": "Spain vs. Cabo Verde",
+    "startDate": "2026-04-06T22:30:00.636492Z",
+    "endDate": "2026-06-15T16:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351728",
+    "slug": "fifwc-bel-egy-2026-06-15",
+    "title": "Belgium vs. Egypt",
+    "startDate": "2026-04-06T22:34:39.427606Z",
+    "endDate": "2026-06-15T19:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351729",
+    "slug": "fifwc-ksa-ury-2026-06-15",
+    "title": "Saudi Arabia vs. Uruguay",
+    "startDate": "2026-04-06T22:44:05.873415Z",
+    "endDate": "2026-06-15T22:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351730",
+    "slug": "fifwc-irn-nzl-2026-06-15",
+    "title": "IR Iran vs. New Zealand",
+    "startDate": "2026-04-06T22:38:23.66336Z",
+    "endDate": "2026-06-16T01:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351731",
+    "slug": "fifwc-fra-sen-2026-06-16",
+    "title": "France vs. Senegal",
+    "startDate": "2026-04-06T22:32:24.186989Z",
+    "endDate": "2026-06-16T19:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351732",
+    "slug": "fifwc-irq-nor-2026-06-16",
+    "title": "Iraq vs. Norway",
+    "startDate": "2026-04-06T22:44:05.935885Z",
+    "endDate": "2026-06-16T22:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351733",
+    "slug": "fifwc-arg-alg-2026-06-16",
+    "title": "Argentina vs. Algeria",
+    "startDate": "2026-04-06T22:38:23.694511Z",
+    "endDate": "2026-06-17T01:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351734",
+    "slug": "fifwc-aut-jor-2026-06-17",
+    "title": "Austria vs. Jordan",
+    "startDate": "2026-04-06T22:46:26.949295Z",
+    "endDate": "2026-06-17T04:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351735",
+    "slug": "fifwc-prt-cdr-2026-06-17",
+    "title": "Portugal vs. DR Congo",
+    "startDate": "2026-04-06T22:32:24.181937Z",
+    "endDate": "2026-06-17T17:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351736",
+    "slug": "fifwc-eng-hrv-2026-06-17",
+    "title": "England vs. Croatia",
+    "startDate": "2026-04-06T22:26:59.112345Z",
+    "endDate": "2026-06-17T20:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351737",
+    "slug": "fifwc-gha-pan-2026-06-17",
+    "title": "Ghana vs. Panama",
+    "startDate": "2026-04-06T22:29:56.521665Z",
+    "endDate": "2026-06-17T23:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351738",
+    "slug": "fifwc-uzb-col-2026-06-17",
+    "title": "Uzbekistan vs. Colombia",
+    "startDate": "2026-04-06T22:46:21.802577Z",
+    "endDate": "2026-06-18T02:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351739",
+    "slug": "fifwc-cze-rsa-2026-06-18",
+    "title": "Czechia vs. South Africa",
+    "startDate": "2026-04-06T22:44:01.187797Z",
+    "endDate": "2026-06-18T16:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351740",
+    "slug": "fifwc-che-bih-2026-06-18",
+    "title": "Switzerland vs. Bosnia and Herzegovina",
+    "startDate": "2026-04-06T22:29:56.518735Z",
+    "endDate": "2026-06-18T19:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351741",
+    "slug": "fifwc-can-qat-2026-06-18",
+    "title": "Canada vs. Qatar",
+    "startDate": "2026-04-06T22:44:01.402269Z",
+    "endDate": "2026-06-18T22:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351742",
+    "slug": "fifwc-mex-kr-2026-06-18",
+    "title": "Mexico vs. Korea Republic",
+    "startDate": "2026-04-06T22:26:59.067661Z",
+    "endDate": "2026-06-19T01:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351743",
+    "slug": "fifwc-usa-aus-2026-06-19",
+    "title": "United States vs. Australia",
+    "startDate": "2026-04-06T22:32:19.164137Z",
+    "endDate": "2026-06-19T19:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351744",
+    "slug": "fifwc-sco-mar-2026-06-19",
+    "title": "Scotland vs. Morocco",
+    "startDate": "2026-04-06T22:32:19.051726Z",
+    "endDate": "2026-06-19T22:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351745",
+    "slug": "fifwc-bra-hai-2026-06-19",
+    "title": "Brazil vs. Haiti",
+    "startDate": "2026-04-06T22:34:39.524095Z",
+    "endDate": "2026-06-20T00:30:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351746",
+    "slug": "fifwc-tur-par-2026-06-19",
+    "title": "T\u00fcrkiye vs. Paraguay",
+    "startDate": "2026-04-06T22:29:56.610251Z",
+    "endDate": "2026-06-20T03:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351747",
+    "slug": "fifwc-nld-swe-2026-06-20",
+    "title": "Netherlands vs. Sweden",
+    "startDate": "2026-04-06T22:48:44.322117Z",
+    "endDate": "2026-06-20T17:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351748",
+    "slug": "fifwc-ger-civ-2026-06-20",
+    "title": "Germany vs. C\u00f4te d'Ivoire",
+    "startDate": "2026-04-06T22:32:19.165413Z",
+    "endDate": "2026-06-20T20:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351749",
+    "slug": "fifwc-ecu-kor-2026-06-20",
+    "title": "Ecuador vs. Cura\u00e7ao",
+    "startDate": "2026-04-06T22:38:17.525199Z",
+    "endDate": "2026-06-21T00:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351750",
+    "slug": "fifwc-tun-jpn-2026-06-21",
+    "title": "Tunisia vs. Japan",
+    "startDate": "2026-04-06T22:44:01.551648Z",
+    "endDate": "2026-06-21T04:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351751",
+    "slug": "fifwc-esp-ksa-2026-06-21",
+    "title": "Spain vs. Saudi Arabia",
+    "startDate": "2026-04-06T22:58:57.895937Z",
+    "endDate": "2026-06-21T16:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351752",
+    "slug": "fifwc-bel-irn-2026-06-21",
+    "title": "Belgium vs. IR Iran",
+    "startDate": "2026-04-06T22:38:17.314213Z",
+    "endDate": "2026-06-21T19:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351753",
+    "slug": "fifwc-ury-cvi-2026-06-21",
+    "title": "Uruguay vs. Cabo Verde",
+    "startDate": "2026-04-06T22:58:58.054693Z",
+    "endDate": "2026-06-21T22:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351754",
+    "slug": "fifwc-nzl-egy-2026-06-21",
+    "title": "New Zealand vs. Egypt",
+    "startDate": "2026-04-06T22:52:25.705436Z",
+    "endDate": "2026-06-22T01:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351755",
+    "slug": "fifwc-arg-aut-2026-06-22",
+    "title": "Argentina vs. Austria",
+    "startDate": "2026-04-06T22:56:15.719893Z",
+    "endDate": "2026-06-22T17:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351756",
+    "slug": "fifwc-fra-irq-2026-06-22",
+    "title": "France vs. Iraq",
+    "startDate": "2026-04-06T22:41:06.833945Z",
+    "endDate": "2026-06-22T21:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351757",
+    "slug": "fifwc-nor-sen-2026-06-22",
+    "title": "Norway vs. Senegal",
+    "startDate": "2026-04-06T22:38:17.401902Z",
+    "endDate": "2026-06-23T00:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351758",
+    "slug": "fifwc-jor-alg-2026-06-22",
+    "title": "Jordan vs. Algeria",
+    "startDate": "2026-04-06T22:38:17.575103Z",
+    "endDate": "2026-06-23T03:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351759",
+    "slug": "fifwc-prt-uzb-2026-06-23",
+    "title": "Portugal vs. Uzbekistan",
+    "startDate": "2026-04-06T22:56:15.950588Z",
+    "endDate": "2026-06-23T17:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351760",
+    "slug": "fifwc-eng-gha-2026-06-23",
+    "title": "England vs. Ghana",
+    "startDate": "2026-04-06T22:29:56.470358Z",
+    "endDate": "2026-06-23T20:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      }
+    ]
+  },
+  {
+    "id": "351761",
+    "slug": "fifwc-pan-hrv-2026-06-23",
+    "title": "Panama vs. Croatia",
+    "startDate": "2026-04-06T22:41:06.837403Z",
+    "endDate": "2026-06-23T23:00:00Z",
+    "active": true,
+    "closed": false,
+    "tags": [
+      {
+        "id": "100350",
+        "label": "Soccer",
+        "slug": "soccer",
+        "forceShow": false,
+        "createdAt": "2024-08-21T16:31:18.953213Z",
+        "updatedAt": "2026-04-17T20:33:09.955379Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "102232",
+        "label": "FIFA World Cup",
+        "slug": "fifa-world-cup",
+        "createdAt": "2025-06-08T02:11:18.665669Z",
+        "updatedAt": "2026-04-17T20:58:26.597292Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "100639",
+        "label": "Games",
+        "slug": "games",
+        "forceShow": false,
+        "createdAt": "2024-09-23T22:41:37.670714Z",
+        "updatedAt": "2026-03-09T22:28:03.358133Z",
+        "requiresTranslation": false
+      },
+      {
+        "id": "1",
+        "label": "Sports",
+        "slug": "sports",
+        "forceShow": false,
+        "publishedAt": "2023-10-24 22:37:50.296+00",
+        "updatedBy": 15,
+        "createdAt": "2023-10-24T22:37:50.31Z",
+        "updatedAt": "2026-04-17T20:47:16.461062Z",
+        "forceHide": true,
+        "requiresTranslation": false
+      }
+    ]
+  }
+]
