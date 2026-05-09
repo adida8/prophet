@@ -10,16 +10,29 @@ and apply the threshold ladder from spec §4 PR 4:
 
 Pick wins ties when more than one branch could fire — it's the only
 state with a CTA, so we take it whenever it's available.
+
+Sanity gates (PR 4.5):
+- Liquidity filter — extreme implied probabilities (≤ 2% or ≥ 98%) on
+  any side force Pass (the venue is signalling "no opinion").
+- Stub-Elo gate — when either team's Elo came from the v1 fixed-default
+  stub rather than a real source, we force Pass. Removed in v1.1 when
+  ClubElo / Wikipedia ingest is wired live.
 """
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
-from typing import Mapping
+from typing import Literal, Mapping
 
 from desk.publish.contract import Verdict, VerdictState
 from desk.verdict.compare import MarketSnapshot, Side, VenuePrice
+from desk.verdict.liquidity import LiquidityRules, is_liquid
 from desk.verdict.thresholds import Thresholds, current as _current_thresholds
+
+log = logging.getLogger("desk.verdict.decide")
+
+EloSource = Literal["wiki", "clubelo", "stub"]
 
 
 @dataclass(frozen=True)
@@ -66,8 +79,25 @@ def decide(
     team_a:         str,
     team_b:         str,
     thresholds:     Thresholds | None = None,
+    elo_sources:    tuple[EloSource, EloSource] | None = None,  # (a, b) — PR 4.5
+    liquidity:      LiquidityRules | None = None,
+    match_id:       str | None = None,        # for logs only
 ) -> Verdict:
     th = thresholds if thresholds is not None else _current_thresholds()
+
+    # ── Sanity gate: stub-Elo (PR 4.5) ─────────────────────────────
+    # Stub Elo is the v1 fixed-default for unknown clubs. Issuing a
+    # confident Pick on top of it is dishonest — the model is just
+    # diffing 1500 vs 1500 against whatever the market is doing.
+    if elo_sources is not None and "stub" in elo_sources:
+        log.debug("forcing Pass: club_elo_stub on %s", match_id or "<unknown>")
+        return Verdict(state=VerdictState.PASS)
+
+    # ── Sanity gate: liquidity (PR 4.5) ────────────────────────────
+    liq = is_liquid(market, sides, liquidity)
+    if not liq.is_liquid:
+        log.debug("forcing Pass: %s on %s", liq.reason, match_id or "<unknown>")
+        return Verdict(state=VerdictState.PASS)
 
     edges = _compute_edges(model_p, market, sides)
     if edges is None:
@@ -89,7 +119,14 @@ def decide(
 
     # ── Avoid ──────────────────────────────────────────────────────
     if all(edges.by_side[s] <= th.avoid_pp for s in sides):
-        return Verdict(state=VerdictState.AVOID)
+        # PR 4.5 §3.2: populate edge_pp on Avoid with the most-negative
+        # edge across all sides — the worst-case "how short is the
+        # market on the most overpriced side" signal.
+        most_negative = min(edges.by_side[s] for s in sides)
+        return Verdict(
+            state=VerdictState.AVOID,
+            edge_pp=round(most_negative, 2),
+        )
 
     # ── Pass (everyone within ±pass_pp) or default ─────────────────
     return Verdict(state=VerdictState.PASS)

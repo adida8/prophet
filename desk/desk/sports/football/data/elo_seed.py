@@ -92,6 +92,22 @@ def club_elo(club_id: str) -> float:
     return CLUB_ELO.get(club_id.lower(), DEFAULT_CLUB_ELO)
 
 
+def national_elo_source(iso3: str) -> str:
+    """Source provenance for the national-Elo lookup.
+
+    Returns "wiki" if the seed table covers this team (real Wikipedia
+    data module value), "stub" if we fell back to the default.
+    PR 4.5: the verdict step refuses to issue Picks when either side
+    is "stub".
+    """
+    return "wiki" if iso3.lower() in NATIONAL_ELO else "stub"
+
+
+def club_elo_source(club_id: str) -> str:
+    """Source provenance for the club-Elo lookup. v1.1 swaps in live ClubElo."""
+    return "clubelo" if club_id.lower() in CLUB_ELO else "stub"
+
+
 # Lowercase ISO3 of nations whose senior teams we treat as
 # altitude-acclimatised. Source: living above ~1500m as standard
 # training environment.

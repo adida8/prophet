@@ -16,8 +16,15 @@ PR ladder per `THE_DESK_SPEC.md` §4 + `THE_DESK_PR_BACKTEST_BRIEF.md`:
 - [x] PR 3 — football model v1 (Elo + host/home + altitude)
 - [x] PR 4 — verdict step + thresholds (end-to-end pipeline)
 - [x] **Backtest harness** — `desk backtest --tournament wc-2022`
+- [x] **PR 4.5** — sanity layer (liquidity + stub-Elo gate + Avoid edge_pp fix)
 - [ ] PR 5 — explainer (3 Haiku prompts)
 - [ ] PR 6 — scheduler + CLI + serve
+
+Live result on PR 4.5: live-engine Pick rate dropped from **62% → 23%**
+(48 → 18 of 78 priced fixtures) — most non-WC fixtures now resolve to
+Pass because their club-Elo is stubbed. Backtest unchanged at 95%
+because all 32 WC nations have real Elo; that remaining gap is what
+Phase B (late-binding features) closes.
 
 ## Run
 
