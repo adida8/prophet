@@ -1,0 +1,123 @@
+"""Football feature builder.
+
+Translates a `FixtureRef` into a `FootballFeatures` row by joining:
+
+  - Elo (international from `data/elo_seed.py`, club ditto — live ingest
+    arrives in v1.1)
+  - Venue resolution + host / altitude lookup (PR 3 data tables)
+  - Altitude-acclimatised flag for international sides
+
+For PR 4, Polymarket's gamma payload doesn't carry per-fixture stadium
+data, so most fixtures end up with `venue_*` fields unpopulated and the
+host / home / altitude bonuses simply don't fire. The model still
+returns useful probabilities — pure-Elo with no venue wash. PR 6 (or a
+3.1 follow-up) will join FIFA's fixture-to-stadium map for WC 2026 to
+unlock those bonuses for the launch wedge.
+"""
+
+from __future__ import annotations
+
+from desk.sport import FixtureRef
+from desk.sports.football.data.elo_seed import (
+    club_elo,
+    is_altitude_acclimatised,
+    national_elo,
+)
+from desk.sports.football.metadata.club import home_ground_of
+from desk.sports.football.metadata.fifa import (
+    host_iso3_for_competition,
+    venue_for_match,
+)
+from desk.sports.football.model import FootballFeatures
+from desk.sports.football.teams import is_international_competition
+
+
+def _team_iso3_from_match_id(match_id: str, *, position: int) -> str | None:
+    """Extract the home or away team slug from a `fb-{comp}-{home}-{away}-{date}`
+    match_id. Useful only for international fixtures, where the slug fragment IS
+    the ISO3 (after Polymarket's overrides have been mapped, e.g. `kr → kor`).
+    """
+    parts = match_id.split("-")
+    # fb · comp · ... · home · away · date — last two before date.
+    if len(parts) < 5:
+        return None
+    return parts[-3] if position == 0 else parts[-2]
+
+
+def _club_id_from_match_id(match_id: str, *, position: int) -> str | None:
+    """A club's `{league}-{short}` ID inside the match_id is two segments
+    that include the league prefix. PR 4 leaves this empty until the
+    fixture-mapping table is wired in a follow-up.
+    """
+    return None  # TODO(PR 4.5): join Polymarket club codes → spec club IDs.
+
+
+def build_features(fx: FixtureRef) -> FootballFeatures:
+    international = is_international_competition(fx.competition_code)
+
+    # ── Elo prior ──────────────────────────────────────────────────
+    if international:
+        a_iso = _team_iso3_from_match_id(fx.match_id, position=0)
+        b_iso = _team_iso3_from_match_id(fx.match_id, position=1)
+        a_elo = national_elo(a_iso) if a_iso else 1500.0
+        b_elo = national_elo(b_iso) if b_iso else 1500.0
+    else:
+        a_id = _club_id_from_match_id(fx.match_id, position=0)
+        b_id = _club_id_from_match_id(fx.match_id, position=1)
+        a_iso = b_iso = None
+        a_elo = club_elo(a_id) if a_id else 1500.0
+        b_elo = club_elo(b_id) if b_id else 1500.0
+
+    # ── Venue + altitude ───────────────────────────────────────────
+    venue_host_iso3:    str | None   = None
+    venue_altitude_m:   float | None = None
+
+    if international:
+        host_set = host_iso3_for_competition(fx.competition_code)
+        if fx.venue_country and fx.venue_country.upper() in {
+            v.country_iso2 for v in (
+                # quick reverse-lookup so we can tolerate either iso2 or iso3 inputs
+                __import__("desk.sports.football.data.wc26_venues", fromlist=["WC26_VENUES"]).WC26_VENUES.values()
+            )
+        }:
+            # The country is one of the host venues; figure its ISO3.
+            from desk.sports.football.data.wc26_venues import WC26_VENUES
+            for v in WC26_VENUES.values():
+                if v.country_iso2 == fx.venue_country.upper():
+                    if v.country_iso3 in host_set:
+                        venue_host_iso3 = v.country_iso3
+                    break
+        if fx.venue_stadium:
+            v = venue_for_match(fx.competition_code, fx.venue_stadium)
+            if v is not None:
+                venue_altitude_m = v.altitude_m
+                if v.country_iso3 in host_set:
+                    venue_host_iso3 = v.country_iso3
+
+    # ── Home grounds (clubs) ──────────────────────────────────────
+    a_home_ground = b_home_ground = None
+    if not international:
+        a_id = _club_id_from_match_id(fx.match_id, position=0)
+        b_id = _club_id_from_match_id(fx.match_id, position=1)
+        if a_id:
+            g = home_ground_of(a_id)
+            if g:
+                a_home_ground = g.stadium
+        if b_id:
+            g = home_ground_of(b_id)
+            if g:
+                b_home_ground = g.stadium
+
+    return FootballFeatures(
+        team_a_name=fx.team_a, team_b_name=fx.team_b,
+        team_a_elo=a_elo,      team_b_elo=b_elo,
+        is_international=international,
+        team_a_iso3=a_iso, team_b_iso3=b_iso,
+        venue_host_iso3=venue_host_iso3,
+        team_a_home_ground=a_home_ground,
+        team_b_home_ground=b_home_ground,
+        venue_stadium=fx.venue_stadium,
+        venue_altitude_m=venue_altitude_m,
+        team_a_altitude_acclimatised=bool(a_iso) and is_altitude_acclimatised(a_iso),
+        team_b_altitude_acclimatised=bool(b_iso) and is_altitude_acclimatised(b_iso),
+    )

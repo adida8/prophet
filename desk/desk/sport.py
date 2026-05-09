@@ -47,9 +47,9 @@ class FixtureRef:
 class Sport(Protocol):
     """Everything a sport package must implement.
 
-    PR 2 only relies on `code`, `short_code`, and `list_fixtures`. The model
-    / voice / market_outcomes hooks are placeholders that PR 3 / PR 5 will
-    fill in.
+    PR 2 added `list_fixtures`. PR 3 added the model. PR 4 adds
+    `list_priced_fixtures` (fixtures paired with their current market
+    snapshots) and `decide` (model output + market → verdict).
     """
 
     code:        str    # registry key, e.g. "football"
@@ -59,6 +59,12 @@ class Sport(Protocol):
     def list_fixtures(self) -> Iterable[FixtureRef]:
         """Return every priced fixture currently known. Should be cheap to
         call repeatedly — implementations cache and de-duplicate.
+        """
+        ...
+
+    def list_priced_fixtures(self) -> Iterable[tuple[FixtureRef, "object"]]:
+        """Return (fixture, MarketSnapshot) pairs. The runner uses this
+        to drive the model + verdict pipeline in a single pass.
         """
         ...
 
