@@ -1,80 +1,247 @@
-# Prophet-MVP-v1
+# Prophet · Ledger · The Desk
 
-Autonomous paper-trading bot for the **Kalshi Demo** prediction-market API, with a live React dashboard.
+This repo carries three discrete products. They share a Python + React
+stack but are independent — each can run, deploy, and ship without the
+others.
 
-## Quick Start
+| Product | What it is | Lives at | Status |
+|---|---|---|---|
+| **Prophet** | Paper-trading bot for prediction markets, plus the platform's market data engine and React dashboard | `prophet/` (or repo root for legacy code), `frontend/` | shipping; deployed to Railway |
+| **Ledger** | Connected portfolio tracker for Polymarket (Kalshi in Phase 1). Paste-a-wallet viewer at `/ledger`. | `ledger/`, `frontend/src/ledger/` | Phase 0 shipped; live on Railway |
+| **The Desk** | Verdict engine that evaluates every priced football match (WC 2026 launch wedge → club football right after) | `desk/` | PRs 1–4 landed; PR 5 (explainer) and PR 6 (scheduler/CLI) outstanding |
+
+Build specs live alongside the code:
+
+- `THE_DESK_SPEC.md` — six-PR build plan for The Desk
+- `ledger-phase-0-brief.md` — Phase 0 brief for Ledger
+- `Odds Primer Design System/` — voice, palette, type, components
+- `branding/bars-locked-v2.html` — locked logo (Source Serif 4 wordmark + bars glyph)
+
+## Deploy
+
+Default branch: **`init/project-setup`** — Railway watches it and deploys on every push. Live URL: `https://web-production-9e0f9.up.railway.app/`.
+
+PRs land into `init/project-setup`. There's no separate staging environment yet. Build pipeline: `railpack.json` runs `npm install` + `vite build` for the frontend, then `python main.py --dashboard --port $PORT` as the start command.
+
+---
+
+## Prophet — paper-trading bot + market data platform
+
+Autonomous paper-trader for the **Kalshi Demo** API plus a market data scheduler that pulls Kalshi + Polymarket and matches them for arb / movers. Records simulated trades to CSV; **never** calls the Kalshi order API.
+
+### Quick start
 
 ```bash
-# Backend
-cd prophet/
-cp .env.example .env          # fill in KALSHI_API_KEY + KALSHI_PRIVATE_KEY_PATH
+cp .env.example .env          # fill KALSHI_API_KEY + KALSHI_PRIVATE_KEY_PATH
 pip install -r requirements.txt
 
-# Frontend
-cd frontend/
-npm install
-npm run build                  # outputs to frontend/dist/
+cd frontend && npm install && npm run build && cd ..
 
-# Run (headless)
-cd ..
-python main.py
-
-# Run with live dashboard on http://localhost:8000
-python main.py --dashboard
+python main.py                # data platform + dashboard on :8000
+python main.py --paper-trade  # also run the paper-trading loop
 ```
 
-For frontend dev with hot-reload, run `npm run dev` in `frontend/` (port 5173) while the backend runs on 8000.
+For frontend dev with hot-reload: `cd frontend && npm run dev` (port 5173) while the backend runs on 8000.
 
-## Architecture
+### Layout
 
 ```
-prophet/
-├── main.py              # Entry point — orchestrates everything
-├── config.py            # Env vars, constants, ticker watch-list
-├── server.py            # FastAPI dashboard server (REST + WS broadcast)
-├── risk_manager.py      # Kelly Criterion position sizing (2% hard cap)
-├── core/
-│   ├── auth.py          # RSA-PSS / SHA-256 request signing
-│   ├── client.py        # Async HTTP (httpx) + WebSocket (websockets) client
-│   └── logger.py        # CSV trade logger + P&L summary
-├── strategies/
-│   ├── base.py          # Abstract Strategy class + Signal dataclass
-│   └── simple_arb.py    # Yes/No imbalance detection strategy
-├── frontend/            # Vite + React dashboard
-│   └── src/App.jsx      # Single-file dashboard (recharts, lucide-react)
-└── data/
-    └── portfolio.csv    # Simulated trade log (auto-created)
+main.py                  # Entry point — orchestrates scheduler + server (+ ledger refresh)
+config.py                # Env vars, constants, ticker watch-list
+server.py                # FastAPI server (REST + WS broadcast + SPA fallback)
+scheduler.py             # Polymarket + Kalshi fetch loop (30s default)
+risk_manager.py          # Kelly Criterion position sizing (2% hard cap)
+core/                    # Auth (RSA-PSS), HTTP/WS client, CSV logger
+strategies/              # Strategy ABC + simple_arb
+frontend/                # Vite + React dashboard (recharts, lucide-react)
+data/portfolio.csv       # Simulated trade log
+data/prophet.db          # Market data snapshot store
 ```
 
-## Key Design Decisions
+### Key design decisions
 
-- **No real trades.** The bot only records simulated trades to CSV. It never calls the Kalshi order API.
+- **No real trades.** Simulated only.
 - **Demo environment only.** All URLs point to `demo-api.kalshi.co`.
-- **0.8% fee** is applied on every entry. The strategy's edge calculation accounts for round-trip fees.
-- **Half-Kelly sizing** with a hard 2% cap per trade keeps drawdowns small.
-- **WebSocket reconnect** — the Kalshi stream auto-reconnects on disconnect with a 5s backoff.
-- **Dashboard is optional** — `python main.py` runs headless; add `--dashboard` for the browser UI.
+- **Half-Kelly** with a hard 2% cap per trade.
+- **WebSocket reconnect** — Kalshi stream auto-reconnects on 5s backoff.
 
-## Adding a New Strategy
-
-1. Create a file in `strategies/`, e.g. `strategies/momentum.py`
-2. Subclass `Strategy` from `strategies/base.py`
-3. Implement `name` (property) and `evaluate(tick) -> Signal | None`
-4. Import and wire it in `main.py` (swap or combine with `SimpleArbStrategy`)
-
-## Environment Variables
+### Environment variables
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `KALSHI_API_KEY` | — | Your Kalshi API key |
-| `KALSHI_PRIVATE_KEY_PATH` | `./kalshi_private_key.pem` | Path to RSA private key |
+| `KALSHI_API_KEY` | — | Kalshi API key |
+| `KALSHI_PRIVATE_KEY_PATH` | `./kalshi_private_key.pem` | RSA private key path |
 | `STARTING_BALANCE` | `10000` | Simulated starting capital |
-| `MAX_BET_PCT` | `0.02` | Hard cap: max 2% of balance per trade |
+| `MAX_BET_PCT` | `0.02` | Max 2% of balance per trade |
 | `TRADING_FEE_PCT` | `0.008` | 0.8% fee per trade |
 
-## Tech Stack
+---
 
-**Backend:** Python 3.11+, httpx, websockets, cryptography, pandas, FastAPI, uvicorn
-**Frontend:** React 19, Vite, Recharts, Lucide React
+## Ledger — Polymarket portfolio viewer (Phase 0)
 
-When I say "save session", "snapshot", "load context", or "sync memory", read and follow ~/Google Drive/My Drive/Claude/memory/session-snapshot-SKILL.md
+Sister product under the Odds Primer masthead. Paste a `0x…` wallet at `/ledger` → see open + closed positions and a cumulative P&L chart, all server-side persisted in `data/ledger.db`. Free, no auth.
+
+### Layout
+
+```
+ledger/
+├── README.md            # architecture + Phase 1 path
+├── db.py                # aiosqlite — wallets / snapshots / positions
+├── polymarket.py        # async client for data-api.polymarket.com
+├── service.py           # refresh + view-model build + history
+├── router.py            # /api/ledger/* mounted by server.py
+└── refresh_loop.py      # 15-min background refresh
+
+frontend/src/ledger/     # path-routed at /ledger and /ledger/{addr}
+├── LedgerApp.jsx
+├── Masthead.jsx         # locked Odds Primer wordmark + edition strip
+└── ...                  # uses op-tokens.css (verbatim copy of design system)
+```
+
+### API
+
+| Method | Path | Returns |
+|---|---|---|
+| `POST` | `/api/ledger/wallet/refresh` | View model after a forced refresh |
+| `GET`  | `/api/ledger/wallet/{address}` | View model (cached < 5min) |
+| `GET`  | `/api/ledger/wallet/{address}/history` | Snapshot time-series |
+
+See `ledger/README.md` for the full data flow + the path to add Kalshi in Phase 1.
+
+---
+
+## The Desk — verdict engine
+
+Engine that evaluates **every priced football match** (not just WC 2026). For each match it produces a `verdict.json` (Pick / Pass / Avoid) + three rendered editorial strings (title / summary / blurb). Faktor's site is the only consumer; it reads only the CDN-fronted JSON contract.
+
+Six-step pipeline, each independently replaceable:
+**Ingest → Features → Model → Verdict → Explainer → Publish.**
+
+### PR ladder (per `THE_DESK_SPEC.md` §4)
+
+- ✅ PR 1 — output contract + static-file publisher
+- ✅ PR 2 — fixture ingest + match identity (Polymarket gamma → 78 priced fixtures)
+- ✅ PR 3 — football model v1 (Elo + host + home + altitude)
+- ✅ PR 4 — verdict step + thresholds (end-to-end pipeline)
+- ⬜ PR 5 — explainer (3 Haiku prompts; voice rules enforced)
+- ⬜ PR 6 — scheduler + CLI + serve
+
+### Quick start
+
+```bash
+cd desk
+python -m pip install -e ".[dev]"
+pytest                          # 77 tests, all green
+
+python -m desk sports           # list registered sports
+python -m desk run --once       # full pipeline → data/output/football/*.json
+python -m desk match fb-wc26-fra-mex-20260612
+```
+
+### Layout
+
+```
+desk/
+├── pyproject.toml
+├── desk/
+│   ├── config.py                     # env + thresholds + paths
+│   ├── sport.py                      # Sport ABC + FixtureRef
+│   ├── ingest/                       # SOURCE-AGNOSTIC ingest
+│   │   ├── base.py                   # Source ABC + auto-registry (used by v2 admin)
+│   │   ├── polymarket.py             # gamma client (live)
+│   │   ├── polymarket_prices.py      # gamma → MarketSnapshot
+│   │   └── kalshi*.py                # stubs; v1.1 wires live
+│   ├── verdict/
+│   │   ├── thresholds.py             # 3.0 / 1.0 / -2.0 pp; .env override
+│   │   ├── compare.py                # MarketSnapshot.best_for(side)
+│   │   └── decide.py                 # Pick / Pass / Avoid
+│   ├── publish/
+│   │   ├── contract.py               # Pydantic v2 — single source of truth
+│   │   ├── writer.py                 # atomic per-match + index.json
+│   │   └── etag.py                   # SHA-256 of canonical JSON
+│   ├── sports/
+│   │   ├── __init__.py               # SPORT_REGISTRY (football only in v1)
+│   │   └── football/
+│   │       ├── sport.py              # FootballSport(Sport)
+│   │       ├── fixtures.py           # Polymarket → FixtureRef
+│   │       ├── priced.py             # (FixtureRef, MarketSnapshot) pairs
+│   │       ├── features_builder.py   # FixtureRef → FootballFeatures
+│   │       ├── model.py              # Elo + host + home + altitude
+│   │       ├── teams.py              # team-id system + competition map
+│   │       ├── data/                 # Elo seed, WC26 venues, club grounds
+│   │       ├── ingest/               # Elo intl/club readers (v1: seed)
+│   │       └── metadata/             # FIFA + club adapters
+│   ├── runner.py                     # run_once() — full pipeline
+│   ├── cli.py                        # `desk run / sports / match / replay`
+│   └── contract.schema.json          # generated; in-sync test enforces
+├── tests/                            # 77 green
+└── data/output/football/              # per-match JSON + index.json
+```
+
+### Sport boundary (non-negotiable)
+
+Anything sport-specific lives under `desk/sports/{sport}/`. Anything sport-agnostic (`verdict/`, `publish/`, `runner.py`, `scheduler.py`, `cli.py`) **never** imports from a sport package — only through the `Sport` Protocol. Adding tennis later = a new package, not a refactor.
+
+### Match-id format
+
+`{sport_short}-{competition}-{team_a}-{team_b}-{yyyymmdd}` — e.g.
+
+- `fb-wc26-fra-mex-20260612` (national: ISO3 lowercase)
+- `fb-epl-mun-liv-20260815` (clubs: `{league}-{short}`)
+- `fb-ucl-bay-psg-20260506`
+
+### Verdict thresholds (locked, env-overridable)
+
+| State | Rule |
+|---|---|
+| Pick | `model_p − best_market_p ≥ 3.0pp` for some side |
+| Pass | every side: `\|model_p − best_market_p\| < 1.0pp` |
+| Avoid | every side: `model_p − best_market_p ≤ −2.0pp` |
+
+Override via `DESK_PICK_PP` / `DESK_PASS_PP` / `DESK_AVOID_PP` in `.env`.
+
+### Output contract (what Faktor consumes)
+
+Schema lives in `desk/contract.schema.json`. Sample:
+
+```json
+{
+  "match_id": "fb-wc26-fra-mex-20260612",
+  "sport": "football",
+  "competition": { "code": "wc26", "label": "FIFA World Cup 2026", "stage": "group_d" },
+  "kickoff_utc": "2026-06-12T19:00:00Z",
+  "team_a": "France",
+  "team_b": "Mexico",
+  "venue": { "city": "Guadalajara", "stadium": "Estadio Akron", "country": "MX" },
+  "market_outcomes": ["a", "draw", "b"],
+  "verdict": {
+    "state": "pick",
+    "side": "France",
+    "market_venue": "polymarket",
+    "price": "-180",
+    "edge_pp": 4.2
+  },
+  "copy": { "title": "...", "summary": "...", "blurb": "...", "citations": [...] },
+  "updated_at": "2026-06-12T17:00:00Z"
+}
+```
+
+Internals (`p_a/p_draw/p_b`, drivers, raw market prices) **stay inside The Desk**. Adding a contract field requires an ADR.
+
+---
+
+## Tech stack
+
+**Backend** Python 3.11+, httpx, websockets, cryptography, pandas, FastAPI, uvicorn, Pydantic v2, aiosqlite, APScheduler (PR 6+), Anthropic SDK (PR 5+).
+
+**Frontend** React 19, Vite, Recharts, Lucide React. The Ledger uses the Odds Primer Design System (`Odds Primer Design System/`) — Source Serif 4, Inter Tight, JetBrains Mono. The Prophet dashboard still uses its older dark-theme tokens.
+
+---
+
+## Conventions
+
+- **Branch off `init/project-setup`** for every PR. Default branch is the deploy target.
+- **`init` branch is production.** No separate staging yet. Don't push directly; open a PR.
+- **Never commit `data/*.db`.** Already in `.gitignore`.
+- **VS Code git/PR extension auto-stages files.** If `git status` shows surprise staged content, run `git reset` (touches no files) before committing.
+- When you say "save session", "snapshot", "load context", or "sync memory", follow `~/Google Drive/My Drive/Claude/memory/session-snapshot-SKILL.md`.
