@@ -8,11 +8,12 @@ others.
 |---|---|---|---|
 | **Prophet** | Paper-trading bot for prediction markets, plus the platform's market data engine and React dashboard | `prophet/` (or repo root for legacy code), `frontend/` | shipping; deployed to Railway |
 | **Ledger** | Connected portfolio tracker for Polymarket (Kalshi in Phase 1). Paste-a-wallet viewer at `/ledger`. | `ledger/`, `frontend/src/ledger/` | Phase 0 shipped; live on Railway |
-| **The Desk** | Verdict engine that evaluates every priced football match (WC 2026 launch wedge → club football right after) | `desk/` | PRs 1–4 landed; PR 5 (explainer) and PR 6 (scheduler/CLI) outstanding |
+| **The Desk** | Verdict engine that evaluates every priced football match (WC 2026 launch wedge → club football right after) | `desk/` | PRs 1–4 + backtest harness landed; PR 5 (explainer) and PR 6 (scheduler/CLI) outstanding |
 
 Build specs live alongside the code:
 
 - `THE_DESK_SPEC.md` — six-PR build plan for The Desk
+- `THE_DESK_PR_BACKTEST_BRIEF.md` — backtest harness brief (shipped)
 - `ledger-phase-0-brief.md` — Phase 0 brief for Ledger
 - `Odds Primer Design System/` — voice, palette, type, components
 - `branding/bars-locked-v2.html` — locked logo (Source Serif 4 wordmark + bars glyph)
@@ -117,25 +118,59 @@ Engine that evaluates **every priced football match** (not just WC 2026). For ea
 Six-step pipeline, each independently replaceable:
 **Ingest → Features → Model → Verdict → Explainer → Publish.**
 
-### PR ladder (per `THE_DESK_SPEC.md` §4)
+### PR ladder (per `THE_DESK_SPEC.md` §4 + backtest brief)
 
 - ✅ PR 1 — output contract + static-file publisher
 - ✅ PR 2 — fixture ingest + match identity (Polymarket gamma → 78 priced fixtures)
 - ✅ PR 3 — football model v1 (Elo + host + home + altitude)
 - ✅ PR 4 — verdict step + thresholds (end-to-end pipeline)
+- ✅ Backtest harness — `desk backtest --tournament wc-2022` + summary dashboard
 - ⬜ PR 5 — explainer (3 Haiku prompts; voice rules enforced)
 - ⬜ PR 6 — scheduler + CLI + serve
+
+### Backtest
+
+```bash
+cd desk && PYTHONPATH=. python3 -m desk backtest --tournament wc-2022
+```
+
+Replays the engine across a frozen historical sample, writes:
+
+- `desk_backtest.xlsx` — Snapshots + Match Universe rebuilt from real
+  inputs. Brier and verdict-resolution formulas auto-recompute when
+  Excel opens the file.
+- `desk_backtest_dashboard.html` — KPI strip, **coloured headline summary**
+  (calibration / selection / bottom-line cards, green/amber/red), reliability
+  bins, match table — all regenerated each run.
+
+Both are exposed by the FastAPI server in production:
+
+- **Dashboard:** https://web-production-9e0f9.up.railway.app/backtest
+- **Workbook:** https://web-production-9e0f9.up.railway.app/backtest.xlsx
+
+Server routes are registered before the SPA fallback so they take
+precedence over the React app's catch-all.
+
+Critical invariant: `desk/backtest/replay.py` never imports from
+`desk/sports/football/ingest/` — guarantees no run leaks today's data
+into a 2022 fixture. Asserted by a test that scans the source for
+forbidden import prefixes.
+
+To refresh what Railway serves: re-run the backtest locally, commit
+the regenerated `desk_backtest_*.{xlsx,html}` files, push to
+`init/project-setup`. Railway redeploys on every push.
 
 ### Quick start
 
 ```bash
 cd desk
 python -m pip install -e ".[dev]"
-pytest                          # 77 tests, all green
+pytest                          # 101 tests, all green
 
-python -m desk sports           # list registered sports
-python -m desk run --once       # full pipeline → data/output/football/*.json
+python -m desk sports                       # list registered sports
+python -m desk run --once                   # live pipeline → data/output/football/*.json
 python -m desk match fb-wc26-fra-mex-20260612
+python -m desk backtest --tournament wc-2022 # historical replay → workbook + dashboard
 ```
 
 ### Layout
@@ -171,11 +206,19 @@ desk/
 │   │       ├── data/                 # Elo seed, WC26 venues, club grounds
 │   │       ├── ingest/               # Elo intl/club readers (v1: seed)
 │   │       └── metadata/             # FIFA + club adapters
-│   ├── runner.py                     # run_once() — full pipeline
-│   ├── cli.py                        # `desk run / sports / match / replay`
+│   ├── backtest/                     # READ-ONLY side workflow
+│   │   ├── tournaments.py            # WC 2022 + future tournaments
+│   │   ├── historical/               # Elo / markets / results loaders
+│   │   ├── replay.py                 # SnapshotRow + replay_match (no live ingest!)
+│   │   ├── writers/                  # xlsx + dashboard regenerators
+│   │   └── runner.py                 # run_backtest() orchestrator
+│   ├── runner.py                     # run_once() — full live pipeline
+│   ├── cli.py                        # `desk run / sports / match / backtest / replay`
 │   └── contract.schema.json          # generated; in-sync test enforces
-├── tests/                            # 77 green
-└── data/output/football/              # per-match JSON + index.json
+├── tests/                            # 101 green
+└── data/
+    ├── output/football/              # live per-match JSON + index.json
+    └── backtest/                     # frozen Elo snapshots + manual CSVs
 ```
 
 ### Sport boundary (non-negotiable)
