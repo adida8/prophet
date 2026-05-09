@@ -100,6 +100,17 @@ class ModelOutput:
     # Mirror of the input flags so callers don't have to re-thread them.
     team_a_elo_source: str = "wiki"
     team_b_elo_source: str = "wiki"
+    # Confidence band — 5th/95th percentile across an Elo-jackknife grid
+    # (Phase A.3 of the trustability brief). Forces the engine to be
+    # honest about what it doesn't know: if the Elo prior is shaky, the
+    # band widens and the verdict step's lower-bound check rejects the
+    # Pick.
+    p_a_lower:    float = 0.0
+    p_a_upper:    float = 1.0
+    p_draw_lower: float = 0.0
+    p_draw_upper: float = 1.0
+    p_b_lower:    float = 0.0
+    p_b_upper:    float = 1.0
 
 
 # ── Public entry point ──────────────────────────────────────────────────
@@ -153,10 +164,80 @@ def compute(features: FootballFeatures) -> ModelOutput:
     s = p_a + p_draw + p_b
     p_a, p_draw, p_b = p_a / s, p_draw / s, p_b / s
 
+    # ── Confidence band (Phase A.3) ────────────────────────────────
+    # Jackknife the Elo prior across ±50 of each side's input. We use
+    # the *base* Elo (pre-adjustment) so the perturbation doesn't
+    # double-count host / home / altitude bonuses, then re-apply them.
+    p_a_lo, p_a_hi, pd_lo, pd_hi, p_b_lo, p_b_hi = _confidence_band(
+        features=features, base_elo_a=features.team_a_elo, base_elo_b=features.team_b_elo,
+        elo_a_adj=elo_a, elo_b_adj=elo_b,
+    )
+
     return ModelOutput(
         p_a=p_a, p_draw=p_draw, p_b=p_b,
         elo_a_adj=elo_a, elo_b_adj=elo_b,
         drivers=tuple(drivers),
         team_a_elo_source=features.team_a_elo_source,
         team_b_elo_source=features.team_b_elo_source,
+        p_a_lower=p_a_lo, p_a_upper=p_a_hi,
+        p_draw_lower=pd_lo, p_draw_upper=pd_hi,
+        p_b_lower=p_b_lo, p_b_upper=p_b_hi,
+    )
+
+
+# ── Confidence-band helper ─────────────────────────────────────────────
+
+ELO_JACKKNIFE_GRID = (-50.0, -25.0, 0.0, 25.0, 50.0)
+
+
+def _probs_from_elos(elo_a: float, elo_b: float) -> tuple[float, float, float]:
+    """Pure-maths probability triplet for adjusted Elo, no bonuses."""
+    diff = elo_a - elo_b
+    expected_a = 1.0 / (1.0 + math.pow(10.0, -diff / 400.0))
+    p_draw = max(DRAW_FLOOR, DRAW_PEAK - DRAW_DECAY_PER_ELO * abs(diff))
+    win_share = 1.0 - p_draw
+    p_a = expected_a * win_share
+    p_b = (1.0 - expected_a) * win_share
+    s = p_a + p_draw + p_b
+    return (p_a / s, p_draw / s, p_b / s)
+
+
+def _confidence_band(
+    *,
+    features: "FootballFeatures",
+    base_elo_a: float,
+    base_elo_b: float,
+    elo_a_adj: float,
+    elo_b_adj: float,
+) -> tuple[float, float, float, float, float, float]:
+    """Return (p_a_lo, p_a_hi, pd_lo, pd_hi, p_b_lo, p_b_hi).
+
+    Method: perturb each side's *base* Elo across ±50 in 5 steps; for
+    every (delta_a, delta_b) pair on the grid (25 combinations), compute
+    the model's probabilities; take min/max per side.
+
+    Perturbing the *base* Elo (not the adjusted) preserves the host /
+    home / altitude bonuses — those reflect deterministic facts about
+    the venue, not uncertainty in the team prior.
+    """
+    bonus_a = elo_a_adj - base_elo_a
+    bonus_b = elo_b_adj - base_elo_b
+
+    p_a_samples: list[float] = []
+    p_d_samples: list[float] = []
+    p_b_samples: list[float] = []
+    for da in ELO_JACKKNIFE_GRID:
+        for db in ELO_JACKKNIFE_GRID:
+            pa, pd, pb = _probs_from_elos(
+                base_elo_a + da + bonus_a,
+                base_elo_b + db + bonus_b,
+            )
+            p_a_samples.append(pa)
+            p_d_samples.append(pd)
+            p_b_samples.append(pb)
+
+    return (
+        min(p_a_samples), max(p_a_samples),
+        min(p_d_samples), max(p_d_samples),
+        min(p_b_samples), max(p_b_samples),
     )

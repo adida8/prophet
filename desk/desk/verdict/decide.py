@@ -82,7 +82,16 @@ def decide(
     elo_sources:    tuple[EloSource, EloSource] | None = None,  # (a, b) — PR 4.5
     liquidity:      LiquidityRules | None = None,
     match_id:       str | None = None,        # for logs only
+    model_p_lower:  Mapping[Side, float] | None = None,         # Phase A.3
 ) -> Verdict:
+    """Apply the Pick / Pass / Avoid ladder.
+
+    Phase A.3 (confidence-band gate): if `model_p_lower` is supplied,
+    a Pick fires only when the *lower bound* of the model's probability
+    clears the threshold against the market — not just the point
+    estimate. Forces the engine to be conservative when the Elo prior
+    is uncertain.
+    """
     th = thresholds if thresholds is not None else _current_thresholds()
 
     # ── Sanity gate: stub-Elo (PR 4.5) ─────────────────────────────
@@ -105,7 +114,19 @@ def decide(
         return Verdict(state=VerdictState.PASS)
 
     # ── Pick ───────────────────────────────────────────────────────
-    pick_candidates = [(s, edges.by_side[s]) for s in sides if edges.by_side[s] >= th.pick_pp]
+    # Phase A.3: when a lower-bound band is provided, a Pick fires only
+    # when the lower bound — not the point estimate — clears the
+    # threshold. This is the "honest about uncertainty" gate: shaky Elo
+    # produces a wide band, and a wide band fails the lower-bound test.
+    if model_p_lower is not None:
+        pick_candidates = [
+            (s, edges.by_side[s])
+            for s in sides
+            if (model_p_lower[s] - edges.best_venues[s].implied_p) * 100.0 >= th.pick_pp
+        ]
+    else:
+        pick_candidates = [(s, edges.by_side[s]) for s in sides if edges.by_side[s] >= th.pick_pp]
+
     if pick_candidates:
         side, edge_pp = max(pick_candidates, key=lambda kv: kv[1])
         bv = edges.best_venues[side]

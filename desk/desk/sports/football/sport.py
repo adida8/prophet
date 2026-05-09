@@ -65,6 +65,7 @@ class FootballSport:
         out = compute_model(features)
         return decide_verdict(
             model_p={"a": out.p_a, "draw": out.p_draw, "b": out.p_b},
+            model_p_lower={"a": out.p_a_lower, "draw": out.p_draw_lower, "b": out.p_b_lower},
             market=snapshot,
             sides=MARKET_OUTCOMES_3WAY,
             team_a=fx.team_a,

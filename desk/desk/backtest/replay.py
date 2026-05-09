@@ -197,6 +197,11 @@ def replay_match(
 
     verdict = decide_verdict(
         model_p={"a": model_out.p_a, "draw": model_out.p_draw, "b": model_out.p_b},
+        model_p_lower={
+            "a":    model_out.p_a_lower,
+            "draw": model_out.p_draw_lower,
+            "b":    model_out.p_b_lower,
+        },
         market=market,
         sides=("a", "draw", "b"),
         elo_sources=(src_a, src_b),  # type: ignore[arg-type]
