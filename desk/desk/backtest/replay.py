@@ -196,6 +196,10 @@ def replay_match(
     model_out = compute_model(features)
     market = _market_snapshot_from_close(match)
 
+    # Backtest never drives a live CTA, but the contract requires a Pick
+    # to carry a market_url. Pass a synthetic placeholder so the
+    # algorithmic path produces the same verdicts it always did — this
+    # URL is never written to disk for backtest output.
     verdict = decide_verdict(
         model_p={"a": model_out.p_a, "draw": model_out.p_draw, "b": model_out.p_b},
         model_p_lower={
@@ -210,6 +214,7 @@ def replay_match(
         team_a=match.team_a,
         team_b=match.team_b,
         thresholds=th,
+        market_url=f"https://polymarket.com/event/{match.match_id}",
     )
 
     is_ko = window == "KO"

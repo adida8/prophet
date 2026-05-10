@@ -11,11 +11,15 @@ import ArbitragePanel  from './components/ArbitragePanel';
 import PlatformCards   from './components/PlatformCards';
 import CTABanner       from './components/CTABanner';
 import LedgerApp       from './ledger/LedgerApp';
+import DeskApp         from './desk/DeskApp';
 
 export default function App() {
-  // Path-based routing — Ledger lives at /ledger and /ledger/0x…
+  // Path-based routing — sub-products live at their own roots.
   if (typeof window !== 'undefined' && window.location.pathname.startsWith('/ledger')) {
     return <LedgerApp />;
+  }
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/desk')) {
+    return <DeskApp />;
   }
 
   const { compared, arbitrage, movers, stats, platforms, ticker, loading, connected } = useMarketData();

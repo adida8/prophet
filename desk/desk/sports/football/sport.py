@@ -31,6 +31,29 @@ from desk.verdict.decide import decide as decide_verdict
 log = logging.getLogger("desk.sports.football")
 
 
+def _market_url_for_fixture(fx: FixtureRef) -> str | None:
+    """Build the venue-side deep link from the source slug.
+
+    Polymarket events resolve at `https://polymarket.com/event/{slug}`,
+    where `slug` is e.g. `fifwc-fra-mex-2026-06-12`. We strip the
+    optional `-more-markets` suffix Polymarket sometimes appends, then
+    front it with the canonical event URL.
+
+    Returns None when we can't construct a clean URL — caller decides
+    whether that downgrades a Pick to a Pass (see decide()).
+    """
+    slug = (fx.source_event_slug or "").strip().lower()
+    if not slug:
+        return None
+    if slug.endswith("-more-markets"):
+        slug = slug[: -len("-more-markets")]
+    if (fx.source_venue or "").lower() == "polymarket":
+        return f"https://polymarket.com/event/{slug}"
+    # Kalshi (and future venues) plug in here when their slug + URL
+    # pattern is known. Until then we don't fabricate a URL.
+    return None
+
+
 def _run_async(coro):
     """Sync wrapper that's safe inside or outside an existing loop."""
     try:
@@ -81,6 +104,7 @@ class FootballSport:
         """
         features = build_features(fx)
         out = compute_model(features)
+        market_url = _market_url_for_fixture(fx)
         verdict = decide_verdict(
             model_p={"a": out.p_a, "draw": out.p_draw, "b": out.p_b},
             model_p_lower={"a": out.p_a_lower, "draw": out.p_draw_lower, "b": out.p_b_lower},
@@ -90,6 +114,7 @@ class FootballSport:
             team_b=fx.team_b,
             elo_sources=(out.team_a_elo_source, out.team_b_elo_source),  # type: ignore[arg-type]
             match_id=fx.match_id,
+            market_url=market_url,
         )
 
         market_p = {

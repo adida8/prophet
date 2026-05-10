@@ -73,10 +73,16 @@ class Venue(BaseModel):
 class Verdict(BaseModel):
     """The call.
 
-    Pick:  side / market_venue / price / edge_pp all populated. side is the
-           team **name** (e.g. "France") or "draw" — never "team_a".
-    Pass:  side null, market_venue null, price null, edge_pp may be 0 or null.
+    Pick:  side / market_venue / price / edge_pp / market_url all populated.
+           side is the team **name** (e.g. "France") or "draw" — never
+           "team_a". market_url is the deep link to the venue's page for
+           this market — used by the front-of-house CTA.
+    Pass:  side null, market_venue null, price null, edge_pp may be 0 or
+           null. market_url MAY be set (so the user can still browse the
+           market on the venue) — it is the only field allowed to leak
+           through on a pass.
     Avoid: side null, market_venue null, price null, edge_pp may be null.
+           market_url MAY be set, same rationale as Pass.
     """
     model_config = ConfigDict(extra="forbid", use_enum_values=True)
 
@@ -85,6 +91,7 @@ class Verdict(BaseModel):
     market_venue:  Optional[MarketVenue] = None
     price:         Optional[Annotated[str, StringConstraints(min_length=1, max_length=16)]] = None
     edge_pp:       Optional[float] = None
+    market_url:    Optional[Annotated[str, StringConstraints(min_length=10, max_length=512, pattern=r"^https://")]] = None
 
     @model_validator(mode="after")
     def _state_invariants(self) -> "Verdict":
@@ -97,11 +104,14 @@ class Verdict(BaseModel):
                 raise ValueError("verdict.price is required when state='pick'")
             if self.edge_pp is None:
                 raise ValueError("verdict.edge_pp is required when state='pick'")
+            if self.market_url is None:
+                raise ValueError("verdict.market_url is required when state='pick'")
         else:
             if self.market_venue is not None:
                 raise ValueError("verdict.market_venue must be null on pass/avoid")
             if self.price is not None:
                 raise ValueError("verdict.price must be null on pass/avoid")
+            # market_url MAY pass through on Pass/Avoid — see docstring.
         return self
 
 

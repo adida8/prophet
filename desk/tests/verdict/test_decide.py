@@ -13,6 +13,9 @@ from desk.verdict.thresholds import Thresholds, current
 
 SIDES = ("a", "draw", "b")
 T_DEFAULT = Thresholds(pick_pp=3.0, pass_pp=1.0, avoid_pp=-2.0)
+# Every Pick requires a CTA destination per the contract — supply a fake
+# one in algorithmic tests so the verdict can validate.
+_TEST_URL = "https://polymarket.com/event/test-event-2026-06-12"
 
 
 def _snap(prices: dict[tuple[str, str], float]) -> MarketSnapshot:
@@ -40,6 +43,7 @@ def test_pick_fires_when_one_side_clears_pick_threshold() -> None:
     v = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+        market_url=_TEST_URL,
     )
     assert v.state == VerdictState.PICK.value
     assert v.side == "France"
@@ -59,6 +63,7 @@ def test_pick_picks_largest_edge_when_multiple_sides_qualify() -> None:
     v = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+        market_url=_TEST_URL,
     )
     assert v.state == VerdictState.PICK.value
     assert v.side == "draw"
@@ -77,6 +82,7 @@ def test_pass_when_every_side_within_pass_band() -> None:
     v = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+        market_url=_TEST_URL,
     )
     assert v.state == VerdictState.PASS.value
     assert v.side is None
@@ -95,6 +101,7 @@ def test_pass_when_in_neither_pick_nor_avoid_band() -> None:
     v = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+        market_url=_TEST_URL,
     )
     assert v.state == VerdictState.PASS.value
 
@@ -112,6 +119,7 @@ def test_avoid_when_every_side_below_avoid_band() -> None:
     v = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+        market_url=_TEST_URL,
     )
     assert v.state == VerdictState.AVOID.value
     assert v.side is None
@@ -130,6 +138,7 @@ def test_avoid_populates_edge_pp_with_most_negative() -> None:
     v = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+        market_url=_TEST_URL,
     )
     assert v.state == VerdictState.AVOID.value
     assert v.edge_pp is not None
@@ -151,6 +160,7 @@ def test_stub_elo_forces_pass_even_with_pick_edge() -> None:
         model_p=model_p, market=market, sides=SIDES,
         team_a="A", team_b="B", thresholds=T_DEFAULT,
         elo_sources=("clubelo", "stub"),
+        market_url=_TEST_URL,
     )
     assert v.state == VerdictState.PASS.value
 
@@ -166,6 +176,7 @@ def test_real_elo_does_not_force_pass() -> None:
         model_p=model_p, market=market, sides=SIDES,
         team_a="A", team_b="B", thresholds=T_DEFAULT,
         elo_sources=("wiki", "wiki"),
+        market_url=_TEST_URL,
     )
     assert v.state == VerdictState.PICK.value
 
@@ -181,6 +192,7 @@ def test_extreme_long_shot_market_forces_pass() -> None:
     v = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="A", team_b="B", thresholds=T_DEFAULT,
+        market_url=_TEST_URL,
     )
     assert v.state == VerdictState.PASS.value
 
@@ -197,6 +209,7 @@ def test_missing_side_falls_back_to_pass() -> None:
     v = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+        market_url=_TEST_URL,
     )
     assert v.state == VerdictState.PASS.value
 
@@ -220,6 +233,7 @@ def test_env_override_changes_pick_into_pass(monkeypatch: pytest.MonkeyPatch) ->
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico",
         thresholds=current(),
+        market_url=_TEST_URL,
     )
     assert v.state == VerdictState.PICK.value
 
@@ -229,6 +243,7 @@ def test_env_override_changes_pick_into_pass(monkeypatch: pytest.MonkeyPatch) ->
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico",
         thresholds=current(),
+        market_url=_TEST_URL,
     )
     assert v2.state == VerdictState.PASS.value
 
@@ -247,6 +262,7 @@ def test_env_override_changes_avoid_into_pass(monkeypatch: pytest.MonkeyPatch) -
         model_p=model_p, market=market, sides=SIDES,
         team_a="A", team_b="B",
         thresholds=current(),
+        market_url=_TEST_URL,
     )
     assert v.state == VerdictState.AVOID.value
 
@@ -256,5 +272,6 @@ def test_env_override_changes_avoid_into_pass(monkeypatch: pytest.MonkeyPatch) -
         model_p=model_p, market=market, sides=SIDES,
         team_a="A", team_b="B",
         thresholds=current(),
+        market_url=_TEST_URL,
     )
     assert v2.state == VerdictState.PASS.value

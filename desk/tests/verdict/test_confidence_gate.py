@@ -16,6 +16,7 @@ from desk.verdict.thresholds import Thresholds
 
 SIDES = ("a", "draw", "b")
 T = Thresholds(pick_pp=3.0, pass_pp=1.0, avoid_pp=-2.0)
+_TEST_URL = "https://polymarket.com/event/test-event-2026-06-12"
 
 
 def _snap(prices: dict[tuple[str, str], float]) -> MarketSnapshot:
@@ -43,6 +44,7 @@ def test_pick_fires_when_lower_bound_clears_threshold() -> None:
     v = decide(
         model_p=model_p, model_p_lower=model_p_lower, market=market,
         sides=SIDES, team_a="A", team_b="B", thresholds=T,
+        market_url=_TEST_URL,
     )
     assert v.state == VerdictState.PICK.value
 
@@ -61,6 +63,7 @@ def test_wide_band_kills_a_borderline_pick() -> None:
     v = decide(
         model_p=model_p, model_p_lower=model_p_lower, market=market,
         sides=SIDES, team_a="A", team_b="B", thresholds=T,
+        market_url=_TEST_URL,
     )
     # Without the band the +5pp would have been a Pick; with the band
     # it's a Pass — the lower-bound edge is only -2pp.
@@ -79,5 +82,6 @@ def test_no_band_falls_back_to_point_estimate() -> None:
     v = decide(
         model_p=model_p, market=market,
         sides=SIDES, team_a="A", team_b="B", thresholds=T,
+        market_url=_TEST_URL,
     )
     assert v.state == VerdictState.PICK.value

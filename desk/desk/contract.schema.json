@@ -118,7 +118,7 @@
       },
       "Verdict": {
         "additionalProperties": false,
-        "description": "The call.\n\nPick:  side / market_venue / price / edge_pp all populated. side is the\n       team **name** (e.g. \"France\") or \"draw\" \u2014 never \"team_a\".\nPass:  side null, market_venue null, price null, edge_pp may be 0 or null.\nAvoid: side null, market_venue null, price null, edge_pp may be null.",
+        "description": "The call.\n\nPick:  side / market_venue / price / edge_pp / market_url all populated.\n       side is the team **name** (e.g. \"France\") or \"draw\" \u2014 never\n       \"team_a\". market_url is the deep link to the venue's page for\n       this market \u2014 used by the front-of-house CTA.\nPass:  side null, market_venue null, price null, edge_pp may be 0 or\n       null. market_url MAY be set (so the user can still browse the\n       market on the venue) \u2014 it is the only field allowed to leak\n       through on a pass.\nAvoid: side null, market_venue null, price null, edge_pp may be null.\n       market_url MAY be set, same rationale as Pass.",
         "properties": {
           "edge_pp": {
             "anyOf": [
@@ -131,6 +131,21 @@
             ],
             "default": null,
             "title": "Edge Pp"
+          },
+          "market_url": {
+            "anyOf": [
+              {
+                "maxLength": 512,
+                "minLength": 10,
+                "pattern": "^https://",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Market Url"
           },
           "market_venue": {
             "anyOf": [
