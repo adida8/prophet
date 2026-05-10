@@ -45,12 +45,19 @@ def fra_mex_pick() -> MatchOutput:
             price="-180",
             edge_pp=4.2,
             market_url="https://polymarket.com/event/fifwc-fra-mex-2026-06-12",
+            model_p=0.46,
+            market_p=0.42,
         ),
         copy=Copy(
             title="France v Mexico · class shows",
             summary="Two short sentences in Odds Primer voice.",
             blurb="Sixty to ninety words explaining the verdict.",
             citations=["https://lequipe.fr/example", "https://globoesporte.com/example"],
+            drivers=[
+                "Pre-tournament Elo rates France stronger than the closing market does.",
+                "Neutral venue removes the host adjustment entirely.",
+                "Polymarket book is liquid on every side.",
+            ],
         ),
         updated_at=datetime(2026, 6, 12, 17, 0, tzinfo=timezone.utc),
     )

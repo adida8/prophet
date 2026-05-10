@@ -63,7 +63,35 @@ def test_pick_requires_market_url() -> None:
             market_venue="polymarket",
             price="-180",
             edge_pp=4.2,
+            model_p=0.46,
+            market_p=0.42,
         )
+
+
+def test_pick_requires_model_and_market_p() -> None:
+    """A Pick without model_p/market_p must fail — the editorial layer
+    can't render the data line without them."""
+    base = dict(
+        state="pick",
+        side="France",
+        market_venue="polymarket",
+        price="-180",
+        edge_pp=4.2,
+        market_url="https://polymarket.com/event/x",
+    )
+    with pytest.raises(ValidationError):
+        Verdict(**base, market_p=0.42)  # missing model_p
+    with pytest.raises(ValidationError):
+        Verdict(**base, model_p=0.46)   # missing market_p
+
+
+def test_pass_cannot_carry_model_or_market_p() -> None:
+    """Pass/Avoid have no single side, so per-side probabilities are
+    forbidden — exposing them would be misleading."""
+    with pytest.raises(ValidationError):
+        Verdict(state="pass", model_p=0.5)
+    with pytest.raises(ValidationError):
+        Verdict(state="avoid", market_p=0.5)
 
 
 def test_market_url_must_be_https() -> None:
@@ -76,6 +104,8 @@ def test_market_url_must_be_https() -> None:
             price="-180",
             edge_pp=4.2,
             market_url="http://polymarket.com/event/x",
+            model_p=0.46,
+            market_p=0.42,
         )
 
 

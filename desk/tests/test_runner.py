@@ -118,6 +118,8 @@ def test_run_once_carries_pick_verdict_through_to_disk(
         price="-180",
         edge_pp=4.2,
         market_url="https://polymarket.com/event/fifwc-fra-mex-2026-06-12",
+        model_p=0.46,
+        market_p=0.42,
     )
     sport = _FakeSport(
         two_priced,

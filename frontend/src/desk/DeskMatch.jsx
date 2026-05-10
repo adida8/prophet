@@ -1,18 +1,25 @@
 // /desk/{match_id} — single-match verdict page.
 //
-// Layout per the conversion design:
+// Hierarchy (iteration brief, conversion-focused):
 //   1. Match context strip (teams, kickoff, competition stage, venue)
-//   2. Verdict hero ABOVE THE FOLD:
-//        - badge + side
-//        - editorial title
-//        - one-sentence summary
-//        - verdict card (call · model-vs-market · venue · price)
-//        - microcopy ("live price may have moved")
-//        - PRIMARY CTA  →  market_url
-//        - microcopy ("you'll leave Odds Primer…")
-//   3. "Why this is the call" — the 60-90 word blurb
-//   4. "How to read this verdict" — compact ladder explainer
-//   5. Back to desk link
+//   2. Verdict hero — verdict-first, then evidence, then verification:
+//        - "Pick: {side}"  (or Pass / Avoid framing line)
+//        - Data row "Model: 34% · Market: 22% · Edge: +11.1pp"
+//        - Plain-English interpretation (copy.summary)
+//        - "Why this call?" bullets (copy.drivers)
+//        - "Best current source: {Venue}"  block with price
+//        - Trust line ("Prices move…")
+//        - PRIMARY CTA, copy varies by state:
+//             Pick   → "View live price on Polymarket"
+//             Pass   → "See live market price"
+//             Avoid  → "Check market before acting"
+//   3. Longer-form prose (copy.blurb) below the fold
+//   4. Pick/Pass/Avoid ladder explainer
+//   5. Back to desk
+//
+// Voice rules: no betting language. No "trade", no "bet", no "back",
+// no "wager", no "value". The CTA is a verification step, not a call
+// to action on a wager.
 
 import { useEffect, useState } from "react";
 
@@ -26,6 +33,18 @@ function fmtKickoff(iso) {
   });
   const time = d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
   return `${date} · ${time}`;
+}
+
+function pct(p) {
+  if (typeof p !== "number") return "—";
+  return `${Math.round(p * 100)}%`;
+}
+
+function venueFromUrl(url) {
+  if (!url) return null;
+  if (url.includes("polymarket.com")) return "Polymarket";
+  if (url.includes("kalshi.com"))     return "Kalshi";
+  return null;
 }
 
 export default function DeskMatch({ matchId, onBack }) {
@@ -61,16 +80,11 @@ export default function DeskMatch({ matchId, onBack }) {
     );
   }
 
-  const v = match.verdict || {};
-  const c = match.copy || {};
-  const state = v.state || "pass";
-  const venueLabel = v.market_venue ? VENUE_LABEL[v.market_venue] : null;
-
   return (
     <main className="op-desk__match">
       <ContextStrip match={match} />
-      <VerdictHero match={match} state={state} verdict={v} copy={c} venueLabel={venueLabel} />
-      {c.blurb ? <Blurb text={c.blurb} citations={c.citations || []} /> : null}
+      <VerdictHero match={match} />
+      <Blurb copy={match.copy || {}} />
       <LadderExplainer />
       <BackLink onBack={onBack} />
     </main>
@@ -95,18 +109,30 @@ function ContextStrip({ match }) {
   );
 }
 
-function VerdictHero({ match, state, verdict, copy, venueLabel }) {
-  const edge = typeof verdict.edge_pp === "number" ? verdict.edge_pp : null;
-  const url  = verdict.market_url;
+function VerdictHero({ match }) {
+  const v = match.verdict || {};
+  const c = match.copy || {};
+  const state = v.state || "pass";
 
-  // CTA copy varies by venue and state. Pick gets the directed CTA;
-  // Pass/Avoid get a neutral "see the live market" so curiosity has
-  // somewhere to go without being framed as a recommendation.
-  const ctaText = state === "pick" && venueLabel
-    ? `Check the current price on ${venueLabel}`
-    : venueLabel
-      ? `See the live market on ${venueLabel}`
-      : "See the live market";
+  // Lead line — verdict first.
+  const leadLine =
+    state === "pick"  ? `Pick: ${v.side}` :
+    state === "avoid" ? "Avoid — every side priced inside the model" :
+                        "Pass — model and market aligned";
+
+  // Data row. Pick gets full Model/Market/Edge. Pass/Avoid get edge
+  // only (no single side to talk about), and only when present.
+  const dataRow = renderDataRow(state, v);
+
+  // CTA copy + venue context.
+  const venueLabel = v.market_venue
+    ? VENUE_LABEL[v.market_venue]
+    : venueFromUrl(v.market_url);
+
+  const ctaText =
+    state === "pick"  ? `View live price on ${venueLabel || "Polymarket"}` :
+    state === "avoid" ? "Check market before acting" :
+                        "See live market price";
 
   return (
     <section className={`op-desk__hero-card op-desk__hero-card--${state}`}>
@@ -114,83 +140,93 @@ function VerdictHero({ match, state, verdict, copy, venueLabel }) {
         <span className={`op-desk__badge op-desk__badge--${state} op-desk__badge--lg`}>
           {state.toUpperCase()}
         </span>
-        {state === "pick" && verdict.side ? (
-          <span className="op-desk__hero-side">{verdict.side}</span>
-        ) : null}
+        <span className="op-desk__hero-lead">{leadLine}</span>
       </div>
 
-      {copy.title ? <h2 className="op-h2 op-desk__hero-title">{copy.title}</h2> : null}
-      {copy.summary ? <p className="op-desk__hero-summary">{copy.summary}</p> : null}
+      {dataRow ? <p className="op-desk__hero-dataline">{dataRow}</p> : null}
 
-      <dl className="op-desk__verdict-card">
-        <div>
-          <dt>Call</dt>
-          <dd>
-            {state === "pick" && verdict.side ? `Pick — ${verdict.side}` :
-             state === "pass" ? "Pass — model and market agree" :
-             state === "avoid" ? "Avoid — every side looks too expensive" :
-             state.toUpperCase()}
-          </dd>
-        </div>
-        {edge !== null ? (
-          <div>
-            <dt>Model vs market</dt>
-            <dd>
-              {edge >= 0 ? "+" : ""}{edge.toFixed(1)} percentage points
-              {state === "avoid" ? " on the worst side" : ""}
-            </dd>
-          </div>
-        ) : null}
-        {state === "pick" && venueLabel ? (
-          <div>
-            <dt>Available at</dt>
-            <dd>{venueLabel}</dd>
-          </div>
-        ) : null}
-        {state === "pick" && verdict.price ? (
-          <div>
-            <dt>Captured price</dt>
-            <dd className="op-desk__verdict-price">{verdict.price}</dd>
-          </div>
-        ) : null}
-      </dl>
+      {c.summary ? (
+        <p className="op-desk__hero-summary">{c.summary}</p>
+      ) : null}
 
-      {url ? (
-        <>
-          <p className="op-desk__cta-prep">
-            This call is based on the latest price we captured. The live market may have moved.
-          </p>
-          <a
-            className={`op-desk__cta op-desk__cta--${state}`}
-            href={url}
-            target="_blank"
-            rel="noopener nofollow sponsored"
-            data-match-id={match.match_id}
-            data-verdict-state={state}
-            data-venue={verdict.market_venue || ""}
-          >
-            {ctaText}
-            <span aria-hidden="true" className="op-desk__cta-arrow">↗</span>
-          </a>
-          <p className="op-desk__cta-trail">
-            You'll leave Odds Primer and open {venueLabel || "the venue"}'s event page.
-            Review the market terms and live price there.
-          </p>
-        </>
+      {Array.isArray(c.drivers) && c.drivers.length > 0 ? (
+        <WhyThisCall drivers={c.drivers} />
+      ) : null}
+
+      <SourceBlock state={state} verdict={v} venueLabel={venueLabel} />
+
+      <p className="op-desk__cta-trust">
+        Prices move. We show the model-vs-market gap; the live source has the final price.
+      </p>
+
+      {v.market_url ? (
+        <a
+          className={`op-desk__cta op-desk__cta--${state}`}
+          href={v.market_url}
+          target="_blank"
+          rel="noopener nofollow sponsored"
+          data-match-id={match.match_id}
+          data-verdict-state={state}
+          data-venue={v.market_venue || venueLabel?.toLowerCase() || ""}
+        >
+          {ctaText}
+          <span aria-hidden="true" className="op-desk__cta-arrow">↗</span>
+        </a>
       ) : null}
     </section>
   );
 }
 
-function Blurb({ text, citations }) {
+function renderDataRow(state, v) {
+  if (state === "pick") {
+    const parts = [];
+    if (typeof v.model_p  === "number") parts.push(`Model: ${pct(v.model_p)}`);
+    if (typeof v.market_p === "number") parts.push(`Market: ${pct(v.market_p)}`);
+    if (typeof v.edge_pp  === "number") parts.push(`Edge: ${v.edge_pp >= 0 ? "+" : ""}${v.edge_pp.toFixed(1)}pp`);
+    return parts.length ? parts.join("  ·  ") : null;
+  }
+  if (state === "avoid" && typeof v.edge_pp === "number") {
+    return `Worst-side gap: ${v.edge_pp.toFixed(1)}pp against the model`;
+  }
+  return null;
+}
+
+function WhyThisCall({ drivers }) {
+  return (
+    <div className="op-desk__why">
+      <h3 className="op-desk__why-heading">Why this call?</h3>
+      <ul className="op-desk__why-list">
+        {drivers.map((d, i) => <li key={i}>{d}</li>)}
+      </ul>
+    </div>
+  );
+}
+
+function SourceBlock({ state, verdict, venueLabel }) {
+  if (!venueLabel) return null;
+  // Verification framing — the venue is where the live price lives,
+  // not where Odds Primer pushes the user to act.
+  return (
+    <div className="op-desk__source">
+      <span className="op-desk__source-label">Best current source</span>
+      <span className="op-desk__source-venue">{venueLabel}</span>
+      {state === "pick" && verdict.price ? (
+        <span className="op-desk__source-price">{verdict.price}</span>
+      ) : null}
+    </div>
+  );
+}
+
+function Blurb({ copy }) {
+  if (!copy.blurb) return null;
   return (
     <section className="op-desk__blurb">
-      <h3 className="op-desk__blurb-heading">Why this is the call</h3>
-      <p className="op-desk__blurb-text">{text}</p>
-      {citations.length > 0 ? (
+      <h3 className="op-desk__blurb-heading">The fuller picture</h3>
+      <p className="op-desk__blurb-text">{copy.blurb}</p>
+      {Array.isArray(copy.citations) && copy.citations.length > 0 ? (
         <p className="op-desk__blurb-citations">
           Sources:{" "}
-          {citations.map((url, i) => (
+          {copy.citations.map((url, i) => (
             <span key={url}>
               {i > 0 ? ", " : ""}
               <a href={url} target="_blank" rel="noopener nofollow">{hostname(url)}</a>

@@ -153,7 +153,10 @@ function MatchCard({ match, onSelect }) {
   const v = match.verdict || {};
   const state = v.state || "pass";
   const klass = `op-desk__card op-desk__card--${state}`;
-  const edge  = typeof v.edge_pp === "number" ? v.edge_pp : null;
+
+  // Verdict-first one-liner. The fixture name leads; the verdict line
+  // tells the reader the call without asking them to open the page.
+  const verdictLine = buildVerdictLine(state, v);
 
   return (
     <a
@@ -170,31 +173,26 @@ function MatchCard({ match, onSelect }) {
         {match.team_a} <span className="op-desk__vs">vs</span> {match.team_b}
       </h3>
 
-      {match.copy?.title ? (
-        <p className="op-desk__card-headline">{match.copy.title}</p>
-      ) : null}
-      {match.copy?.summary ? (
-        <p className="op-desk__card-summary">{match.copy.summary}</p>
-      ) : null}
-
-      {state === "pick" ? (
-        <div className="op-desk__card-pickline">
-          <span className="op-desk__card-pickside">{v.side}</span>
-          {v.price ? <span className="op-desk__card-price">{v.price}</span> : null}
-          {v.market_venue ? <span className="op-desk__card-venue">on {venueLabel(v.market_venue)}</span> : null}
-          {edge !== null ? <span className="op-desk__card-edge">+{edge.toFixed(1)}pp</span> : null}
-        </div>
-      ) : state === "avoid" && edge !== null ? (
-        <div className="op-desk__card-pickline">
-          <span className="op-desk__card-edge op-desk__card-edge--neg">
-            {edge.toFixed(1)}pp on the worst side
-          </span>
-        </div>
-      ) : null}
+      <p className={`op-desk__card-verdictline op-desk__card-verdictline--${state}`}>
+        {verdictLine}
+      </p>
 
       <span className="op-desk__card-cta">Read verdict →</span>
     </a>
   );
+}
+
+function buildVerdictLine(state, v) {
+  if (state === "pick") {
+    const edge = typeof v.edge_pp === "number" ? `+${v.edge_pp.toFixed(1)}pp edge` : null;
+    const venue = v.market_venue ? venueLabel(v.market_venue) : null;
+    const parts = [`Pick: ${v.side}`, edge, venue].filter(Boolean);
+    return parts.join(" · ");
+  }
+  if (state === "avoid") {
+    return "Avoid · No side priced attractively";
+  }
+  return "Pass · Model and market aligned";
 }
 
 function VerdictBadge({ state, size = "sm" }) {

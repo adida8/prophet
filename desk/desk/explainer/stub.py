@@ -66,6 +66,7 @@ def _pick_copy(i: Inputs) -> Copy:
     edge  = i["edge_pp"] or 0.0
     a, b  = i["team_a"], i["team_b"]
     side_name = _name_for_side(side, team_a=a, team_b=b)
+    venue_label = (i.get("market_venue") or "the market").title()
 
     # Map side to the model + market probability we should reference.
     side_to_p = {a: ("a", "model_p_a", "market_p_a"),
@@ -85,13 +86,19 @@ def _pick_copy(i: Inputs) -> Copy:
         f"{i.get('competition', 'This match')} pits {a} against {b}. "
         f"Our Elo prior, after host and altitude adjustments where they apply, "
         f"rates {side_name} {_verb_for_side(side, a, b)} at {_pct(model_p)}. "
-        f"{i.get('market_venue', 'the market').title()} prices the same outcome at "
+        f"{venue_label} prices the same outcome at "
         f"{_pct(market_p)} — implying a model-versus-market gap of {edge:+.1f} percentage points. "
         f"That clears our 3pp threshold, so the verdict reads Pick. "
         f"Calibration history sits with the closing market across recent fixtures; "
         f"selection is the dimension this Pick is meant to add value on."
     )
-    return Copy(title=title, summary=summary, blurb=blurb)
+    drivers = [
+        f"Pre-tournament Elo gives {side_name} a stronger prior than the {venue_label} line implies.",
+        f"The {edge:+.1f}pp gap clears our 3 percentage point threshold for a Pick.",
+        f"Calibration sits with the closing market across recent fixtures, so selection is the lever.",
+        f"Late-binding signals — form, confirmed XI, weather — re-evaluate closer to kickoff.",
+    ]
+    return Copy(title=title, summary=summary, blurb=blurb, drivers=drivers)
 
 
 def _pass_copy(i: Inputs) -> Copy:
@@ -108,7 +115,12 @@ def _pass_copy(i: Inputs) -> Copy:
         f"as kickoff approaches and late-binding signals (form, weather, confirmed XI) "
         f"come in."
     )
-    return Copy(title=title, summary=summary, blurb=blurb)
+    drivers = [
+        "Model and market sit within a percentage point on every side.",
+        "No structural disagreement to publish — both are pricing the same shape.",
+        "Late-binding signals (form, weather, confirmed XI) re-evaluate near kickoff.",
+    ]
+    return Copy(title=title, summary=summary, blurb=blurb, drivers=drivers)
 
 
 def _avoid_copy(i: Inputs) -> Copy:
@@ -126,7 +138,12 @@ def _avoid_copy(i: Inputs) -> Copy:
         f"outcome. A reader's takeaway: this market doesn't carry an edge for the engine, "
         f"and we surface that distinctly from Pass so it isn't read as ambiguous."
     )
-    return Copy(title=title, summary=summary, blurb=blurb)
+    drivers = [
+        f"Every side priced shorter than our model — most-negative gap is {edge:+.1f}pp.",
+        "No side priced attractively against the engine's Elo prior.",
+        "Avoid is reported separately from Pass so it doesn't read as ambiguous.",
+    ]
+    return Copy(title=title, summary=summary, blurb=blurb, drivers=drivers)
 
 
 # ── Public entry point ────────────────────────────────────────────────
@@ -150,7 +167,8 @@ def build_copy(i: Inputs) -> Copy:
 
     # Enforce voice rules. If any field fails, fall back to empty Copy
     # rather than ship a banned phrase to Faktor.
-    for field in (c.title, c.summary, c.blurb):
+    fields_to_check = [c.title, c.summary, c.blurb, *c.drivers]
+    for field in fields_to_check:
         try:
             assert_voice_clean(field)
         except Exception:                       # noqa: BLE001
