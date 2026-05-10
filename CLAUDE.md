@@ -117,7 +117,7 @@ See `ledger/README.md` for the full data flow + the path to add Kalshi in Phase 
 
 ## The Desk — verdict engine
 
-Engine that evaluates **every priced football match** (not just WC 2026). For each match it produces a `verdict.json` (Pick / Pass / Avoid) + three rendered editorial strings (title / summary / blurb). Faktor's site is the only consumer; it reads only the CDN-fronted JSON contract.
+Engine that evaluates **every priced football match** (not just WC 2026). For each match it produces a `verdict.json` (Pick / Pass / Avoid) + three rendered editorial strings (title / summary / blurb). The website (built by Faktor — Adi's partner on this) is the only consumer; it reads only the CDN-fronted JSON contract.
 
 Six-step pipeline, each independently replaceable:
 **Ingest → Features → Model → Verdict → Explainer → Publish.**
@@ -292,7 +292,7 @@ Anything sport-specific lives under `desk/sports/{sport}/`. Anything sport-agnos
 
 Override via `DESK_PICK_PP` / `DESK_PASS_PP` / `DESK_AVOID_PP` in `.env`.
 
-### Output contract (what Faktor consumes)
+### Output contract (what the website consumes)
 
 Schema lives in `desk/contract.schema.json`. Sample:
 
