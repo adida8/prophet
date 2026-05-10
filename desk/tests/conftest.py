@@ -44,6 +44,7 @@ def fra_mex_pick() -> MatchOutput:
             market_venue="polymarket",
             price="-180",
             edge_pp=4.2,
+            market_url="https://polymarket.com/event/fifwc-fra-mex-2026-06-12",
         ),
         copy=Copy(
             title="France v Mexico · class shows",

@@ -1,0 +1,121 @@
+"""Server-side adapter for The Desk's published outputs.
+
+Mounted at /api/desk/* by server.py. Read-only — serves the per-match
+JSON and the per-sport index that the engine writes to
+desk/data/output/{sport}/.
+
+This module lives at the project root (not inside the `desk/` package)
+because the Prophet server runs from project root and the `desk/`
+directory ships as an independent Python package with its own
+pyproject — it is not pip-installed in the deploy. Anything the server
+needs to consume from the desk product gets a thin adapter here, the
+same way `ledger/router.py` adapts the Ledger data layer.
+
+Routes
+------
+GET /api/desk/matches?competition=wc26&sport=football
+    List view. Returns one row per match (lightweight): match_id,
+    teams, kickoff, competition, verdict.{state, side, edge_pp,
+    market_venue, price, market_url}, copy.{title, summary}.
+
+GET /api/desk/match/{match_id}?sport=football
+    Full MatchOutput JSON for one fixture.
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import re
+from pathlib import Path
+from typing import Any
+
+from fastapi import APIRouter, HTTPException, Query
+
+log = logging.getLogger("desk_api")
+
+router = APIRouter(prefix="/api/desk", tags=["desk"])
+
+# desk/data/output/{sport}/ — `desk/` is a sibling of this file.
+_PROJECT_ROOT = Path(__file__).resolve().parent
+_OUTPUT_ROOT  = _PROJECT_ROOT / "desk" / "data" / "output"
+
+# Defence-in-depth: the writer guarantees this shape, but the API
+# never trusts the URL path to match it.
+_MATCH_ID_RE = re.compile(r"^[a-z0-9]{2,8}-[a-z0-9]+(?:-[a-z0-9]+){2,}-\d{8}$")
+_SPORT_RE    = re.compile(r"^[a-z]{2,16}$")
+
+
+def _sport_dir(sport: str) -> Path:
+    if not _SPORT_RE.match(sport):
+        raise HTTPException(status_code=400, detail="invalid sport")
+    return _OUTPUT_ROOT / sport
+
+
+def _load_match(sport_dir: Path, match_id: str) -> dict[str, Any]:
+    if not _MATCH_ID_RE.match(match_id):
+        raise HTTPException(status_code=400, detail="invalid match_id")
+    path = sport_dir / f"{match_id}.json"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail=f"match not found: {match_id}")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@router.get("/matches")
+async def list_matches(
+    sport: str = "football",
+    competition: str | None = Query(default=None),
+) -> dict[str, Any]:
+    """Lightweight list view for the homepage. Filter by competition
+    (e.g. `wc26`). Sort is index-driven (writer sorts by kickoff).
+    """
+    sport_dir  = _sport_dir(sport)
+    index_path = sport_dir / "index.json"
+    if not index_path.is_file():
+        return {"sport": sport, "matches": [], "updated_at": None}
+
+    index = json.loads(index_path.read_text(encoding="utf-8"))
+    rows: list[dict[str, Any]] = []
+    for entry in index.get("matches", []):
+        match_id = entry.get("match_id", "")
+        if not _MATCH_ID_RE.match(match_id):
+            continue
+        try:
+            full = _load_match(sport_dir, match_id)
+        except HTTPException:
+            continue
+        comp_code = (full.get("competition") or {}).get("code", "")
+        if competition and comp_code != competition:
+            continue
+        verdict = full.get("verdict") or {}
+        copy    = full.get("copy") or {}
+        rows.append({
+            "match_id":    full["match_id"],
+            "team_a":      full["team_a"],
+            "team_b":      full["team_b"],
+            "kickoff_utc": full["kickoff_utc"],
+            "competition": full.get("competition"),
+            "venue":       full.get("venue"),
+            "verdict": {
+                "state":        verdict.get("state"),
+                "side":         verdict.get("side"),
+                "edge_pp":      verdict.get("edge_pp"),
+                "market_venue": verdict.get("market_venue"),
+                "price":        verdict.get("price"),
+                "market_url":   verdict.get("market_url"),
+            },
+            "copy": {
+                "title":   copy.get("title", ""),
+                "summary": copy.get("summary", ""),
+            },
+        })
+    return {
+        "sport":      sport,
+        "matches":    rows,
+        "updated_at": index.get("updated_at"),
+    }
+
+
+@router.get("/match/{match_id}")
+async def get_match(match_id: str, sport: str = "football") -> dict[str, Any]:
+    return _load_match(_sport_dir(sport), match_id)

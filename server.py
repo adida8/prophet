@@ -26,6 +26,7 @@ from pydantic import BaseModel
 
 import config
 from core.logger import get_portfolio_summary
+from desk_api import router as desk_router
 from ledger import db as ledger_db
 from ledger.router import router as ledger_router
 
@@ -148,6 +149,7 @@ app.add_middleware(
 )
 
 app.include_router(ledger_router)
+app.include_router(desk_router)
 
 
 # ─────────────────────────── REST endpoints ───────────────────────────

@@ -26,6 +26,7 @@ from desk.sports.football.teams import is_international_competition
 from desk.sports.football.metadata.fifa import host_iso3_for_competition
 from desk.verdict.compare import MarketSnapshot, VenuePrice
 from desk.verdict.decide import decide as decide_verdict
+from desk.verdict.persistence import WindowVerdict, apply_persistence_rule
 from desk.verdict.thresholds import Thresholds, current as current_thresholds
 
 log = logging.getLogger("desk.backtest.replay")
@@ -195,6 +196,10 @@ def replay_match(
     model_out = compute_model(features)
     market = _market_snapshot_from_close(match)
 
+    # Backtest never drives a live CTA, but the contract requires a Pick
+    # to carry a market_url. Pass a synthetic placeholder so the
+    # algorithmic path produces the same verdicts it always did — this
+    # URL is never written to disk for backtest output.
     verdict = decide_verdict(
         model_p={"a": model_out.p_a, "draw": model_out.p_draw, "b": model_out.p_b},
         model_p_lower={
@@ -209,6 +214,7 @@ def replay_match(
         team_a=match.team_a,
         team_b=match.team_b,
         thresholds=th,
+        market_url=f"https://polymarket.com/event/{match.match_id}",
     )
 
     is_ko = window == "KO"
@@ -269,4 +275,51 @@ def replay_tournament(
                 rows.append(replay_match(match, window=w, tour=tour, thresholds=thresholds))
             except Exception as e:                # noqa: BLE001
                 log.warning("replay failed for %s @ %s: %s", match.match_id, w, e)
-    return rows
+    return _apply_multi_window_persistence(rows)
+
+
+def _window_verdict_from_row(row: SnapshotRow) -> WindowVerdict:
+    """Project a snapshot's verdict fields onto the persistence input."""
+    return WindowVerdict(state=row.verdict_state, side=row.verdict_side)
+
+
+def _apply_multi_window_persistence(rows: list[SnapshotRow]) -> list[SnapshotRow]:
+    """Phase A.3 — gate each match's KO Pick on T-5 and T-1h agreement.
+
+    A Pick at KO survives only when the same side was Picked at T-1h
+    (and at T-5, when computed). Otherwise the KO row is rewritten to
+    a Pass with no side / venue / edge — exactly as the live engine
+    will publish it once PR 6 wires the persistence cache.
+
+    Earlier-window rows (T-38 / T-5 / T-1h) are left untouched: the
+    backtest workbook still surfaces them so the dashboard can show
+    Pick churn across windows. Only KO is the published verdict.
+    """
+    import dataclasses
+
+    by_match: dict[str, dict[str, SnapshotRow]] = {}
+    for r in rows:
+        by_match.setdefault(r.match_id, {})[r.window] = r
+
+    out: list[SnapshotRow] = []
+    for r in rows:
+        if r.window != "KO":
+            out.append(r)
+            continue
+        prior = {
+            window: _window_verdict_from_row(snap)
+            for window, snap in by_match[r.match_id].items()
+            if window in ("T-5", "T-1h")
+        }
+        result = apply_persistence_rule(_window_verdict_from_row(r), prior_verdicts=prior)
+        if result.persistent:
+            out.append(r)
+        else:
+            out.append(dataclasses.replace(
+                r,
+                verdict_state="pass",
+                verdict_side=None,
+                verdict_market_venue=None,
+                verdict_edge_pp=None,
+            ))
+    return out

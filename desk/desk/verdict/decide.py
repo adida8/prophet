@@ -83,6 +83,7 @@ def decide(
     liquidity:      LiquidityRules | None = None,
     match_id:       str | None = None,        # for logs only
     model_p_lower:  Mapping[Side, float] | None = None,         # Phase A.3
+    market_url:     str | None = None,        # deep link to venue page (CTA)
 ) -> Verdict:
     """Apply the Pick / Pass / Avoid ladder.
 
@@ -100,18 +101,18 @@ def decide(
     # diffing 1500 vs 1500 against whatever the market is doing.
     if elo_sources is not None and "stub" in elo_sources:
         log.debug("forcing Pass: club_elo_stub on %s", match_id or "<unknown>")
-        return Verdict(state=VerdictState.PASS)
+        return Verdict(state=VerdictState.PASS, market_url=market_url)
 
     # ── Sanity gate: liquidity (PR 4.5) ────────────────────────────
     liq = is_liquid(market, sides, liquidity)
     if not liq.is_liquid:
         log.debug("forcing Pass: %s on %s", liq.reason, match_id or "<unknown>")
-        return Verdict(state=VerdictState.PASS)
+        return Verdict(state=VerdictState.PASS, market_url=market_url)
 
     edges = _compute_edges(model_p, market, sides)
     if edges is None:
         # Missing market data on at least one side — default to Pass per spec §9.
-        return Verdict(state=VerdictState.PASS)
+        return Verdict(state=VerdictState.PASS, market_url=market_url)
 
     # ── Pick ───────────────────────────────────────────────────────
     # Phase A.3: when a lower-bound band is provided, a Pick fires only
@@ -130,12 +131,19 @@ def decide(
     if pick_candidates:
         side, edge_pp = max(pick_candidates, key=lambda kv: kv[1])
         bv = edges.best_venues[side]
+        if market_url is None:
+            # A Pick without a CTA destination is unusable. Fall back to
+            # Pass rather than violating the contract — better to under-
+            # call than to publish a Pick with no link.
+            log.warning("forcing Pass: pick on %s but market_url missing", match_id or "<unknown>")
+            return Verdict(state=VerdictState.PASS)
         return Verdict(
             state=VerdictState.PICK,
             side=_name_for_side(side, team_a=team_a, team_b=team_b),
             market_venue=bv.venue,                       # type: ignore[arg-type]
             price=_to_american_odds(bv.implied_p),
             edge_pp=round(edge_pp, 2),
+            market_url=market_url,
         )
 
     # ── Avoid ──────────────────────────────────────────────────────
@@ -147,7 +155,8 @@ def decide(
         return Verdict(
             state=VerdictState.AVOID,
             edge_pp=round(most_negative, 2),
+            market_url=market_url,
         )
 
     # ── Pass (everyone within ±pass_pp) or default ─────────────────
-    return Verdict(state=VerdictState.PASS)
+    return Verdict(state=VerdictState.PASS, market_url=market_url)

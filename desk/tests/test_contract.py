@@ -47,16 +47,48 @@ def test_avoid_match_round_trip(epl_avoid: MatchOutput) -> None:
 # ── Verdict invariants ─────────────────────────────────────────────────
 
 def test_pick_requires_side_and_venue() -> None:
-    """A Pick without side/venue/price/edge must fail validation."""
+    """A Pick without side/venue/price/edge/market_url must fail validation."""
     with pytest.raises(ValidationError):
         Verdict(state="pick")  # type: ignore[call-arg]
     with pytest.raises(ValidationError):
         Verdict(state="pick", side="France")  # type: ignore[call-arg]
 
 
+def test_pick_requires_market_url() -> None:
+    """A Pick without market_url must fail — the CTA needs a destination."""
+    with pytest.raises(ValidationError):
+        Verdict(  # type: ignore[call-arg]
+            state="pick",
+            side="France",
+            market_venue="polymarket",
+            price="-180",
+            edge_pp=4.2,
+        )
+
+
+def test_market_url_must_be_https() -> None:
+    """market_url must use https — pure plumbing constraint, surfaced in tests."""
+    with pytest.raises(ValidationError):
+        Verdict(  # type: ignore[call-arg]
+            state="pick",
+            side="France",
+            market_venue="polymarket",
+            price="-180",
+            edge_pp=4.2,
+            market_url="http://polymarket.com/event/x",
+        )
+
+
 def test_pass_cannot_carry_market_venue() -> None:
     with pytest.raises(ValidationError):
         Verdict(state="pass", market_venue="polymarket")  # type: ignore[call-arg]
+
+
+def test_pass_may_carry_market_url() -> None:
+    """Pass/Avoid can still expose a market_url so users can browse the
+    market on the venue — only market_venue and price are forbidden."""
+    v = Verdict(state="pass", market_url="https://polymarket.com/event/fifwc-fra-sen-2026-06-16")  # type: ignore[call-arg]
+    assert v.market_url == "https://polymarket.com/event/fifwc-fra-sen-2026-06-16"
 
 
 def test_verdict_side_must_be_in_outcome_universe(fra_mex_pick: MatchOutput) -> None:
