@@ -103,6 +103,8 @@ async def list_matches(
                 "market_venue": verdict.get("market_venue"),
                 "price":        verdict.get("price"),
                 "market_url":   verdict.get("market_url"),
+                "model_p":      verdict.get("model_p"),
+                "market_p":     verdict.get("market_p"),
             },
             "copy": {
                 "title":   copy.get("title", ""),

@@ -43,7 +43,7 @@
       },
       "Copy": {
         "additionalProperties": false,
-        "description": "Editorial output. Voice rules enforced by explainer post-checks (PR 5).\n\nCitations are URLs of the sources Haiku referenced in the blurb.",
+        "description": "Editorial output. Voice rules enforced by explainer post-checks (PR 5).\n\nCitations are URLs of the sources Haiku referenced in the blurb.\n\n`drivers` is the structured \"Why this call?\" list \u2014 3-4 short\nbullets the front-of-house renders above the CTA. Each bullet is a\nplain-language sentence, not a data dump. The list is allowed to\nbe empty for fixtures the engine can't characterise (e.g. a Pass\non a tightly-priced market with nothing further to say).",
         "properties": {
           "blurb": {
             "default": "",
@@ -57,6 +57,16 @@
               "type": "string"
             },
             "title": "Citations",
+            "type": "array"
+          },
+          "drivers": {
+            "items": {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 6,
+            "title": "Drivers",
             "type": "array"
           },
           "summary": {
@@ -118,7 +128,7 @@
       },
       "Verdict": {
         "additionalProperties": false,
-        "description": "The call.\n\nPick:  side / market_venue / price / edge_pp / market_url all populated.\n       side is the team **name** (e.g. \"France\") or \"draw\" \u2014 never\n       \"team_a\". market_url is the deep link to the venue's page for\n       this market \u2014 used by the front-of-house CTA.\nPass:  side null, market_venue null, price null, edge_pp may be 0 or\n       null. market_url MAY be set (so the user can still browse the\n       market on the venue) \u2014 it is the only field allowed to leak\n       through on a pass.\nAvoid: side null, market_venue null, price null, edge_pp may be null.\n       market_url MAY be set, same rationale as Pass.",
+        "description": "The call.\n\nPick:  side / market_venue / price / edge_pp / market_url / model_p /\n       market_p all populated. side is the team **name** (e.g.\n       \"France\") or \"draw\" \u2014 never \"team_a\". market_url is the deep\n       link used by the front-of-house CTA. model_p / market_p are\n       the model's and market's implied probabilities for `side`,\n       in [0, 1] \u2014 they let the editorial layer render\n       \"Model: 34% \u00b7 Market: 22% \u00b7 Edge: +11.1pp\" without parsing\n       the blurb.\nPass:  side null, market_venue null, price null, edge_pp may be 0 or\n       null, model_p / market_p null (no single side to talk about).\n       market_url MAY be set so the user can still browse the market\n       on the venue.\nAvoid: side null, market_venue null, price null, edge_pp set to the\n       most-negative side's edge. model_p / market_p null. Per ADR\n       Phase A.4 the avoid framing is fixture-wide, not side-specific\n       \u2014 exposing per-side numbers would be misleading.",
         "properties": {
           "edge_pp": {
             "anyOf": [
@@ -131,6 +141,20 @@
             ],
             "default": null,
             "title": "Edge Pp"
+          },
+          "market_p": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Market P"
           },
           "market_url": {
             "anyOf": [
@@ -157,6 +181,20 @@
               }
             ],
             "default": null
+          },
+          "model_p": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Model P"
           },
           "price": {
             "anyOf": [

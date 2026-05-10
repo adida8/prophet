@@ -144,6 +144,8 @@ def decide(
             price=_to_american_odds(bv.implied_p),
             edge_pp=round(edge_pp, 2),
             market_url=market_url,
+            model_p=round(model_p[side], 4),
+            market_p=round(bv.implied_p, 4),
         )
 
     # ── Avoid ──────────────────────────────────────────────────────

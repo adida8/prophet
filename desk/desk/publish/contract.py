@@ -73,16 +73,22 @@ class Venue(BaseModel):
 class Verdict(BaseModel):
     """The call.
 
-    Pick:  side / market_venue / price / edge_pp / market_url all populated.
-           side is the team **name** (e.g. "France") or "draw" — never
-           "team_a". market_url is the deep link to the venue's page for
-           this market — used by the front-of-house CTA.
+    Pick:  side / market_venue / price / edge_pp / market_url / model_p /
+           market_p all populated. side is the team **name** (e.g.
+           "France") or "draw" — never "team_a". market_url is the deep
+           link used by the front-of-house CTA. model_p / market_p are
+           the model's and market's implied probabilities for `side`,
+           in [0, 1] — they let the editorial layer render
+           "Model: 34% · Market: 22% · Edge: +11.1pp" without parsing
+           the blurb.
     Pass:  side null, market_venue null, price null, edge_pp may be 0 or
-           null. market_url MAY be set (so the user can still browse the
-           market on the venue) — it is the only field allowed to leak
-           through on a pass.
-    Avoid: side null, market_venue null, price null, edge_pp may be null.
-           market_url MAY be set, same rationale as Pass.
+           null, model_p / market_p null (no single side to talk about).
+           market_url MAY be set so the user can still browse the market
+           on the venue.
+    Avoid: side null, market_venue null, price null, edge_pp set to the
+           most-negative side's edge. model_p / market_p null. Per ADR
+           Phase A.4 the avoid framing is fixture-wide, not side-specific
+           — exposing per-side numbers would be misleading.
     """
     model_config = ConfigDict(extra="forbid", use_enum_values=True)
 
@@ -92,6 +98,8 @@ class Verdict(BaseModel):
     price:         Optional[Annotated[str, StringConstraints(min_length=1, max_length=16)]] = None
     edge_pp:       Optional[float] = None
     market_url:    Optional[Annotated[str, StringConstraints(min_length=10, max_length=512, pattern=r"^https://")]] = None
+    model_p:       Optional[Annotated[float, Field(ge=0.0, le=1.0)]] = None
+    market_p:      Optional[Annotated[float, Field(ge=0.0, le=1.0)]] = None
 
     @model_validator(mode="after")
     def _state_invariants(self) -> "Verdict":
@@ -106,11 +114,19 @@ class Verdict(BaseModel):
                 raise ValueError("verdict.edge_pp is required when state='pick'")
             if self.market_url is None:
                 raise ValueError("verdict.market_url is required when state='pick'")
+            if self.model_p is None:
+                raise ValueError("verdict.model_p is required when state='pick'")
+            if self.market_p is None:
+                raise ValueError("verdict.market_p is required when state='pick'")
         else:
             if self.market_venue is not None:
                 raise ValueError("verdict.market_venue must be null on pass/avoid")
             if self.price is not None:
                 raise ValueError("verdict.price must be null on pass/avoid")
+            if self.model_p is not None:
+                raise ValueError("verdict.model_p must be null on pass/avoid")
+            if self.market_p is not None:
+                raise ValueError("verdict.market_p must be null on pass/avoid")
             # market_url MAY pass through on Pass/Avoid — see docstring.
         return self
 
@@ -119,6 +135,12 @@ class Copy(BaseModel):
     """Editorial output. Voice rules enforced by explainer post-checks (PR 5).
 
     Citations are URLs of the sources Haiku referenced in the blurb.
+
+    `drivers` is the structured "Why this call?" list — 3-4 short
+    bullets the front-of-house renders above the CTA. Each bullet is a
+    plain-language sentence, not a data dump. The list is allowed to
+    be empty for fixtures the engine can't characterise (e.g. a Pass
+    on a tightly-priced market with nothing further to say).
     """
     model_config = ConfigDict(extra="forbid")
 
@@ -126,6 +148,7 @@ class Copy(BaseModel):
     summary:   Annotated[str, StringConstraints(min_length=0, max_length=400)] = ""
     blurb:     Annotated[str, StringConstraints(min_length=0, max_length=1200)] = ""
     citations: list[str] = Field(default_factory=list)
+    drivers:   list[Annotated[str, StringConstraints(min_length=1, max_length=200)]] = Field(default_factory=list, max_length=6)
 
 
 # ── Top-level contract ────────────────────────────────────────────────

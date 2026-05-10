@@ -158,58 +158,20 @@
   font-style: italic;
 }
 
-.op-desk__card-headline {
-  font-family: var(--font-serif);
-  font-size: var(--t-body-sm);
-  font-weight: 500;
-  line-height: 1.35;
-  color: var(--ink);
-}
-
-.op-desk__card-summary {
-  font-family: var(--font-serif);
-  font-size: var(--t-caption);
-  line-height: 1.45;
-  color: var(--ink-soft);
-}
-
-.op-desk__card-pickline {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-2);
-  padding-top: var(--space-2);
-  border-top: var(--hairline-soft);
+.op-desk__card-verdictline {
   margin-top: auto;
-}
-
-.op-desk__card-pickside {
+  padding-top: var(--space-3);
+  border-top: var(--hairline-soft);
   font-family: var(--font-sans);
-  font-weight: 700;
-  color: var(--ink);
   font-size: var(--t-body-sm);
-}
-
-.op-desk__card-price {
-  font-family: var(--font-mono);
-  font-size: var(--t-body-sm);
-  color: var(--ink);
-}
-
-.op-desk__card-venue {
-  font-family: var(--font-sans);
-  font-size: var(--t-caption);
-  color: var(--graphite-soft);
-}
-
-.op-desk__card-edge {
-  margin-left: auto;
-  font-family: var(--font-mono);
-  font-size: var(--t-caption);
   font-weight: 500;
-  color: var(--flame);
+  line-height: 1.4;
+  color: var(--ink);
+  letter-spacing: -0.005em;
 }
-.op-desk__card-edge--neg { color: var(--graphite); }
+.op-desk__card-verdictline--pick  { color: var(--ink); }
+.op-desk__card-verdictline--pass  { color: var(--graphite-soft); }
+.op-desk__card-verdictline--avoid { color: var(--graphite); }
 
 .op-desk__card-cta {
   margin-top: var(--space-3);
@@ -277,15 +239,21 @@
   margin-bottom: var(--space-3);
 }
 
-.op-desk__hero-side {
+.op-desk__hero-lead {
   font-family: var(--font-serif);
-  font-size: var(--t-h3);
+  font-size: var(--t-h2);
   font-weight: 600;
+  letter-spacing: -0.005em;
   color: var(--ink);
+  line-height: 1.2;
 }
 
-.op-desk__hero-title {
-  margin: var(--space-2) 0;
+.op-desk__hero-dataline {
+  font-family: var(--font-mono);
+  font-size: var(--t-body-sm);
+  color: var(--ink);
+  letter-spacing: 0;
+  margin: var(--space-3) 0 var(--space-4);
 }
 
 .op-desk__hero-summary {
@@ -297,51 +265,95 @@
   margin-bottom: var(--space-5);
 }
 
-/* ---------- verdict card (call / edge / venue / price) ---------- */
+/* ---------- "Why this call?" bullets ---------- */
 
-.op-desk__verdict-card {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-4) var(--space-5);
+.op-desk__why {
+  margin: 0 0 var(--space-5);
   padding: var(--space-4) var(--space-5);
   background: var(--paper-warm);
   border-radius: var(--radius-3);
-  margin-bottom: var(--space-5);
 }
-.op-desk__verdict-card div { min-width: 0; }
-.op-desk__verdict-card dt {
+
+.op-desk__why-heading {
   font-family: var(--font-sans);
   font-size: var(--t-micro);
   font-weight: 600;
   letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
   color: var(--graphite-soft);
-  margin-bottom: 2px;
+  margin: 0 0 var(--space-3);
 }
-.op-desk__verdict-card dd {
+
+.op-desk__why-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.op-desk__why-list li {
+  position: relative;
+  padding-left: var(--space-4);
   font-family: var(--font-serif);
   font-size: var(--t-body-sm);
+  line-height: 1.5;
   color: var(--ink);
-  font-weight: 500;
-  margin: 0;
 }
-.op-desk__verdict-price {
-  font-family: var(--font-mono) !important;
-  font-weight: 600 !important;
+.op-desk__why-list li::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 11px;
+  width: 4px;
+  height: 4px;
+  background: var(--flame);
+  border-radius: 50%;
 }
 
-/* ---------- CTA + trust microcopy ---------- */
+/* ---------- source / market verification block ---------- */
 
-.op-desk__cta-prep,
-.op-desk__cta-trail {
+.op-desk__source {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: var(--space-3) 0;
+  margin-bottom: var(--space-3);
+  border-top: var(--hairline-soft);
+  border-bottom: var(--hairline-soft);
+}
+.op-desk__source-label {
+  font-family: var(--font-sans);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--graphite-soft);
+}
+.op-desk__source-venue {
+  font-family: var(--font-serif);
+  font-size: var(--t-body-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+.op-desk__source-price {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--t-body-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ---------- trust line (sits with the CTA) ---------- */
+
+.op-desk__cta-trust {
   font-family: var(--font-sans);
   font-size: var(--t-caption);
   color: var(--ink-soft);
   line-height: 1.5;
-  max-width: 56ch;
+  margin: 0 0 var(--space-3);
+  max-width: 60ch;
 }
-.op-desk__cta-prep  { margin-bottom: var(--space-3); }
-.op-desk__cta-trail { margin-top: var(--space-3); color: var(--graphite-soft); }
 
 .op-desk__cta {
   display: inline-flex;
