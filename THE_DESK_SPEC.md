@@ -11,7 +11,7 @@
 
 Build **The Desk** — the core engine that evaluates **every priced football match**, not just the World Cup. WC 2026 is the launch wedge; the architecture must comfortably handle club football (EPL, La Liga, UCL, MLS, etc.) the day after the tournament ends, with no rewrite. Football is the first sport. The engine must be designed so other sports (basketball, tennis, NFL) can plug in as separate modules in a later version without disturbing the football pipeline.
 
-For each match, The Desk produces a `verdict.json` (Pick / Pass / Avoid) plus three rendered editorial strings. Faktor's site is the only consumer and reads only a CDN-fronted JSON contract. Internals are private.
+For each match, The Desk produces a `verdict.json` (Pick / Pass / Avoid) plus three rendered editorial strings. The website (built by Faktor — Adi's partner on this) is the only consumer and reads only a CDN-fronted JSON contract. Internals are private.
 
 The engine's six steps (Ingest → Features → Model → Verdict → Explainer → Publish) must each be replaceable independently. v1 is deliberately small: Elo prior, host/home adjustment, altitude bonus, Haiku explainer. Engineering effort goes into data plumbing, not the maths.
 
@@ -21,7 +21,7 @@ The engine's six steps (Ingest → Features → Model → Verdict → Explainer 
 - A devig / market-microstructure model. The model **never reads market prices**.
 - A leaderboard, hit-rate counter, or any tipster framing.
 - Auth, accounts, a database. v1 is files-on-disk + JSON over HTTP.
-- Any direct Faktor coupling. Faktor consumes the contract, period.
+- Any direct coupling to the website's internals. The website consumes the contract, period.
 - Non-football sports in v1 — but the architecture must cleanly admit them in a later version (see §3 sport boundary).
 - Paper-trading bot framing or any reuse of `prophet/` Kalshi-trading code beyond the API client patterns.
 
@@ -192,7 +192,7 @@ APScheduler in-process: model job (cadence ladder per `feedback_late_binding_fea
 
 ## 6. Output contract — canonical
 
-The shape Faktor consumes — do not add fields without an ADR. Model internals (`p_a`, `p_draw`, `p_b`, `xg_*`, `drivers`, `confidence`, raw market prices) **stay inside The Desk**.
+The shape the website consumes — do not add fields without an ADR. Model internals (`p_a`, `p_draw`, `p_b`, `xg_*`, `drivers`, `confidence`, raw market prices) **stay inside The Desk**.
 
 ```json
 {
@@ -299,7 +299,7 @@ Out of scope for v1, scoped here so PR layout doesn't paint us into a corner.
 - Three blurbs read in Odds Primer voice and pass the banned-phrase suite.
 - `desk run` survives 24h continuous without crash; logs show all three job cadences firing.
 - `desk sports` shows `football` enabled and the sport boundary holds — `grep -r "football" desk/verdict desk/explainer desk/scheduler desk/publish` returns zero hits.
-- Faktor can `curl` `/output/football/index.json` and `/output/football/{match_id}.json` and render a card without any further coupling.
+- The website can `curl` `/output/football/index.json` and `/output/football/{match_id}.json` and render a card without any further coupling.
 
 ## 13. References
 
