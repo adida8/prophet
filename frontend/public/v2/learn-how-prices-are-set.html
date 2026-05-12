@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How are prices set? — Odds Primer · Learn</title>
+<meta name="description" content="An order book, an implied probability, and a worked example. How to read a price on a prediction market — and why two venues quoting the same outcome can disagree.">
+<link rel="stylesheet" href="./colors_and_type.css">
+<style>
+  body { padding: 0; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter-page); }
+
+  .site-masthead { border-bottom: var(--hairline); background: var(--paper); }
+  .site-masthead .inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 14px var(--gutter-page) 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    border-top: var(--hairline-strong);
+  }
+  .brand-lock { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+  .brand-lock .wm {
+    font-family: var(--font-sans); font-weight: 700; font-size: 22px;
+    color: var(--ink); letter-spacing: -0.022em; line-height: 1;
+  }
+  .site-nav { display: none; }
+  .site-nav ul { list-style: none; padding: 0; margin: 0; display: flex; gap: 26px; }
+  .site-nav a {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ink); text-decoration: none;
+    padding: 6px 0; border-bottom: 1.5px solid transparent;
+  }
+  .site-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
+  .site-nav a[aria-current="page"] { border-bottom-color: var(--flame); }
+  @media (min-width: 820px) { .site-nav { display: block; } }
+  .edition-strip { border-top: var(--hairline-soft); background: var(--paper); }
+  .edition-strip .inner {
+    max-width: 1180px; margin: 0 auto; padding: 8px var(--gutter-page);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+
+  .crumb {
+    padding: 32px 0 0;
+    font-family: var(--font-sans); font-size: 12px; color: var(--graphite-soft);
+    letter-spacing: 0.04em;
+  }
+  .crumb a { color: var(--graphite); text-decoration: none; }
+  .crumb a:hover { color: var(--flame-deep); }
+  .crumb .sep { margin: 0 8px; color: var(--rule); }
+
+  article.learn-article { padding: 28px 0 64px; max-width: 760px; }
+  article.learn-article .eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--flame-deep);
+    margin-bottom: 14px;
+  }
+  article.learn-article h1 {
+    font-family: var(--font-serif); font-weight: 600;
+    font-size: clamp(2rem, 4.2vw, 3rem);
+    line-height: 1.04; letter-spacing: -0.018em;
+    margin: 0; color: var(--ink); text-wrap: balance; max-width: 22ch;
+  }
+  article.learn-article .standfirst {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: clamp(17px, 1.6vw, 20px);
+    line-height: 1.5; color: var(--ink-soft);
+    margin: 20px 0 8px; max-width: 56ch;
+  }
+  article.learn-article .meta {
+    font-family: var(--font-sans); font-size: 12px;
+    letter-spacing: 0.04em; color: var(--graphite-soft);
+    margin: 12px 0 0; padding-bottom: 24px; border-bottom: var(--hairline);
+  }
+
+  .article-body {
+    margin-top: 32px;
+    font-family: var(--font-serif); font-size: 17px; line-height: 1.6; color: var(--ink);
+  }
+  .article-body > * { max-width: 62ch; }
+  .article-body p { margin: 0 0 18px; }
+  .article-body p + p { text-indent: 1.2em; }
+  .article-body h2 {
+    font-family: var(--font-serif); font-size: clamp(22px, 2.6vw, 26px);
+    font-weight: 600; letter-spacing: -0.005em; color: var(--ink);
+    margin: 36px 0 12px;
+  }
+  .article-body strong { font-weight: 600; }
+  .article-body .em { color: var(--flame); font-weight: 600; font-style: normal; }
+  .article-body .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; }
+  .article-body a {
+    color: var(--ink); text-decoration: underline;
+    text-decoration-color: var(--rule); text-underline-offset: 3px;
+  }
+  .article-body a:hover { color: var(--flame-deep); text-decoration-color: var(--flame); }
+
+  /* converter table */
+  .conv {
+    margin: 16px 0 28px; border: var(--hairline);
+    border-collapse: collapse; max-width: 62ch; width: 100%; background: var(--paper-pure);
+  }
+  .conv th, .conv td {
+    padding: 10px 14px; text-align: left; border-bottom: var(--hairline);
+    font-family: var(--font-sans); font-size: 13.5px; color: var(--ink);
+    vertical-align: baseline;
+  }
+  .conv th {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--graphite-soft); background: var(--paper-warm);
+  }
+  .conv tr:last-child td { border-bottom: 0; }
+  .conv td.num {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500;
+  }
+  .conv tr.is-lead td { background: var(--flame-tint); }
+  .conv tr.is-lead td.num { color: var(--flame-deep); font-weight: 600; }
+
+  /* worked example block */
+  .worked {
+    margin: 28px 0; border: var(--hairline);
+    background: var(--paper-pure); padding: 18px 22px;
+    display: grid; grid-template-columns: 1fr; gap: 12px;
+    max-width: 62ch;
+  }
+  .worked .wlbl {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--flame-deep);
+  }
+  .worked .title {
+    font-family: var(--font-serif); font-size: 18px; font-weight: 600;
+    color: var(--ink); letter-spacing: -0.005em; margin: 0;
+  }
+  .worked .row {
+    display: grid; grid-template-columns: 1fr auto auto; gap: 14px;
+    align-items: baseline; padding: 6px 0; border-top: var(--hairline-soft);
+  }
+  .worked .row:first-of-type { border-top: var(--hairline); padding-top: 10px; margin-top: 4px; }
+  .worked .venue {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .worked .price {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 600; font-size: 17px; color: var(--ink);
+  }
+  .worked .pct {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 500; font-size: 14px; color: var(--graphite);
+  }
+  .worked .gap {
+    font-family: var(--font-serif); font-size: 14.5px; font-style: italic;
+    color: var(--graphite); margin: 6px 0 0;
+  }
+  .worked .gap .em { color: var(--flame); font-style: normal; font-weight: 600; }
+
+  .nextup {
+    margin-top: 56px; padding: 28px 0;
+    border-top: var(--hairline-strong); border-bottom: var(--hairline);
+    display: grid; grid-template-columns: 1fr; gap: 14px;
+  }
+  @media (min-width: 720px) { .nextup { grid-template-columns: auto 1fr; align-items: center; gap: 24px; } }
+  .nextup .nlbl {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .nextup a {
+    font-family: var(--font-serif); font-size: clamp(20px, 2.4vw, 26px);
+    font-weight: 600; color: var(--ink); text-decoration: none;
+    letter-spacing: -0.005em; line-height: 1.2;
+  }
+  .nextup a:hover { color: var(--flame-deep); }
+  .nextup a .arr { color: var(--flame); margin-left: 6px; }
+
+  footer.site-footer { border-top: var(--hairline-strong); background: var(--paper); }
+  footer.site-footer .foot-inner { max-width: 1180px; margin: 0 auto; padding: 36px var(--gutter-page) 28px; }
+  .foot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 28px; margin-bottom: 22px; }
+  .foot-col h4 {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+    margin: 0 0 10px;
+  }
+  .foot-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .foot-col a { font-family: var(--font-sans); font-size: 13px; color: var(--ink); text-decoration: none; }
+  .foot-col a:hover { color: var(--flame-deep); }
+  .foot-brand {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 11px;
+    border-top: var(--hairline); padding-top: 22px; margin-top: 4px;
+  }
+  .foot-brand .wm { font-family: var(--font-sans); font-weight: 700; font-size: 22px; color: var(--ink); letter-spacing: -0.022em; }
+  .foot-brand .pub { font-family: var(--font-serif); font-style: italic; color: var(--graphite); font-size: 13px; }
+  .foot-brand .pub .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+  .foot-discl {
+    font-family: var(--font-serif); font-size: 12.5px; color: var(--graphite);
+    line-height: 1.55; max-width: 78ch; padding-top: 18px; border-top: var(--hairline-soft);
+  }
+  .foot-discl .dag { color: var(--flame); font-style: italic; }
+  .foot-meta {
+    margin-top: 16px;
+    font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
+    letter-spacing: 0.04em; display: flex; flex-wrap: wrap; gap: 6px 16px;
+  }
+  @media (min-width: 720px) {
+    .foot-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 36px; }
+    .foot-brand { grid-column: auto; border-top: 0; padding-top: 0; margin-top: 0;
+      flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+  <header class="site-masthead">
+    <div class="inner">
+      <a class="brand-lock" href="./home-v3.html" aria-label="Odds Primer">
+        <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
+          <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+          <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+          <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+          <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+          <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+        </svg>
+        <span class="wm">Odds Primer</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <ul>
+          <li><a href="./home-v3.html#today">Today</a></li>
+          <li><a href="./home-v3.html#outrights">Outrights</a></li>
+          <li><a href="./learn.html" aria-current="page">Learn</a></li>
+          <li><a href="./about.html">About</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="edition-strip">
+      <div class="inner">
+        <span>Learn · 02 of 03</span>
+        <span>5 min read</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="crumb">
+      <a href="./learn.html">Learn</a><span class="sep">·</span><span>How are prices set?</span>
+    </div>
+
+    <article class="learn-article">
+      <div class="eyebrow">Reading the numbers · 02</div>
+      <h1>How are prices set?</h1>
+      <p class="standfirst">
+        An order book, an implied probability, and a worked example. By the end
+        of this you should be able to look at any quoted price and know what the
+        market thinks the probability is.
+      </p>
+      <div class="meta">The Editors · 12 May 2026 · 5 min read</div>
+
+      <div class="article-body">
+        <p>
+          A prediction market is an <strong>order book</strong>. Buyers post how
+          much they're willing to pay for a YES contract. Sellers post how little
+          they're willing to accept. When a buyer's bid meets a seller's ask,
+          the trade happens at that price. The price you see quoted on the
+          screen — <span class="num">27¢</span>, <span class="num">$0.27</span>,
+          or simply <span class="num">27</span> — is the most recent agreed
+          price between a willing buyer and a willing seller.
+        </p>
+        <p>
+          That's it. There's no bookmaker setting a line, no algorithm balancing
+          the book. The price moves the way the price of any traded thing moves:
+          someone wants in, someone wants out, they meet at a number.
+        </p>
+
+        <h2>Price as probability</h2>
+        <p>
+          Here's the part that makes prediction-market prices useful. A YES
+          contract pays out <strong>$1.00 if the event happens</strong> and
+          <strong>$0 if it doesn't</strong>. So if you'd pay 27¢ for it, you're
+          saying "I think the probability is at least 27%." If you wouldn't,
+          you're saying "I think it's less than 27%." The price the market
+          settles on is the place where those two views balance.
+        </p>
+        <p>
+          Translation rule: <strong>price in cents = implied probability in
+          percent</strong>. A contract at <span class="num">27¢</span> means
+          the market thinks there's a <span class="num">27%</span> chance the
+          event happens. A contract at <span class="num">62¢</span> means 62%.
+          That's the whole conversion.
+        </p>
+
+        <h2>What about American odds?</h2>
+        <p>
+          You'll still see sportsbook prices quoted as <span class="num">−180</span>
+          or <span class="num">+130</span>. Convert them to implied probability
+          with two short formulas, or just keep this table close to hand:
+        </p>
+
+        <table class="conv">
+          <thead>
+            <tr>
+              <th scope="col">American odds</th>
+              <th scope="col">Implied probability</th>
+              <th scope="col">Decimal odds</th>
+              <th scope="col">Contract price</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="num">−400</td><td class="num">80.0%</td><td class="num">1.25</td><td class="num">80¢</td></tr>
+            <tr><td class="num">−250</td><td class="num">71.4%</td><td class="num">1.40</td><td class="num">71¢</td></tr>
+            <tr class="is-lead"><td class="num">−180</td><td class="num">64.3%</td><td class="num">1.56</td><td class="num">64¢</td></tr>
+            <tr><td class="num">−110</td><td class="num">52.4%</td><td class="num">1.91</td><td class="num">52¢</td></tr>
+            <tr><td class="num">+100</td><td class="num">50.0%</td><td class="num">2.00</td><td class="num">50¢</td></tr>
+            <tr><td class="num">+130</td><td class="num">43.5%</td><td class="num">2.30</td><td class="num">43¢</td></tr>
+            <tr><td class="num">+250</td><td class="num">28.6%</td><td class="num">3.50</td><td class="num">29¢</td></tr>
+            <tr><td class="num">+400</td><td class="num">20.0%</td><td class="num">5.00</td><td class="num">20¢</td></tr>
+          </tbody>
+        </table>
+
+        <p>
+          When you see a row on our board read <span class="em">−180</span>,
+          you're looking at the same number as a 64-cent contract — give or
+          take the venue's fee. We standardise to implied probability so a
+          Polymarket cent quote and a sportsbook line can sit on the same row.
+        </p>
+
+        <h2>Why two venues can disagree</h2>
+        <p>
+          If Polymarket says Brazil is 22¢ to win the World Cup and Kalshi says
+          25¢, who's right? Often neither, and the gap is the interesting thing.
+          Three things can move two venues out of line with each other:
+        </p>
+        <p>
+          <strong>Different traders.</strong> Polymarket is crypto-native and
+          international; Kalshi is US-regulated. Different audiences with
+          different information sometimes agree on the underlying probability
+          but disagree on how confident to be in it.
+        </p>
+        <p>
+          <strong>Different liquidity.</strong> The thinner the order book,
+          the more a single large trade moves the price. A 3-cent gap on a
+          market with $500K of depth means something different from the same
+          gap on a market with $5K of depth.
+        </p>
+        <p>
+          <strong>Different fees.</strong> Each venue charges a trading fee,
+          which slightly nudges the price you actually pay versus the price
+          you see. We strip the fee out when we compare; the venue still
+          charges it when you trade.
+        </p>
+
+        <div class="worked">
+          <span class="wlbl">Worked example · 12 May 2026</span>
+          <h3 class="title">2026 World Cup winner — Brazil (YES)</h3>
+          <div class="row">
+            <span class="venue">Polymarket</span>
+            <span class="price">22¢</span>
+            <span class="pct">22.0%</span>
+          </div>
+          <div class="row">
+            <span class="venue">Kalshi</span>
+            <span class="price">25¢</span>
+            <span class="pct">25.0%</span>
+          </div>
+          <p class="gap">
+            <span class="em">3pp gap</span> · The market thinks Brazil is between
+            22% and 25% to lift the trophy. Whether the gap is a real edge or
+            just thin-book noise depends on Kalshi's depth on the day — which
+            is exactly the read we'd publish on the column.
+          </p>
+        </div>
+
+        <p style="color: var(--graphite); font-style: italic; font-size: 15px; margin-top: 28px;">
+          That's how the price gets there, and how to read it once it does.
+          The last primer covers where you can use any of these venues — it
+          depends a lot on where you live.
+        </p>
+      </div>
+
+      <div class="nextup">
+        <span class="nlbl">Next up · 03</span>
+        <a href="./learn-is-it-legal.html">
+          Is it legal? <span class="arr">→</span>
+        </a>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="foot-inner">
+      <div class="foot-grid">
+        <div class="foot-brand">
+          <svg viewBox="0 0 38 34" width="44" height="40" aria-hidden="true">
+            <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+            <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+            <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+            <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+            <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+          </svg>
+          <span class="wm">Odds Primer</span>
+          <span class="pub">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span>.</span>
+        </div>
+        <div class="foot-col">
+          <h4>Editorial</h4>
+          <ul>
+            <li><a href="./home-v3.html#today">Today's board</a></li>
+            <li><a href="./home-v3.html#outrights">Outright winners</a></li>
+            <li><a href="./learn.html">Learn the basics</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="./about.html">About</a></li>
+            <li><a href="/methodology">Methodology</a></li>
+            <li><a href="mailto:hello@oddsprimer.com">Contact</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="/privacy">Privacy</a></li>
+            <li><a href="/terms">Terms of use</a></li>
+            <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>
+            <li><a href="/responsible-use">Responsible use</a></li>
+            <li><a href="/cookies">Cookies</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="foot-discl">
+        <span class="dag">†</span> Odds Primer is an editorial publication. We do not take wagers,
+        hold reader funds, or execute trades. Prediction-market trading involves risk; check your
+        local laws before acting on what you read.
+      </p>
+      <div class="foot-meta">
+        <span>© 2026 Odds Primer.</span>
+        <span>Published from the United Kingdom.</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
