@@ -1,0 +1,1659 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Odds Primer — Pick, Pass, or Avoid · World Cup 2026</title>
+<meta name="description" content="We compare prices on the World Cup across Polymarket, Kalshi, and the sportsbooks. We explain what the numbers mean. We don't tip.">
+<link rel="stylesheet" href="./colors_and_type.css">
+<style>
+  /* ============================================================
+     home-v3 — v2 plan implemented
+     Adds: site nav · hero standfirst · Outright Winners ·
+           How we work · Featured columns · Newsletter · Footer ·
+           sticky mobile bottom bar.
+     Body of the page (Today's board) is ported verbatim from home-v2.
+     Mobile-first; min-width breakpoints only.
+     All color/type/spacing come from colors_and_type.css.
+     ============================================================ */
+
+  body { padding: 0 0 96px; }                 /* room for sticky mobile bar */
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter-page); }
+
+  /* ====================================================
+     1. MASTHEAD + NAV
+     ==================================================== */
+  .site-masthead {
+    border-bottom: var(--hairline);
+    background: var(--paper);
+    position: sticky; top: 0; z-index: 40;
+  }
+  .site-masthead .inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 14px var(--gutter-page) 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    border-top: var(--hairline-strong);
+  }
+  /* Canonical lockup on the home — glyph + wordmark, with tagline beneath
+     the wordmark (indented to align with wordmark text, not glyph).
+     Per design system: italic-serif tagline, flame on "AI" + "market edge". */
+  .brand-lock {
+    display: inline-flex; flex-direction: column; gap: 4px;
+    text-decoration: none;
+  }
+  .brand-lock svg { display: block; }
+  .brand-lock .wm-row { display: flex; align-items: baseline; gap: 12px; }
+  .brand-lock .wm {
+    font-family: var(--font-sans); font-weight: 700; font-size: 22px;
+    color: var(--ink); letter-spacing: -0.022em; line-height: 1;
+  }
+  .brand-lock .tag {
+    font-family: var(--font-serif); font-style: italic; font-weight: 400;
+    font-size: 12px; line-height: 1.3; color: var(--graphite);
+    /* Aligned to the glyph's left edge so it stretches under the whole lockup. */
+    padding-left: 0;
+  }
+  .brand-lock .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+
+  .site-nav { display: none; }
+  .site-nav ul {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; gap: 26px;
+  }
+  .site-nav a {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ink); text-decoration: none;
+    padding: 6px 0; border-bottom: 1.5px solid transparent;
+  }
+  .site-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
+  .site-nav a[aria-current="page"] { border-bottom-color: var(--flame); }
+
+  .nav-meta {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--graphite-soft); font-variant-numeric: tabular-nums;
+    display: none;
+  }
+
+
+  @media (min-width: 820px) {
+    .site-nav { display: block; }
+    .nav-meta { display: inline; }
+  }
+
+  .edition-strip {
+    border-top: var(--hairline-soft);
+    background: var(--paper);
+  }
+  .edition-strip .inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 8px var(--gutter-page);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .edition-strip .live::before {
+    content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 999px;
+    background: var(--flame); margin-right: 8px; vertical-align: 1px;
+  }
+  /* ---------- mobile pill-style nav (replaces burger) ---------- */
+  .pill-nav {
+    display: flex; gap: 6px; align-items: center;
+    padding: 12px var(--gutter-page);
+    border-bottom: var(--hairline);
+    background: var(--paper);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .pill-nav::-webkit-scrollbar { display: none; }
+  .pill-nav a {
+    font-family: var(--font-sans); font-size: 15px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
+    padding: 10px 18px; border-radius: 999px;
+    white-space: nowrap;
+    transition: background var(--dur-fast) var(--ease-standard),
+                color var(--dur-fast) var(--ease-standard);
+  }
+  .pill-nav a[aria-current="page"] {
+    background: var(--ink); color: var(--paper);
+  }
+  .pill-nav a:not([aria-current="page"]):hover {
+    color: var(--flame-deep);
+  }
+  @media (min-width: 820px) {
+    .pill-nav { display: none; }
+  }
+
+  /* ---------- burger menu (About + Learn — secondary overflow) ---------- */
+  .burger { position: relative; display: inline-block; }
+  .burger-btn {
+    list-style: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    border: var(--hairline); background: var(--paper-pure);
+    color: var(--ink); border-radius: 2px;
+    transition: background var(--dur-fast) var(--ease-standard),
+                color var(--dur-fast) var(--ease-standard);
+  }
+  .burger-btn::-webkit-details-marker { display: none; }
+  .burger-btn::marker { content: ""; }
+  .burger-btn:hover { color: var(--flame-deep); }
+  .burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
+  .burger-menu {
+    position: absolute; right: 0; top: calc(100% + 8px);
+    min-width: 180px;
+    background: var(--paper-pure); border: var(--hairline);
+    list-style: none; margin: 0; padding: 6px 0;
+    box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08);
+    z-index: 50;
+  }
+  .burger-menu li { padding: 0; margin: 0; list-style: none; }
+  .burger-menu a {
+    display: block; padding: 10px 18px;
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
+  }
+  .burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
+
+
+
+  /* ====================================================
+     2. HERO
+     ==================================================== */
+  .hero { padding: 44px 0 28px; }
+  .hero .h-eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: var(--font-serif); font-weight: 600;
+    font-size: clamp(2.5rem, 5.4vw, 4.25rem);
+    line-height: 1.03; letter-spacing: -0.02em;
+    margin: 0; color: var(--ink); text-wrap: balance; max-width: 16ch;
+  }
+  .hero .standfirst {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: clamp(17px, 1.6vw, 20px);
+    line-height: 1.5; color: var(--ink-soft);
+    margin: 18px 0 0; max-width: 58ch;
+  }
+  .hero .ctas {
+    display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: baseline;
+    margin-top: 26px;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-sans); font-size: 14px; font-weight: 600;
+    letter-spacing: 0.02em; color: var(--paper); background: var(--ink);
+    padding: 12px 18px; border: 0; border-radius: 4px;
+    text-decoration: none; cursor: pointer;
+    transition: background var(--dur-fast) var(--ease-standard);
+    min-height: 44px;
+  }
+  .btn-primary:hover { background: var(--flame-deep); color: var(--paper); }
+  .btn-primary .arr { color: var(--flame); transition: transform var(--dur-fast) var(--ease-standard); }
+  .btn-primary:hover .arr { transform: translateY(2px); color: var(--paper); }
+
+  .link-secondary {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ink);
+    text-decoration: underline; text-decoration-color: var(--rule);
+    text-underline-offset: 4px; text-decoration-thickness: 1px;
+  }
+  .link-secondary:hover { text-decoration-color: var(--flame); color: var(--flame-deep); }
+
+  /* ====================================================
+     3. ARTICLE PREVIEWS — outrights + upcoming matches
+     ==================================================== */
+  .article-previews {
+    padding: 36px 0 24px;
+    border-top: var(--hairline);
+    margin-top: 28px;
+  }
+  .prev-grid {
+    display: grid; grid-template-columns: 1fr; gap: 20px;
+  }
+  @media (min-width: 820px) {
+    .prev-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+  }
+  .article-preview {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 28px 26px 22px;
+    border: var(--hairline);
+    background: var(--paper-pure);
+    text-decoration: none; color: var(--ink);
+    transition: background var(--dur-fast) var(--ease-standard);
+  }
+  .article-preview:hover { background: var(--paper-warm); }
+  .article-preview .kicker {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--flame-deep);
+  }
+  .article-preview .prev-title {
+    font-family: var(--font-serif);
+    font-size: clamp(22px, 2.8vw, 30px);
+    font-weight: 600; line-height: 1.12; letter-spacing: -0.012em;
+    margin: 6px 0 6px; color: var(--ink); text-wrap: balance;
+  }
+  .article-preview .prev-deck {
+    font-family: var(--font-serif); font-size: 16px; line-height: 1.55;
+    color: var(--graphite); margin: 0; max-width: 56ch;
+  }
+  .article-preview .prev-deck em {
+    font-style: normal; font-weight: 600; color: var(--flame-deep);
+  }
+  .prev-peek {
+    display: flex; gap: 22px; margin-top: 16px; padding-top: 14px;
+    border-top: var(--hairline-soft);
+  }
+  .peek-stat { display: flex; flex-direction: column; gap: 2px; }
+  .peek-stat .pn {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 700; font-size: 22px; color: var(--ink); line-height: 1;
+  }
+  .peek-stat .pl {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .prev-cta {
+    margin-top: 14px; padding-top: 14px;
+    border-top: var(--hairline-soft);
+    font-family: var(--font-sans); font-size: 12.5px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ink); text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .prev-cta .arr {
+    color: var(--flame);
+    transition: transform var(--dur-fast) var(--ease-standard);
+  }
+  .article-preview:hover .prev-cta { color: var(--flame-deep); }
+  .article-preview:hover .prev-cta .arr { transform: translateX(3px); }
+
+  /* ====================================================
+     ARCHIVED CSS BELOW — outright picks + today's board styles.
+     The home no longer renders these (article previews replace them).
+     The selectors stay so /outrights.html and /matches.html, which
+     re-import this stylesheet via colors_and_type.css, can reuse them.
+     ==================================================== */
+  .outright {
+    padding: 28px 0 36px;
+    border-top: var(--hairline);
+    margin-top: 28px;
+  }
+
+  /* section header — Outright picks · WC winner */
+  .o-section-head { margin-bottom: 22px; }
+  .o-section-head .o-eyebrow {
+    display: block;
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-bottom: 10px;
+  }
+  .o-section-head .o-title {
+    font-family: var(--font-serif); font-weight: 600;
+    font-size: clamp(26px, 3.4vw, 38px);
+    line-height: 1.06; letter-spacing: -0.015em;
+    margin: 0 0 12px; color: var(--ink); text-wrap: balance; max-width: 22ch;
+  }
+  .o-section-head .o-sub {
+    font-family: var(--font-serif); font-style: italic; font-size: 15.5px;
+    line-height: 1.5; color: var(--graphite); margin: 0; max-width: 58ch;
+  }
+  .o-section-head .o-sub em { color: var(--ink); font-style: italic; font-weight: 600; }
+  .o-section-head .dag { color: var(--flame); font-style: italic; margin-left: 2px; }
+
+  /* outright picks — rows styled like fixtures, simpler grid */
+  .o-picks {
+    display: flex; flex-direction: column;
+    margin: 0 0 36px;
+    border-top: var(--hairline);
+  }
+  .opick {
+    display: grid;
+    grid-template-columns: 4px 1fr auto;
+    grid-template-rows: auto auto auto auto;
+    column-gap: 14px; row-gap: 4px;
+    padding: 14px 0;
+    border-bottom: var(--hairline);
+    text-decoration: none; color: var(--ink);
+    transition: background var(--dur-fast) var(--ease-standard);
+  }
+  .opick:hover { background: var(--paper-warm); }
+  .opick .bar { grid-column: 1; grid-row: 1 / -1; }
+  .opick .verdict-cell {
+    grid-column: 2; grid-row: 1;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .opick .verdict-cell .gly {
+    font-family: var(--font-sans); font-weight: 700; font-size: 14px;
+    line-height: 1; width: 16px; text-align: center;
+  }
+  .opick .verdict-cell .lab {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; line-height: 1;
+  }
+  .opick .line {
+    grid-column: 3; grid-row: 1;
+    display: flex; flex-direction: column; gap: 2px; align-items: flex-end;
+  }
+  .opick .line .venue {
+    font-family: var(--font-sans); font-size: 9.5px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .opick .line .price {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 600; font-size: 16px; color: var(--ink); line-height: 1;
+  }
+  .opick .who { grid-column: 2 / span 2; grid-row: 2; min-width: 0; }
+  .opick .who .team {
+    font-family: var(--font-serif); font-size: 22px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ink); line-height: 1.15;
+  }
+  .opick .who .meta {
+    font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
+    letter-spacing: 0.04em; margin-top: 3px;
+  }
+  .opick .thesis {
+    grid-column: 2 / span 2; grid-row: 3;
+    font-family: var(--font-serif); font-size: 14px; line-height: 1.45;
+    color: var(--graphite); max-width: 56ch;
+  }
+  .opick .thesis em { font-style: italic; color: var(--ink); }
+
+  /* model · market · edge — mini data row */
+  .opick .reads {
+    grid-column: 2 / span 2; grid-row: 4;
+    display: flex; flex-wrap: wrap; gap: 14px;
+    margin-top: 2px;
+    font-family: var(--font-sans); font-size: 12px;
+  }
+  .opick .read-pair {
+    display: inline-flex; align-items: baseline; gap: 6px;
+    color: var(--graphite);
+  }
+  .opick .read-pair .k {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .opick .read-pair .v {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 600; font-size: 13.5px; color: var(--ink);
+  }
+  .opick .edge {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 700; font-size: 13px;
+    color: var(--flame-deep);
+    border-bottom: 2px solid var(--flame); padding-bottom: 1px; line-height: 1;
+  }
+  .opick .edge.edge-neg { color: var(--ink); border-bottom-color: var(--ink); }
+
+  .opick .action { display: none; }
+
+  /* variant: Pick */
+  .opick.is-pick { background: var(--flame-tint); }
+  .opick.is-pick:hover { filter: brightness(0.985); }
+  .opick.is-pick .bar { background: var(--flame); }
+  .opick.is-pick .verdict-cell .gly { color: var(--flame); }
+  .opick.is-pick .verdict-cell .lab { color: var(--flame-deep); }
+  .opick.is-pick .line .price {
+    color: var(--ink); border-bottom: 2px solid var(--flame); padding-bottom: 1px;
+  }
+  /* variant: Avoid */
+  .opick.is-avoid .bar { background: var(--ink); }
+  .opick.is-avoid .verdict-cell .gly { color: var(--flame); font-size: 15px; }
+  .opick.is-avoid .verdict-cell .lab {
+    color: var(--ink); border-bottom: 1.5px solid var(--flame);
+    padding-bottom: 1px; align-self: center;
+  }
+  .opick.is-avoid .line .price {
+    color: var(--ink); text-decoration: line-through;
+    text-decoration-color: var(--flame); text-decoration-thickness: 1.5px;
+  }
+
+  @media (min-width: 720px) {
+    .opick {
+      grid-template-columns: 4px 80px minmax(0, 1fr) minmax(0, 1.4fr) auto 96px;
+      grid-template-rows: auto auto;
+      column-gap: 18px; row-gap: 6px;
+      padding: 16px 0; min-height: 84px;
+    }
+    .opick .verdict-cell { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+    .opick .who { grid-column: 3; grid-row: 1; align-self: center; }
+    .opick .thesis { grid-column: 4; grid-row: 1; align-self: center; max-width: none; padding: 0; }
+    .opick .reads {
+      grid-column: 3 / span 2; grid-row: 2; align-self: start; margin-top: 0;
+    }
+    .opick .line { grid-column: 5; grid-row: 1 / span 2; align-self: center; }
+    .opick .action {
+      grid-column: 6; grid-row: 1 / span 2;
+      display: flex; align-items: center; justify-content: flex-end;
+    }
+    .opick .action .open {
+      font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.06em; color: var(--ink); text-transform: uppercase;
+    }
+    .opick .action .open .arr {
+      color: var(--flame); margin-left: 4px;
+      transition: transform var(--dur-fast) var(--ease-standard);
+    }
+    .opick:hover .action .open { color: var(--flame-deep); }
+    .opick:hover .action .open .arr { transform: translate(2px, -2px); }
+  }
+
+  /* "Where the field stands" header — sits between picks and the consensus bar */
+  .o-field-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 14px;
+    padding-top: 12px; border-top: var(--hairline);
+  }
+  .o-field-head .o-eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .o-field-head .o-source {
+    font-family: var(--font-sans); font-size: 12px; color: var(--ink);
+    text-decoration: none;
+  }
+  .o-field-head .o-source .arr { color: var(--flame); margin-left: 4px; }
+  .o-field-head .o-source:hover { color: var(--flame-deep); }
+  .o-field-head .o-source:hover .arr { color: var(--flame-deep); }
+
+  /* desktop: single horizontal bar */
+  .o-bar-wrap { display: none; }
+  .o-bar {
+    display: flex; height: 26px; width: 100%;
+    border: var(--hairline); border-radius: 2px; overflow: hidden;
+  }
+  .o-bar > div { height: 100%; }
+  .o-bar .seg-1 { background: var(--ink); }
+  .o-bar .seg-2 { background: var(--ink-soft); }
+  .o-bar .seg-3 { background: var(--graphite); }
+  .o-bar .seg-4 { background: #B89968; }
+  .o-bar .seg-5 { background: var(--paper-deep); }
+  .o-bar .seg-6 { background: var(--paper-warm); }
+  .o-bar .seg-lead { background: var(--flame); box-shadow: inset 0 0 0 1.5px var(--flame-deep); }
+
+  .o-legend {
+    display: flex; flex-wrap: wrap; gap: 6px 18px;
+    margin-top: 12px;
+    font-family: var(--font-sans); font-size: 12px; color: var(--graphite);
+  }
+  .o-legend .pill { display: inline-flex; align-items: center; gap: 7px; }
+  .o-legend .swatch { width: 9px; height: 9px; border-radius: 2px; }
+  .o-legend .num {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500;
+  }
+  .o-legend .lead { color: var(--flame-deep); font-weight: 600; }
+
+  .o-foot {
+    margin-top: 14px;
+    font-family: var(--font-serif); font-size: 14px; font-style: italic;
+    color: var(--graphite); line-height: 1.5; max-width: 62ch;
+  }
+  .o-foot .dag { color: var(--flame); font-style: italic; }
+
+  /* mobile: horizontal-scrolling cards */
+  .o-cards {
+    display: flex; gap: 10px;
+    overflow-x: auto; scroll-snap-type: x mandatory;
+    margin: 0 calc(-1 * var(--gutter-page));
+    padding: 4px var(--gutter-page) 12px;
+    scrollbar-width: none;
+  }
+  .o-cards::-webkit-scrollbar { display: none; }
+  .o-card {
+    flex: 0 0 140px; scroll-snap-align: start;
+    border: var(--hairline); background: var(--paper-pure);
+    padding: 12px 12px 14px;
+    display: flex; flex-direction: column; gap: 4px;
+    text-decoration: none; color: var(--ink);
+  }
+  .o-card .name {
+    font-family: var(--font-serif); font-size: 16px; font-weight: 600;
+    color: var(--ink); letter-spacing: -0.005em; line-height: 1.15;
+  }
+  .o-card .pct {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 600; font-size: 26px; color: var(--ink); line-height: 1.05;
+    margin-top: 4px;
+  }
+  .o-card .src {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-top: 6px;
+  }
+  .o-card.is-lead { background: var(--flame-tint); border-color: var(--flame); }
+  .o-card.is-lead .pct { color: var(--flame-deep); }
+  .o-card.is-lead .name { color: var(--flame-deep); }
+
+  @media (min-width: 720px) {
+    .o-cards { display: none; }
+    .o-bar-wrap { display: block; }
+  }
+
+  /* ====================================================
+     4. TODAY'S BOARD — ported from home-v2
+     ==================================================== */
+  .board-header { margin: 8px 0 0; }
+  .title-block {
+    display: flex; flex-direction: column; gap: 16px;
+    margin-bottom: 36px;
+  }
+  .h-eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-bottom: 6px;
+  }
+  h2.board-title {
+    font-family: var(--font-serif);
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 600; line-height: 1.04; letter-spacing: -0.015em;
+    margin: 0; color: var(--ink); text-wrap: balance;
+  }
+  .deck {
+    font-family: var(--font-serif); font-size: 16px; line-height: 1.55;
+    color: var(--ink); margin: 0; max-width: 56ch;
+  }
+  .deck em { color: var(--flame); font-style: normal; font-weight: 600; }
+
+  @media (min-width: 980px) {
+    .title-block {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 56px;
+      align-items: end;
+      margin-bottom: 40px;
+    }
+    .title-block > .deck { margin-top: 0; }
+  }
+
+  /* legend */
+  .legend {
+    border-top: var(--hairline); border-bottom: var(--hairline);
+    padding: 14px 0; margin-bottom: 12px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .legend .lbl {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .legend .items { display: flex; flex-wrap: wrap; gap: 18px 28px; }
+  .legend .item { display: flex; align-items: center; gap: 12px; }
+  .legend .item .demo {
+    width: 36px; height: 26px; position: relative; flex-shrink: 0;
+    border: var(--hairline); background: var(--paper-pure);
+  }
+  .legend .item .demo .bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+  .legend .item .demo .glyph {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700; line-height: 1;
+  }
+  .legend .item .text { display: flex; flex-direction: column; gap: 1px; }
+  .legend .item .text .name {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); line-height: 1.1;
+  }
+  .legend .item .text .what {
+    font-family: var(--font-serif); font-size: 12.5px; font-style: italic;
+    color: var(--graphite); line-height: 1.3;
+  }
+  .demo--pick { background: var(--flame-tint); }
+  .demo--pick .bar { background: var(--flame); }
+  .demo--pick .glyph { color: var(--flame); }
+  .legend .item.pick .text .name { color: var(--flame-deep); }
+  .demo--pass .bar { background: var(--graphite-soft); opacity: 0.45; }
+  .demo--pass .glyph { color: var(--graphite-soft); }
+  .demo--avoid { background: var(--paper-pure); }
+  .demo--avoid .bar { background: var(--ink); }
+  .demo--avoid .glyph { color: var(--flame); }
+  .legend .item.avoid .text .name {
+    color: var(--ink); border-bottom: 1.5px solid var(--flame);
+    padding-bottom: 1px; align-self: flex-start;
+  }
+  .legend .by {
+    font-family: var(--font-serif); font-size: 12.5px; font-style: italic;
+    color: var(--graphite); line-height: 1.45;
+    padding-top: 10px; border-top: var(--hairline-soft);
+  }
+  @media (min-width: 720px) {
+    .legend { flex-direction: row; align-items: center; gap: 28px; flex-wrap: wrap; }
+    .legend .by {
+      max-width: 30ch; padding-top: 0; border-top: 0;
+      border-left: 1px solid var(--rule); padding-left: 18px;
+    }
+  }
+
+  /* group banner */
+  .group-banner {
+    margin-top: 36px; display: grid;
+    grid-template-columns: 1fr auto; align-items: baseline; gap: 12px;
+    padding-bottom: 8px;
+  }
+  .group-banner .gname {
+    font-family: var(--font-serif); font-size: 22px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ink);
+  }
+  .group-banner .gname em {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    font-style: normal; margin-left: 10px; vertical-align: 2px;
+  }
+  .group-banner .gcount {
+    font-family: var(--font-mono); font-size: 11px; color: var(--graphite-soft);
+    letter-spacing: 0.04em; font-variant-numeric: tabular-nums;
+  }
+  @media (min-width: 720px) {
+    .group-banner { grid-template-columns: auto 1fr auto; gap: 18px; }
+    .group-banner .grule { border-top: var(--hairline); align-self: center; }
+    .group-banner .gname { font-size: 24px; }
+  }
+
+  /* fixtures */
+  .fixtures { display: flex; flex-direction: column; }
+  .fx {
+    display: grid;
+    grid-template-columns: 4px 1fr auto;
+    grid-template-rows: auto auto auto;
+    column-gap: 14px; row-gap: 4px;
+    align-items: stretch;
+    border-top: var(--hairline);
+    padding: 12px 0;
+    text-decoration: none; color: var(--ink);
+    position: relative;
+    transition: background var(--dur-fast) var(--ease-standard);
+  }
+  .fx:last-child { border-bottom: var(--hairline); }
+  .fx:hover { background: var(--paper-warm); text-decoration: none; }
+  .fx .bar { grid-column: 1; grid-row: 1 / -1; align-self: stretch; }
+  .fx .verdict-cell { grid-column: 2; grid-row: 1; display: flex; align-items: center; gap: 8px; }
+  .fx .verdict-cell .gly {
+    font-family: var(--font-sans); font-weight: 700; font-size: 14px;
+    line-height: 1; width: 16px; text-align: center; flex-shrink: 0;
+  }
+  .fx .verdict-cell .lab {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; line-height: 1;
+  }
+  .fx .line {
+    grid-column: 3; grid-row: 1; display: flex; flex-direction: column; gap: 2px;
+    align-items: flex-end; justify-self: end;
+  }
+  .fx .line .venue {
+    font-family: var(--font-sans); font-size: 9.5px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .fx .line .price {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 600; font-size: 16px; color: var(--ink); line-height: 1;
+  }
+  .fx .match { grid-column: 2 / span 2; grid-row: 2; min-width: 0; }
+  .fx .match .teams {
+    font-family: var(--font-serif); font-size: 18px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ink); line-height: 1.2;
+  }
+  .fx .match .teams .vs {
+    color: var(--graphite-soft); font-weight: 400; margin: 0 6px; font-style: italic;
+  }
+  .fx .match .meta {
+    font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
+    letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-top: 2px;
+  }
+  .fx .thesis {
+    grid-column: 2 / span 2; grid-row: 3; min-width: 0;
+    font-family: var(--font-serif); font-size: 14px; line-height: 1.45; color: var(--graphite);
+  }
+  .fx .thesis em { font-style: italic; color: var(--ink); }
+  .fx .thesis .nm { font-style: normal; font-weight: 600; color: var(--ink); }
+  .fx .action { display: none; }
+
+  .fx.is-pick { background: var(--flame-tint); }
+  .fx.is-pick:hover { filter: brightness(0.985); }
+  .fx.is-pick .bar { background: var(--flame); }
+  .fx.is-pick .verdict-cell .gly { color: var(--flame); }
+  .fx.is-pick .verdict-cell .lab { color: var(--flame-deep); }
+  .fx.is-pick .line .price {
+    color: var(--ink); border-bottom: 2px solid var(--flame); padding-bottom: 1px;
+  }
+  .fx.is-pass .bar { background: transparent; }
+  .fx.is-pass .verdict-cell .gly { color: var(--graphite-soft); }
+  .fx.is-pass .verdict-cell .lab { color: var(--graphite-soft); }
+  .fx.is-pass .match .teams { font-size: 16px; }
+  .fx.is-pass .thesis { font-size: 13.5px; }
+  .fx.is-pass .line .price { color: var(--graphite); font-weight: 500; font-size: 15px; }
+  .fx.is-avoid .bar { background: var(--ink); }
+  .fx.is-avoid .verdict-cell .gly { color: var(--flame); font-size: 15px; }
+  .fx.is-avoid .verdict-cell .lab {
+    color: var(--ink); border-bottom: 1.5px solid var(--flame);
+    padding-bottom: 1px; align-self: center;
+  }
+  .fx.is-avoid .line .price {
+    color: var(--ink); text-decoration: line-through;
+    text-decoration-color: var(--flame); text-decoration-thickness: 1.5px;
+  }
+  @media (min-width: 720px) {
+    .fx {
+      grid-template-columns: 4px 70px minmax(0, 1fr) 96px;
+      grid-template-rows: auto auto;
+      column-gap: 14px; row-gap: 4px; padding: 0; min-height: 64px;
+    }
+    .fx > .verdict-cell, .fx > .match, .fx > .thesis, .fx > .line, .fx > .action { padding: 14px 0; }
+    .fx .verdict-cell { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+    .fx .match { grid-column: 3; grid-row: 1; align-self: end; }
+    .fx .thesis { grid-column: 3; grid-row: 2; align-self: start; padding-top: 0; }
+    .fx .line { grid-column: 4; grid-row: 1 / span 2; align-self: center; }
+  }
+  @media (min-width: 980px) {
+    .fx {
+      grid-template-columns: 6px 84px minmax(0, 1.5fr) minmax(0, 2fr) 96px 132px;
+      grid-template-rows: 1fr; column-gap: 18px; row-gap: 0; min-height: 64px;
+    }
+    .fx .verdict-cell { grid-column: 2; grid-row: 1; align-self: center; }
+    .fx .match { grid-column: 3; grid-row: 1; align-self: center; padding: 16px 0; }
+    .fx .thesis { grid-column: 4; grid-row: 1; align-self: center; padding: 16px 0; font-size: 14px; }
+    .fx .line { grid-column: 5; grid-row: 1; align-items: flex-end; align-self: center; }
+    .fx .line .price { font-size: 17px; }
+    .fx .action {
+      grid-column: 6; grid-row: 1;
+      display: flex; flex-direction: column; gap: 4px;
+      align-items: flex-end; justify-content: center; align-self: center;
+      padding: 16px 0;
+    }
+    .fx .action .when {
+      font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+      font-size: 11px; color: var(--graphite-soft); letter-spacing: 0.04em;
+    }
+    .fx .action .open {
+      font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.06em; color: var(--ink); text-transform: uppercase;
+    }
+    .fx:hover .action .open { color: var(--flame-deep); }
+    .fx .action .open .arr {
+      display: inline-block; transition: transform var(--dur-fast) var(--ease-standard);
+      margin-left: 4px; color: var(--flame);
+    }
+    .fx:hover .action .open .arr { transform: translate(2px, -2px); }
+    .fx.is-pass .match .teams { font-size: 19px; }
+    .fx.is-pass .thesis { font-size: 14px; }
+  }
+
+  /* summary strip */
+  .summary {
+    margin-top: 48px;
+    border: var(--hairline); border-radius: 6px; background: var(--paper-pure);
+    padding: 22px 22px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: end;
+  }
+  .summary .lbl {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--graphite-soft); margin-bottom: 6px;
+  }
+  .summary .val {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 600; font-size: 26px; color: var(--ink); line-height: 1;
+  }
+  .summary .sub {
+    font-family: var(--font-serif); font-size: 12.5px; color: var(--graphite);
+    font-style: italic; margin-top: 4px; line-height: 1.4;
+  }
+  .summary .v-pick .val { color: var(--flame-deep); }
+  @media (min-width: 720px) {
+    .summary { grid-template-columns: repeat(4, 1fr); padding: 22px 26px; gap: 36px; }
+    .summary .val { font-size: 28px; }
+  }
+
+  /* ====================================================
+     6. HOW WE WORK
+     ==================================================== */
+  .how {
+    margin-top: 80px; padding: 36px 0 40px;
+    border-top: var(--hairline-strong); border-bottom: var(--hairline);
+  }
+  .how h2 {
+    font-family: var(--font-serif); font-size: clamp(24px, 3vw, 32px);
+    font-weight: 600; letter-spacing: -0.005em; color: var(--ink);
+    margin: 0 0 6px;
+  }
+  .how .lede {
+    font-family: var(--font-serif); font-style: italic; color: var(--graphite);
+    font-size: 15px; margin: 0 0 22px; max-width: 56ch;
+  }
+  .how-cols { display: grid; grid-template-columns: 1fr; gap: 26px; }
+  .how-col h3 {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    margin: 0 0 8px;
+  }
+  .how-col p {
+    font-family: var(--font-serif); font-size: 15px; line-height: 1.55;
+    color: var(--ink); margin: 0; max-width: 38ch;
+  }
+  .how-col p .em { color: var(--flame); font-weight: 600; }
+  .how-foot { margin-top: 22px; font-family: var(--font-sans); font-size: 13px; }
+  @media (min-width: 720px) {
+    .how-cols { grid-template-columns: repeat(3, 1fr); gap: 40px; }
+  }
+
+  /* ====================================================
+     7. FEATURED COLUMNS
+     ==================================================== */
+  .features { margin-top: 56px; }
+  .features .f-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: var(--hairline); padding-bottom: 10px; margin-bottom: 18px;
+  }
+  .features .f-head h2 {
+    font-family: var(--font-serif); font-size: 22px; font-weight: 600;
+    margin: 0; letter-spacing: -0.005em;
+  }
+  .features .f-head a {
+    font-family: var(--font-sans); font-size: 12px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ink); text-decoration: none;
+  }
+  .features .f-head a:hover { color: var(--flame-deep); }
+  .features .f-head a .arr { color: var(--flame); margin-left: 4px; }
+
+  .f-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+  .f-card {
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 18px 0;
+    border-top: var(--hairline);
+    text-decoration: none; color: var(--ink);
+  }
+  .f-card .kicker {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--flame-deep);
+  }
+  .f-card .title {
+    font-family: var(--font-serif); font-size: 20px; font-weight: 600;
+    line-height: 1.18; letter-spacing: -0.005em; color: var(--ink);
+    text-wrap: balance;
+  }
+  .f-card .deck {
+    font-family: var(--font-serif); font-size: 14px; line-height: 1.5;
+    color: var(--graphite); margin: 0;
+  }
+  .f-card .meta {
+    font-family: var(--font-sans); font-size: 11.5px; color: var(--graphite-soft);
+    letter-spacing: 0.04em; margin-top: 4px;
+  }
+  .f-card:hover .title { color: var(--flame-deep); }
+  @media (min-width: 820px) {
+    .f-grid { grid-template-columns: repeat(3, 1fr); gap: 32px; }
+    .f-card { border-top: 0; border-left: var(--hairline); padding: 0 0 0 22px; }
+    .f-card:first-child { border-left: 0; padding-left: 0; }
+  }
+
+  /* ====================================================
+     8. NEWSLETTER
+     ==================================================== */
+  .news {
+    margin-top: 72px;
+    background: var(--paper-warm);
+    border-top: var(--hairline); border-bottom: var(--hairline);
+    padding: 36px 0 40px;
+  }
+  .news-inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 0 var(--gutter-page);
+    display: grid; grid-template-columns: 1fr; gap: 18px; align-items: end;
+  }
+  .news h2 {
+    font-family: var(--font-serif); font-size: clamp(24px, 3vw, 30px);
+    font-weight: 600; letter-spacing: -0.005em; color: var(--ink);
+    margin: 0; text-wrap: balance; max-width: 22ch;
+  }
+  .news p {
+    font-family: var(--font-serif); font-style: italic; color: var(--graphite);
+    font-size: 15px; margin: 6px 0 0; max-width: 50ch;
+  }
+  .news form {
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .news input[type="email"] {
+    flex: 1 1 220px; min-width: 0;
+    padding: 12px 14px; border: 1px solid var(--ink);
+    background: var(--paper-pure);
+    font-family: var(--font-sans); font-size: 14px; color: var(--ink);
+    border-radius: 4px; min-height: 44px;
+  }
+  .news input[type="email"]:focus { outline: 2px solid var(--flame); outline-offset: 2px; }
+  .news button {
+    padding: 12px 18px; border: 0; background: var(--ink); color: var(--paper);
+    font-family: var(--font-sans); font-size: 14px; font-weight: 600;
+    letter-spacing: 0.02em; border-radius: 4px; cursor: pointer;
+    min-height: 44px;
+  }
+  .news button:hover { background: var(--flame-deep); }
+  .news .fine {
+    font-family: var(--font-sans); font-size: 11.5px; color: var(--graphite-soft);
+    margin-top: 8px;
+  }
+  @media (min-width: 820px) {
+    .news-inner { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 56px; }
+  }
+
+  /* ====================================================
+     9. FOOTER
+     ==================================================== */
+  footer.site-footer {
+    border-top: var(--hairline-strong); margin-top: 0;
+    background: var(--paper);
+  }
+  footer.site-footer .foot-inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 36px var(--gutter-page) 28px;
+  }
+  .foot-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 22px 28px;
+    margin-bottom: 22px;
+  }
+  .foot-col h4 {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+    margin: 0 0 10px;
+  }
+  .foot-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .foot-col a {
+    font-family: var(--font-sans); font-size: 13px; color: var(--ink); text-decoration: none;
+  }
+  .foot-col a:hover { color: var(--flame-deep); text-decoration: underline; text-decoration-color: var(--flame); }
+
+  .foot-brand {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; gap: 11px;
+    border-top: var(--hairline);
+    padding-top: 22px; margin-top: 4px;
+  }
+  .foot-brand .wm {
+    font-family: var(--font-sans); font-weight: 700; font-size: 22px;
+    color: var(--ink); letter-spacing: -0.022em;
+  }
+  .foot-brand .pub {
+    font-family: var(--font-serif); font-style: italic; color: var(--graphite);
+    font-size: 13px;
+  }
+  .foot-brand .pub .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+  .foot-discl {
+    font-family: var(--font-serif); font-size: 12.5px; color: var(--graphite);
+    line-height: 1.55; max-width: 78ch;
+    padding-top: 18px; border-top: var(--hairline-soft);
+  }
+  .foot-discl .dag { color: var(--flame); font-style: italic; }
+  .foot-meta {
+    margin-top: 16px;
+    font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
+    letter-spacing: 0.04em;
+    display: flex; flex-wrap: wrap; gap: 6px 16px;
+  }
+  @media (min-width: 720px) {
+    .foot-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 36px; }
+    .foot-brand { grid-column: auto; border-top: 0; padding-top: 0; margin-top: 0;
+      flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+
+  /* ====================================================
+     10. STICKY MOBILE BOTTOM BAR
+     ==================================================== */
+  .sticky-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+    background: var(--paper-pure);
+    border-top: var(--hairline);
+    box-shadow: 0 -1px 0 var(--rule);
+    padding: 10px var(--gutter-page) calc(10px + env(safe-area-inset-bottom, 0px));
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    min-height: 56px;
+  }
+  .sticky-bar .count {
+    font-family: var(--font-sans); font-size: 12px; color: var(--ink);
+    font-variant-numeric: tabular-nums; line-height: 1.2;
+  }
+  .sticky-bar .count strong { font-weight: 700; }
+  .sticky-bar .count .pp { color: var(--flame-deep); font-weight: 700; }
+  .sticky-bar a.pill {
+    font-family: var(--font-sans); font-size: 12.5px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ink);
+    padding: 10px 14px; border: var(--hairline); border-radius: 999px;
+    text-decoration: none; background: var(--paper-pure);
+    min-height: 44px; display: inline-flex; align-items: center;
+  }
+  .sticky-bar a.pill:hover { color: var(--flame-deep); border-color: var(--flame); }
+  .sticky-bar a.pill .arr { color: var(--flame); margin-left: 6px; }
+  @media (min-width: 820px) { .sticky-bar { display: none; } }
+
+  /* ====================================================
+     CANONICAL: hero-token styling + lead verdict + path + key
+     ==================================================== */
+
+  /* hero standfirst tokens — A + #2 */
+  .hero .standfirst .ai-token {
+    color: var(--ai-deep, var(--ink)); font-style: italic; font-weight: 600;
+  }
+  .hero .standfirst .vlead {
+    color: var(--flame-deep); font-style: normal; font-weight: 600;
+    border-bottom: 1.5px solid var(--flame); padding-bottom: 1px;
+  }
+
+  /* lead verdict — C */
+  .lead-verdict {
+    padding: 32px 0 0;
+    border-top: var(--hairline);
+    margin-top: 28px;
+  }
+  .lead-verdict .lv-eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-bottom: 14px;
+  }
+  .lv-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 6px 1fr;
+    grid-template-rows: auto auto auto auto auto;
+    column-gap: 22px; row-gap: 8px;
+    padding: 26px 28px 26px 0;
+    background: var(--flame-tint);
+    border: var(--hairline);
+    text-decoration: none; color: var(--ink);
+    transition: background var(--dur-fast) var(--ease-standard);
+  }
+  .lv-card:hover { filter: brightness(0.985); }
+  .lv-card .lv-bar { grid-column: 1; grid-row: 1 / -1; background: var(--flame); }
+  .lv-card .lv-head {
+    grid-column: 2; grid-row: 1;
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .lv-card .lv-glyph {
+    font-family: var(--font-sans); font-weight: 700; font-size: 18px;
+    color: var(--flame); line-height: 1;
+  }
+  .lv-card .lv-lab {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--flame-deep);
+  }
+  .lv-card .lv-when {
+    font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
+    letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-left: auto;
+  }
+  .lv-card .lv-teams {
+    grid-column: 2; grid-row: 2;
+    font-family: var(--font-serif); font-weight: 600;
+    font-size: clamp(26px, 3.4vw, 38px);
+    line-height: 1.04; letter-spacing: -0.018em;
+    color: var(--ink); margin: 0; text-wrap: balance;
+  }
+  .lv-card .lv-teams .vs {
+    color: var(--graphite-soft); font-weight: 400;
+    font-style: italic; margin: 0 8px;
+  }
+  .lv-card .lv-venue-meta {
+    grid-column: 2; grid-row: 3;
+    font-family: var(--font-sans); font-size: 12px; color: var(--graphite);
+    letter-spacing: 0.04em; margin: 0;
+  }
+  .lv-card .lv-thesis {
+    grid-column: 2; grid-row: 4;
+    font-family: var(--font-serif); font-size: 16.5px; line-height: 1.55;
+    color: var(--graphite); margin: 6px 0 0; max-width: 60ch;
+  }
+  .lv-card .lv-thesis em { font-style: italic; color: var(--ink); font-weight: 600; }
+  .lv-card .lv-foot {
+    grid-column: 2; grid-row: 5;
+    display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: baseline;
+    margin-top: 10px; padding-top: 14px;
+    border-top: var(--hairline-soft);
+  }
+  .lv-card .lv-reads { display: flex; gap: 14px; flex-wrap: wrap; }
+  .lv-card .rp { display: inline-flex; align-items: baseline; gap: 6px; }
+  .lv-card .rp .k {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .lv-card .rp .v {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 600; font-size: 14.5px; color: var(--ink);
+  }
+  .lv-card .edge {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 700; font-size: 13.5px; color: var(--flame-deep);
+    border-bottom: 2px solid var(--flame); padding-bottom: 1px; line-height: 1;
+  }
+  .lv-card .lv-action { margin-left: auto; display: inline-flex; align-items: baseline; gap: 14px; }
+  .lv-card .lv-action .venue {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .lv-card .lv-action .price {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 600; font-size: 17px; color: var(--ink);
+    border-bottom: 2px solid var(--flame); padding-bottom: 1px;
+  }
+  .lv-card .lv-action .cta {
+    font-family: var(--font-sans); font-size: 11.5px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink);
+  }
+  .lv-card .lv-action .cta .arr { color: var(--flame); margin-left: 4px; }
+  .lv-card:hover .lv-action .cta { color: var(--flame-deep); }
+  @media (max-width: 720px) {
+    /* Fix #6 — tighten hero on mobile so the lead verdict comes up sooner */
+    .hero { padding: 28px 0 20px; }
+    /* Fix #7 — tighten lead-verdict spacing on mobile */
+    .lead-verdict { padding: 22px 0 0; margin-top: 18px; }
+    .lv-card { padding: 22px 20px 22px 0; column-gap: 16px; }
+    .lv-card .lv-when { display: none; }
+    .lv-card .lv-foot { flex-direction: column; align-items: stretch; gap: 12px; }
+    /* Fix #2 — the action row stacks the venue/price line then promotes the CTA to a real button */
+    .lv-card .lv-action {
+      margin-left: 0; width: 100%;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    }
+    .lv-card .lv-action .venue,
+    .lv-card .lv-action .price { flex: 0 0 auto; }
+    .lv-card .lv-action .cta {
+      flex: 1 1 100%;
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 44px; padding: 11px 14px;
+      background: var(--ink); color: var(--paper);
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+    }
+    .lv-card .lv-action .cta .arr { color: var(--flame); margin-left: 6px; }
+    /* Fix #8 — path explainer compresses on mobile */
+    .path-explainer { padding: 12px 0; font-size: 11.5px; }
+  }
+
+  /* path explainer — 3-step row, editorial register */
+  .path-explainer {
+    margin: 18px 0 0; padding: 14px 0;
+    border-top: var(--hairline-soft); border-bottom: var(--hairline-soft);
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+    font-family: var(--font-sans); font-size: 12.5px;
+    color: var(--graphite); letter-spacing: 0.02em;
+  }
+  .path-explainer .step { display: inline-flex; align-items: center; gap: 8px; }
+  .path-explainer .num {
+    font-family: var(--font-mono); font-size: 10.5px; font-weight: 700;
+    color: var(--flame-deep);
+    border: 1px solid var(--flame); border-radius: 999px;
+    padding: 2px 7px; line-height: 1.1;
+  }
+  .path-explainer .path-arr {
+    color: var(--flame); font-family: var(--font-sans); font-weight: 700;
+  }
+  @media (max-width: 720px) {
+    .path-explainer { gap: 6px 10px; font-size: 12px; }
+    .path-explainer .path-arr { display: none; }
+    .path-explainer .step { width: 100%; }
+  }
+
+  /* verdict key — B, BELOW the lead verdict */
+  .verdict-key {
+    padding: 32px 0 8px;
+    margin-top: 32px;
+  }
+  .verdict-key .vk-eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-bottom: 18px;
+  }
+  .vk-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 720px) { .vk-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; } }
+  .vk-card {
+    position: relative;
+    padding: 18px 22px 20px 26px;
+    background: var(--paper-pure);
+    border: var(--hairline);
+    border-left: 4px solid var(--rule);
+  }
+  .vk-card .vk-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .vk-card .vk-glyph {
+    font-family: var(--font-sans); font-weight: 700; font-size: 18px;
+    line-height: 1; width: 22px; text-align: center;
+  }
+  .vk-card .vk-lab {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; line-height: 1;
+  }
+  .vk-card .vk-what {
+    font-family: var(--font-serif); font-size: 14.5px; line-height: 1.5;
+    color: var(--graphite); margin: 0;
+  }
+  .vk-card .vk-what em { color: var(--ink); font-style: italic; font-weight: 600; }
+  .vk-pick { background: var(--flame-tint); border-left-color: var(--flame); }
+  .vk-pick .vk-glyph { color: var(--flame); }
+  .vk-pick .vk-lab   { color: var(--flame-deep); }
+  .vk-pass .vk-glyph { color: var(--graphite-soft); }
+  .vk-pass .vk-lab   { color: var(--graphite-soft); }
+  .vk-avoid { border-left-color: var(--ink); }
+  .vk-avoid .vk-glyph { color: var(--flame); }
+  .vk-avoid .vk-lab {
+    color: var(--ink); border-bottom: 1.5px solid var(--flame);
+    padding-bottom: 1px; align-self: center;
+  }
+
+  /* v4 — affiliate disclosure near outbound CTAs */
+  .affiliate-note {
+    margin-top: 10px;
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--graphite-soft);
+    max-width: 60ch;
+  }
+
+  /* v4 — cookie banner */
+  .cookie-banner {
+    position: fixed; left: 14px; right: 14px; bottom: 14px; z-index: 60;
+    background: var(--paper-pure); border: var(--hairline);
+    box-shadow: 0 12px 32px rgba(14, 34, 64, 0.12);
+    border-radius: 6px;
+    padding: 16px 18px;
+    display: grid; grid-template-columns: 1fr; gap: 12px;
+    font-family: var(--font-sans); color: var(--ink); font-size: 13px;
+    max-width: 900px; margin: 0 auto;
+  }
+  .cookie-banner[hidden] { display: none; }
+  .cookie-banner .cb-msg { line-height: 1.5; color: var(--graphite); max-width: 64ch; }
+  .cookie-banner .cb-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .cookie-banner button {
+    font-family: var(--font-sans); font-size: 12.5px; font-weight: 600;
+    padding: 9px 16px; border-radius: 4px; cursor: pointer;
+    border: var(--hairline); background: var(--paper-pure); color: var(--ink);
+  }
+  .cookie-banner button:hover { background: var(--paper-warm); }
+  .cookie-banner button.cb-accept { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .cookie-banner button.cb-accept:hover { background: var(--flame-deep); border-color: var(--flame-deep); }
+  .cookie-banner .cb-prefs { display: none; padding: 14px 0 0; border-top: var(--hairline); }
+  .cookie-banner.is-managing .cb-prefs { display: grid; gap: 10px; }
+  .cookie-banner .cb-pref { display: flex; align-items: baseline; gap: 10px; font-size: 12.5px; }
+  .cookie-banner .cb-pref .cb-name { font-weight: 700; color: var(--ink); }
+  .cookie-banner .cb-pref .cb-desc { color: var(--graphite); }
+  @media (min-width: 720px) {
+    .cookie-banner { grid-template-columns: 1fr auto; gap: 18px; align-items: center; }
+    .cookie-banner .cb-actions { justify-content: flex-end; }
+    .cookie-banner .cb-prefs { grid-column: 1 / -1; }
+  }
+  .foot-col button {
+    font-family: var(--font-sans); font-size: 13px; color: var(--ink);
+    background: none; border: 0; padding: 0; cursor: pointer; text-align: left;
+  }
+  .foot-col button:hover { color: var(--flame-deep); }
+
+  .foot-affiliate {
+    font-family: var(--font-sans); font-size: 11.5px; color: var(--graphite-soft);
+    line-height: 1.5; max-width: 82ch; margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ 1. MASTHEAD + NAV ============ -->
+  <header class="site-masthead">
+    <div class="inner">
+      <a class="brand-lock" href="./home.html" aria-label="Odds Primer — the AI sports desk for market edge">
+        <span class="wm-row">
+          <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
+            <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+            <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+            <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+            <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+            <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+          </svg>
+          <span class="wm">Odds Primer</span>
+        </span>
+        <span class="tag">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span></span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary">
+              <ul>
+                <li><a href="./home.html" aria-current="page">Home</a></li>
+                <li><a href="./outrights.html">Outright winners</a></li>
+                <li><a href="./matches.html">Upcoming matches</a></li>
+              </ul>
+            </nav>
+
+      <span class="nav-meta">Updated 14:08 ET</span>
+      <details class="burger">
+        <summary class="burger-btn" aria-label="More links">
+          <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+            <rect y="0"  width="16" height="1.5" fill="currentColor"/>
+            <rect y="5"  width="16" height="1.5" fill="currentColor"/>
+            <rect y="10" width="16" height="1.5" fill="currentColor"/>
+          </svg>
+        </summary>
+        <ul class="burger-menu">
+          <li><a href="./about.html">About</a></li>
+          <li><a href="./learn.html">Learn the basics</a></li>
+        </ul>
+      </details>
+
+    </div>
+    <div class="edition-strip">
+      <div class="inner">
+        <span>Vol. 1 · World Cup 2026 · Matchday 2</span>
+        <span class="live">Markets live</span>
+      </div>
+    </div>
+    <nav class="pill-nav" aria-label="Primary (mobile)">
+      <a href="./outrights.html">Winners</a>
+      <a href="./matches.html">Matches</a>
+    </nav>
+  </header>
+
+  <main class="page">
+
+    <!-- ============ 2. HERO ============ -->
+    <section class="hero" aria-labelledby="hero-title">
+      <h1 id="hero-title">The 2026 World Cup, priced.</h1>
+      <p class="standfirst">
+        Our <em class="ai-token">AI model</em> compares Polymarket and Kalshi prices
+        with its own read of each World Cup market. Every market gets one verdict:
+        <em class="vlead">Pick</em>, <em class="vlead">Pass</em>, or
+        <em class="vlead">Avoid</em>. We show the price, the edge, and the reasoning.
+        We don't tip.
+      </p>
+    </section>
+
+    <!-- ============ 2.5 LEAD VERDICT — today's headline call ============ -->
+    <section class="lead-verdict" aria-labelledby="lv-title">
+      <div class="lv-eyebrow">Today's headline verdict · Matchday 2 · Saturday</div>
+
+      <a class="lv-card is-pick" href="./market-v2-newspaper-deck.html">
+        <span class="lv-bar"></span>
+
+        <div class="lv-head">
+          <span class="lv-glyph">▲</span>
+          <span class="lv-lab">Pick</span>
+          <span class="lv-when">Sat · 21:00 ET · Group F</span>
+        </div>
+
+        <h2 class="lv-teams" id="lv-title">
+          France <span class="vs">v</span> Mexico
+        </h2>
+        <p class="lv-venue-meta">MEX · Estadio Azteca</p>
+
+        <p class="lv-thesis">
+          <em>France look four points underpriced.</em>
+          Polymarket is pricing France lower than our model. Our model has France
+          at 56% to win; the market has them at 52%. That gap is the edge.
+        </p>
+
+        <div class="lv-foot">
+          <div class="lv-reads">
+            <span class="rp"><span class="k">model</span><span class="v">56%</span></span>
+            <span class="rp"><span class="k">market</span><span class="v">52%</span></span>
+            <span class="edge">+4pp</span>
+          </div>
+          <div class="lv-action">
+            <span class="venue">Polymarket</span>
+            <span class="price">−180</span>
+            <span class="cta">Read the market case <span class="arr">↗</span></span>
+          </div>
+        </div>
+      </a>
+      <p class="affiliate-note">
+        Odds Primer may earn a referral fee if you use a partner venue. Verdicts are editorial and independent.
+      </p>
+
+      <!-- ============ 3-step path explainer ============ -->
+      <aside class="path-explainer" aria-label="How to read a verdict">
+        <span class="step"><span class="num">1</span>Read the market case</span>
+        <span class="path-arr">→</span>
+        <span class="step"><span class="num">2</span>Compare the price</span>
+        <span class="path-arr">→</span>
+        <span class="step"><span class="num">3</span>View source on Polymarket or Kalshi</span>
+      </aside>
+    </section>
+
+    <!-- ============ 2.6 VERDICT KEY — three states (below the lead, demo first then teach) ============ -->
+    <section class="verdict-key" aria-label="How to read a verdict">
+      <div class="vk-eyebrow">The verdict · three states</div>
+      <div class="vk-grid">
+
+        <div class="vk-card vk-pick">
+          <div class="vk-head">
+            <span class="vk-glyph">▲</span>
+            <span class="vk-lab">Pick</span>
+          </div>
+          <p class="vk-what">
+            <em>The model sees the market as underpriced.</em>
+            Worth inspecting, not a guaranteed outcome.
+          </p>
+        </div>
+
+        <div class="vk-card vk-pass">
+          <div class="vk-head">
+            <span class="vk-glyph">—</span>
+            <span class="vk-lab">Pass</span>
+          </div>
+          <p class="vk-what">
+            <em>No clear edge.</em>
+            The market is close to our model.
+          </p>
+        </div>
+
+        <div class="vk-card vk-avoid">
+          <div class="vk-head">
+            <span class="vk-glyph">✕</span>
+            <span class="vk-lab">Avoid</span>
+          </div>
+          <p class="vk-what">
+            <em>The price looks unattractive.</em>
+            Interesting event, poor market structure.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ 3. ARTICLE PREVIEWS — outrights + upcoming matches ============ -->
+    <section class="article-previews" aria-label="Today's lead reads">
+      <div class="prev-grid">
+
+        <a class="article-preview prev-outrights" href="./outrights.html">
+          <span class="kicker">Outright winners · World Cup 2026</span>
+          <h2 class="prev-title">Three reads on who lifts the trophy.</h2>
+          <p class="prev-deck">
+            Where the model and the market disagree most.
+            <em>France</em> and <em>Argentina</em> look underpriced;
+            <em>Brazil</em> is the favourite priced thin.
+          </p>
+          <div class="prev-peek">
+            <span class="peek-stat"><span class="pn">3</span><span class="pl">picks</span></span>
+            <span class="peek-stat"><span class="pn">1</span><span class="pl">avoid</span></span>
+            <span class="peek-stat"><span class="pn">+5pp</span><span class="pl">top edge</span></span>
+          </div>
+          <span class="prev-cta">Read the outright board <span class="arr">→</span></span>
+        </a>
+
+        <a class="article-preview prev-matches" href="./matches.html">
+          <span class="kicker">Upcoming matches · Matchday 2</span>
+          <h2 class="prev-title">Where today's prices look wrong.</h2>
+          <p class="prev-deck">
+            Eight fixtures across three groups — three Picks, four Passes,
+            one rare two-way Avoid. <em>France v Mexico</em> is the
+            headline read.
+          </p>
+          <div class="prev-peek">
+            <span class="peek-stat"><span class="pn">3</span><span class="pl">picks</span></span>
+            <span class="peek-stat"><span class="pn">4</span><span class="pl">passes</span></span>
+            <span class="peek-stat"><span class="pn">1</span><span class="pl">avoid</span></span>
+          </div>
+          <span class="prev-cta">Read the match board <span class="arr">→</span></span>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- ============ 6. HOW WE WORK ============ -->
+    <section class="how" aria-labelledby="how-title">
+      <h2 id="how-title">How we work</h2>
+      <p class="lede">Three things every page on this site shows: a price, a comparison, and an explanation.</p>
+      <div class="how-cols">
+        <div class="how-col">
+          <h3>We compare</h3>
+          <p>Prices on Polymarket, Kalshi, and the major US sportsbooks, refreshed every minute. <span class="em">Best price</span> is bold ink, not a green badge — it isn't a buy signal.</p>
+        </div>
+        <div class="how-col">
+          <h3>We explain</h3>
+          <p>Plain English on what the market resolves to, how implied probability works, and why two venues might disagree on the same outcome.</p>
+        </div>
+        <div class="how-col">
+          <h3>We don't tip</h3>
+          <p>No hype, no tip-of-the-day, no instructions. The Desk flags fixtures where the line looks slow, fair, or both-sides expensive — a structural read on the prices, not a call on the outcome.</p>
+        </div>
+      </div>
+      <div class="how-foot">
+        <a class="link-secondary" href="./learn.html">Read the methodology →</a>
+      </div>
+    </section>
+
+    <!-- ============ 7. FEATURED COLUMNS ============ -->
+    <section class="features" aria-labelledby="features-title">
+      <div class="f-head">
+        <h2 id="features-title">Featured columns</h2>
+        <a href="/columns">All columns <span class="arr">→</span></a>
+      </div>
+      <div class="f-grid">
+        <a class="f-card" href="/columns/poly-kalshi-france">
+          <span class="kicker">Outright winner</span>
+          <span class="title">Why Polymarket and Kalshi don't agree on France</span>
+          <p class="deck">A two-cent gap on a binary contract is a two-percentage-point gap on the same outcome. Small in the abstract, large for a market this liquid.</p>
+          <span class="meta">6 min read · The Editors · 12 May</span>
+        </a>
+        <a class="f-card" href="/columns/what-plus-130-means">
+          <span class="kicker">Reading the numbers</span>
+          <span class="title">What +130 actually means</span>
+          <p class="deck">American odds, decimal odds, and "cents" on a contract — three notations for the same idea. A short conversion table, with examples.</p>
+          <span class="meta">4 min read · 10 May</span>
+        </a>
+        <a class="f-card" href="/columns/group-d-priced-closest">
+          <span class="kicker">Group stage</span>
+          <span class="title">Group D is priced as the closest in the tournament</span>
+          <p class="deck">France is favored, but four cents separates the field. We look at why the books and the markets disagree most where the football is closest.</p>
+          <span class="meta">5 min read · 09 May</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ 8. NEWSLETTER ============ -->
+  <section class="news" aria-labelledby="news-title">
+    <div class="news-inner">
+      <div>
+        <h2 id="news-title">The matchday edition.</h2>
+        <p>One short edition per matchday — what the prices moved, what's still off, what we read.</p>
+      </div>
+      <form onsubmit="event.preventDefault();">
+        <label class="visually-hidden" for="news-email">Email address</label>
+        <input id="news-email" type="email" placeholder="your.email@domain.com" required>
+        <button type="submit">Subscribe</button>
+        <div class="fine" style="flex-basis:100%;">No tips, no spam, one click to leave.</div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ 9. FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="foot-inner">
+      <div class="foot-grid">
+        <div class="foot-brand">
+          <svg viewBox="0 0 38 34" width="44" height="40" aria-hidden="true">
+            <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+            <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+            <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+            <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+            <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+          </svg>
+          <span class="wm">Odds Primer</span>
+          <span class="pub">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span>.</span>
+        </div>
+        <div class="foot-col">
+          <h4>Editorial</h4>
+          <ul>
+            <li><a href="./home.html">Home</a></li>
+            <li><a href="./outrights.html">Outright winners</a></li>
+            <li><a href="./matches.html">Upcoming matches</a></li>
+            <li><a href="./learn.html">Learn the basics</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h4>About</h4>
+          <ul>
+            <li><a href="./about.html">About Odds Primer</a></li>
+            <li><a href="./methodology.html">Methodology</a></li>
+            <li><a href="./corrections.html">Corrections policy</a></li>
+            <li><a href="mailto:desk@oddsprimer.com">Contact the Desk</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="./privacy.html">Privacy</a></li>
+            <li><a href="./terms.html">Terms of use</a></li>
+            <li><a href="./affiliate-disclosure.html">Affiliate disclosure</a></li>
+            <li><a href="./responsible-use.html">Responsible use</a></li>
+            <li><a href="./cookies.html">Cookie policy</a></li>
+            <li><button type="button" onclick="document.getElementById('cookie-banner').hidden=false; document.getElementById('cookie-banner').classList.add('is-managing');">Cookie settings</button></li>
+          </ul>
+        </div>
+      </div>
+      <p class="foot-discl">
+        <span class="dag">†</span> Odds Primer is editorial information only. We are not a sportsbook, broker, exchange,
+        financial adviser, or betting adviser. We do not take wagers, hold funds, execute trades, or provide personalized advice.
+        Prediction-market participation involves risk and may not be available in your location.
+      </p>
+      <p class="foot-affiliate">
+        Some outbound source links may be affiliate links. Affiliate relationships do not determine our editorial verdicts.
+      </p>
+
+      <div class="foot-meta">
+        <span>© 2026 Odds Primer</span>
+        <span>An independent editorial website — not a registered company, broker, or sportsbook</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ 10. STICKY MOBILE BOTTOM BAR ============ -->
+  <div class="sticky-bar" role="navigation" aria-label="Quick actions">
+    <a class="count" href="./matches.html">
+      Today: <strong><span class="pp">3 picks</span> · top edge <span class="pp">+5pp</span></strong>
+    </a>
+    <a class="pill" href="./matches.html">See reads <span class="arr">↗</span></a>
+  </div>
+
+  <style>
+    .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
+  </style>
+
+  <div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Cookie preferences">
+    <div class="cb-msg">
+      Odds Primer uses cookies and similar technologies to run the site, understand usage, and measure outbound links.
+      You can accept, reject, or manage non-essential cookies.
+    </div>
+    <div class="cb-actions">
+      <button type="button" onclick="document.getElementById('cookie-banner').classList.add('is-managing');">Manage</button>
+      <button type="button" onclick="document.getElementById('cookie-banner').hidden=true;">Reject</button>
+      <button class="cb-accept" type="button" onclick="document.getElementById('cookie-banner').hidden=true;">Accept</button>
+    </div>
+    <div class="cb-prefs">
+      <label class="cb-pref">
+        <input type="checkbox" checked disabled>
+        <span><span class="cb-name">Essential cookies</span> — always on</span>
+      </label>
+      <label class="cb-pref">
+        <input type="checkbox">
+        <span><span class="cb-name">Analytics cookies</span> — <span class="cb-desc">help us understand site usage</span></span>
+      </label>
+      <label class="cb-pref">
+        <input type="checkbox">
+        <span><span class="cb-name">Affiliate measurement</span> — <span class="cb-desc">helps us measure outbound partner links</span></span>
+      </label>
+      <div class="cb-actions" style="margin-top: 4px;">
+        <button type="button" onclick="document.getElementById('cookie-banner').hidden=true;">Save preferences</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

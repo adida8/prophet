@@ -1,0 +1,75 @@
+# Netlify config — serves only the static v4 mockups under frontend/public/v4/.
+# Independent from the Railway prod deploy, which uses railpack.json.
+
+[build]
+  publish    = "frontend/public/v4"
+  command    = ""
+  base       = ""
+  ignore     = "false"
+
+# Clean, extensionless URLs. status = 200 is a rewrite (URL stays put).
+[[redirects]]
+  from   = "/"
+  to     = "/home.html"
+  status = 200
+
+[[redirects]]
+  from   = "/matches"
+  to     = "/matches.html"
+  status = 200
+
+[[redirects]]
+  from   = "/outrights"
+  to     = "/outrights.html"
+  status = 200
+
+[[redirects]]
+  from   = "/about"
+  to     = "/about.html"
+  status = 200
+
+[[redirects]]
+  from   = "/learn"
+  to     = "/learn.html"
+  status = 200
+
+[[redirects]]
+  from   = "/methodology"
+  to     = "/methodology.html"
+  status = 200
+
+[[redirects]]
+  from   = "/privacy"
+  to     = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from   = "/terms"
+  to     = "/terms.html"
+  status = 200
+
+[[redirects]]
+  from   = "/cookies"
+  to     = "/cookies.html"
+  status = 200
+
+[[redirects]]
+  from   = "/affiliate-disclosure"
+  to     = "/affiliate-disclosure.html"
+  status = 200
+
+[[redirects]]
+  from   = "/responsible-use"
+  to     = "/responsible-use.html"
+  status = 200
+
+[[redirects]]
+  from   = "/corrections"
+  to     = "/corrections.html"
+  status = 200
+
+# Catch-all: any other path returns the styled 404 with a real 404 status.
+[[redirects]]
+  from   = "/*"
+  to     = "/404.html"
+  status = 404
