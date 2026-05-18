@@ -322,6 +322,19 @@ async def backtest_workbook():
 # ── Static frontend ───────────────────────────────────────────────────
 
 FRONTEND_DIST = Path(__file__).parent / "frontend" / "dist"
+V4_DIR = Path(__file__).parent / "frontend" / "public" / "v4"
+
+
+@app.get("/", include_in_schema=False)
+async def root():
+    home = V4_DIR / "home.html"
+    if home.is_file():
+        return FileResponse(home, media_type="text/html")
+    if FRONTEND_DIST.exists():
+        return FileResponse(FRONTEND_DIST / "index.html")
+    return {"error": "no frontend deployed"}
+
+
 if FRONTEND_DIST.exists():
     # Serve assets/ directly so JS/CSS hashed bundles work.
     assets_dir = FRONTEND_DIST / "assets"
@@ -330,9 +343,15 @@ if FRONTEND_DIST.exists():
 
     # SPA fallback: every non-API GET serves index.html so client-side
     # routes like /ledger and /ledger/0x… resolve to the React app.
+    # v4 mockup files win over the SPA so the static site's relative
+    # links (./matches.html, ./colors_and_type.css, etc.) resolve.
     @app.get("/{full_path:path}")
     async def spa_fallback(full_path: str):
-        candidate = FRONTEND_DIST / full_path
-        if full_path and candidate.is_file():
-            return FileResponse(candidate)
+        if full_path:
+            v4_candidate = V4_DIR / full_path
+            if v4_candidate.is_file():
+                return FileResponse(v4_candidate)
+            candidate = FRONTEND_DIST / full_path
+            if candidate.is_file():
+                return FileResponse(candidate)
         return FileResponse(FRONTEND_DIST / "index.html")
