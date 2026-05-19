@@ -44,6 +44,30 @@ def _cmd_run(args: argparse.Namespace) -> int:
     print(f"wrote {total} files across {len(written)} sport(s)")
     for sport, paths in written.items():
         print(f"  {sport}: {len(paths)} file(s)")
+
+    if not args.skip_outrights:
+        from desk.outrights.run import run_once as run_outrights_once
+        out_root = Path(args.output_dir) if args.output_dir else None
+        out_dir = (out_root / "outrights") if out_root else None
+        try:
+            path = run_outrights_once(out_dir=out_dir)
+            print(f"outrights: wrote {path}")
+        except Exception as e:  # noqa: BLE001 — never break matches if outrights fail
+            print(f"outrights: skipped — {e}", file=sys.stderr)
+    return 0
+
+
+def _cmd_outrights(args: argparse.Namespace) -> int:
+    from desk.outrights.run import run_once as run_outrights_once
+    out_dir = Path(args.output_dir) / "outrights" if args.output_dir else None
+    path = run_outrights_once(
+        sims=args.sims,
+        bootstrap_samples=args.bootstrap_samples,
+        bootstrap_sims=args.bootstrap_sims,
+        seed=args.seed,
+        out_dir=out_dir,
+    )
+    print(f"outrights: wrote {path}")
     return 0
 
 
@@ -141,7 +165,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     r = sub.add_parser("run", help="run the engine")
     r.add_argument("--once", action="store_true", help="single pass, then exit")
+    r.add_argument("--skip-outrights", action="store_true",
+                   help="don't run the outright winner sim (matches only)")
     r.set_defaults(func=_cmd_run)
+
+    o = sub.add_parser("outrights", help="run the outright winner sim only")
+    o.add_argument("--sims", type=int, default=10_000)
+    o.add_argument("--bootstrap-samples", type=int, default=100)
+    o.add_argument("--bootstrap-sims", type=int, default=1_000)
+    o.add_argument("--seed", type=int, default=42)
+    o.set_defaults(func=_cmd_outrights)
 
     s = sub.add_parser("sports", help="list registered sports")
     s.set_defaults(func=_cmd_sports)
