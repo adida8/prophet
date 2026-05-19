@@ -64,23 +64,52 @@ def _verdict_dict(verdict: OutrightVerdict) -> dict:
     }
 
 
-def _ladder_dict(verdict: OutrightVerdict, model: OutrightModelOutput, *, top_n: int = 20) -> list[dict]:
-    """The full ladder — best-edge positions first. Top 20 keeps the
-    JSON readable (96 positions × 8 fields balloons fast).
+def _ladder_dict(verdict: OutrightVerdict, model: OutrightModelOutput) -> list[dict]:
+    """One row per team — both sides side-by-side, sorted by model
+    P(win) descending. This is what the site renders as a full ladder.
+
+    Each row carries YES and NO data + a per-team verdict: the better
+    of the two sides if it clears the Pick gate (lower_edge_pp ≥
+    pick_pp), else Pass. Avoid is structurally impossible on this
+    market shape (see desk/outrights/decide.py).
     """
-    rows = []
-    for pos in verdict.positions[:top_n]:
+    from desk.verdict.thresholds import current as _thresholds
+    pick_pp = _thresholds().pick_pp
+
+    yes_by_team: dict[str, "Position"] = {}
+    no_by_team:  dict[str, "Position"] = {}
+    for pos in verdict.positions:
+        bucket = yes_by_team if pos.side == "YES" else no_by_team
+        bucket[pos.team] = pos
+
+    rows: list[dict] = []
+    for team in yes_by_team:
+        yp = yes_by_team[team]
+        np_ = no_by_team.get(team)
+        if np_ is None:
+            continue
+        # Per-team verdict: take whichever side clears the gate by the
+        # largest lower-edge margin.
+        best_side = None
+        if yp.lower_edge_pp >= pick_pp and (np_ is None or yp.lower_edge_pp >= np_.lower_edge_pp):
+            best_side = "YES"
+        elif np_.lower_edge_pp >= pick_pp:
+            best_side = "NO"
         rows.append({
-            "team":          pos.team,
-            "side":          pos.side,
-            "label":         pos.label,
-            "model_p":       round(pos.model_p, 4),
-            "model_p_lower": round(pos.model_p_lower, 4),
-            "model_p_upper": round(pos.model_p_upper, 4),
-            "market_p":      round(pos.market_p, 4),
-            "edge_pp":       round(pos.edge_pp, 2),
-            "lower_edge_pp": round(pos.lower_edge_pp, 2),
+            "team":           team,
+            "model_p":        round(yp.model_p, 4),         # P(win) — same on YES side
+            "model_p_lower":  round(yp.model_p_lower, 4),
+            "model_p_upper":  round(yp.model_p_upper, 4),
+            "yes_market_p":   round(yp.market_p, 4),
+            "no_market_p":    round(np_.market_p, 4),
+            "yes_edge_pp":    round(yp.edge_pp, 2),
+            "no_edge_pp":     round(np_.edge_pp, 2),
+            "yes_lower_edge_pp": round(yp.lower_edge_pp, 2),
+            "no_lower_edge_pp":  round(np_.lower_edge_pp, 2),
+            "verdict":        "pick" if best_side else "pass",
+            "pick_side":      best_side,
         })
+    rows.sort(key=lambda r: -r["model_p"])
     return rows
 
 
