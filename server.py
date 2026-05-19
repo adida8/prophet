@@ -319,6 +319,89 @@ async def backtest_workbook():
     )
 
 
+# ── Odds Primer static site ───────────────────────────────────────────
+# The Desk's per-match JSON output is rendered to a static HTML site by
+# site/generate.py. When site/public/index.html exists, those routes win
+# over the React SPA fallback (declaration order matters in FastAPI).
+# Daily workflow:
+#     python -m desk run --once       # refresh JSONs
+#     python site/generate.py         # rebuild static HTML
+#     git commit -am 'site refresh' && git push   # Railway redeploys
+
+SITE_PUBLIC = Path(__file__).parent / "site" / "public"
+
+if (SITE_PUBLIC / "index.html").exists():
+
+    def _serve(rel_path: str):
+        p = SITE_PUBLIC / rel_path
+        if p.is_file():
+            return FileResponse(p, media_type="text/html")
+        # 404 falls through Starlette stack — render a tiny inline 404.
+        return FileResponse(SITE_PUBLIC / "index.html", media_type="text/html", status_code=404)
+
+    @app.get("/", include_in_schema=False)
+    async def site_home():
+        return _serve("index.html")
+
+    @app.get("/matches", include_in_schema=False)
+    @app.get("/matches/", include_in_schema=False)
+    async def site_matches():
+        return _serve("matches/index.html")
+
+    @app.get("/m/{match_id}", include_in_schema=False)
+    async def site_match(match_id: str):
+        # Strip any client-side trailing slash or .html
+        match_id = match_id.removesuffix("/").removesuffix(".html")
+        return _serve(f"m/{match_id}.html")
+
+    @app.get("/outrights", include_in_schema=False)
+    @app.get("/outrights/", include_in_schema=False)
+    async def site_outrights():
+        return _serve("outrights/index.html")
+
+    @app.get("/o/{outright_id}", include_in_schema=False)
+    async def site_outright(outright_id: str):
+        outright_id = outright_id.removesuffix("/").removesuffix(".html")
+        return _serve(f"o/{outright_id}.html")
+
+    # Stable shortlinks for the launch outright. `/outrights/wc26` is
+    # the URL we cite externally; it lands on the same rendered page as
+    # `/o/fb-wc26-winner`.
+    @app.get("/outrights/wc26", include_in_schema=False)
+    @app.get("/outrights/wc26/", include_in_schema=False)
+    async def site_outright_wc26():
+        return _serve("o/fb-wc26-winner.html")
+
+    # ── Editorial / trust pages (sourced from handover-v4) ────────────
+    # Each lives as a flat `site/public/{name}.html`. We expose both the
+    # clean URL (e.g. `/about`) and the explicit `.html` form so internal
+    # `./about.html` links in the bundled pages still resolve.
+    _EDITORIAL_PAGES = (
+        "about", "learn",
+        "method", "methodology",
+        "responsible-use", "affiliate-disclosure", "corrections",
+        "terms", "privacy", "cookies",
+    )
+
+    def _make_editorial_route(name: str):
+        async def handler():
+            return _serve(f"{name}.html")
+        handler.__name__ = f"site_editorial_{name.replace('-', '_')}"
+        return handler
+
+    for _name in _EDITORIAL_PAGES:
+        _h = _make_editorial_route(_name)
+        app.get(f"/{_name}",       include_in_schema=False)(_h)
+        app.get(f"/{_name}/",      include_in_schema=False)(_h)
+        app.get(f"/{_name}.html",  include_in_schema=False)(_h)
+
+    # Shared stylesheet for the editorial pages — every page references
+    # `./colors_and_type.css`, which resolves to this URL.
+    @app.get("/colors_and_type.css", include_in_schema=False)
+    async def site_colors_css():
+        return FileResponse(SITE_PUBLIC / "colors_and_type.css", media_type="text/css")
+
+
 # ── Static frontend ───────────────────────────────────────────────────
 
 FRONTEND_DIST = Path(__file__).parent / "frontend" / "dist"

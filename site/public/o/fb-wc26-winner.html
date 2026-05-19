@@ -475,11 +475,27 @@ a { color: inherit; }
 
 .site-foot {
   margin: 48px 0 28px; padding-top: 18px; border-top: var(--hairline);
-  display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: space-between;
+  display: flex; flex-direction: column; gap: 14px;
   font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
 }
+.site-foot .foot-row {
+  display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: space-between;
+}
 .site-foot .left { color: var(--ink); }
+.site-foot .foot-nav {
+  display: flex; flex-wrap: wrap; gap: 8px 22px;
+  padding-top: 12px; border-top: var(--hairline-soft);
+}
+.site-foot .foot-nav a {
+  color: var(--graphite-soft); text-decoration: none;
+  font-size: 10.5px; letter-spacing: 0.12em;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  transition: color var(--dur-fast) var(--ease-standard),
+              border-color var(--dur-fast) var(--ease-standard);
+}
+.site-foot .foot-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
 </style>
 </head>
 <body>
@@ -495,11 +511,14 @@ a { color: inherit; }
     <nav class="site-nav" aria-label="Primary">
       <ul>
         <li><a href="/">Home</a></li>
-        <li><a href="/outrights/" aria-current="page">Outright winners</a></li>
         <li><a href="/matches/">Upcoming matches</a></li>
+        <li><a href="/outrights/" aria-current="page">Outright winners</a></li>
+        <li><a href="/methodology">How it works</a></li>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/about">About</a></li>
       </ul>
     </nav>
-    <span class="nav-meta">Updated 13:41 UTC</span>
+    <span class="nav-meta">Updated 14:05 UTC</span>
     <button class="burger" aria-label="More links">
       <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
         <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.5"/>
@@ -517,8 +536,19 @@ a { color: inherit; }
 <p>The field can move quickly — qualifying clarifies team ratings, draws change the bracket, and the market reprices around news. We re-run on the data layer&#x27;s late-binding cadence and republish when something opens up.</p></div><section class="drivers"><h2>The drivers</h2><ol><li>Top market: Argentina (YES) at +6.5pp point-estimate edge.</li>
 <li>Field size: 48 priced participants × YES + NO = 96 positions.</li>
 <li>Sims: 10,000. Bootstrap: 100 samples × 1,000 sims with ±50 Elo perturbation.</li></ol></section></main><footer class="site-foot page">
-  <span class="left">Odds Primer · educational, not advice</span>
-  <span>The Desk · v1.1 · 19 May 2026</span>
+  <div class="foot-row">
+    <span class="left">Odds Primer · educational, not advice</span>
+    <span>The Desk · v1.1 · 19 May 2026</span>
+  </div>
+  <nav class="foot-nav" aria-label="Trust and editorial">
+    <a href="/responsible-use">Responsible use</a>
+    <a href="/affiliate-disclosure">Affiliate disclosure</a>
+    <a href="/corrections">Corrections</a>
+    <a href="/methodology">Methodology</a>
+    <a href="/terms">Terms</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/cookies">Cookies</a>
+  </nav>
 </footer>
 </body>
 </html>

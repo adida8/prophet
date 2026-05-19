@@ -475,11 +475,27 @@ a { color: inherit; }
 
 .site-foot {
   margin: 48px 0 28px; padding-top: 18px; border-top: var(--hairline);
-  display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: space-between;
+  display: flex; flex-direction: column; gap: 14px;
   font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
 }
+.site-foot .foot-row {
+  display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: space-between;
+}
 .site-foot .left { color: var(--ink); }
+.site-foot .foot-nav {
+  display: flex; flex-wrap: wrap; gap: 8px 22px;
+  padding-top: 12px; border-top: var(--hairline-soft);
+}
+.site-foot .foot-nav a {
+  color: var(--graphite-soft); text-decoration: none;
+  font-size: 10.5px; letter-spacing: 0.12em;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  transition: color var(--dur-fast) var(--ease-standard),
+              border-color var(--dur-fast) var(--ease-standard);
+}
+.site-foot .foot-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
 </style>
 </head>
 <body>
@@ -495,11 +511,14 @@ a { color: inherit; }
     <nav class="site-nav" aria-label="Primary">
       <ul>
         <li><a href="/" aria-current="page">Home</a></li>
-        <li><a href="/outrights/">Outright winners</a></li>
         <li><a href="/matches/">Upcoming matches</a></li>
+        <li><a href="/outrights/">Outright winners</a></li>
+        <li><a href="/methodology">How it works</a></li>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/about">About</a></li>
       </ul>
     </nav>
-    <span class="nav-meta">Updated 13:41 UTC</span>
+    <span class="nav-meta">Updated 14:05 UTC</span>
     <button class="burger" aria-label="More links">
       <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
         <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.5"/>
@@ -518,8 +537,19 @@ a { color: inherit; }
 <div class="lv-card is-pick"><a class="lv-card-link" href="/m/fb-wc26-qat-che-20260613" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Sat 13 Jun · 19:00 UTC</span></div><h3 class="lv-teams">Qatar <span class="vs">v</span> Switzerland</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">A +17.6pp gap across model and market on the Qatar side. Our Elo prior, after host and altitude adjustments, rates Qatar at 26%; Polymarket sits at 8%.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">26%</span></span><span class="rp"><span class="k">Market</span><span class="v">8%</span></span><span class="edge">+17.6pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-qat-che-2026-06-13" target="_blank" rel="nofollow noopener">Trade on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +1120</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/markets?q=Qatar+Switzerland" target="_blank" rel="nofollow noopener">Trade on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-search">Search — no live listing</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-qat-che-20260613">Read the case <span class="arr">→</span></a></div></div></div>
 <div class="lv-card is-pick"><a class="lv-card-link" href="/m/fb-wc26-kor-civ-20260625" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Thu 25 Jun · 20:00 UTC</span></div><h3 class="lv-teams">Curaçao <span class="vs">v</span> Côte d&#x27;Ivoire</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">The model thinks Curaçao are mispriced. Our number reads 42% on the home side; the market reads 27%. The +14.7pp gap is the Pick.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">42%</span></span><span class="rp"><span class="k">Market</span><span class="v">27%</span></span><span class="edge">+14.7pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-kor-civ-2026-06-25" target="_blank" rel="nofollow noopener">Trade on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +270</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/markets?q=Cura%C3%A7ao+C%C3%B4te+d%27Ivoire" target="_blank" rel="nofollow noopener">Trade on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-search">Search — no live listing</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-kor-civ-20260625">Read the case <span class="arr">→</span></a></div></div></div>
 <div class="lv-card is-pick"><a class="lv-card-link" href="/m/fb-wc26-cze-rsa-20260618" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Thu 18 Jun · 16:00 UTC</span></div><h3 class="lv-teams">Czechia <span class="vs">v</span> South Africa</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">On every meaningful read, Czechia look stronger here than Polymarket has them. Model 64% vs market 49% — a +14.6pp gap on the favourite side.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">64%</span></span><span class="rp"><span class="k">Market</span><span class="v">49%</span></span><span class="edge">+14.6pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-cze-rsa-2026-06-18" target="_blank" rel="nofollow noopener">Trade on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +104</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/markets?q=Czechia+South+Africa" target="_blank" rel="nofollow noopener">Trade on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-search">Search — no live listing</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-cze-rsa-20260618">Read the case <span class="arr">→</span></a></div></div></div><div class="section-label"><span>Outright winners</span><a class="see-all" href="/outrights/">See all outrights <span class="arr">→</span></a></div><div class="lv-card is-pass"><a class="lv-card-link" href="/o/fb-wc26-winner" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">—</span><span class="lv-lab">Pass</span><span class="lv-when">Resolves 20 Jul 2026</span></div><h3 class="lv-teams">World Cup 2026</h3><p class="lv-venue-meta">World Cup 2026 — outright winner</p><p class="lv-thesis">The model and the market agree on the field. The biggest gap is Argentina on the YES side at +6.5pp — not wide enough on the lower-bound check to call a Pick.</p><div class="lv-foot"><span class="lv-flat-msg">Markets agree on this field.</span><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/2026-fifa-world-cup-winner-595" target="_blank" rel="nofollow noopener">Trade on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">Open the market</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/markets?q=World+Cup+2026+winner" target="_blank" rel="nofollow noopener">Trade on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-search">Search — no live listing</span></span><a class="cta-secondary read-case" href="/o/fb-wc26-winner">Read the case <span class="arr">→</span></a></div></div></div></main><footer class="site-foot page">
-  <span class="left">Odds Primer · educational, not advice</span>
-  <span>The Desk · v1.1 · 19 May 2026</span>
+  <div class="foot-row">
+    <span class="left">Odds Primer · educational, not advice</span>
+    <span>The Desk · v1.1 · 19 May 2026</span>
+  </div>
+  <nav class="foot-nav" aria-label="Trust and editorial">
+    <a href="/responsible-use">Responsible use</a>
+    <a href="/affiliate-disclosure">Affiliate disclosure</a>
+    <a href="/corrections">Corrections</a>
+    <a href="/methodology">Methodology</a>
+    <a href="/terms">Terms</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/cookies">Cookies</a>
+  </nav>
 </footer>
 </body>
 </html>
