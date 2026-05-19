@@ -145,18 +145,40 @@ class KalshiSoccerEventsSource(Source):
         return events
 
 
-async def fetch_markets_for_event(event_ticker: str, *, client: httpx.AsyncClient | None = None) -> list[dict[str, Any]]:
-    """Return the raw `markets` array for one event. Empty list on error."""
+async def fetch_markets_for_event(
+    event_ticker: str,
+    *,
+    client: httpx.AsyncClient | None = None,
+    max_retries: int = 4,
+) -> list[dict[str, Any]]:
+    """Return the raw `markets` array for one event.
+
+    Kalshi's public read API rate-limits unauthenticated callers
+    aggressively. We retry on 429 with exponential backoff (0.5s, 1s,
+    2s, 4s) and return an empty list only once retries are exhausted.
+    """
+    import asyncio
+
     own_client = client is None
     c = client or httpx.AsyncClient(timeout=20.0)
     try:
-        try:
-            r = await c.get(f"{KALSHI_API_BASE}/markets", params={"event_ticker": event_ticker})
-            r.raise_for_status()
-        except httpx.HTTPError as e:
-            log.warning("kalshi markets fetch failed for %s: %s", event_ticker, e)
-            return []
-        return (r.json() or {}).get("markets", []) or []
+        backoff = 0.5
+        for attempt in range(max_retries + 1):
+            try:
+                r = await c.get(f"{KALSHI_API_BASE}/markets", params={"event_ticker": event_ticker})
+                if r.status_code == 429:
+                    if attempt < max_retries:
+                        await asyncio.sleep(backoff)
+                        backoff *= 2
+                        continue
+                    log.warning("kalshi markets %s: 429 after %d retries", event_ticker, max_retries)
+                    return []
+                r.raise_for_status()
+                return (r.json() or {}).get("markets", []) or []
+            except httpx.HTTPError as e:
+                log.warning("kalshi markets fetch failed for %s: %s", event_ticker, e)
+                return []
+        return []
     finally:
         if own_client:
             await c.aclose()

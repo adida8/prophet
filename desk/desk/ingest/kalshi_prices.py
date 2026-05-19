@@ -156,17 +156,26 @@ async def fetch_wc26_snapshots(
         log.warning("kalshi events fetch raised: %s", e)
         return out
 
+    # Kalshi's public read API rate-limits aggressively (~5/s before 429s
+    # start). Cap concurrency and add a small per-request gap so a ~70-event
+    # WC26 pull stays under the limit. One refresh cycle takes ~10s with
+    # max_concurrency=3 — well inside PR 6's 60s scheduler cadence.
+    max_concurrency = 2
+    per_request_gap = 0.35
+    sem = asyncio.Semaphore(max_concurrency)
+
     async with httpx.AsyncClient(timeout=20.0) as client:
         async def _one(ev: dict[str, Any]) -> tuple[FixtureKey, MarketSnapshot] | None:
             ticker = ev.get("event_ticker") or ""
-            try:
-                markets = await fetch_markets_for_event(ticker, client=client)
-            except Exception as e:                       # noqa: BLE001
-                log.warning("kalshi markets fetch raised for %s: %s", ticker, e)
-                return None
+            async with sem:
+                try:
+                    markets = await fetch_markets_for_event(ticker, client=client)
+                except Exception as e:                   # noqa: BLE001
+                    log.warning("kalshi markets fetch raised for %s: %s", ticker, e)
+                    return None
+                await asyncio.sleep(per_request_gap)
             return snapshots_from_event(event_ticker=ticker, markets=markets, asof=asof)
 
-        # ~70 WC26 fixtures; gather in parallel rather than serial.
         results = await asyncio.gather(*(_one(ev) for ev in events))
 
     for r in results:

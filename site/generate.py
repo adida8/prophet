@@ -200,6 +200,64 @@ a { color: inherit; }
 }
 @media (max-width: 720px) { .hero { padding: 28px 0 20px; } }
 
+/* VERDICT KEY — legend strip below the hero. Colour, glyph, and label
+   all carry the same meaning so the reader can scan a card at a glance. */
+.verdict-key {
+  margin: 8px 0 0;
+  padding: 18px 0 20px;
+  border-top: var(--hairline);
+  border-bottom: var(--hairline);
+  display: grid;
+  grid-template-columns: max-content repeat(3, 1fr);
+  column-gap: 36px; row-gap: 14px;
+  align-items: center;
+}
+.verdict-key .vk-label {
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+}
+.verdict-key .vk-item { display: flex; align-items: center; gap: 14px; }
+.verdict-key .vk-icon {
+  position: relative;
+  width: 44px; height: 30px;
+  background: var(--paper-pure);
+  border: var(--hairline);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--font-sans); font-weight: 800;
+  line-height: 1; flex-shrink: 0;
+}
+.verdict-key .vk-icon::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+}
+.verdict-key .vk-icon.is-pick::before { background: var(--flame); }
+.verdict-key .vk-icon.is-pick { color: var(--flame); font-size: 16px; }
+.verdict-key .vk-icon.is-pass::before { background: var(--graphite-soft); }
+.verdict-key .vk-icon.is-pass { color: var(--graphite-soft); font-size: 18px; }
+.verdict-key .vk-icon.is-avoid::before { background: var(--ink); }
+.verdict-key .vk-icon.is-avoid { color: var(--flame-deep); font-size: 16px; }
+.verdict-key .vk-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.verdict-key .vk-name {
+  font-family: var(--font-sans); font-size: 12px; font-weight: 800;
+  letter-spacing: 0.14em; text-transform: uppercase;
+}
+.verdict-key .vk-name.is-pick  { color: var(--flame); }
+.verdict-key .vk-name.is-pass  { color: var(--ink); }
+.verdict-key .vk-name.is-avoid { color: var(--ink); border-bottom: 1.5px solid var(--flame); padding-bottom: 1px; align-self: flex-start; }
+.verdict-key .vk-desc {
+  font-family: var(--font-serif); font-style: italic; font-size: 13.5px;
+  color: var(--graphite); line-height: 1.4;
+}
+.verdict-key .vk-note {
+  grid-column: 1 / -1;
+  font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
+  letter-spacing: 0.02em;
+}
+.verdict-key .vk-note em { color: var(--ink); font-style: normal; font-weight: 600; }
+@media (max-width: 720px) {
+  .verdict-key { grid-template-columns: 1fr; column-gap: 0; row-gap: 12px; padding: 16px 0 18px; }
+  .verdict-key .vk-label { margin-bottom: 2px; }
+}
+
 /* SECTION label */
 .section-label {
   margin-top: 32px; padding-bottom: 10px; border-bottom: var(--hairline);
@@ -1044,6 +1102,33 @@ def render_home(matches: list[dict], outrights: list[dict]) -> str:
           'read of every match. Every market gets one verdict: '
           '<em class="vlead">Pick</em>, <em class="vlead">Pass</em>, or <em class="vlead">Avoid</em>. '
           'We show the price, the edge, and the reasoning. We don\'t tip.</p>'
+          '</section>'
+        + '<section class="verdict-key" aria-label="Verdict key">'
+            '<span class="vk-label">Verdict key</span>'
+            '<div class="vk-item">'
+              '<span class="vk-icon is-pick" aria-hidden="true">&#9650;</span>'
+              '<span class="vk-text">'
+                '<span class="vk-name is-pick">Pick</span>'
+                '<span class="vk-desc">the line is underpriced &mdash; back it</span>'
+              '</span>'
+            '</div>'
+            '<div class="vk-item">'
+              '<span class="vk-icon is-pass" aria-hidden="true">&mdash;</span>'
+              '<span class="vk-text">'
+                '<span class="vk-name is-pass">Pass</span>'
+                '<span class="vk-desc">the line is fair &mdash; no edge to play</span>'
+              '</span>'
+            '</div>'
+            '<div class="vk-item">'
+              '<span class="vk-icon is-avoid" aria-hidden="true">&times;</span>'
+              '<span class="vk-text">'
+                '<span class="vk-name is-avoid">Avoid</span>'
+                '<span class="vk-desc">overpriced both ways &mdash; sit it out</span>'
+              '</span>'
+            '</div>'
+            '<p class="vk-note">'
+              'Colour, glyph, and label all carry the same meaning, so a card\'s call is readable at a glance.'
+            '</p>'
           '</section>'
         + headline_html
         + other_picks_html
