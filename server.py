@@ -319,6 +319,51 @@ async def backtest_workbook():
     )
 
 
+# ── Odds Primer static site ───────────────────────────────────────────
+# The Desk's per-match JSON output is rendered to a static HTML site by
+# site/generate.py. When site/public/index.html exists, those routes win
+# over the v4 mockups and the React SPA fallback (declaration order
+# matters in FastAPI — first match wins).
+# Daily workflow:
+#     python -m desk run --once       # refresh JSONs
+#     python site/generate.py         # rebuild static HTML
+#     git commit -am 'site refresh' && git push   # Railway redeploys
+
+SITE_PUBLIC = Path(__file__).parent / "site" / "public"
+
+if (SITE_PUBLIC / "index.html").exists():
+
+    def _serve_site(rel_path: str):
+        p = SITE_PUBLIC / rel_path
+        if p.is_file():
+            return FileResponse(p, media_type="text/html")
+        return FileResponse(SITE_PUBLIC / "index.html", media_type="text/html", status_code=404)
+
+    @app.get("/", include_in_schema=False)
+    async def site_home():
+        return _serve_site("index.html")
+
+    @app.get("/matches", include_in_schema=False)
+    @app.get("/matches/", include_in_schema=False)
+    async def site_matches():
+        return _serve_site("matches/index.html")
+
+    @app.get("/m/{match_id}", include_in_schema=False)
+    async def site_match(match_id: str):
+        match_id = match_id.removesuffix("/").removesuffix(".html")
+        return _serve_site(f"m/{match_id}.html")
+
+    @app.get("/outrights", include_in_schema=False)
+    @app.get("/outrights/", include_in_schema=False)
+    async def site_outrights():
+        return _serve_site("outrights/index.html")
+
+    @app.get("/o/{outright_id}", include_in_schema=False)
+    async def site_outright(outright_id: str):
+        outright_id = outright_id.removesuffix("/").removesuffix(".html")
+        return _serve_site(f"o/{outright_id}.html")
+
+
 # ── Static frontend ───────────────────────────────────────────────────
 
 FRONTEND_DIST = Path(__file__).parent / "frontend" / "dist"
