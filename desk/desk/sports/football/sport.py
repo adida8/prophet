@@ -24,7 +24,7 @@ from desk.sports.football.fixtures import (
     list_priced_football_fixtures,
 )
 from desk.sports.football.model import compute as compute_model
-from desk.sports.football.priced import list_priced_fixtures_polymarket
+from desk.sports.football.priced import list_priced_fixtures
 from desk.verdict.compare import MarketSnapshot
 from desk.verdict.decide import decide as decide_verdict
 
@@ -80,7 +80,7 @@ class FootballSport:
         return _run_async(list_priced_football_fixtures())
 
     def list_priced_fixtures(self) -> list[tuple[FixtureRef, MarketSnapshot]]:
-        return _run_async(list_priced_fixtures_polymarket())
+        return _run_async(list_priced_fixtures())
 
     # ── Model + verdict (PR 4) ──────────────────────────────────────
 

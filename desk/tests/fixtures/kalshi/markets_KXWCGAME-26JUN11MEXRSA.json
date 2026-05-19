@@ -1,0 +1,31 @@
+{
+  "markets": [
+    {
+      "ticker": "KXWCGAME-26JUN11MEXRSA-TIE",
+      "title": "Mexico vs South Africa Winner?",
+      "yes_sub_title": "Tie",
+      "yes_bid_dollars": "0.2100",
+      "yes_ask_dollars": "0.2200",
+      "last_price_dollars": "0.2200",
+      "status": "active"
+    },
+    {
+      "ticker": "KXWCGAME-26JUN11MEXRSA-RSA",
+      "title": "Mexico vs South Africa Winner?",
+      "yes_sub_title": "South Africa",
+      "yes_bid_dollars": "0.1200",
+      "yes_ask_dollars": "0.1500",
+      "last_price_dollars": "0.1200",
+      "status": "active"
+    },
+    {
+      "ticker": "KXWCGAME-26JUN11MEXRSA-MEX",
+      "title": "Mexico vs South Africa Winner?",
+      "yes_sub_title": "Mexico",
+      "yes_bid_dollars": "0.6400",
+      "yes_ask_dollars": "0.6500",
+      "last_price_dollars": "0.6500",
+      "status": "active"
+    }
+  ]
+}

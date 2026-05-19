@@ -1,0 +1,54 @@
+{
+  "cursor": "CgYIgMiB0gYSFktYV0NHQU1FLTI2SlVOMjdDUk9HSEA",
+  "events": [
+    {
+      "available_on_brokers": true,
+      "category": "Sports",
+      "collateral_return_type": "MECNET",
+      "event_ticker": "KXWCGAME-26JUN11MEXRSA",
+      "last_updated_ts": "2026-05-10T00:34:08.191711Z",
+      "mutually_exclusive": true,
+      "product_metadata": {
+        "competition": "FIFA World Cup",
+        "competition_scope": "Game"
+      },
+      "series_ticker": "KXWCGAME",
+      "strike_period": "",
+      "sub_title": "MEX vs RSA (Jun 11)",
+      "title": "Mexico vs South Africa"
+    },
+    {
+      "available_on_brokers": true,
+      "category": "Sports",
+      "collateral_return_type": "MECNET",
+      "event_ticker": "KXWCGAME-26JUN27JORARG",
+      "last_updated_ts": "2026-05-10T00:34:08.191711Z",
+      "mutually_exclusive": true,
+      "product_metadata": {
+        "competition": "FIFA World Cup",
+        "competition_scope": "Game"
+      },
+      "series_ticker": "KXWCGAME",
+      "strike_period": "",
+      "sub_title": "JOR vs ARG (Jun 27)",
+      "title": "Jordan vs Argentina"
+    },
+    {
+      "available_on_brokers": true,
+      "category": "Sports",
+      "collateral_return_type": "MECNET",
+      "event_ticker": "KXWCGAME-26JUN27COLPOR",
+      "last_updated_ts": "2026-05-10T00:34:08.189334Z",
+      "mutually_exclusive": true,
+      "product_metadata": {
+        "competition": "FIFA World Cup",
+        "competition_scope": "Game"
+      },
+      "series_ticker": "KXWCGAME",
+      "strike_period": "",
+      "sub_title": "COL vs POR (Jun 27)",
+      "title": "Colombia vs Portugal"
+    }
+  ],
+  "milestones": []
+}
