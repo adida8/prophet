@@ -47,7 +47,7 @@
         "properties": {
           "blurb": {
             "default": "",
-            "maxLength": 1200,
+            "maxLength": 4000,
             "minLength": 0,
             "title": "Blurb",
             "type": "string"

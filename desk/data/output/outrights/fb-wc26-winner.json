@@ -11,7 +11,7 @@
   "market_url": "https://polymarket.com/event/2026-fifa-world-cup-winner-595",
   "candidate": "—",
   "resolves_at": "2026-07-20T00:00:00Z",
-  "asof": "2026-05-19T10:28:16.027792Z",
+  "asof": "2026-05-19T11:07:01.026823Z",
   "verdict": {
     "state": "pass",
     "candidate": null
@@ -254,5 +254,5 @@
       "lower_edge_pp": -0.65
     }
   ],
-  "updated_at": "2026-05-19T10:28:29.210208Z"
+  "updated_at": "2026-05-19T11:07:14.140652Z"
 }
