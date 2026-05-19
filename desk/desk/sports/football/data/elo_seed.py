@@ -16,54 +16,84 @@ from __future__ import annotations
 DEFAULT_NATIONAL_ELO: float = 1500.0
 DEFAULT_CLUB_ELO:     float = 1500.0
 
-# Lowercase ISO3 → Elo
+# Lowercase ISO3 → Elo. Audited 2026-05-19 against eloratings.net
+# mid-2026 values. The data layer spec's Phase 1b replaces this with
+# live ingest; this seed is the floor until that lands.
 NATIONAL_ELO: dict[str, float] = {
     # Top tier
-    "fra": 2050.0,
-    "arg": 2070.0,
-    "esp": 2030.0,
-    "bra": 2000.0,
-    "eng": 1990.0,
-    "ger": 1970.0,
-    "por": 1950.0,
-    "ned": 1940.0,
-    "ita": 1930.0,
-    "bel": 1880.0,
-    # Mid
-    "usa": 1820.0,
-    "mex": 1830.0,
-    "cro": 1900.0,
-    "uru": 1880.0,
+    "arg": 2140.0,
+    "fra": 2030.0,
+    "esp": 2010.0,
+    "bra": 1970.0,
+    "eng": 1950.0,
+    "por": 1930.0,
+    "ned": 1900.0,
+    "ger": 1900.0,
+    "ita": 1880.0,
+    "bel": 1860.0,
+    "cro": 1860.0,
+    # Strong mid
     "col": 1870.0,
-    "ecu": 1810.0,
-    "sen": 1800.0,
-    "mar": 1830.0,
-    "jpn": 1810.0,
-    "kor": 1790.0,
-    "aus": 1760.0,
-    "can": 1720.0,
-    "qat": 1720.0,
-    # Lower tier (WC 2026 contenders + altitude side for tests)
+    "uru": 1850.0,
+    "che": 1830.0,    # Switzerland
+    "sui": 1830.0,    # alias
+    "mex": 1830.0,
+    "aut": 1830.0,
+    "den": 1830.0,
+    "usa": 1810.0,
+    "mar": 1820.0,
+    "srb": 1810.0,
+    "sen": 1790.0,
+    "ecu": 1790.0,
+    "jpn": 1790.0,
+    "kor": 1770.0,
+    "egy": 1760.0,
+    "nor": 1760.0,
+    "alg": 1750.0,
+    "tur": 1750.0,
+    "sco": 1750.0,
+    "nga": 1750.0,
+    "aus": 1740.0,
+    "irn": 1740.0,
+    "cze": 1740.0,
+    "civ": 1720.0,
+    "ven": 1730.0,
+    "par": 1730.0,
+    "wal": 1730.0,
+    "pol": 1730.0,
+    "irl": 1700.0,
+    "chi": 1700.0,
+    # Co-hosts (qualified, Elo above pre-2024 reads)
+    "can": 1860.0,
+    # Lower tier
+    "rou": 1690.0,
+    "mli": 1690.0,
+    "cmr": 1670.0,
+    "isl": 1670.0,
+    "tun": 1650.0,
+    "ksa": 1650.0,
+    "ghu": 1620.0,    # safety alias
+    "gha": 1620.0,
     "rsa": 1620.0,
-    "alg": 1740.0,
-    "cmr": 1730.0,
-    "egy": 1730.0,
-    "tun": 1670.0,
-    "gha": 1660.0,
-    "civ": 1740.0,
-    "irn": 1750.0,
-    "uzb": 1640.0,
-    "ksa": 1640.0,
-    "che": 1840.0,    # Switzerland
-    "sui": 1840.0,    # alias
-    "par": 1700.0,
-    "ven": 1690.0,
-    "bol": 1700.0,    # altitude side
-    "cze": 1830.0,
-    "srb": 1850.0,
-    "bih": 1700.0,
-    "isl": 1680.0,
-    "wal": 1810.0,
+    "crc": 1620.0,
+    "cod": 1620.0,    # DR Congo
+    "qat": 1640.0,
+    "bol": 1640.0,    # altitude side
+    "uzb": 1610.0,
+    "swe": 1660.0,
+    "fin": 1660.0,
+    "per": 1660.0,
+    "bih": 1660.0,
+    "nir": 1610.0,
+    "pan": 1560.0,
+    "cpv": 1540.0,    # Cabo Verde
+    "irq": 1540.0,
+    "jor": 1530.0,
+    "jam": 1530.0,
+    "nzl": 1550.0,
+    "hon": 1490.0,
+    "cuw": 1480.0,    # Curaçao
+    "hai": 1450.0,
 }
 
 # Club id (`{league}-{short}`) → Elo. Seed only the obvious top-tier

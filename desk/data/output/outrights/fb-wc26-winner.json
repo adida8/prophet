@@ -11,7 +11,7 @@
   "market_url": "https://polymarket.com/event/2026-fifa-world-cup-winner-595",
   "candidate": "—",
   "resolves_at": "2026-07-20T00:00:00Z",
-  "asof": "2026-05-19T11:48:32.537432Z",
+  "asof": "2026-05-19T13:24:12.350015Z",
   "verdict": {
     "state": "pass",
     "candidate": null
@@ -30,7 +30,7 @@
     "sims": 10000,
     "bootstrap_samples": 100,
     "seed": 42,
-    "overround_pp": 3.7
+    "overround_pp": 3.6
   },
   "ladder": [
     {
@@ -80,12 +80,12 @@
       "model_p": 0.1329,
       "model_p_lower": 0.079,
       "model_p_upper": 0.196,
-      "yes_market_p": 0.1815,
-      "no_market_p": 0.8185,
-      "yes_edge_pp": -4.86,
-      "no_edge_pp": 4.86,
-      "yes_lower_edge_pp": -10.25,
-      "no_lower_edge_pp": -1.45,
+      "yes_market_p": 0.1805,
+      "no_market_p": 0.8195,
+      "yes_edge_pp": -4.76,
+      "no_edge_pp": 4.76,
+      "yes_lower_edge_pp": -10.15,
+      "no_lower_edge_pp": -1.55,
       "verdict": "pass",
       "pick_side": null
     },
@@ -706,5 +706,5 @@
       "pick_side": null
     }
   ],
-  "updated_at": "2026-05-19T11:48:45.713312Z"
+  "updated_at": "2026-05-19T13:24:25.870664Z"
 }

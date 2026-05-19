@@ -166,6 +166,42 @@ def test_unmapped_competition_passes_through_with_warning(
     assert fx.competition_label == "xyz"
 
 
+# ── Title-based ISO resolution (Polymarket slug codes can collide) ────
+
+def test_polymarket_kor_resolves_to_curacao_when_title_says_curacao() -> None:
+    """Polymarket uses `kor` in slugs for both Korea Republic and
+    Curaçao (Papiamento "Kòrsou"). When the title gives the team name
+    we prefer it for ISO resolution.
+    """
+    ev = {
+        "slug":  "fifwc-ecu-kor-2026-06-20",
+        "title": "Ecuador vs. Curaçao",
+        "endDate": "2026-06-21T00:00:00Z",
+        "tags": [{"slug": "fifa-world-cup"}, {"slug": "soccer"}],
+    }
+    fx = from_polymarket_event(ev)
+    assert fx is not None
+    assert fx.team_a == "Ecuador"
+    assert fx.team_b == "Curaçao"
+    # The match_id must carry Curaçao's ISO3 (cuw), NOT Korea's (kor),
+    # because the Elo lookup in features_builder reads from match_id.
+    assert "-cuw-" in fx.match_id, f"expected cuw in {fx.match_id}"
+    assert "-kor-" not in fx.match_id
+
+
+def test_polymarket_kor_still_resolves_to_korea_when_title_says_korea() -> None:
+    ev = {
+        "slug":  "fifwc-rsa-kor-2026-06-24",
+        "title": "South Africa vs. Korea Republic",
+        "endDate": "2026-06-25T00:00:00Z",
+        "tags": [{"slug": "fifa-world-cup"}, {"slug": "soccer"}],
+    }
+    fx = from_polymarket_event(ev)
+    assert fx is not None
+    assert fx.team_b == "Korea Republic"
+    assert "-kor-" in fx.match_id
+
+
 # ── Bulk parser de-dupes "more-markets" doppelgängers ─────────────────
 
 def test_fixtures_from_polymarket_dedupes(polymarket_soccer_events: list[dict]) -> None:

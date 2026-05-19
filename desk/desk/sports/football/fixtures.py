@@ -22,6 +22,7 @@ from desk import config
 from desk.sport import FixtureRef
 from desk.sports.football.teams import (
     is_international_competition,
+    iso3_for_name,
     map_competition,
     normalize_team,
 )
@@ -83,8 +84,19 @@ def from_polymarket_event(ev: dict[str, Any]) -> FixtureRef | None:
         log.info("unmapped Polymarket competition prefix: %s", parts["prefix"])
 
     international = is_international_competition(comp_code)
-    home = normalize_team(parts["home"], is_national=international)
-    away = normalize_team(parts["away"], is_national=international)
+    # Prefer the title-derived display name → ISO3 when we know it
+    # (more reliable than Polymarket's slug codes — see e.g. their use
+    # of `kor` for Curaçao, which collides with Korea Republic's ISO).
+    home = (iso3_for_name(home_name) if international else None) \
+           or normalize_team(parts["home"], is_national=international)
+    away = (iso3_for_name(away_name) if international else None) \
+           or normalize_team(parts["away"], is_national=international)
+    if international and home == away:
+        # Same ISO on both sides means the disambiguation failed —
+        # fall back to slug codes so the match_id stays unique.
+        log.warning("name-resolved ISO collision on %s: %s == %s — slug fallback", slug, home_name, away_name)
+        home = normalize_team(parts["home"], is_national=international)
+        away = normalize_team(parts["away"], is_national=international)
 
     match_id = make_match_id(
         competition=comp_code, home=home, away=away, kickoff=kickoff,
