@@ -158,6 +158,18 @@ a { color: inherit; }
 .lv-card:hover { background: var(--paper-warm); }
 .lv-card .lv-bar { grid-column: 1; grid-row: 1 / -1; background: var(--rule); }
 
+/* Overlay link — the entire card is clickable to the match/outright detail
+   page. The market CTA (.cta below) sits above this via z-index so it
+   captures clicks first and opens the venue in a new tab instead. */
+.lv-card .lv-card-link {
+  position: absolute; inset: 0;
+  z-index: 1;
+  text-indent: -9999px; overflow: hidden;
+  background: transparent;
+}
+.lv-card > *:not(.lv-card-link) { position: relative; z-index: 2; }
+.lv-card .lv-action a.cta { position: relative; z-index: 3; }
+
 .lv-card .lv-head { grid-column: 2; grid-row: 1; display: flex; align-items: baseline; gap: 12px; }
 .lv-card .lv-glyph { font-family: var(--font-sans); font-weight: 700; font-size: 16px; line-height: 1; color: var(--graphite-soft); }
 .lv-card .lv-lab {
@@ -239,6 +251,7 @@ a { color: inherit; }
   font-family: var(--font-sans); font-size: 11px; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase;
   white-space: nowrap;
+  text-decoration: none;
   transition: background var(--dur-fast) var(--ease-standard);
 }
 .lv-card .lv-action .cta .arr { color: var(--flame); transition: transform var(--dur-fast) var(--ease-standard); }
@@ -246,6 +259,12 @@ a { color: inherit; }
 .lv-card .lv-action .cta:hover { background: var(--flame-deep); }
 .lv-card:hover .lv-action .cta .arr,
 .lv-card .lv-action .cta:hover .arr { color: var(--paper); transform: translate(2px, -2px); }
+.lv-card .lv-action a.cta:focus-visible { outline: 2px solid var(--flame); outline-offset: 2px; }
+
+/* Pass-state cards now also carry the CTA — keep the flat-msg in the same
+   row as the action button. */
+.lv-card.is-pass .lv-foot { display: flex; align-items: center; gap: 16px; justify-content: space-between; flex-wrap: wrap; }
+.lv-card.is-pass .lv-flat-msg { margin: 0; }
 
 /* Verdict variants */
 .lv-card.is-pick { background: var(--flame-tint); border-color: var(--flame); }
@@ -420,7 +439,7 @@ a { color: inherit; }
         <li><a href="/matches/" aria-current="page">Upcoming matches</a></li>
       </ul>
     </nav>
-    <span class="nav-meta">Updated 11:08 UTC</span>
+    <span class="nav-meta">Updated 11:18 UTC</span>
     <button class="burger" aria-label="More links">
       <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
         <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.5"/>
@@ -434,7 +453,7 @@ a { color: inherit; }
     <span class="live">Markets live</span>
   </div>
 </div>
-<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Canada v Qatar · the model leans Qatar</h1></section><a class="lv-card is-pick is-lead" href="/m/fb-wc26-can-qat-20260618"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Thu 18 Jun · 22:00 UTC</span></div><h3 class="lv-teams">Canada <span class="vs">v</span> Qatar</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">A +20.0pp gap across model and market on the Qatar side. Our Elo prior, after host and altitude adjustments, rates Qatar at 35%; Polymarket sits at 15%.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">35%</span></span><span class="rp"><span class="k">Market</span><span class="v">15%</span></span><span class="edge">+20.0pp</span></div><div class="lv-action"><span class="venue">Polymarket</span><span class="price">+567</span><span class="cta">Read the case <span class="arr">↗</span></span></div></div></a><div class="blurb"><p>FIFA World Cup 2026 brings Canada together with Qatar, scheduled for Thursday 18 June 2026 at 22:00 UTC. The Desk reads every priced match on Polymarket and Kalshi against an independent model number, then publishes a single verdict — Pick, Pass, or Avoid — with the math the call rests on. On this fixture that verdict is a Pick, on the Qatar side.</p>
+<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Canada v Qatar · the model leans Qatar</h1></section><div class="lv-card is-pick is-lead"><a class="lv-card-link" href="/m/fb-wc26-can-qat-20260618" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Thu 18 Jun · 22:00 UTC</span></div><h3 class="lv-teams">Canada <span class="vs">v</span> Qatar</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">A +20.0pp gap across model and market on the Qatar side. Our Elo prior, after host and altitude adjustments, rates Qatar at 35%; Polymarket sits at 15%.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">35%</span></span><span class="rp"><span class="k">Market</span><span class="v">15%</span></span><span class="edge">+20.0pp</span></div><div class="lv-action"><span class="price">+567</span><a class="cta market-cta" href="https://polymarket.com/event/fifwc-can-qat-2026-06-18" target="_blank" rel="nofollow noopener">Polymarket <span class="arr">↗</span></a></div></div></div><div class="blurb"><p>FIFA World Cup 2026 brings Canada together with Qatar, scheduled for Thursday 18 June 2026 at 22:00 UTC. The Desk reads every priced match on Polymarket and Kalshi against an independent model number, then publishes a single verdict — Pick, Pass, or Avoid — with the math the call rests on. On this fixture that verdict is a Pick, on the Qatar side.</p>
 <p>The model starts from public Elo ratings: Canada on 1720, Qatar on 1720 — a 0-point difference with the sides level. Elo source: live for Canada, live for Qatar. No host, home-ground, or altitude adjustments apply on this fixture; the prior reads straight from Elo.</p>
 <p>Run through the three-way split, the model reads: Canada to win at 35%, the draw at 30%, and Qatar to win at 35%. The three-way distribution carries the Desk&#x27;s view of how often each outcome fires across the entire range of in-form-but-not-injured ninety-minute scenarios. It is not a forecast of the exact scoreline; it is a calibrated probability over the W / D / L resolution that Polymarket and Kalshi both settle on.</p>
 <p>Polymarket&#x27;s closing line: Canada to win at 66%, the draw at 22%, and Qatar to win at 15%. On the Qatar side specifically, the market sits at 15%, which prices out at American odds of +567. The model has the same side at 35%. The gap across those two numbers — +20.0pp — is the basis for the Pick.</p>

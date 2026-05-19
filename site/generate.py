@@ -199,6 +199,18 @@ a { color: inherit; }
 .lv-card:hover { background: var(--paper-warm); }
 .lv-card .lv-bar { grid-column: 1; grid-row: 1 / -1; background: var(--rule); }
 
+/* Overlay link — the entire card is clickable to the match/outright detail
+   page. The market CTA (.cta below) sits above this via z-index so it
+   captures clicks first and opens the venue in a new tab instead. */
+.lv-card .lv-card-link {
+  position: absolute; inset: 0;
+  z-index: 1;
+  text-indent: -9999px; overflow: hidden;
+  background: transparent;
+}
+.lv-card > *:not(.lv-card-link) { position: relative; z-index: 2; }
+.lv-card .lv-action a.cta { position: relative; z-index: 3; }
+
 .lv-card .lv-head { grid-column: 2; grid-row: 1; display: flex; align-items: baseline; gap: 12px; }
 .lv-card .lv-glyph { font-family: var(--font-sans); font-weight: 700; font-size: 16px; line-height: 1; color: var(--graphite-soft); }
 .lv-card .lv-lab {
@@ -280,6 +292,7 @@ a { color: inherit; }
   font-family: var(--font-sans); font-size: 11px; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase;
   white-space: nowrap;
+  text-decoration: none;
   transition: background var(--dur-fast) var(--ease-standard);
 }
 .lv-card .lv-action .cta .arr { color: var(--flame); transition: transform var(--dur-fast) var(--ease-standard); }
@@ -287,6 +300,12 @@ a { color: inherit; }
 .lv-card .lv-action .cta:hover { background: var(--flame-deep); }
 .lv-card:hover .lv-action .cta .arr,
 .lv-card .lv-action .cta:hover .arr { color: var(--paper); transform: translate(2px, -2px); }
+.lv-card .lv-action a.cta:focus-visible { outline: 2px solid var(--flame); outline-offset: 2px; }
+
+/* Pass-state cards now also carry the CTA — keep the flat-msg in the same
+   row as the action button. */
+.lv-card.is-pass .lv-foot { display: flex; align-items: center; gap: 16px; justify-content: space-between; flex-wrap: wrap; }
+.lv-card.is-pass .lv-flat-msg { margin: 0; }
 
 /* Verdict variants */
 .lv-card.is-pick { background: var(--flame-tint); border-color: var(--flame); }
@@ -541,6 +560,46 @@ def kickoff_date_key(iso: str) -> str:
     """YYYY-MM-DD for grouping."""
     return iso[:10]
 
+def venue_name_from_url(market_url: str | None) -> str | None:
+    """Derive a display venue name from a market URL. Used as a fallback
+    when verdict.market_venue isn't populated (e.g. Pass rows).
+    """
+    if not market_url:
+        return None
+    low = market_url.lower()
+    if "polymarket.com" in low:
+        return "Polymarket"
+    if "kalshi.com" in low:
+        return "Kalshi"
+    return None
+
+
+def venue_label_for(verdict: dict) -> str | None:
+    """Best display string for the venue: explicit field first, then derived."""
+    explicit = (verdict.get("market_venue") or "").strip()
+    if explicit:
+        return explicit.title()
+    return venue_name_from_url(verdict.get("market_url"))
+
+
+def market_cta(verdict: dict, *, price: str | None = None) -> str:
+    """Render the venue CTA pill (Polymarket / Kalshi → opens the market).
+    Returns empty string if we have nothing to link to.
+    """
+    url = verdict.get("market_url")
+    venue = venue_label_for(verdict)
+    if not url or not venue:
+        return ""
+    price_html = f'<span class="price">{escape(str(price))}</span>' if price else ""
+    return (
+        f'{price_html}'
+        f'<a class="cta market-cta" href="{escape(url)}" '
+        f'target="_blank" rel="nofollow noopener">'
+        f'{escape(venue)} <span class="arr">↗</span>'
+        f'</a>'
+    )
+
+
 def venue_meta(match: dict) -> str:
     """Stadium · City · Competition stage."""
     parts = []
@@ -585,11 +644,20 @@ def render_card(match: dict, *, is_lead: bool = False) -> str:
 
     # Foot — different for pick/avoid vs pass
     if state == "pass":
-        foot = (
-            '<div class="lv-foot">'
-            f'<span class="lv-flat-msg">Markets agree — within 1pp on every side. <strong>Read the case →</strong></span>'
-            '</div>'
-        )
+        cta_html = market_cta(v)
+        if cta_html:
+            foot = (
+                '<div class="lv-foot">'
+                f'<span class="lv-flat-msg">Markets agree — within 1pp on every side.</span>'
+                f'<div class="lv-action">{cta_html}</div>'
+                '</div>'
+            )
+        else:
+            foot = (
+                '<div class="lv-foot">'
+                f'<span class="lv-flat-msg">Markets agree — within 1pp on every side. <strong>Read the case →</strong></span>'
+                '</div>'
+            )
     else:
         edge_class = ""
         edge_str = fmt_edge(v.get("edge_pp"))
@@ -606,12 +674,10 @@ def render_card(match: dict, *, is_lead: bool = False) -> str:
         if edge_str:
             reads += f'<span class="edge{edge_class}">{edge_str}</span>'
 
-        venue = (v.get("market_venue") or "").title()
-        price = v.get("price") or ""
-        action_bits = ''
-        if venue: action_bits += f'<span class="venue">{escape(venue)}</span>'
-        if price: action_bits += f'<span class="price">{escape(str(price))}</span>'
-        action_bits += '<span class="cta">Read the case <span class="arr">↗</span></span>'
+        action_bits = market_cta(v, price=v.get("price"))
+        if not action_bits:
+            # No market_url — fall back to the in-card "Read the case" pill.
+            action_bits = '<span class="cta">Read the case <span class="arr">↗</span></span>'
 
         foot = (
             '<div class="lv-foot">'
@@ -620,15 +686,20 @@ def render_card(match: dict, *, is_lead: bool = False) -> str:
             '</div>'
         )
 
+    # Card is a <div> so we can nest the venue CTA as a real <a>. The
+    # whole card is still clickable via an absolute-positioned overlay
+    # link that goes to the match detail page; the venue CTA sits above
+    # it (z-index) so a click on the pill opens the market instead.
     return (
-        f'<a class="lv-card {state_class}" href="{href}">'
+        f'<div class="lv-card {state_class}">'
+        f'<a class="lv-card-link" href="{href}" aria-label="Read the case"></a>'
         '<span class="lv-bar" aria-hidden="true"></span>'
         f'<div class="lv-head">{head}</div>'
         f'<h3 class="lv-teams">{title}</h3>'
         f'<p class="lv-venue-meta">{vmeta}</p>'
         f'<p class="lv-thesis">{thesis}</p>'
         f'{foot}'
-        '</a>'
+        '</div>'
     )
 
 
@@ -836,12 +907,29 @@ def render_outright_card(outright: dict) -> str:
         f'<span class="lv-when">{escape(when)}</span>'
     )
 
+    # The outright top-level carries market_url / market_venue; the
+    # nested verdict only carries them on Pick state. Compose a single
+    # dict the CTA helper can read from.
+    cta_dict = {
+        "market_url":   v.get("market_url")   or outright.get("market_url"),
+        "market_venue": v.get("market_venue") or outright.get("market_venue"),
+    }
+
     if state == "pass":
-        foot = (
-            '<div class="lv-foot">'
-            '<span class="lv-flat-msg">Markets agree on this field. <strong>Read the case →</strong></span>'
-            '</div>'
-        )
+        cta_html = market_cta(cta_dict)
+        if cta_html:
+            foot = (
+                '<div class="lv-foot">'
+                '<span class="lv-flat-msg">Markets agree on this field.</span>'
+                f'<div class="lv-action">{cta_html}</div>'
+                '</div>'
+            )
+        else:
+            foot = (
+                '<div class="lv-foot">'
+                '<span class="lv-flat-msg">Markets agree on this field. <strong>Read the case →</strong></span>'
+                '</div>'
+            )
     else:
         edge_str = fmt_edge(v.get("edge_pp"))
         edge_class = ""
@@ -853,23 +941,21 @@ def render_outright_card(outright: dict) -> str:
         )
         if edge_str:
             reads += f'<span class="edge{edge_class}">{edge_str}</span>'
-        venue = (v.get("market_venue") or "").title()
-        price = v.get("price") or ""
-        action = ''
-        if venue: action += f'<span class="venue">{escape(venue)}</span>'
-        if price: action += f'<span class="price">{escape(str(price))}</span>'
-        action += '<span class="cta">Read the case <span class="arr">↗</span></span>'
+        action = market_cta(cta_dict, price=v.get("price"))
+        if not action:
+            action = '<span class="cta">Read the case <span class="arr">↗</span></span>'
         foot = f'<div class="lv-foot"><div class="lv-reads">{reads}</div><div class="lv-action">{action}</div></div>'
 
     return (
-        f'<a class="lv-card {state_class}" href="{href}">'
+        f'<div class="lv-card {state_class}">'
+        f'<a class="lv-card-link" href="{href}" aria-label="Read the case"></a>'
         '<span class="lv-bar" aria-hidden="true"></span>'
         f'<div class="lv-head">{head}</div>'
         f'<h3 class="lv-teams">{escape(candidate)}</h3>'
         f'<p class="lv-venue-meta">{escape(label)}</p>'
         f'<p class="lv-thesis">{escape(summary)}</p>'
         f'{foot}'
-        '</a>'
+        '</div>'
     )
 
 
