@@ -75,14 +75,55 @@ a { color: inherit; }
 }
 @media (min-width: 820px) { .nav-meta { display: inline; } }
 
-.burger {
+/* Burger — native <details>/<summary> disclosure. No JS needed. */
+.burger { position: relative; display: inline-block; }
+.burger-btn {
+  list-style: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
   width: 36px; height: 36px;
   border: var(--hairline); background: var(--paper-pure);
-  display: inline-flex; align-items: center; justify-content: center;
-  cursor: pointer;
+  color: var(--ink); border-radius: 2px;
 }
+.burger-btn::-webkit-details-marker { display: none; }
+.burger-btn::marker { content: ""; }
+.burger-btn:hover { color: var(--flame-deep); }
+.burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
+.burger-menu {
+  position: absolute; right: 0; top: calc(100% + 8px);
+  min-width: 240px; background: var(--paper-pure); border: var(--hairline);
+  list-style: none; margin: 0; padding: 6px 0;
+  box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08); z-index: 50;
+}
+.burger-menu li { padding: 0; margin: 0; list-style: none; }
+.burger-menu a {
+  display: block; padding: 10px 18px;
+  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
+}
+.burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
+.burger-menu a[aria-current="page"] { color: var(--flame-deep); border-left: 3px solid var(--flame); padding-left: 15px; }
 @media (min-width: 820px) { .burger { display: none; } }
-.burger svg { display: block; }
+
+/* Mobile pill-nav — visible primary links beneath the masthead on small
+   screens. Hidden on desktop where the full .site-nav is shown. */
+.pill-nav {
+  display: flex; gap: 6px; align-items: center;
+  padding: 10px var(--gutter) 12px;
+  border-bottom: var(--hairline); background: var(--paper);
+  overflow-x: auto; scrollbar-width: none;
+}
+.pill-nav::-webkit-scrollbar { display: none; }
+.pill-nav a {
+  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
+  padding: 8px 14px; border-radius: 999px; white-space: nowrap;
+  border: var(--hairline);
+  transition: background var(--dur-fast) var(--ease-standard),
+              color var(--dur-fast) var(--ease-standard);
+}
+.pill-nav a[aria-current="page"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.pill-nav a:not([aria-current="page"]):hover { color: var(--flame-deep); border-color: var(--flame); }
+@media (min-width: 820px) { .pill-nav { display: none; } }
 
 .edition-strip { border-top: var(--hairline-soft); border-bottom: var(--hairline); background: var(--paper); }
 .edition-strip .inner {
@@ -518,12 +559,27 @@ a { color: inherit; }
         <li><a href="/about">About</a></li>
       </ul>
     </nav>
-    <span class="nav-meta">Updated 14:07 UTC</span>
-    <button class="burger" aria-label="More links">
-      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
-        <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.5"/>
-      </svg>
-    </button>
+    <span class="nav-meta">Updated 17:40 UTC</span>
+    <details class="burger">
+      <summary class="burger-btn" aria-label="More links">
+        <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+          <rect y="0"  width="16" height="1.5" fill="currentColor"/>
+          <rect y="5"  width="16" height="1.5" fill="currentColor"/>
+          <rect y="10" width="16" height="1.5" fill="currentColor"/>
+        </svg>
+      </summary>
+      <ul class="burger-menu">
+        <li><a href="/">Home</a></li>
+        <li><a href="/matches/" aria-current="page">Upcoming matches</a></li>
+        <li><a href="/outrights/">Outright winners</a></li>
+        <li><a href="/methodology">How it works</a></li>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/responsible-use">Responsible use</a></li>
+        <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>
+        <li><a href="/corrections">Corrections</a></li>
+      </ul>
+    </details>
   </div>
 </header>
 <div class="edition-strip">
@@ -532,6 +588,14 @@ a { color: inherit; }
     <span class="live">Markets live</span>
   </div>
 </div>
+<nav class="pill-nav" aria-label="Primary (mobile)">
+  <a href="/">Home</a>
+  <a href="/matches/" aria-current="page">Matches</a>
+  <a href="/outrights/">Winners</a>
+  <a href="/methodology">How it works</a>
+  <a href="/learn">Learn</a>
+  <a href="/about">About</a>
+</nav>
 <main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Mexico v Korea Republic · the model leans Korea Republic</h1></section><div class="lv-card is-pick is-lead"><a class="lv-card-link" href="/m/fb-wc26-mex-kor-20260619" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Fri 19 Jun · 01:00 UTC</span></div><h3 class="lv-teams">Mexico <span class="vs">v</span> Korea Republic</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">The model thinks Korea Republic are mispriced. Our number reads 31% on the away side; the market reads 20%. The +10.0pp gap is the Pick.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">31%</span></span><span class="rp"><span class="k">Market</span><span class="v">20%</span></span><span class="edge">+10.0pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-mex-kr-2026-06-18" target="_blank" rel="nofollow noopener">Trade on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +388</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/markets?q=Mexico+Korea+Republic" target="_blank" rel="nofollow noopener">Trade on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-search">Search — no live listing</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-mex-kor-20260619">Read the case <span class="arr">→</span></a></div></div></div><div class="blurb"><p>A +10.0pp gap on the Korea Republic side. Mexico v Korea Republic in FIFA World Cup 2026 is the match. The model has Korea Republic stronger than the market does — that&#x27;s the reason this fires as a Pick rather than a Pass.</p>
 <p>On Elo, Mexico comes in 60 points ahead — Mexico at 1830, Korea Republic at 1770. Both Elo numbers are pulled live from the public Elo source. The adjustment layer is quiet on this fixture — no host bonus, no home-ground correction, no altitude folding in. The Elo numbers above are what the model uses.</p>
 <p>Three-way split from the model: Mexico to win at 43%, the draw at 26%, and Korea Republic to win at 31%. The away side reads 31% on this distribution — the model&#x27;s central case for Korea Republic.</p>

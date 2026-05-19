@@ -75,14 +75,55 @@ a { color: inherit; }
 }
 @media (min-width: 820px) { .nav-meta { display: inline; } }
 
-.burger {
+/* Burger — native <details>/<summary> disclosure. No JS needed. */
+.burger { position: relative; display: inline-block; }
+.burger-btn {
+  list-style: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
   width: 36px; height: 36px;
   border: var(--hairline); background: var(--paper-pure);
-  display: inline-flex; align-items: center; justify-content: center;
-  cursor: pointer;
+  color: var(--ink); border-radius: 2px;
 }
+.burger-btn::-webkit-details-marker { display: none; }
+.burger-btn::marker { content: ""; }
+.burger-btn:hover { color: var(--flame-deep); }
+.burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
+.burger-menu {
+  position: absolute; right: 0; top: calc(100% + 8px);
+  min-width: 240px; background: var(--paper-pure); border: var(--hairline);
+  list-style: none; margin: 0; padding: 6px 0;
+  box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08); z-index: 50;
+}
+.burger-menu li { padding: 0; margin: 0; list-style: none; }
+.burger-menu a {
+  display: block; padding: 10px 18px;
+  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
+}
+.burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
+.burger-menu a[aria-current="page"] { color: var(--flame-deep); border-left: 3px solid var(--flame); padding-left: 15px; }
 @media (min-width: 820px) { .burger { display: none; } }
-.burger svg { display: block; }
+
+/* Mobile pill-nav — visible primary links beneath the masthead on small
+   screens. Hidden on desktop where the full .site-nav is shown. */
+.pill-nav {
+  display: flex; gap: 6px; align-items: center;
+  padding: 10px var(--gutter) 12px;
+  border-bottom: var(--hairline); background: var(--paper);
+  overflow-x: auto; scrollbar-width: none;
+}
+.pill-nav::-webkit-scrollbar { display: none; }
+.pill-nav a {
+  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
+  padding: 8px 14px; border-radius: 999px; white-space: nowrap;
+  border: var(--hairline);
+  transition: background var(--dur-fast) var(--ease-standard),
+              color var(--dur-fast) var(--ease-standard);
+}
+.pill-nav a[aria-current="page"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.pill-nav a:not([aria-current="page"]):hover { color: var(--flame-deep); border-color: var(--flame); }
+@media (min-width: 820px) { .pill-nav { display: none; } }
 
 .edition-strip { border-top: var(--hairline-soft); border-bottom: var(--hairline); background: var(--paper); }
 .edition-strip .inner {
@@ -518,12 +559,27 @@ a { color: inherit; }
         <li><a href="/about">About</a></li>
       </ul>
     </nav>
-    <span class="nav-meta">Updated 14:07 UTC</span>
-    <button class="burger" aria-label="More links">
-      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
-        <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.5"/>
-      </svg>
-    </button>
+    <span class="nav-meta">Updated 17:40 UTC</span>
+    <details class="burger">
+      <summary class="burger-btn" aria-label="More links">
+        <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+          <rect y="0"  width="16" height="1.5" fill="currentColor"/>
+          <rect y="5"  width="16" height="1.5" fill="currentColor"/>
+          <rect y="10" width="16" height="1.5" fill="currentColor"/>
+        </svg>
+      </summary>
+      <ul class="burger-menu">
+        <li><a href="/">Home</a></li>
+        <li><a href="/matches/" aria-current="page">Upcoming matches</a></li>
+        <li><a href="/outrights/">Outright winners</a></li>
+        <li><a href="/methodology">How it works</a></li>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/responsible-use">Responsible use</a></li>
+        <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>
+        <li><a href="/corrections">Corrections</a></li>
+      </ul>
+    </details>
   </div>
 </header>
 <div class="edition-strip">
@@ -532,6 +588,14 @@ a { color: inherit; }
     <span class="live">Markets live</span>
   </div>
 </div>
+<nav class="pill-nav" aria-label="Primary (mobile)">
+  <a href="/">Home</a>
+  <a href="/matches/" aria-current="page">Matches</a>
+  <a href="/outrights/">Winners</a>
+  <a href="/methodology">How it works</a>
+  <a href="/learn">Learn</a>
+  <a href="/about">About</a>
+</nav>
 <main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Jordan v Algeria · model and market agree</h1></section><div class="lv-card is-pass is-lead"><a class="lv-card-link" href="/m/fb-wc26-jor-alg-20260623" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">—</span><span class="lv-lab">Pass</span><span class="lv-when">Tue 23 Jun · 03:00 UTC</span></div><h3 class="lv-teams">Jordan <span class="vs">v</span> Algeria</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">Across all three sides the model and the market sit within a percentage point. The state reads Pass — no actionable edge today.</p><div class="lv-foot"><span class="lv-flat-msg">Markets agree — within 1pp on every side.</span><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-jor-alg-2026-06-22" target="_blank" rel="nofollow noopener">Trade on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">Open the market</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/markets?q=Jordan+Algeria" target="_blank" rel="nofollow noopener">Trade on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-search">Search — no live listing</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-jor-alg-20260623">Read the case <span class="arr">→</span></a></div></div></div><div class="blurb"><p>For Jordan versus Algeria, our Elo prior — adjusted for venue and altitude — agrees with the closing line within a percentage point on every side. Pass is the honest call when calibration is in agreement; we&#x27;ll re-evaluate as kickoff approaches and late-binding signals (form, weather, confirmed XI) come in.</p></div><div class="cta-row"><a class="open-market" href="https://polymarket.com/event/fifwc-jor-alg-2026-06-22" rel="nofollow noopener" target="_blank">Open on market <span class="arr">↗</span></a><span class="meta-note">Odds Primer is editorial. Trades happen at the venue, not here.</span></div><section class="drivers"><h2>The drivers</h2><ol><li>Model and market sit within a percentage point on every side.</li>
 <li>No structural disagreement to publish — both are pricing the same shape.</li>
 <li>Late-binding signals (form, weather, confirmed XI) re-evaluate near kickoff.</li></ol></section><aside class="voice"><h3>How to read this</h3><p>The verdict compares our <em>model probability</em> against the <em>best available market probability</em>. A <em>Pick</em> means the model rates a side three or more percentage points higher than the market. <em>Pass</em> means the line is doing its job. <em>Avoid</em> means every side looks overpriced.</p></aside></main><footer class="site-foot page">
