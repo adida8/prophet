@@ -40,6 +40,10 @@ FOOTBALL_DIR = DESK_OUT / "football"
 OUTRIGHTS_DIR = DESK_OUT / "outrights"
 SITE_OUT = ROOT / "site" / "public"
 
+# Populated at the start of main() — see `_load_kalshi_event_index`.
+# Maps (kickoff_date, frozenset({iso3_a, iso3_b})) → event_ticker (str).
+KALSHI_EVENT_INDEX: dict[tuple, str] = {}
+
 
 # ─── CSS (verbatim from Odds Primer Design System/mockups/home-cards-v5.html) ───
 # Kept inline so every page is a self-contained HTML file — works opened
@@ -809,16 +813,134 @@ def _polymarket_url_for(verdict: dict, fallback_search: str | None = None) -> st
     return "https://polymarket.com/"
 
 
-def _kalshi_url_for(fallback_search: str | None = None) -> str:
-    """Kalshi placeholder URL. We don't ingest Kalshi event ids yet, so
-    every Kalshi CTA today points to a search on Kalshi's site keyed off
-    the match / outright identity. When the Kalshi ingest lands, swap
-    this for an explicit per-market URL.
+KALSHI_WC_LANDING = "https://kalshi.com/category/sports/soccer/fifa-world-cup"
+
+_KALSHI_MONTH_TO_NUM = {
+    "JAN": 1, "FEB": 2, "MAR": 3, "APR": 4, "MAY": 5, "JUN": 6,
+    "JUL": 7, "AUG": 8, "SEP": 9, "OCT": 10, "NOV": 11, "DEC": 12,
+}
+
+
+def _load_kalshi_event_index() -> dict[tuple, str]:
+    """Fetch Kalshi's WC 2026 game series, return a fixture-keyed event index.
+
+    Key: (kickoff_date, frozenset({iso3_a_lower, iso3_b_lower})).
+    Value: full event_ticker string, e.g. "KXWCGAME-26JUN11MEXRSA".
+
+    Pure stdlib (urllib) so generate.py stays dependency-free. On any
+    network failure, returns {} and CTAs fall back to the WC landing.
     """
-    if fallback_search:
-        from urllib.parse import quote_plus
-        return f"https://kalshi.com/markets?q={quote_plus(fallback_search)}"
-    return "https://kalshi.com/markets"
+    import urllib.request, urllib.error
+    from datetime import date as _date
+
+    events: list[dict] = []
+    cursor: str | None = None
+    base = "https://api.elections.kalshi.com/trade-api/v2/events"
+    try:
+        while True:
+            qs = "series_ticker=KXWCGAME&limit=200"
+            if cursor:
+                from urllib.parse import quote
+                qs += f"&cursor={quote(cursor)}"
+            with urllib.request.urlopen(f"{base}?{qs}", timeout=10) as r:
+                payload = json.loads(r.read().decode("utf-8")) or {}
+            page = payload.get("events") or []
+            events.extend(page)
+            cursor = payload.get("cursor")
+            if not cursor or not page:
+                break
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:
+        print(f"  kalshi index: fetch failed ({e}) — Kalshi CTAs will fall back to WC landing", file=sys.stderr)
+        return {}
+
+    index: dict[tuple, str] = {}
+    for ev in events:
+        ticker = ev.get("event_ticker") or ""
+        body = ticker.removeprefix("KXWCGAME-")
+        if len(body) < 13:
+            continue
+        try:
+            yy   = int(body[0:2])
+            mmm  = body[2:5]
+            dd   = int(body[5:7])
+            iso3_a = body[7:10].lower()
+            iso3_b = body[10:13].lower()
+            month = _KALSHI_MONTH_TO_NUM.get(mmm)
+            if not month:
+                continue
+            kickoff = _date(2000 + yy, month, dd)
+        except (ValueError, KeyError):
+            continue
+        index[(kickoff, frozenset({iso3_a, iso3_b}))] = ticker
+    return index
+
+
+def _fixture_key_from_match_id(match_id: str) -> tuple | None:
+    """Parse `fb-{competition}-{home}-{away}-{yyyymmdd}` → fixture key.
+    Mirrors desk/desk/sports/football/priced.py:_fixture_key so the site
+    generator can look up Kalshi events without importing from desk/."""
+    from datetime import date as _date
+
+    parts = (match_id or "").split("-")
+    if len(parts) < 4:
+        return None
+    yyyymmdd = parts[-1]
+    if len(yyyymmdd) != 8 or not yyyymmdd.isdigit():
+        return None
+    try:
+        kickoff = _date(int(yyyymmdd[:4]), int(yyyymmdd[4:6]), int(yyyymmdd[6:8]))
+    except ValueError:
+        return None
+    return (kickoff, frozenset({parts[-3].lower(), parts[-2].lower()}))
+
+
+def _kalshi_market_ticker_for_side(
+    event_ticker: str,
+    *,
+    pick_side_iso3: str | None,
+) -> str:
+    """Build the Kalshi market ticker that backs the picked side.
+
+    `pick_side_iso3` is either an ISO3 (lowercase, the team's match-id
+    code) or "draw". When None (Pass/Avoid verdicts) we default to the
+    first team in the event ticker — the URL still deep-links to the
+    event detail page, just preselects one of the three markets.
+    """
+    body = event_ticker.removeprefix("KXWCGAME-")
+    iso3_a = body[7:10].upper()
+    iso3_b = body[10:13].upper()
+
+    if pick_side_iso3 == "draw":
+        return f"{event_ticker}-TIE"
+    if pick_side_iso3 and pick_side_iso3.upper() == iso3_a:
+        return f"{event_ticker}-{iso3_a}"
+    if pick_side_iso3 and pick_side_iso3.upper() == iso3_b:
+        return f"{event_ticker}-{iso3_b}"
+    return f"{event_ticker}-{iso3_a}"
+
+
+def _kalshi_url_for(
+    match_id: str | None = None,
+    *,
+    pick_side_iso3: str | None = None,
+) -> tuple[str, bool]:
+    """Return (url, is_live). is_live=True when we resolved a real Kalshi
+    event for this fixture; False when we degraded to the WC landing
+    page."""
+    if match_id and KALSHI_EVENT_INDEX:
+        key = _fixture_key_from_match_id(match_id)
+        event_ticker = KALSHI_EVENT_INDEX.get(key) if key else None
+        if event_ticker:
+            market_ticker = _kalshi_market_ticker_for_side(
+                event_ticker, pick_side_iso3=pick_side_iso3,
+            )
+            from urllib.parse import quote
+            return (
+                f"{KALSHI_WC_LANDING}?op_market_ticker={quote(market_ticker)}"
+                f"&op_side=BUY&op_order_side=yes&op_order_type=dollars",
+                True,
+            )
+    return (KALSHI_WC_LANDING, False)
 
 
 def _cta_pill(
@@ -865,67 +987,79 @@ def _read_case_link(detail_href: str) -> str:
     )
 
 
+def _pick_side_iso3(
+    side: str | None,
+    *,
+    match_id: str | None,
+    team_a: str | None,
+    team_b: str | None,
+) -> str | None:
+    """Map verdict.side (team name or 'draw') → ISO3 code from match_id."""
+    if side is None or not match_id:
+        return None
+    if str(side).strip().lower() == "draw":
+        return "draw"
+    parts = match_id.split("-")
+    if len(parts) < 4:
+        return None
+    iso_a, iso_b = parts[-3], parts[-2]
+    if team_a and side == team_a:
+        return iso_a
+    if team_b and side == team_b:
+        return iso_b
+    return None
+
+
 def market_cta(
     verdict: dict,
     *,
     price: str | None = None,
     search_key: str | None = None,
     detail_href: str | None = None,
+    match_id: str | None = None,
+    team_a: str | None = None,
+    team_b: str | None = None,
 ) -> str:
     """Render the CTAs for a card.
 
     Tells the reader explicitly *which venue is the right one to trade
     on*. Each trade pill carries a small caption: "Best price · <odds>"
-    on the live + cheapest venue, "Live · <odds>" on a priced but
-    non-best venue, "Search — no listing" on a placeholder.
-
-    Today's data: only Polymarket is ingested, so Polymarket is always
-    the "best price" winner and Kalshi is always a search placeholder.
-    Once Kalshi prices land in the verdict (e.g. via
-    `verdict.kalshi_price`), the comparison swings to whichever
-    actually has the better odds for the Pick side.
+    on the venue Desk's verdict was struck against. Kalshi gets a real
+    deep-link when we resolved a live event for this fixture; falls
+    back to the WC 2026 landing page when we didn't.
     """
     poly_price   = (verdict.get("market_venue") or "").lower() == "polymarket" and price
     kalshi_price = verdict.get("kalshi_price")    # not produced yet; future hook
 
-    poly_url   = _polymarket_url_for(verdict, fallback_search=search_key)
-    kalshi_url = verdict.get("kalshi_url") or _kalshi_url_for(fallback_search=search_key)
+    poly_url = _polymarket_url_for(verdict, fallback_search=search_key)
 
-    # Caption logic — decide which venue is "Best price"
-    if kalshi_price and poly_price:
-        # Both priced — pick whichever offers more return. American odds:
-        # higher positive number is better on a longshot; less-negative
-        # is better on a favourite. Compare implied probability: lower
-        # implied → better price for backing that side. We don't have
-        # the implied here, so for now degrade to a string compare; the
-        # real comparison fires in the verdict path once Kalshi lands.
-        poly_caption   = f"Best price · {price}"
-        poly_kind      = "best"
-        kalshi_caption = f"Live · {kalshi_price}"
-        kalshi_kind    = "live"
-    elif poly_price and not kalshi_price:
-        poly_caption   = f"Best price · {price}"
-        poly_kind      = "best"
-        kalshi_caption = "Search — no live listing"
-        kalshi_kind    = "search"
-    elif kalshi_price and not poly_price:
-        poly_caption   = "Search — no live listing"
-        poly_kind      = "search"
-        kalshi_caption = f"Best price · {kalshi_price}"
-        kalshi_kind    = "best"
+    pick_side_iso3 = _pick_side_iso3(
+        verdict.get("side"), match_id=match_id, team_a=team_a, team_b=team_b,
+    )
+    kalshi_url, kalshi_is_live = _kalshi_url_for(match_id, pick_side_iso3=pick_side_iso3)
+
+    # Captions — only show one when we have something specific to say.
+    poly_caption: str | None = None
+    poly_kind = ""
+    kalshi_caption: str | None = None
+    kalshi_kind = ""
+
+    if poly_price and kalshi_price:
+        poly_caption, poly_kind = f"Best price · {price}", "best"
+        kalshi_caption, kalshi_kind = f"Live · {kalshi_price}", "live"
+    elif poly_price:
+        poly_caption, poly_kind = f"Best price · {price}", "best"
+    elif kalshi_price:
+        kalshi_caption, kalshi_kind = f"Best price · {kalshi_price}", "best"
     else:
-        # No price on either venue (Pass cards — verdict.price is null).
-        poly_caption   = "Open the market"
-        poly_kind      = "live"
-        kalshi_caption = "Search — no live listing"
-        kalshi_kind    = "search"
+        poly_caption, poly_kind = "Open the market", "live"
 
     poly_pill = _cta_pill(
         "Trade on Polymarket", poly_url,
         caption=poly_caption, caption_kind=poly_kind,
     )
     kalshi_pill = _cta_pill(
-        "Trade on Kalshi", kalshi_url, placeholder=True,
+        "Trade on Kalshi", kalshi_url, placeholder=not kalshi_is_live,
         caption=kalshi_caption, caption_kind=kalshi_kind,
     )
     secondary = _read_case_link(detail_href) if detail_href else ""
@@ -978,9 +1112,17 @@ def render_card(match: dict, *, is_lead: bool = False) -> str:
     # Polymarket if market_url is missing.
     search_key = f"{match.get('team_a','')} {match.get('team_b','')}".strip()
 
+    cta_kwargs = dict(
+        search_key=search_key,
+        detail_href=href,
+        match_id=match.get("match_id"),
+        team_a=match.get("team_a"),
+        team_b=match.get("team_b"),
+    )
+
     # Foot — different for pick/avoid vs pass
     if state == "pass":
-        cta_html = market_cta(v, search_key=search_key, detail_href=href)
+        cta_html = market_cta(v, **cta_kwargs)
         foot = (
             '<div class="lv-foot">'
             f'<span class="lv-flat-msg">Markets agree — within 1pp on every side.</span>'
@@ -1003,7 +1145,7 @@ def render_card(match: dict, *, is_lead: bool = False) -> str:
         if edge_str:
             reads += f'<span class="edge{edge_class}">{edge_str}</span>'
 
-        action_bits = market_cta(v, price=v.get("price"), search_key=search_key, detail_href=href)
+        action_bits = market_cta(v, price=v.get("price"), **cta_kwargs)
 
         foot = (
             '<div class="lv-foot">'
@@ -1465,6 +1607,12 @@ def main():
 
     outrights = load_outrights()
     log(f"Loaded outrights: {len(outrights)}")
+
+    # Pull the Kalshi WC 2026 event index so every "Trade on Kalshi"
+    # button can deep-link to the right market.
+    global KALSHI_EVENT_INDEX
+    KALSHI_EVENT_INDEX = _load_kalshi_event_index()
+    log(f"Loaded kalshi  : {len(KALSHI_EVENT_INDEX)} WC26 events")
 
     # Home
     (SITE_OUT / "index.html").write_text(render_home(matches, outrights))
