@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 from typing import Iterable
 
+from desk import config
 from desk.ingest.polymarket import PolymarketSoccerEventsSource
 from desk.ingest.polymarket_prices import prices_from_polymarket_event
 from desk.sport import FixtureRef
@@ -30,9 +31,14 @@ async def list_priced_fixtures_polymarket() -> list[tuple[FixtureRef, MarketSnap
         log.warning("polymarket fetch failed: %s", e)
         return out
 
+    allow = config.COMPETITION_ALLOWLIST
+    n_filtered = 0
     for ev in events:
         fx = from_polymarket_event(ev)
         if fx is None or fx.match_id in seen:
+            continue
+        if allow is not None and fx.competition_code not in allow:
+            n_filtered += 1
             continue
         seen.add(fx.match_id)
         snap = prices_from_polymarket_event(
@@ -43,4 +49,9 @@ async def list_priced_fixtures_polymarket() -> list[tuple[FixtureRef, MarketSnap
         )
         out.append((fx, snap))
 
+    if allow is not None:
+        log.info(
+            "competition allowlist %s — kept %d, filtered %d",
+            sorted(allow), len(out), n_filtered,
+        )
     return out
