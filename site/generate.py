@@ -323,6 +323,24 @@ a { color: inherit; }
 .lv-card .lv-action { flex-wrap: wrap; gap: 10px; }
 .lv-card .lv-foot   { flex-wrap: wrap; row-gap: 12px; }
 
+/* Secondary "Read the case" CTA — text link, no pill. Sits next to the
+   two primary trade pills as a tertiary action. */
+.lv-card .lv-action a.cta-secondary {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink); text-decoration: none;
+  padding: 7px 6px 6px;
+  border-bottom: 1.5px solid transparent;
+  pointer-events: auto;
+  position: relative; z-index: 3;
+  transition: color var(--dur-fast) var(--ease-standard),
+              border-color var(--dur-fast) var(--ease-standard);
+}
+.lv-card .lv-action a.cta-secondary .arr { color: var(--flame); }
+.lv-card .lv-action a.cta-secondary:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
+.lv-card .lv-action a.cta-secondary:hover .arr { transform: translateX(2px); }
+
 /* Pass-state cards now also carry the CTA — keep the flat-msg in the same
    row as the action button. */
 .lv-card.is-pass .lv-foot { display: flex; align-items: center; gap: 16px; justify-content: space-between; flex-wrap: wrap; }
@@ -644,16 +662,30 @@ def _cta_pill(label: str, url: str, *, placeholder: bool = False) -> str:
     )
 
 
+def _read_case_link(detail_href: str) -> str:
+    """Secondary CTA — text-only "Read the case" link to the match/outright
+    detail page. Styled tertiary so the two trade pills are the visual
+    primary CTAs.
+    """
+    return (
+        f'<a class="cta-secondary read-case" href="{escape(detail_href)}">'
+        f'Read the case <span class="arr">→</span>'
+        f'</a>'
+    )
+
+
 def market_cta(
     verdict: dict,
     *,
     price: str | None = None,
     search_key: str | None = None,
+    detail_href: str | None = None,
 ) -> str:
-    """Render the venue CTAs for a card. Always emits both Polymarket
-    and Kalshi pills; Kalshi today is a placeholder linking to a
-    Kalshi search (no live Kalshi ingest yet). `price` shows the
-    American odds next to the Polymarket pill on Pick rows.
+    """Render the CTAs for a card: two primary trade pills (Polymarket
+    + Kalshi) and a secondary "Read the case" text link to the detail
+    page. Kalshi today is a placeholder linking to a Kalshi search (no
+    live Kalshi ingest yet). `price` shows the American odds next to
+    the Polymarket pill on Pick rows.
     """
     poly_url   = _polymarket_url_for(verdict, fallback_search=search_key)
     kalshi_url = _kalshi_url_for(fallback_search=search_key)
@@ -661,7 +693,8 @@ def market_cta(
     price_html = f'<span class="price">{escape(str(price))}</span>' if price else ""
     poly_pill   = _cta_pill("Trade on Polymarket", poly_url)
     kalshi_pill = _cta_pill("Trade on Kalshi", kalshi_url, placeholder=True)
-    return f'{price_html}{poly_pill}{kalshi_pill}'
+    secondary   = _read_case_link(detail_href) if detail_href else ""
+    return f'{price_html}{poly_pill}{kalshi_pill}{secondary}'
 
 
 def venue_meta(match: dict) -> str:
@@ -712,7 +745,7 @@ def render_card(match: dict, *, is_lead: bool = False) -> str:
 
     # Foot — different for pick/avoid vs pass
     if state == "pass":
-        cta_html = market_cta(v, search_key=search_key)
+        cta_html = market_cta(v, search_key=search_key, detail_href=href)
         foot = (
             '<div class="lv-foot">'
             f'<span class="lv-flat-msg">Markets agree — within 1pp on every side.</span>'
@@ -735,7 +768,7 @@ def render_card(match: dict, *, is_lead: bool = False) -> str:
         if edge_str:
             reads += f'<span class="edge{edge_class}">{edge_str}</span>'
 
-        action_bits = market_cta(v, price=v.get("price"), search_key=search_key)
+        action_bits = market_cta(v, price=v.get("price"), search_key=search_key, detail_href=href)
 
         foot = (
             '<div class="lv-foot">'
@@ -981,7 +1014,7 @@ def render_outright_card(outright: dict) -> str:
     search_key = "World Cup 2026 winner"
 
     if state == "pass":
-        cta_html = market_cta(cta_dict, search_key=search_key)
+        cta_html = market_cta(cta_dict, search_key=search_key, detail_href=href)
         foot = (
             '<div class="lv-foot">'
             '<span class="lv-flat-msg">Markets agree on this field.</span>'
@@ -999,7 +1032,7 @@ def render_outright_card(outright: dict) -> str:
         )
         if edge_str:
             reads += f'<span class="edge{edge_class}">{edge_str}</span>'
-        action = market_cta(cta_dict, price=v.get("price"), search_key=search_key)
+        action = market_cta(cta_dict, price=v.get("price"), search_key=search_key, detail_href=href)
         foot = f'<div class="lv-foot"><div class="lv-reads">{reads}</div><div class="lv-action">{action}</div></div>'
 
     return (
