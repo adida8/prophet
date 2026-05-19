@@ -261,6 +261,80 @@ def _odds_translation(market_p: float) -> str:
     return f"−{int(round(market_p / (1 - market_p) * 100))}"
 
 
+def _days_until(iso: str | None) -> int | None:
+    if not iso:
+        return None
+    try:
+        from datetime import datetime, timezone
+        dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+        delta = dt - datetime.now(tz=timezone.utc)
+        return int(round(delta.total_seconds() / 86400))
+    except Exception:
+        return None
+
+
+def _hour_of_day(iso: str | None) -> int | None:
+    if not iso:
+        return None
+    try:
+        from datetime import datetime
+        return datetime.fromisoformat(iso.replace("Z", "+00:00")).hour
+    except Exception:
+        return None
+
+
+def _weekday_name(iso: str | None) -> str | None:
+    if not iso:
+        return None
+    try:
+        from datetime import datetime
+        return datetime.fromisoformat(iso.replace("Z", "+00:00")).strftime("%A")
+    except Exception:
+        return None
+
+
+def _kickoff_label(iso: str | None) -> str | None:
+    """Return a short label like 'late-night UTC kickoff' or 'afternoon
+    UTC kickoff' based on the hour. Used for editorial colour, not
+    timezone-correct local time.
+    """
+    h = _hour_of_day(iso)
+    if h is None:
+        return None
+    if h < 6:
+        return "overnight UTC kickoff"
+    if h < 12:
+        return "morning UTC kickoff"
+    if h < 17:
+        return "afternoon UTC kickoff"
+    if h < 21:
+        return "evening UTC kickoff"
+    return "late-night UTC kickoff"
+
+
+def _edge_size_label(edge: float) -> str:
+    if edge >= 15:
+        return "one of the widest in the priced field"
+    if edge >= 10:
+        return "a wide disagreement by the engine's standards"
+    if edge >= 5:
+        return "a substantive gap"
+    return "a narrow gap"
+
+
+def _quality_phrase(src_a: str | None, src_b: str | None) -> str:
+    """Plain-English line about how trustworthy the Elo numbers are."""
+    a = _quality_label(src_a)
+    b = _quality_label(src_b)
+    if a == b == "live":
+        return "Both Elo numbers are pulled live from the public Elo source."
+    if a == b == "seed":
+        return "Both Elo numbers are from the engine's frozen v1 seed, refreshed when the live ingest catches up."
+    if "stub" in (a, b):
+        return "One side resolves to a stub default until the live Elo ingest covers it; treat the prior on that side as low-confidence."
+    return f"Elo source: {a} for one side, {b} for the other."
+
+
 def _pick_blurb(
     *,
     i: Inputs,
@@ -275,11 +349,15 @@ def _pick_blurb(
     venue_label: str,
     salt: str,
 ) -> str:
-    """Long-form (~half-page) blurb drawing on Elo, the three-way
-    model + market split, the bootstrap CI, venue + kickoff, and the
-    Desk's methodology. Aims for ~400-550 words.
+    """Long-form (~half-page) blurb drawing on Elo, the three-way model
+    + market split, the bootstrap CI, venue + kickoff, and the Desk's
+    methodology. Aims for ~400-550 words.
+
+    Every paragraph picks from a pool of variants keyed by a hash of
+    the match identity — so no two matches share boilerplate, but the
+    same match always re-renders identically.
     """
-    # ── Source data, with safe defaults if upstream didn't plumb them ──
+    # ── Data ─────────────────────────────────────────────────────────
     p_a   = float(i.get("model_p_a")   or 0.0)
     p_d   = float(i.get("model_p_draw") or 0.0)
     p_b_  = float(i.get("model_p_b")   or 0.0)
@@ -292,47 +370,92 @@ def _pick_blurb(
     elo_b_adj = i.get("elo_b_adj")
     src_a = i.get("team_a_elo_source")
     src_b = i.get("team_b_elo_source")
-
     side_to_lower = {
         a: i.get("model_p_a_lower"),
         b: i.get("model_p_b_lower"),
         "draw": i.get("model_p_draw_lower"),
     }
     lower_p = side_to_lower.get(side)
-
-    side_label = _side_label(side, a=a, b=b)
-    kickoff_str = _format_kickoff(i.get("kickoff_utc"))
     venue_str = _venue_sentence(i)
+    kickoff_str = _format_kickoff(i.get("kickoff_utc"))
+    kickoff_iso = i.get("kickoff_utc")
+    weekday = _weekday_name(kickoff_iso)
+    days_out = _days_until(kickoff_iso)
+    kickoff_lbl = _kickoff_label(kickoff_iso)
+    is_home_side = side == a
+    elo_higher = a if (elo_a or 0) > (elo_b or 0) else (b if (elo_b or 0) > (elo_a or 0) else None)
+    elo_gap_int = int(round(abs((elo_a or 0) - (elo_b or 0)))) if elo_a and elo_b else None
+    odds_str = _odds_translation(market_p)
+    edge_label = _edge_size_label(edge)
 
-    # ── §1. Fixture frame ────────────────────────────────────────────
-    frame_bits = [f"{competition} brings {a} together with {b}"]
-    if kickoff_str:
-        frame_bits.append(f", scheduled for {kickoff_str}")
-    if venue_str:
-        frame_bits.append(f", at {venue_str}")
-    frame_bits.append(".")
-    fixture_intro = "".join(frame_bits)
+    def pick(key: str, options: list[str]) -> str:
+        return options[_variant_index(salt + "/" + key, len(options))]
 
-    para_fixture = (
-        f"{fixture_intro} The Desk reads every priced match on Polymarket and Kalshi "
-        f"against an independent model number, then publishes a single verdict — Pick, "
-        f"Pass, or Avoid — with the math the call rests on. On this fixture that verdict "
-        f"is a Pick, on the {side_name} side."
-    )
+    # ── §1. Fixture frame — six varied openers ───────────────────────
+    when_clause = f" on {weekday}" if weekday else ""
+    venue_clause = f" at {venue_str}" if venue_str else ""
+    kickoff_extra = f", {kickoff_lbl}," if kickoff_lbl else ""
 
-    # ── §2. Elo + adjustments ────────────────────────────────────────
+    para_fixture_options = [
+        # A — opens on the fixture pairing
+        f"{a} face {b}{when_clause}{venue_clause}{kickoff_extra} in {competition}. "
+        f"This is one of the matches where the model's number disagrees with the "
+        f"closing line on Polymarket — {edge_label} on the {side_name} side, +{edge:.1f}pp.",
+        # B — opens on the edge
+        f"A {edge:+.1f}pp gap on the {side_name} side. {a} v {b}{venue_clause} in {competition} "
+        f"is the match. The model has {side_name} stronger than the market does — that's "
+        f"the reason this fires as a Pick rather than a Pass.",
+        # C — opens on the competition / when
+        f"{competition}{when_clause}{kickoff_extra} brings {a} and {b} together"
+        f"{venue_clause}. The Desk's read disagrees with the market on the "
+        f"{side_name} side, by {edge:+.1f}pp — and that disagreement is the Pick.",
+        # D — opens on the team that's the Pick
+        f"The model fancies {side_name} more than the market does in this {competition} "
+        f"fixture against {a if side_name == b else b}{venue_clause}. {edge:+.1f}pp is "
+        f"{edge_label}; that's what fires this as a Pick on the {_side_label(side, a=a, b=b)} side.",
+        # E — opens on the timing / lead-up
+        f"{kickoff_str + '.' if kickoff_str else f'{competition}.'} {a} and {b} on the card"
+        f"{venue_clause}. On the {side_name} side, the engine's number sits {edge:+.1f}pp "
+        f"clear of the market — {edge_label} this far out from kickoff.",
+        # F — opens on the disagreement
+        f"This is a Pick. {a} v {b} in {competition}{when_clause}, and the model and the "
+        f"market disagree on the {side_name} side by {edge:+.1f}pp{venue_clause and ' at ' + venue_str or ''}. "
+        f"That's the gap the verdict rests on.",
+    ]
+    para_fixture = pick("§1", para_fixture_options)
+
+    # ── §2. Elo + adjustments — five framings ────────────────────────
+    elo_summary = ""
     if elo_a is not None and elo_b is not None:
-        elo_line = (
-            f"The model starts from public Elo ratings: {a} on {int(round(elo_a))}, "
-            f"{b} on {int(round(elo_b))} — a {int(round(abs(elo_a - elo_b)))}-point "
-            f"difference {'in favour of ' + a if elo_a > elo_b else ('in favour of ' + b if elo_b > elo_a else 'with the sides level')}. "
-            f"Elo source: {_quality_label(src_a)} for {a}, {_quality_label(src_b)} for {b}."
-        )
+        if elo_gap_int and elo_higher:
+            elo_summary_options = [
+                f"On Elo, {elo_higher} comes in {elo_gap_int} points ahead — {a} at "
+                f"{int(round(elo_a))}, {b} at {int(round(elo_b))}.",
+                f"The Elo prior reads {a} {int(round(elo_a))} vs {b} {int(round(elo_b))}: "
+                f"{elo_gap_int} points in favour of {elo_higher}, which is a meaningful but "
+                f"not decisive prior.",
+                f"Elo numbers going in: {a} {int(round(elo_a))}, {b} {int(round(elo_b))}. "
+                f"That's a {elo_gap_int}-point lead for {elo_higher} — closer than a casual "
+                f"reader of the market price might assume.",
+                f"Public Elo rates {elo_higher} {elo_gap_int} points higher than the other "
+                f"side ({a} {int(round(elo_a))}, {b} {int(round(elo_b))}). The match "
+                f"model's logistic translates that Elo gap directly into a win-probability.",
+            ]
+        else:
+            elo_summary_options = [
+                f"Elo has the two sides level: {a} on {int(round(elo_a))}, {b} on "
+                f"{int(round(elo_b))}. With the prior even, the market price carries the "
+                f"weight of the disagreement.",
+                f"On Elo, this is a coin flip — {int(round(elo_a))} apiece for {a} and {b}. "
+                f"A model-vs-market gap of {edge:+.1f}pp on a level prior is unusual.",
+            ]
+        elo_summary = pick("§2-elo", elo_summary_options) + " " + _quality_phrase(src_a, src_b)
     else:
-        elo_line = (
-            f"The model starts from a public Elo prior on both sides, refreshed against "
-            f"international and club Elo feeds."
+        elo_summary = (
+            "The model starts from a public Elo prior on both sides, refreshed against "
+            "international and club Elo feeds."
         )
+
     if elo_a_adj is not None and elo_b_adj is not None and elo_a is not None and elo_b is not None:
         delta_a = elo_a_adj - elo_a
         delta_b = elo_b_adj - elo_b
@@ -342,81 +465,157 @@ def _pick_blurb(
                 adj_bits.append(f"{a} {('+' if delta_a > 0 else '')}{int(round(delta_a))} Elo")
             if abs(delta_b) > 0.5:
                 adj_bits.append(f"{b} {('+' if delta_b > 0 else '')}{int(round(delta_b))} Elo")
-            adjustments_line = (
-                f" After host-country, home-ground, and altitude adjustments where they "
-                f"apply, the prior shifts: {' and '.join(adj_bits)}. The adjustments are "
-                f"physically motivated and bounded — a small bonus for host-country sides "
-                f"in international tournaments, an altitude bonus for whichever side is more "
-                f"acclimatised to venues above 1,000m, and a home-ground bonus for clubs at "
-                f"their registered stadium."
-            )
+            adj_options = [
+                f" Adjustments fire on this fixture — {' and '.join(adj_bits)} — folding "
+                f"host-country, home-ground, and altitude effects into the prior where they "
+                f"apply.",
+                f" Pre-match adjustments lift the prior by {' and '.join(adj_bits)}; the "
+                f"engine carries a small set of physically-motivated bonuses (host, home, "
+                f"altitude) and reads them off the venue.",
+            ]
+            adjustments_line = pick("§2-adj", adj_options)
         else:
-            adjustments_line = (
-                " No host, home-ground, or altitude adjustments apply on this fixture; the "
-                "prior reads straight from Elo."
-            )
+            adj_options = [
+                " No host, home-ground, or altitude adjustments apply here; the prior reads "
+                "straight from Elo.",
+                " The adjustment layer is quiet on this fixture — no host bonus, no home-"
+                "ground correction, no altitude folding in. The Elo numbers above are what "
+                "the model uses.",
+            ]
+            adjustments_line = pick("§2-noadj", adj_options)
     else:
         adjustments_line = ""
-    para_elo = elo_line + adjustments_line
+    para_elo = elo_summary + adjustments_line
 
-    # ── §3. Three-way model split ────────────────────────────────────
-    para_model = (
-        _three_way_sentence(
-            a=a, b=b, p_a=p_a, p_d=p_d, p_b=p_b_, label="Run through the three-way split, the model reads"
-        )
-        + " The three-way distribution carries the Desk's view of how often each outcome "
-        + "fires across the entire range of in-form-but-not-injured ninety-minute scenarios. "
-        + "It is not a forecast of the exact scoreline; it is a calibrated probability over "
-        + "the W / D / L resolution that Polymarket and Kalshi both settle on."
+    # ── §3. Model three-way split — four framings ────────────────────
+    model_split = _three_way_sentence(
+        a=a, b=b, p_a=p_a, p_d=p_d, p_b=p_b_, label="Three-way split from the model"
     )
+    para_model_options = [
+        f"{model_split} The {_side_label(side, a=a, b=b)} side reads {_pct(model_p)} on this "
+        f"distribution — the model's central case for {side_name}.",
+        f"{model_split} The Desk's three-way distribution is calibrated against the W/D/L "
+        f"resolution Polymarket and Kalshi settle on, not against the exact scoreline. "
+        f"{side_name} sits at {_pct(model_p)} of the mass.",
+        f"{model_split} Draw share decays with Elo gap; on a fixture this evenly matched "
+        f"the draw carries more probability than a casual reader might guess. {side_name} "
+        f"on the win side reads {_pct(model_p)}.",
+        f"{model_split} Each number is a probability over the full range of plausible "
+        f"in-form, no-injury, ninety-minute scenarios — not a prediction of a scoreline.",
+    ]
+    para_model = pick("§3", para_model_options)
 
-    # ── §4. Three-way market split + odds ────────────────────────────
-    odds_str = _odds_translation(market_p)
-    para_market = (
-        _three_way_sentence(
-            a=a, b=b, p_a=mp_a, p_d=mp_d, p_b=mp_b, label=f"{venue_label}'s closing line"
-        )
-        + f" On the {side_name} side specifically, the market sits at {_pct(market_p)}"
-        + (f", which prices out at American odds of {odds_str}" if odds_str else "")
-        + f". The model has the same side at {_pct(model_p)}. The gap across those two "
-        + f"numbers — {edge:+.1f}pp — is the basis for the Pick."
+    # ── §4. Market three-way split + odds — four framings ────────────
+    market_split = _three_way_sentence(
+        a=a, b=b, p_a=mp_a, p_d=mp_d, p_b=mp_b, label=f"On the same three-way, {venue_label}"
     )
+    odds_phrase = f", which prices out at American odds of {odds_str}" if odds_str else ""
+    para_market_options = [
+        f"{market_split} On the {side_name} side specifically the market reads {_pct(market_p)}"
+        f"{odds_phrase}. Compared against the model's {_pct(model_p)}, that's the +{edge:.1f}pp "
+        f"gap the Pick rests on.",
+        f"{market_split} {venue_label} has {side_name} at {_pct(market_p)}{odds_phrase}; the "
+        f"model has the same side at {_pct(model_p)}. The {edge:+.1f}pp gap across them is "
+        f"the disagreement we're surfacing.",
+        f"{market_split} Reading those three numbers as a probability distribution, the "
+        f"market's view is internally consistent. The disagreement with the model is "
+        f"concentrated on the {side_name} side — {_pct(market_p)} on the market, "
+        f"{_pct(model_p)} on the engine, a {edge:+.1f}pp gap.",
+        f"{market_split} The {side_name} side trades at {_pct(market_p)} on Polymarket"
+        f"{odds_phrase}. That's where the engine differs: our number reads {_pct(model_p)}, "
+        f"{edge:+.1f}pp wider.",
+    ]
+    para_market = pick("§4", para_market_options)
 
-    # ── §5. The discipline (bootstrap + threshold) ───────────────────
+    # ── §5. The discipline — three framings ──────────────────────────
     if lower_p is not None and lower_p > 0:
-        bootstrap_line = (
-            f"Our Pick gate uses a lower-bound check, not the point estimate. A 100-sample "
-            f"bootstrap perturbs the Elo prior, the host bonus, and the altitude bonus across "
-            f"realistic ranges (±20 Elo, ±15 host, ±10 altitude) and reads the 5th-percentile "
-            f"value back out. On the {side_name} side, that lower bound is {_pct(lower_p)} — "
-            f"compared against the market's {_pct(market_p)}, the lower-bound gap is "
-            f"{(lower_p - market_p) * 100:+.1f}pp. The Pick fires when that lower-bound gap "
-            f"clears +3pp; it does on this match."
-        )
+        lower_gap = (lower_p - market_p) * 100
+        discipline_options = [
+            f"Pick gate is a lower-bound check, not the point estimate. A 100-sample "
+            f"bootstrap perturbs the Elo prior (±20), the host bonus (±15), and the altitude "
+            f"bonus (±10), then reads the 5th-percentile probability back out. On the "
+            f"{side_name} side that lower bound is {_pct(lower_p)} — {lower_gap:+.1f}pp clear "
+            f"of the market's {_pct(market_p)}, comfortably past our +3pp threshold.",
+            f"The +3pp Pick threshold isn't on the point estimate, it's on the 5th-percentile "
+            f"from a 100-sample bootstrap of the Elo prior plus bonuses. On {side_name}, that "
+            f"haircut lands the model at {_pct(lower_p)}; the market is at {_pct(market_p)}. "
+            f"Even on the conservative reading, the gap is {lower_gap:+.1f}pp.",
+            f"Bootstrap discipline matters most on the longshots — wide bands on small "
+            f"point estimates collapse the Pick rate fast. On {side_name} the lower bound "
+            f"is {_pct(lower_p)}, which keeps the lower-bound gap at {lower_gap:+.1f}pp "
+            f"against the market — past +3pp, so the Pick clears.",
+        ]
+        bootstrap_line = pick("§5-boot", discipline_options)
     else:
         bootstrap_line = (
-            f"Our Pick gate uses the lower-bound check from a 100-sample bootstrap of the Elo "
-            f"prior plus the bonus adjustments. The discipline keeps the engine from over-firing "
-            f"on point-estimate noise. A Pick is published only when the lower-bound gap is wide "
-            f"enough to survive the bootstrap haircut."
+            "Our Pick gate uses the 5th-percentile of a 100-sample bootstrap of the Elo "
+            "prior plus the bonus adjustments. The discipline keeps the engine from over-"
+            "firing on point-estimate noise; a Pick fires only when the lower-bound gap is "
+            "wide enough to survive the haircut."
         )
-    para_discipline = bootstrap_line + (
-        f" The Desk's posture is that calibration sits with the closing market across recent "
-        f"fixtures, so we're not claiming the market is generally wrong — we're claiming this "
-        f"particular side is mispriced on this particular fixture. Selection is the dimension "
-        f"this verdict is meant to add value on."
-    )
 
-    # ── §6. Late-binding signals + close ─────────────────────────────
-    para_close = (
-        f"This number will move. Late-binding signals — confirmed starting elevens, injury "
-        f"updates, weather at the venue, suspensions carried in from previous fixtures — all "
-        f"re-enter the model on the data layer's late-binding cadence, currently weekly outside "
-        f"T-5d of kickoff, daily inside T-5d, hourly inside T-24h. A Pick can flip to a Pass if "
-        f"news moves the prior; we republish on every refresh. The Desk does not tip and does "
-        f"not recommend a trade. The model price, the market price, and the gap across them "
-        f"are what's on the page; what to do with that is a reader's call."
-    )
+    posture_options = [
+        " The Desk's posture is that calibration sits with the closing market across recent "
+        "fixtures — we're not claiming the market is generally wrong, only that this side, "
+        "on this fixture, looks mispriced. Selection is the dimension this verdict adds value on.",
+        " We're not arguing the market is broadly wrong; the closing line and the model are "
+        "in approximate agreement across recent fixtures by Brier score. The claim is "
+        "narrower: this side specifically reads mispriced.",
+        " Calibration tracks the closing market on the bulk sample; selection — picking the "
+        "single side where the gap is wide — is where the engine's edge has to come from. "
+        "This verdict is a selection call on the {side_name} side.".format(side_name=side_name),
+    ]
+    para_discipline = bootstrap_line + pick("§5-posture", posture_options)
+
+    # ── §6. Late-binding + close — vary by time-to-kickoff ───────────
+    cadence_phrase: str
+    if days_out is None:
+        cadence_phrase = (
+            "The model refreshes weekly outside T-5d of kickoff, daily inside T-5d, and "
+            "hourly inside T-24h."
+        )
+    elif days_out > 30:
+        cadence_phrase = (
+            f"With kickoff roughly {days_out} days out, the model is on the weekly refresh "
+            f"cadence; we'll move to daily once we cross the T-5d window."
+        )
+    elif days_out > 5:
+        cadence_phrase = (
+            f"With kickoff {days_out} days out, we're still on weekly refresh; the daily "
+            f"cadence picks up inside T-5d."
+        )
+    elif days_out > 1:
+        cadence_phrase = (
+            f"Inside T-5d now — {days_out} days to kickoff — so refresh is daily. "
+            f"The model will move to hourly inside T-24h."
+        )
+    elif days_out >= 0:
+        cadence_phrase = (
+            f"Inside T-24h — hourly refresh active. Late-binding signals re-enter the "
+            f"prior on every cycle until kickoff."
+        )
+    else:
+        cadence_phrase = (
+            f"Match has kicked off; the published number is the last pre-match read."
+        )
+
+    para_close_options = [
+        f"This number will move. Confirmed starting elevens, injuries, weather at the venue, "
+        f"and suspensions carried in from previous fixtures all re-enter the prior on the "
+        f"late-binding cadence. {cadence_phrase} The Pick can flip to a Pass if news moves "
+        f"enough of the prior. The Desk does not tip and does not recommend a trade — the "
+        f"model price, the market price, and the gap across them are what's on the page.",
+        f"The number above is the most recent read; it isn't frozen. {cadence_phrase} Injury "
+        f"news, the actual XI, and weather conditions at kickoff all feed back into the prior "
+        f"when they land. We republish on every refresh. The Desk surfaces edge; what to do "
+        f"with that surface is a reader's call.",
+        f"News will move the prior. {cadence_phrase} On a Pick this wide, it would take "
+        f"material news — a missing star, a tournament dropout, a venue change — to collapse "
+        f"the gap below the +3pp threshold; on the narrower side of the field, a single "
+        f"refresh can flip Pick to Pass. Either way, the Desk re-publishes after each "
+        f"refresh and does not recommend a trade.",
+    ]
+    para_close = pick("§6", para_close_options)
 
     return "\n\n".join([
         para_fixture, para_elo, para_model, para_market, para_discipline, para_close,
