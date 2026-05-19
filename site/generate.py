@@ -199,17 +199,18 @@ a { color: inherit; }
 .lv-card:hover { background: var(--paper-warm); }
 .lv-card .lv-bar { grid-column: 1; grid-row: 1 / -1; background: var(--rule); }
 
-/* Overlay link — the entire card is clickable to the match/outright detail
-   page. The market CTA (.cta below) sits above this via z-index so it
-   captures clicks first and opens the venue in a new tab instead. */
+/* Overlay link — the entire card is clickable. Content sits visually on top
+   (z-index 2) but has `pointer-events: none` so clicks anywhere fall through
+   to the overlay link. The market CTAs explicitly re-enable pointer-events
+   so they capture their own clicks. */
 .lv-card .lv-card-link {
   position: absolute; inset: 0;
   z-index: 1;
   text-indent: -9999px; overflow: hidden;
   background: transparent;
 }
-.lv-card > *:not(.lv-card-link) { position: relative; z-index: 2; }
-.lv-card .lv-action a.cta { position: relative; z-index: 3; }
+.lv-card > *:not(.lv-card-link) { position: relative; z-index: 2; pointer-events: none; }
+.lv-card .lv-action a.cta { pointer-events: auto; z-index: 3; }
 
 .lv-card .lv-head { grid-column: 2; grid-row: 1; display: flex; align-items: baseline; gap: 12px; }
 .lv-card .lv-glyph { font-family: var(--font-sans); font-weight: 700; font-size: 16px; line-height: 1; color: var(--graphite-soft); }
@@ -301,6 +302,26 @@ a { color: inherit; }
 .lv-card:hover .lv-action .cta .arr,
 .lv-card .lv-action .cta:hover .arr { color: var(--paper); transform: translate(2px, -2px); }
 .lv-card .lv-action a.cta:focus-visible { outline: 2px solid var(--flame); outline-offset: 2px; }
+
+/* Placeholder venue pill — Kalshi is wired as a search-fallback until
+   the live Kalshi ingest lands. Visually differentiated so it doesn't
+   read as the primary CTA. */
+.lv-card .lv-action a.cta.is-placeholder {
+  background: var(--paper-pure);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+}
+.lv-card .lv-action a.cta.is-placeholder .arr { color: var(--ink); }
+.lv-card:hover .lv-action a.cta.is-placeholder,
+.lv-card .lv-action a.cta.is-placeholder:hover {
+  background: var(--ink); color: var(--paper-pure);
+}
+.lv-card:hover .lv-action a.cta.is-placeholder .arr,
+.lv-card .lv-action a.cta.is-placeholder:hover .arr { color: var(--flame); }
+
+/* Allow CTAs to wrap onto a second row on narrow viewports. */
+.lv-card .lv-action { flex-wrap: wrap; gap: 10px; }
+.lv-card .lv-foot   { flex-wrap: wrap; row-gap: 12px; }
 
 /* Pass-state cards now also carry the CTA — keep the flat-msg in the same
    row as the action button. */
@@ -582,22 +603,65 @@ def venue_label_for(verdict: dict) -> str | None:
     return venue_name_from_url(verdict.get("market_url"))
 
 
-def market_cta(verdict: dict, *, price: str | None = None) -> str:
-    """Render the venue CTA pill (Polymarket / Kalshi → opens the market).
-    Returns empty string if we have nothing to link to.
+def _polymarket_url_for(verdict: dict, fallback_search: str | None = None) -> str:
+    """Polymarket URL — use the explicit one when present, fall back to a
+    search on the event slug. Never returns empty; the venue is always
+    surfaceable.
     """
-    url = verdict.get("market_url")
-    venue = venue_label_for(verdict)
-    if not url or not venue:
-        return ""
-    price_html = f'<span class="price">{escape(str(price))}</span>' if price else ""
+    url = (verdict.get("market_url") or "").strip()
+    if url and "polymarket.com" in url.lower():
+        return url
+    # No explicit Polymarket URL → degrade to a search.
+    if fallback_search:
+        from urllib.parse import quote_plus
+        return f"https://polymarket.com/markets?_q={quote_plus(fallback_search)}"
+    return "https://polymarket.com/"
+
+
+def _kalshi_url_for(fallback_search: str | None = None) -> str:
+    """Kalshi placeholder URL. We don't ingest Kalshi event ids yet, so
+    every Kalshi CTA today points to a search on Kalshi's site keyed off
+    the match / outright identity. When the Kalshi ingest lands, swap
+    this for an explicit per-market URL.
+    """
+    if fallback_search:
+        from urllib.parse import quote_plus
+        return f"https://kalshi.com/markets?q={quote_plus(fallback_search)}"
+    return "https://kalshi.com/markets"
+
+
+def _cta_pill(label: str, url: str, *, placeholder: bool = False) -> str:
+    """Render a single trade CTA pill. `placeholder=True` adds a class
+    so the pill can be visually distinguished from a real venue link
+    (e.g. softened colour) — we use it for Kalshi until live URLs land.
+    """
+    extra = " is-placeholder" if placeholder else ""
     return (
-        f'{price_html}'
-        f'<a class="cta market-cta" href="{escape(url)}" '
+        f'<a class="cta market-cta{extra}" href="{escape(url)}" '
         f'target="_blank" rel="nofollow noopener">'
-        f'{escape(venue)} <span class="arr">↗</span>'
+        f'{escape(label)} <span class="arr">↗</span>'
         f'</a>'
     )
+
+
+def market_cta(
+    verdict: dict,
+    *,
+    price: str | None = None,
+    search_key: str | None = None,
+) -> str:
+    """Render the venue CTAs for a card. Always emits both Polymarket
+    and Kalshi pills; Kalshi today is a placeholder linking to a
+    Kalshi search (no live Kalshi ingest yet). `price` shows the
+    American odds next to the Polymarket pill on Pick rows.
+    """
+    poly_url   = _polymarket_url_for(verdict, fallback_search=search_key)
+    kalshi_url = _kalshi_url_for(fallback_search=search_key)
+
+    price_html = f'<span class="price">{escape(str(price))}</span>' if price else ""
+    poly_pill   = _cta_pill("Trade on Polymarket", poly_url)
+    kalshi_pill = _cta_pill("Trade on Kalshi", kalshi_url, placeholder=True)
+    return f'{price_html}{poly_pill}{kalshi_pill}'
 
 
 def venue_meta(match: dict) -> str:
@@ -642,22 +706,19 @@ def render_card(match: dict, *, is_lead: bool = False) -> str:
     vmeta = venue_meta(match)
     thesis = escape(match["copy"]["summary"] or "")
 
+    # Search-fallback key for Kalshi (no live ingest yet) and for
+    # Polymarket if market_url is missing.
+    search_key = f"{match.get('team_a','')} {match.get('team_b','')}".strip()
+
     # Foot — different for pick/avoid vs pass
     if state == "pass":
-        cta_html = market_cta(v)
-        if cta_html:
-            foot = (
-                '<div class="lv-foot">'
-                f'<span class="lv-flat-msg">Markets agree — within 1pp on every side.</span>'
-                f'<div class="lv-action">{cta_html}</div>'
-                '</div>'
-            )
-        else:
-            foot = (
-                '<div class="lv-foot">'
-                f'<span class="lv-flat-msg">Markets agree — within 1pp on every side. <strong>Read the case →</strong></span>'
-                '</div>'
-            )
+        cta_html = market_cta(v, search_key=search_key)
+        foot = (
+            '<div class="lv-foot">'
+            f'<span class="lv-flat-msg">Markets agree — within 1pp on every side.</span>'
+            f'<div class="lv-action">{cta_html}</div>'
+            '</div>'
+        )
     else:
         edge_class = ""
         edge_str = fmt_edge(v.get("edge_pp"))
@@ -674,10 +735,7 @@ def render_card(match: dict, *, is_lead: bool = False) -> str:
         if edge_str:
             reads += f'<span class="edge{edge_class}">{edge_str}</span>'
 
-        action_bits = market_cta(v, price=v.get("price"))
-        if not action_bits:
-            # No market_url — fall back to the in-card "Read the case" pill.
-            action_bits = '<span class="cta">Read the case <span class="arr">↗</span></span>'
+        action_bits = market_cta(v, price=v.get("price"), search_key=search_key)
 
         foot = (
             '<div class="lv-foot">'
@@ -898,7 +956,12 @@ def render_outright_card(outright: dict) -> str:
             when = ""
 
     label = outright.get("market_label", outright.get("label", "Outright"))
-    candidate = v.get("candidate") or outright.get("candidate", "—")
+    candidate = v.get("candidate") or outright.get("candidate") or ""
+    if candidate in ("", "—"):
+        # Pass verdicts have no Pick candidate — surface the market name
+        # as the headline so the card isn't just a dash. Strip the
+        # trailing "— outright winner" since that already shows below.
+        candidate = label.split(" — ")[0].strip() or "Outright"
     summary = outright.get("copy", {}).get("summary") or ""
 
     head = (
@@ -915,21 +978,16 @@ def render_outright_card(outright: dict) -> str:
         "market_venue": v.get("market_venue") or outright.get("market_venue"),
     }
 
+    search_key = "World Cup 2026 winner"
+
     if state == "pass":
-        cta_html = market_cta(cta_dict)
-        if cta_html:
-            foot = (
-                '<div class="lv-foot">'
-                '<span class="lv-flat-msg">Markets agree on this field.</span>'
-                f'<div class="lv-action">{cta_html}</div>'
-                '</div>'
-            )
-        else:
-            foot = (
-                '<div class="lv-foot">'
-                '<span class="lv-flat-msg">Markets agree on this field. <strong>Read the case →</strong></span>'
-                '</div>'
-            )
+        cta_html = market_cta(cta_dict, search_key=search_key)
+        foot = (
+            '<div class="lv-foot">'
+            '<span class="lv-flat-msg">Markets agree on this field.</span>'
+            f'<div class="lv-action">{cta_html}</div>'
+            '</div>'
+        )
     else:
         edge_str = fmt_edge(v.get("edge_pp"))
         edge_class = ""
@@ -941,9 +999,7 @@ def render_outright_card(outright: dict) -> str:
         )
         if edge_str:
             reads += f'<span class="edge{edge_class}">{edge_str}</span>'
-        action = market_cta(cta_dict, price=v.get("price"))
-        if not action:
-            action = '<span class="cta">Read the case <span class="arr">↗</span></span>'
+        action = market_cta(cta_dict, price=v.get("price"), search_key=search_key)
         foot = f'<div class="lv-foot"><div class="lv-reads">{reads}</div><div class="lv-action">{action}</div></div>'
 
     return (
