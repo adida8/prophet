@@ -146,7 +146,7 @@ class Copy(BaseModel):
 
     title:     Annotated[str, StringConstraints(min_length=0, max_length=120)] = ""
     summary:   Annotated[str, StringConstraints(min_length=0, max_length=400)] = ""
-    blurb:     Annotated[str, StringConstraints(min_length=0, max_length=1200)] = ""
+    blurb:     Annotated[str, StringConstraints(min_length=0, max_length=4000)] = ""
     citations: list[str] = Field(default_factory=list)
     drivers:   list[Annotated[str, StringConstraints(min_length=1, max_length=200)]] = Field(default_factory=list, max_length=6)
 
