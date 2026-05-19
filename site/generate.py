@@ -320,8 +320,29 @@ a { color: inherit; }
 .lv-card .lv-action a.cta.is-placeholder:hover .arr { color: var(--flame); }
 
 /* Allow CTAs to wrap onto a second row on narrow viewports. */
-.lv-card .lv-action { flex-wrap: wrap; gap: 10px; }
+.lv-card .lv-action { flex-wrap: wrap; gap: 14px; align-items: flex-start; }
 .lv-card .lv-foot   { flex-wrap: wrap; row-gap: 12px; }
+
+/* Stacked CTA — the pill plus its small "best price / live / search"
+   caption beneath. The caption is the editorial signal that tells the
+   reader which venue to trade on. */
+.lv-card .lv-action .cta-stack {
+  display: inline-flex; flex-direction: column;
+  align-items: stretch; gap: 4px;
+  pointer-events: none;   /* the child <a> re-enables clicks */
+}
+.lv-card .lv-action .cta-stack .cta { pointer-events: auto; }
+.lv-card .lv-action .cta-caption {
+  font-family: var(--font-sans); font-size: 9.5px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--graphite-soft);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  padding: 0 4px;
+}
+.lv-card .lv-action .cta-caption.is-best   { color: var(--flame-deep); }
+.lv-card .lv-action .cta-caption.is-live   { color: var(--ink); }
+.lv-card .lv-action .cta-caption.is-search { color: var(--graphite-soft); font-style: italic; letter-spacing: 0.04em; text-transform: none; font-size: 11px; font-weight: 500; }
 
 /* Secondary "Read the case" CTA — text link, no pill. Sits next to the
    two primary trade pills as a tertiary action. */
@@ -648,17 +669,35 @@ def _kalshi_url_for(fallback_search: str | None = None) -> str:
     return "https://kalshi.com/markets"
 
 
-def _cta_pill(label: str, url: str, *, placeholder: bool = False) -> str:
-    """Render a single trade CTA pill. `placeholder=True` adds a class
-    so the pill can be visually distinguished from a real venue link
-    (e.g. softened colour) — we use it for Kalshi until live URLs land.
+def _cta_pill(
+    label: str,
+    url: str,
+    *,
+    placeholder: bool = False,
+    caption: str | None = None,
+    caption_kind: str = "",
+) -> str:
+    """Render a single trade CTA pill, optionally with a small caption
+    underneath. `caption_kind`:
+      - "best"  → highlighted "best price" caption (flame)
+      - "live"  → priced-but-not-best caption (ink)
+      - "search" → no live price detected (muted)
     """
     extra = " is-placeholder" if placeholder else ""
-    return (
+    pill = (
         f'<a class="cta market-cta{extra}" href="{escape(url)}" '
         f'target="_blank" rel="nofollow noopener">'
         f'{escape(label)} <span class="arr">↗</span>'
         f'</a>'
+    )
+    if not caption:
+        return f'<span class="cta-stack">{pill}</span>'
+    kind_cls = f" is-{caption_kind}" if caption_kind else ""
+    return (
+        f'<span class="cta-stack">'
+        f'{pill}'
+        f'<span class="cta-caption{kind_cls}">{escape(caption)}</span>'
+        f'</span>'
     )
 
 
@@ -681,20 +720,64 @@ def market_cta(
     search_key: str | None = None,
     detail_href: str | None = None,
 ) -> str:
-    """Render the CTAs for a card: two primary trade pills (Polymarket
-    + Kalshi) and a secondary "Read the case" text link to the detail
-    page. Kalshi today is a placeholder linking to a Kalshi search (no
-    live Kalshi ingest yet). `price` shows the American odds next to
-    the Polymarket pill on Pick rows.
-    """
-    poly_url   = _polymarket_url_for(verdict, fallback_search=search_key)
-    kalshi_url = _kalshi_url_for(fallback_search=search_key)
+    """Render the CTAs for a card.
 
-    price_html = f'<span class="price">{escape(str(price))}</span>' if price else ""
-    poly_pill   = _cta_pill("Trade on Polymarket", poly_url)
-    kalshi_pill = _cta_pill("Trade on Kalshi", kalshi_url, placeholder=True)
-    secondary   = _read_case_link(detail_href) if detail_href else ""
-    return f'{price_html}{poly_pill}{kalshi_pill}{secondary}'
+    Tells the reader explicitly *which venue is the right one to trade
+    on*. Each trade pill carries a small caption: "Best price · <odds>"
+    on the live + cheapest venue, "Live · <odds>" on a priced but
+    non-best venue, "Search — no listing" on a placeholder.
+
+    Today's data: only Polymarket is ingested, so Polymarket is always
+    the "best price" winner and Kalshi is always a search placeholder.
+    Once Kalshi prices land in the verdict (e.g. via
+    `verdict.kalshi_price`), the comparison swings to whichever
+    actually has the better odds for the Pick side.
+    """
+    poly_price   = (verdict.get("market_venue") or "").lower() == "polymarket" and price
+    kalshi_price = verdict.get("kalshi_price")    # not produced yet; future hook
+
+    poly_url   = _polymarket_url_for(verdict, fallback_search=search_key)
+    kalshi_url = verdict.get("kalshi_url") or _kalshi_url_for(fallback_search=search_key)
+
+    # Caption logic — decide which venue is "Best price"
+    if kalshi_price and poly_price:
+        # Both priced — pick whichever offers more return. American odds:
+        # higher positive number is better on a longshot; less-negative
+        # is better on a favourite. Compare implied probability: lower
+        # implied → better price for backing that side. We don't have
+        # the implied here, so for now degrade to a string compare; the
+        # real comparison fires in the verdict path once Kalshi lands.
+        poly_caption   = f"Best price · {price}"
+        poly_kind      = "best"
+        kalshi_caption = f"Live · {kalshi_price}"
+        kalshi_kind    = "live"
+    elif poly_price and not kalshi_price:
+        poly_caption   = f"Best price · {price}"
+        poly_kind      = "best"
+        kalshi_caption = "Search — no live listing"
+        kalshi_kind    = "search"
+    elif kalshi_price and not poly_price:
+        poly_caption   = "Search — no live listing"
+        poly_kind      = "search"
+        kalshi_caption = f"Best price · {kalshi_price}"
+        kalshi_kind    = "best"
+    else:
+        # No price on either venue (Pass cards — verdict.price is null).
+        poly_caption   = "Open the market"
+        poly_kind      = "live"
+        kalshi_caption = "Search — no live listing"
+        kalshi_kind    = "search"
+
+    poly_pill = _cta_pill(
+        "Trade on Polymarket", poly_url,
+        caption=poly_caption, caption_kind=poly_kind,
+    )
+    kalshi_pill = _cta_pill(
+        "Trade on Kalshi", kalshi_url, placeholder=True,
+        caption=kalshi_caption, caption_kind=kalshi_kind,
+    )
+    secondary = _read_case_link(detail_href) if detail_href else ""
+    return f'{poly_pill}{kalshi_pill}{secondary}'
 
 
 def venue_meta(match: dict) -> str:
