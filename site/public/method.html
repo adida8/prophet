@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Method · How Odds Primer reaches a verdict — Odds Primer</title>
+<meta name="description" content="How Odds Primer turns prediction-market prices into Pick, Pass, or Avoid verdicts. Six editorial stages, end to end.">
+<link rel="stylesheet" href="./colors_and_type.css">
+<style>
+  body { padding: 0; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter-page); }
+
+  /* ===== Site chrome (shared with rest of handover-v4) ===== */
+  .site-masthead { border-bottom: var(--hairline); background: var(--paper); }
+  .site-masthead .inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 14px var(--gutter-page) 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    border-top: var(--hairline-strong);
+  }
+  .brand-lock { display: inline-flex; flex-direction: column; gap: 4px; text-decoration: none; }
+  .brand-lock svg { display: block; }
+  .brand-lock .wm-row { display: flex; align-items: baseline; gap: 12px; }
+  .brand-lock .wm {
+    font-family: var(--font-sans); font-weight: 700; font-size: 22px;
+    color: var(--ink); letter-spacing: -0.022em; line-height: 1;
+  }
+  .brand-lock .tag {
+    font-family: var(--font-serif); font-style: italic; font-weight: 400;
+    font-size: 12px; line-height: 1.3; color: var(--graphite);
+  }
+  .brand-lock .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+  .site-nav { display: none; }
+  .site-nav ul { list-style: none; padding: 0; margin: 0; display: flex; gap: 26px; }
+  .site-nav a {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ink); text-decoration: none;
+    padding: 6px 0; border-bottom: 1.5px solid transparent;
+  }
+  .site-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
+  .site-nav a[aria-current="page"] { border-bottom-color: var(--flame); }
+  @media (min-width: 820px) { .site-nav { display: block; } }
+  .edition-strip { border-top: var(--hairline-soft); background: var(--paper); }
+  .edition-strip .inner {
+    max-width: 1180px; margin: 0 auto; padding: 8px var(--gutter-page);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .pill-nav {
+    display: flex; gap: 6px; align-items: center;
+    padding: 12px var(--gutter-page);
+    border-bottom: var(--hairline); background: var(--paper);
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .pill-nav::-webkit-scrollbar { display: none; }
+  .pill-nav a {
+    font-family: var(--font-sans); font-size: 15px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
+    padding: 10px 18px; border-radius: 999px; white-space: nowrap;
+    transition: background var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+  }
+  .pill-nav a[aria-current="page"] { background: var(--ink); color: var(--paper); }
+  .pill-nav a:not([aria-current="page"]):hover { color: var(--flame-deep); }
+  @media (min-width: 820px) { .pill-nav { display: none; } }
+  .burger { position: relative; display: inline-block; }
+  .burger-btn {
+    list-style: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    border: var(--hairline); background: var(--paper-pure);
+    color: var(--ink); border-radius: 2px;
+  }
+  .burger-btn::-webkit-details-marker { display: none; }
+  .burger-btn::marker { content: ""; }
+  .burger-btn:hover { color: var(--flame-deep); }
+  .burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
+  .burger-menu {
+    position: absolute; right: 0; top: calc(100% + 8px);
+    min-width: 220px; background: var(--paper-pure); border: var(--hairline);
+    list-style: none; margin: 0; padding: 6px 0;
+    box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08); z-index: 50;
+  }
+  .burger-menu li { padding: 0; margin: 0; list-style: none; }
+  .burger-menu a {
+    display: block; padding: 10px 18px;
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
+  }
+  .burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
+  .burger-menu a[aria-current="page"] { color: var(--flame-deep); }
+
+  /* ===== Method page wrapper ===== */
+  .method-wrap {
+    padding: 32px 0 48px;
+    display: flex; justify-content: center;
+  }
+  .method-page-head {
+    max-width: 640px; width: 100%; margin: 0 auto 18px;
+  }
+  .method-page-head .page-eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-bottom: 12px;
+  }
+  .method-page-head .meta-line {
+    font-family: var(--font-sans); font-size: 12px; color: var(--graphite-soft);
+    margin: 14px 0 0; letter-spacing: 0.04em;
+  }
+
+  /* ===== Diagram card (the six-stage explainer) ===== */
+  .dd {
+    background: var(--paper);
+    color: var(--ink);
+    padding: 36px 22px 28px;
+    border: var(--hairline);
+    max-width: 640px;
+    width: 100%;
+    line-height: 1.4;
+  }
+
+  /* Trust tease — sits above the H1 */
+  .trust-tease {
+    display: flex; flex-direction: column; gap: 12px;
+    padding: 14px 16px;
+    border: var(--hairline);
+    background: var(--paper-pure);
+    margin: 0 0 22px 0;
+  }
+  .trust-stamps { display: flex; gap: 8px; }
+  .stamp-mini {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 6px 10px; text-align: center; background: var(--paper); flex: 0 0 auto;
+  }
+  .stamp-mini.stamp-pick  { color: var(--flame);         box-shadow: inset 0 0 0 1.5px var(--flame),         inset 0 0 0 3px var(--paper), inset 0 0 0 4px var(--flame); }
+  .stamp-mini.stamp-pass  { color: var(--graphite-soft); box-shadow: inset 0 0 0 1.5px var(--graphite-soft), inset 0 0 0 3px var(--paper), inset 0 0 0 4px var(--graphite-soft); }
+  .stamp-mini.stamp-avoid { color: var(--ink);           box-shadow: inset 0 0 0 1.5px var(--ink),           inset 0 0 0 3px var(--paper), inset 0 0 0 4px var(--ink); }
+  .trust-line {
+    font-family: var(--font-serif); font-size: 14px; color: var(--ink-soft);
+    margin: 0; line-height: 1.45;
+  }
+  .trust-line strong { font-weight: 600; color: var(--ink); }
+
+  .dd-h {
+    font-family: var(--font-serif); font-size: 30px; font-weight: 600; line-height: 1.04;
+    color: var(--ink); margin: 0 0 8px 0; letter-spacing: -0.012em; text-wrap: balance;
+  }
+  .dd-sub {
+    font-family: var(--font-serif); font-size: 16px; font-style: italic;
+    color: var(--graphite-soft); margin: 0 0 24px 0; line-height: 1.4;
+  }
+  .dd-rule { border-top: var(--hairline); margin: 16px 0 20px; }
+  .dd-rule-ink { border-top: 2px solid var(--ink); margin: 36px 0 24px; }
+
+  /* Stage scaffold */
+  .stage { padding: 18px 0 22px; }
+  .stage-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 12px; }
+  .stage-num { font-family: var(--font-mono); font-size: 24px; font-weight: 500; color: var(--flame); letter-spacing: -0.02em; line-height: 1; flex: 0 0 auto; }
+  .stage-meta { flex: 1; min-width: 0; }
+  .stage-eyebrow { font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--graphite-soft); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2px; }
+  .stage-title { font-family: var(--font-serif); font-size: 20px; font-weight: 600; color: var(--ink); margin: 0; line-height: 1.18; letter-spacing: -0.005em; }
+  .stage-cap { font-family: var(--font-serif); font-size: 14px; font-style: italic; color: var(--graphite-soft); margin: 4px 0 0 0; line-height: 1.4; }
+
+  /* Connector between stages */
+  .arrow-down { text-align: center; height: 32px; position: relative; margin: -4px 0; }
+  .arrow-down::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 8px; border-left: 1px solid var(--rule); }
+  .arrow-down::after { content: ""; position: absolute; left: 50%; bottom: 4px; width: 7px; height: 7px; transform: translateX(-50%) rotate(45deg); border-right: 1px solid var(--graphite-soft); border-bottom: 1px solid var(--graphite-soft); }
+
+  /* === 01 Ingest: source hub === */
+  .src-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 14px; }
+  .src { background: var(--paper-pure); border: var(--hairline); padding: 12px 12px 11px; display: flex; flex-direction: column; gap: 6px; }
+  .src-tag { display: flex; align-items: center; gap: 8px; }
+  .src-swatch { width: 10px; height: 10px; flex: none; border-radius: 1px; }
+  .src-name { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--ink); letter-spacing: 0.04em; }
+  .src-body { font-family: var(--font-serif); font-size: 12.5px; color: var(--graphite-soft); line-height: 1.4; }
+  .src-funnel { height: 24px; margin: 14px auto 0; max-width: 60%; position: relative; }
+  .src-funnel svg { width: 100%; height: 100%; display: block; }
+
+  /* === 02 Context: late-binding timeline (abstracted) === */
+  .tl { margin-top: 16px; }
+  .tl-axis { position: relative; height: 30px; margin: 28px 12px 0 12px; border-top: 1px solid var(--ink); }
+  .tl-tick { position: absolute; top: -5px; width: 1px; height: 10px; background: var(--ink); }
+  .tl-tick-label { position: absolute; top: 14px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 10px; color: var(--graphite-soft); white-space: nowrap; letter-spacing: 0.04em; }
+  .tl-row { position: relative; height: 26px; margin: 8px 12px 0 12px; }
+  .tl-pill {
+    position: absolute; top: 4px; height: 18px; display: flex; align-items: center; padding: 0 10px;
+    font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+    letter-spacing: 0.06em; white-space: nowrap; border-radius: 2px;
+    text-transform: uppercase;
+  }
+  .tl-pill.stable { background: var(--paper-warm); color: var(--graphite); border: var(--hairline); }
+  .tl-pill.late   { background: var(--ink); color: var(--paper); }
+  .tl-caption { font-family: var(--font-serif); font-size: 13px; font-style: italic; color: var(--graphite-soft); margin: 22px 12px 0; text-align: center; line-height: 1.4; }
+
+  /* === 03 Model: probability bars === */
+  .pb { margin-top: 14px; padding: 0 4px; }
+  .pb-row { display: grid; grid-template-columns: 70px 1fr 50px; gap: 10px; align-items: center; margin: 10px 0; }
+  .pb-label { font-family: var(--font-serif); font-size: 13.5px; color: var(--ink); }
+  .pb-track { position: relative; height: 22px; background: var(--paper-warm); border: var(--hairline); }
+  .pb-fill { position: absolute; top: 0; left: 0; bottom: 0; }
+  .pb-fill.home { background: var(--ink); }
+  .pb-fill.draw { background: var(--graphite-soft); }
+  .pb-fill.away { background: #B89968; }
+  .pb-pct { font-family: var(--font-mono); font-size: 13.5px; font-weight: 500; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+  .pb-sum { font-family: var(--font-serif); font-size: 12.5px; font-style: italic; color: var(--graphite-soft); text-align: right; margin-top: 10px; padding-right: 4px; line-height: 1.4; }
+
+  /* === 04 Verdict: edge comparison === */
+  .vc { margin-top: 14px; }
+  .vc-bars { display: grid; grid-template-columns: 90px 1fr 50px; gap: 10px; align-items: center; margin: 10px 0; }
+  .vc-label { font-family: var(--font-serif); font-size: 13.5px; color: var(--ink); line-height: 1.2; }
+  .vc-label .meta { display: block; font-family: var(--font-mono); font-size: 9.5px; color: var(--graphite-soft); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px; }
+  .vc-track { position: relative; height: 24px; background: var(--paper-warm); border: var(--hairline); }
+  .vc-fill { position: absolute; top: 0; left: 0; bottom: 0; }
+  .vc-fill.desk { background: var(--ink); }
+  .vc-fill.market { background: var(--venue-polymarket); }
+  .vc-pct { font-family: var(--font-mono); font-size: 13.5px; font-weight: 500; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+  .vc-edge { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 16px 0 4px; padding: 14px; background: var(--flame-tint); border: 1px solid var(--flame); }
+  .vc-edge-label { font-family: var(--font-serif); font-size: 13px; font-style: italic; color: var(--flame-deep); }
+  .vc-edge-value { font-family: var(--font-mono); font-size: 22px; font-weight: 600; color: var(--flame-deep); letter-spacing: -0.01em; }
+
+  /* Threshold scale — no numeric tick labels */
+  .ts { margin: 20px 4px 0; }
+  .ts-label { font-family: var(--font-mono); font-size: 10px; color: var(--graphite-soft); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  .ts-scale { position: relative; height: 44px; }
+  .ts-band { position: absolute; top: 0; height: 22px; display: flex; align-items: center; justify-content: center; font-family: var(--font-sans); font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+  .ts-band.avoid { left: 0%;  width: 30%; background: rgba(14, 34, 64, 0.10); color: var(--ink); border-right: 1px solid var(--rule); }
+  .ts-band.pass  { left: 30%; width: 40%; background: var(--paper-warm); color: var(--graphite); border-right: 1px solid var(--rule); }
+  .ts-band.pick  { left: 70%; width: 30%; background: var(--flame-tint); color: var(--flame-deep); }
+  .ts-bar-label { position: absolute; top: 24px; transform: translateX(-50%); font-family: var(--font-serif); font-size: 11px; font-style: italic; color: var(--graphite-soft); white-space: nowrap; }
+  .ts-here { position: absolute; top: -8px; height: 30px; width: 0; border-left: 2px solid var(--flame); }
+  .ts-here-flag { position: absolute; bottom: 24px; left: 4px; background: var(--flame); color: var(--paper); font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 2px 6px; letter-spacing: 0.04em; white-space: nowrap; }
+
+  /* === 05 Explainer: published card mockup === */
+  .pub-card { margin-top: 16px; background: var(--paper-pure); border: var(--hairline); padding: 20px 22px 18px; position: relative; }
+  .pub-stamp { position: absolute; top: 18px; right: 22px; font-family: var(--font-sans); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--flame); padding: 6px 10px; box-shadow: inset 0 0 0 1.5px var(--flame), inset 0 0 0 3px var(--paper-pure), inset 0 0 0 4px var(--flame); }
+  .pub-eyebrow { font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--graphite-soft); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .pub-title { font-family: var(--font-serif); font-size: 19px; font-weight: 600; color: var(--ink); margin: 0 90px 4px 0; line-height: 1.2; letter-spacing: -0.005em; }
+  .pub-summary { font-family: var(--font-serif); font-size: 14px; color: var(--ink-soft); margin: 8px 0; line-height: 1.5; }
+  .pub-foot { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; padding-top: 10px; border-top: var(--hairline); }
+  .pub-cite { font-family: var(--font-sans); font-size: 11.5px; color: var(--ink); }
+  .pub-cite a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--rule); }
+  .pub-time { font-family: var(--font-mono); font-size: 10.5px; color: var(--graphite-soft); letter-spacing: 0.04em; }
+
+  /* === 06 Reach: distribution surfaces === */
+  .reach { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .reach-row {
+    display: grid; grid-template-columns: 88px 1fr; gap: 12px; align-items: center;
+    background: var(--paper-pure); border: var(--hairline); padding: 12px 14px;
+  }
+  .reach-where { font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; color: var(--graphite-soft); letter-spacing: 0.08em; text-transform: uppercase; }
+  .reach-what { font-family: var(--font-serif); font-size: 14px; color: var(--ink); line-height: 1.35; }
+  .reach-what .flame { color: var(--flame); font-weight: 600; }
+  .reach-what .mono { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-soft); }
+  .reach-cap { font-family: var(--font-serif); font-size: 13px; font-style: italic; color: var(--graphite-soft); margin: 14px 0 0; text-align: center; line-height: 1.4; }
+
+  /* Promise footer */
+  .promise-head { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); margin: 0 0 12px 0; }
+  .promises { font-family: var(--font-serif); font-size: 15px; line-height: 1.55; color: var(--ink-soft); margin: 0; padding: 0; list-style: none; }
+  .promises li { padding-left: 22px; position: relative; margin: 6px 0; }
+  .promises li:before { content: "—"; position: absolute; left: 0; color: var(--flame); font-family: var(--font-mono); }
+
+  .methlink { display: inline-block; margin-top: 18px; font-family: var(--font-sans); font-size: 12px; font-weight: 500; color: var(--ink); letter-spacing: 0.04em; text-decoration: underline; text-decoration-color: var(--flame); text-underline-offset: 4px; }
+
+  .dd-foot { font-family: var(--font-serif); font-size: 12px; font-style: italic; color: var(--graphite-soft); text-align: right; margin-top: 28px; border-top: var(--hairline); padding-top: 14px; }
+
+  /* Layer up for wider screens */
+  @media (min-width: 521px) {
+    .dd { padding: 48px 40px 40px; }
+    .dd-h { font-size: 38px; }
+    .dd-sub { font-size: 17px; }
+    .stage-num { font-size: 28px; }
+    .stage-title { font-size: 22px; }
+    .stage-cap { font-size: 14.5px; }
+    .src-grid { grid-template-columns: repeat(3, 1fr); }
+    .src-name { font-size: 11.5px; }
+    .pb-row { grid-template-columns: 90px 1fr 56px; gap: 12px; }
+    .pb-label { font-size: 14px; }
+    .pb-pct { font-size: 14px; }
+    .vc-bars { grid-template-columns: 90px 1fr 56px; gap: 12px; }
+    .vc-label { font-size: 14px; }
+    .vc-pct { font-size: 14px; }
+    .vc-label .meta { font-size: 10px; }
+    .pub-title { margin-right: 90px; }
+    .reach-row { grid-template-columns: 110px 1fr; }
+    .promises { font-size: 15.5px; }
+    .trust-tease { padding: 18px 22px; gap: 14px; }
+    .trust-line { font-size: 15px; }
+  }
+
+  /* ===== Footer (shared) — same chrome as rest of handover-v4 ===== */
+  footer.site-footer { border-top: var(--hairline-strong); background: var(--paper); }
+  footer.site-footer .foot-inner { max-width: 1180px; margin: 0 auto; padding: 36px var(--gutter-page) 28px; }
+  .foot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 28px; margin-bottom: 22px; }
+  .foot-col h4 {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft); margin: 0 0 10px;
+  }
+  .foot-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .foot-col a, .foot-col button {
+    font-family: var(--font-sans); font-size: 13px; color: var(--ink); text-decoration: none;
+    background: none; border: 0; padding: 0; cursor: pointer; text-align: left;
+  }
+  .foot-col a:hover, .foot-col button:hover { color: var(--flame-deep); }
+  .foot-brand {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 11px;
+    border-top: var(--hairline); padding-top: 22px; margin-top: 4px;
+  }
+  .foot-brand .wm { font-family: var(--font-sans); font-weight: 700; font-size: 22px; color: var(--ink); letter-spacing: -0.022em; }
+  .foot-brand .pub { font-family: var(--font-serif); font-style: italic; color: var(--graphite); font-size: 13px; }
+  .foot-brand .pub .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+  .foot-discl {
+    font-family: var(--font-serif); font-size: 12.5px; color: var(--graphite);
+    line-height: 1.55; max-width: 82ch; padding-top: 18px; border-top: var(--hairline-soft);
+  }
+  .foot-discl .dag { color: var(--flame); font-style: italic; }
+  .foot-affiliate {
+    font-family: var(--font-sans); font-size: 11.5px; color: var(--graphite-soft);
+    line-height: 1.5; max-width: 82ch; margin-top: 10px;
+  }
+  .foot-meta {
+    margin-top: 16px; font-family: var(--font-sans); font-size: 11px;
+    color: var(--graphite-soft); letter-spacing: 0.04em;
+    display: flex; flex-wrap: wrap; gap: 6px 16px;
+  }
+  @media (min-width: 720px) {
+    .foot-grid { grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 36px; }
+    .foot-brand { grid-column: auto; border-top: 0; padding-top: 0; margin-top: 0;
+      flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="site-masthead">
+    <div class="inner">
+      <a class="brand-lock" href="/" aria-label="Odds Primer — the AI sports desk for market edge">
+        <span class="wm-row">
+          <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
+            <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+            <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+            <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+            <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+            <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+          </svg>
+          <span class="wm">Odds Primer</span>
+        </span>
+        <span class="tag">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span></span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/outrights/">Outright winners</a></li>
+          <li><a href="/matches/">Upcoming matches</a></li>
+        </ul>
+      </nav>
+      <details class="burger">
+        <summary class="burger-btn" aria-label="More links">
+          <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+            <rect y="0"  width="16" height="1.5" fill="currentColor"/>
+            <rect y="5"  width="16" height="1.5" fill="currentColor"/>
+            <rect y="10" width="16" height="1.5" fill="currentColor"/>
+          </svg>
+        </summary>
+        <ul class="burger-menu">
+          <li><a href="./about.html">About</a></li>
+          <li><a href="./method.html" aria-current="page">Method</a></li>
+          <li><a href="./learn.html">Learn the basics</a></li>
+          <li><a href="./corrections.html">Corrections</a></li>
+        </ul>
+      </details>
+    </div>
+    <div class="edition-strip">
+      <div class="inner">
+        <span>World Cup 2026 · Matchday 2</span>
+        <span>Updated 13 May 2026</span>
+      </div>
+    </div>
+    <nav class="pill-nav" aria-label="Primary (mobile)">
+      <a href="/outrights/">Winners</a>
+      <a href="/matches/">Matches</a>
+    </nav>
+  </header>
+
+  <main class="page">
+
+    <div class="method-page-head">
+      <div class="page-eyebrow">Method</div>
+    </div>
+
+    <div class="method-wrap">
+      <section class="dd" aria-label="How The Desk works">
+
+        <!-- Trust tease -->
+        <div class="trust-tease" aria-label="What we publish">
+          <div class="trust-stamps" aria-hidden="true">
+            <span class="stamp-mini stamp-pick">Pick</span>
+            <span class="stamp-mini stamp-pass">Pass</span>
+            <span class="stamp-mini stamp-avoid">Avoid</span>
+          </div>
+          <p class="trust-line">Three verdicts. We use all three. <strong>Most prices don't clear our bar</strong> — and we say so out loud.</p>
+        </div>
+
+        <h1 class="dd-h">One match. Six stages. One verdict.</h1>
+        <p class="dd-sub">We watch the markets. We do the maths. We publish a Pick, Pass, or Avoid on the price — and show our reasoning.</p>
+        <div class="dd-rule"></div>
+
+        <!-- 01 INGEST -->
+        <div class="stage">
+          <div class="stage-head">
+            <div class="stage-num">01</div>
+            <div class="stage-meta">
+              <div class="stage-eyebrow">Ingest</div>
+              <h2 class="stage-title">Every fixture the market prices, we evaluate</h2>
+              <p class="stage-cap">Multiple sources, joined on one fixture.</p>
+            </div>
+          </div>
+          <div class="src-grid" aria-label="Data sources">
+            <div class="src"><div class="src-tag"><span class="src-swatch" style="background:#2A6FDB"></span><span class="src-name">POLYMARKET</span></div><div class="src-body">Live prices.</div></div>
+            <div class="src"><div class="src-tag"><span class="src-swatch" style="background:#00C46A"></span><span class="src-name">KALSHI</span></div><div class="src-body">Live prices.</div></div>
+            <div class="src"><div class="src-tag"><span class="src-swatch" style="background:#0E2240"></span><span class="src-name">TEAM RATINGS</span></div><div class="src-body">Strength over time.</div></div>
+            <div class="src"><div class="src-tag"><span class="src-swatch" style="background:#3A3F47"></span><span class="src-name">FIXTURE DATA</span></div><div class="src-body">Venue, stage, kickoff.</div></div>
+            <div class="src"><div class="src-tag"><span class="src-swatch" style="background:#B89968"></span><span class="src-name">CONDITIONS</span></div><div class="src-body">What changes on the day.</div></div>
+            <div class="src"><div class="src-tag"><span class="src-swatch" style="background:#D9461C"></span><span class="src-name">NEWSROOM</span></div><div class="src-body">Vetted, sport-tagged.</div></div>
+          </div>
+          <div class="src-funnel" aria-hidden="true">
+            <svg viewBox="0 0 200 24" preserveAspectRatio="none">
+              <line x1="10"  y1="2" x2="80"  y2="22" stroke="#D9D2C0" stroke-width="0.8"/>
+              <line x1="60"  y1="2" x2="92"  y2="22" stroke="#D9D2C0" stroke-width="0.8"/>
+              <line x1="110" y1="2" x2="100" y2="22" stroke="#D9D2C0" stroke-width="0.8"/>
+              <line x1="100" y1="2" x2="108" y2="22" stroke="#D9D2C0" stroke-width="0.8"/>
+              <line x1="160" y1="2" x2="116" y2="22" stroke="#D9D2C0" stroke-width="0.8"/>
+              <line x1="190" y1="2" x2="120" y2="22" stroke="#D9D2C0" stroke-width="0.8"/>
+            </svg>
+          </div>
+        </div>
+        <div class="arrow-down"></div>
+
+        <!-- 02 CONTEXT -->
+        <div class="stage" id="verdict-context">
+          <div class="stage-head">
+            <div class="stage-num">02</div>
+            <div class="stage-meta">
+              <div class="stage-eyebrow">Context</div>
+              <h2 class="stage-title">We watch the match all the way to kickoff</h2>
+              <p class="stage-cap">Some context is stable. Some only matters at the end.</p>
+            </div>
+          </div>
+          <div class="tl">
+            <div class="tl-row"><div class="tl-pill stable" style="left:0%; right:0%;">Stable context</div></div>
+            <div class="tl-row"><div class="tl-pill late"   style="left:62%; right:0%;">Late context</div></div>
+            <div class="tl-axis">
+              <div class="tl-tick" style="left:0%;"></div>   <div class="tl-tick-label" style="left:0%;">Weeks out</div>
+              <div class="tl-tick" style="left:62%;"></div>
+              <div class="tl-tick" style="left:100%;"></div> <div class="tl-tick-label" style="left:100%; transform:translateX(-100%);">Kickoff</div>
+            </div>
+            <p class="tl-caption">If a piece of context isn't ready yet, we wait — we don't guess.</p>
+          </div>
+        </div>
+        <div class="arrow-down"></div>
+
+        <!-- 03 MODEL -->
+        <div class="stage">
+          <div class="stage-head">
+            <div class="stage-num">03</div>
+            <div class="stage-meta">
+              <div class="stage-eyebrow">Model</div>
+              <h2 class="stage-title">We work out the odds — independently</h2>
+              <p class="stage-cap">Our number, before we look at theirs.</p>
+            </div>
+          </div>
+          <div class="pb">
+            <div class="pb-row">
+              <div class="pb-label">France</div>
+              <div class="pb-track"><div class="pb-fill home" style="width:48%"></div></div>
+              <div class="pb-pct">48.0%</div>
+            </div>
+            <div class="pb-row">
+              <div class="pb-label">Draw</div>
+              <div class="pb-track"><div class="pb-fill draw" style="width:27%"></div></div>
+              <div class="pb-pct">27.0%</div>
+            </div>
+            <div class="pb-row">
+              <div class="pb-label">Mexico</div>
+              <div class="pb-track"><div class="pb-fill away" style="width:25%"></div></div>
+              <div class="pb-pct">25.0%</div>
+            </div>
+            <div class="pb-sum">Trained on every priced match. Never reads the market it's about to evaluate.</div>
+          </div>
+        </div>
+        <div class="arrow-down"></div>
+
+        <!-- 04 VERDICT -->
+        <div class="stage" id="verdict">
+          <div class="stage-head">
+            <div class="stage-num">04</div>
+            <div class="stage-meta">
+              <div class="stage-eyebrow">Verdict</div>
+              <h2 class="stage-title">Pick, Pass, or Avoid</h2>
+              <p class="stage-cap">Our number, against the best market price on the board.</p>
+            </div>
+          </div>
+          <div class="vc">
+            <div class="vc-bars">
+              <div class="vc-label">The Desk<span class="meta">our model</span></div>
+              <div class="vc-track"><div class="vc-fill desk" style="width:48%"></div></div>
+              <div class="vc-pct">48.0%</div>
+            </div>
+            <div class="vc-bars">
+              <div class="vc-label">Polymarket<span class="meta">best price</span></div>
+              <div class="vc-track"><div class="vc-fill market" style="width:43.8%"></div></div>
+              <div class="vc-pct">43.8%</div>
+            </div>
+            <div class="vc-edge">
+              <span class="vc-edge-label">edge in our favour</span>
+              <span class="vc-edge-value">+4.2pp</span>
+            </div>
+
+            <div class="ts">
+              <div class="ts-label">where the edge lands</div>
+              <div class="ts-scale">
+                <div class="ts-band avoid">Avoid</div>
+                <div class="ts-band pass">Pass</div>
+                <div class="ts-band pick">Pick</div>
+                <div class="ts-bar-label" style="left:30%;">market ahead</div>
+                <div class="ts-bar-label" style="left:70%;">our bar</div>
+                <div class="ts-here" style="left:84%;">
+                  <span class="ts-here-flag">this match</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="arrow-down"></div>
+
+        <!-- 05 EXPLAINER -->
+        <div class="stage">
+          <div class="stage-head">
+            <div class="stage-num">05</div>
+            <div class="stage-meta">
+              <div class="stage-eyebrow">Editorial</div>
+              <h2 class="stage-title">A verdict, in plain words</h2>
+              <p class="stage-cap">What the reader actually sees.</p>
+            </div>
+          </div>
+          <div class="pub-card">
+            <span class="pub-stamp">Pick</span>
+            <div class="pub-eyebrow">FIFA World Cup 2026 · Group D · 12 June</div>
+            <h3 class="pub-title">France v Mexico · class shows</h3>
+            <p class="pub-summary">Our number sits clear of the market on France. Group context, conditions in Guadalajara, and the spine of the squad all line up the same way.</p>
+            <div class="pub-foot">
+              <span class="pub-cite"><a href="#">View source on Polymarket ↗</a></span>
+              <span class="pub-time">Updated 17:00 UTC</span>
+            </div>
+          </div>
+        </div>
+        <div class="arrow-down"></div>
+
+        <!-- 06 REACH -->
+        <div class="stage">
+          <div class="stage-head">
+            <div class="stage-num">06</div>
+            <div class="stage-meta">
+              <div class="stage-eyebrow">Reach</div>
+              <h2 class="stage-title">Same verdict, wherever you read</h2>
+              <p class="stage-cap">One call. Many surfaces.</p>
+            </div>
+          </div>
+          <div class="reach">
+            <div class="reach-row">
+              <span class="reach-where">Site</span>
+              <span class="reach-what">France · <span class="flame">PICK</span> · +4.2pp · <em>view source on Polymarket</em></span>
+            </div>
+            <div class="reach-row">
+              <span class="reach-where">API</span>
+              <span class="reach-what"><span class="mono">{ side: "France", state: "pick", edge_pp: 4.2 }</span></span>
+            </div>
+            <div class="reach-row">
+              <span class="reach-where">Partners</span>
+              <span class="reach-what">Embed-ready verdict tiles for editorial &amp; affiliate desks.</span>
+            </div>
+          </div>
+          <p class="reach-cap">When the call changes, every surface updates together.</p>
+        </div>
+
+        <!-- Promise footer -->
+        <div class="dd-rule-ink"></div>
+        <div class="promise-head">What we won't do</div>
+        <ul class="promises">
+          <li>Let the market influence our own number.</li>
+          <li>Quote tipsters or hide behind anonymous picks.</li>
+          <li>Tell you how much to stake.</li>
+          <li>Hide the reasoning behind a published verdict.</li>
+        </ul>
+        <a class="methlink" href="./methodology.html">Read the full methodology ↗</a>
+
+        <div class="dd-foot">From The Desk · odds primer</div>
+      </section>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="foot-inner">
+      <div class="foot-grid">
+        <div class="foot-brand">
+          <svg viewBox="0 0 38 34" width="44" height="40" aria-hidden="true">
+            <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+            <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+            <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+            <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+            <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+          </svg>
+          <span class="wm">Odds Primer</span>
+          <span class="pub">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span>.</span>
+        </div>
+        <div class="foot-col">
+          <h4>Editorial</h4>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/outrights/">Outright winners</a></li>
+            <li><a href="/matches/">Upcoming matches</a></li>
+            <li><a href="./learn.html">Learn the basics</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h4>About</h4>
+          <ul>
+            <li><a href="./about.html">About Odds Primer</a></li>
+            <li><a href="./method.html">Method</a></li>
+            <li><a href="./methodology.html">Methodology (detail)</a></li>
+            <li><a href="./corrections.html">Corrections policy</a></li>
+            <li><a href="mailto:desk@oddsprimer.com">Contact the Desk</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="./privacy.html">Privacy</a></li>
+            <li><a href="./terms.html">Terms of use</a></li>
+            <li><a href="./affiliate-disclosure.html">Affiliate disclosure</a></li>
+            <li><a href="./responsible-use.html">Responsible use</a></li>
+            <li><a href="./cookies.html">Cookie policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="foot-discl">
+        <span class="dag">†</span> Odds Primer is editorial information only. We are not a sportsbook, broker, exchange,
+        financial adviser, or betting adviser. We do not take wagers, hold funds, execute trades, or provide personalized advice.
+        Prediction-market participation involves risk and may not be available in your location.
+      </p>
+      <p class="foot-affiliate">
+        Some outbound source links may be affiliate links. Affiliate relationships do not determine our editorial verdicts.
+      </p>
+      <div class="foot-meta">
+        <span>© 2026 Odds Primer</span>
+        <span>An independent editorial website — not a registered company, broker, or sportsbook</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

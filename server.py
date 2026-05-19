@@ -371,6 +371,30 @@ if (SITE_PUBLIC / "index.html").exists():
     async def site_outright_wc26():
         return _serve_site("o/fb-wc26-winner.html")
 
+    # ── Editorial / trust pages (sourced from handover-v4) ────────────
+    _EDITORIAL_PAGES = (
+        "about", "learn",
+        "method", "methodology",
+        "responsible-use", "affiliate-disclosure", "corrections",
+        "terms", "privacy", "cookies",
+    )
+
+    def _make_editorial_route(name: str):
+        async def handler():
+            return _serve_site(f"{name}.html")
+        handler.__name__ = f"site_editorial_{name.replace('-', '_')}"
+        return handler
+
+    for _name in _EDITORIAL_PAGES:
+        _h = _make_editorial_route(_name)
+        app.get(f"/{_name}",       include_in_schema=False)(_h)
+        app.get(f"/{_name}/",      include_in_schema=False)(_h)
+        app.get(f"/{_name}.html",  include_in_schema=False)(_h)
+
+    @app.get("/colors_and_type.css", include_in_schema=False)
+    async def site_colors_css():
+        return FileResponse(SITE_PUBLIC / "colors_and_type.css", media_type="text/css")
+
 
 # ── Static frontend ───────────────────────────────────────────────────
 

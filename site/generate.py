@@ -516,11 +516,27 @@ a { color: inherit; }
 
 .site-foot {
   margin: 48px 0 28px; padding-top: 18px; border-top: var(--hairline);
-  display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: space-between;
+  display: flex; flex-direction: column; gap: 14px;
   font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
 }
+.site-foot .foot-row {
+  display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: space-between;
+}
 .site-foot .left { color: var(--ink); }
+.site-foot .foot-nav {
+  display: flex; flex-wrap: wrap; gap: 8px 22px;
+  padding-top: 12px; border-top: var(--hairline-soft);
+}
+.site-foot .foot-nav a {
+  color: var(--graphite-soft); text-decoration: none;
+  font-size: 10.5px; letter-spacing: 0.12em;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  transition: color var(--dur-fast) var(--ease-standard),
+              border-color var(--dur-fast) var(--ease-standard);
+}
+.site-foot .foot-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
 """
 
 # ─── Page chrome (shared across all pages) ───
@@ -558,8 +574,11 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
     <nav class="site-nav" aria-label="Primary">
       <ul>
         <li><a href="/"{cur('home')}>Home</a></li>
-        <li><a href="/outrights/"{cur('outrights')}>Outright winners</a></li>
         <li><a href="/matches/"{cur('matches')}>Upcoming matches</a></li>
+        <li><a href="/outrights/"{cur('outrights')}>Outright winners</a></li>
+        <li><a href="/methodology"{cur('methodology')}>How it works</a></li>
+        <li><a href="/learn"{cur('learn')}>Learn</a></li>
+        <li><a href="/about"{cur('about')}>About</a></li>
       </ul>
     </nav>
     <span class="nav-meta">{updated}</span>
@@ -582,8 +601,19 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
 def chrome_footer() -> str:
     today = datetime.now(timezone.utc).strftime("%-d %b %Y")
     return f"""<footer class="site-foot page">
-  <span class="left">Odds Primer · educational, not advice</span>
-  <span>The Desk · v1.1 · {today}</span>
+  <div class="foot-row">
+    <span class="left">Odds Primer · educational, not advice</span>
+    <span>The Desk · v1.1 · {today}</span>
+  </div>
+  <nav class="foot-nav" aria-label="Trust and editorial">
+    <a href="/responsible-use">Responsible use</a>
+    <a href="/affiliate-disclosure">Affiliate disclosure</a>
+    <a href="/corrections">Corrections</a>
+    <a href="/methodology">Methodology</a>
+    <a href="/terms">Terms</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/cookies">Cookies</a>
+  </nav>
 </footer>
 </body>
 </html>
