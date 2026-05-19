@@ -120,6 +120,100 @@ def normalize_team(code: str, *, is_national: bool) -> str:
     return code  # clubs already shipped as their slug fragments
 
 
+# Display-name → ISO3 disambiguation table. Polymarket reuses some
+# slug codes across teams (e.g. `kor` means Korea Republic in most
+# slugs but stands for Curaçao — "Kòrsou" in Papiamento — in others).
+# When the title gives a clean team name, prefer it for ISO resolution.
+_NAME_TO_ISO3: dict[str, str] = {
+    # WC26 contenders + common Polymarket title variants.
+    "Argentina":               "arg",
+    "Australia":               "aus",
+    "Austria":                 "aut",
+    "Belgium":                 "bel",
+    "Bolivia":                 "bol",
+    "Bosnia and Herzegovina":  "bih",
+    "Brazil":                  "bra",
+    "Cameroon":                "cmr",
+    "Canada":                  "can",
+    "Colombia":                "col",
+    "Costa Rica":              "crc",
+    "Côte d'Ivoire":           "civ",
+    "Ivory Coast":             "civ",
+    "Croatia":                 "cro",
+    "Curaçao":                 "cuw",
+    "Curacao":                 "cuw",
+    "Czechia":                 "cze",
+    "Czech Republic":          "cze",
+    "Denmark":                 "den",
+    "Ecuador":                 "ecu",
+    "Egypt":                   "egy",
+    "England":                 "eng",
+    "France":                  "fra",
+    "Germany":                 "ger",
+    "Ghana":                   "gha",
+    "Iran":                    "irn",
+    "IR Iran":                 "irn",
+    "Iraq":                    "irq",
+    "Italy":                   "ita",
+    "Japan":                   "jpn",
+    "Jordan":                  "jor",
+    "Korea Republic":          "kor",
+    "South Korea":             "kor",
+    "Mexico":                  "mex",
+    "Morocco":                 "mar",
+    "Netherlands":              "ned",
+    "New Zealand":             "nzl",
+    "Norway":                  "nor",
+    "Paraguay":                "par",
+    "Peru":                    "per",
+    "Poland":                  "pol",
+    "Portugal":                "por",
+    "Qatar":                   "qat",
+    "Saudi Arabia":            "ksa",
+    "Senegal":                 "sen",
+    "Serbia":                  "srb",
+    "South Africa":            "rsa",
+    "Spain":                   "esp",
+    "Sweden":                  "swe",
+    "Switzerland":             "che",
+    "Tunisia":                 "tun",
+    "Türkiye":                 "tur",
+    "Turkey":                  "tur",
+    "United States":           "usa",
+    "USA":                     "usa",
+    "Uruguay":                 "uru",
+    "Uzbekistan":              "uzb",
+    "Wales":                   "wal",
+    "Algeria":                 "alg",
+    "Nigeria":                 "nga",
+    "Mali":                    "mli",
+    "Cabo Verde":              "cpv",
+    "Cape Verde":              "cpv",
+    "DR Congo":                "cod",
+    "Honduras":                "hon",
+    "Panama":                  "pan",
+    "Jamaica":                 "jam",
+    "Haiti":                   "hai",
+    "Venezuela":               "ven",
+    "Chile":                   "chi",
+    "Iceland":                 "isl",
+    "Romania":                 "rou",
+    "Scotland":                "sco",
+    "Republic of Ireland":     "irl",
+    "Ireland":                 "irl",
+    "Northern Ireland":        "nir",
+    "Finland":                 "fin",
+}
+
+
+def iso3_for_name(name: str) -> str | None:
+    """Best-effort resolution of a display name (e.g. "Curaçao") to its
+    canonical ISO3 (e.g. "cuw"). Returns None if unknown — callers fall
+    back to slug-code resolution.
+    """
+    return _NAME_TO_ISO3.get(name.strip())
+
+
 def map_competition(prefix: str) -> tuple[str, str] | None:
     """Polymarket competition prefix → (spec code, human label).
 
