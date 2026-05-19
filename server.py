@@ -381,6 +381,7 @@ if (SITE_PUBLIC / "index.html").exists():
         "method", "methodology",
         "responsible-use", "affiliate-disclosure", "corrections",
         "terms", "privacy", "cookies",
+        "404",
     )
 
     def _make_editorial_route(name: str):

@@ -116,14 +116,55 @@ a { color: inherit; }
 }
 @media (min-width: 820px) { .nav-meta { display: inline; } }
 
-.burger {
+/* Burger — native <details>/<summary> disclosure. No JS needed. */
+.burger { position: relative; display: inline-block; }
+.burger-btn {
+  list-style: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
   width: 36px; height: 36px;
   border: var(--hairline); background: var(--paper-pure);
-  display: inline-flex; align-items: center; justify-content: center;
-  cursor: pointer;
+  color: var(--ink); border-radius: 2px;
 }
+.burger-btn::-webkit-details-marker { display: none; }
+.burger-btn::marker { content: ""; }
+.burger-btn:hover { color: var(--flame-deep); }
+.burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
+.burger-menu {
+  position: absolute; right: 0; top: calc(100% + 8px);
+  min-width: 240px; background: var(--paper-pure); border: var(--hairline);
+  list-style: none; margin: 0; padding: 6px 0;
+  box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08); z-index: 50;
+}
+.burger-menu li { padding: 0; margin: 0; list-style: none; }
+.burger-menu a {
+  display: block; padding: 10px 18px;
+  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
+}
+.burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
+.burger-menu a[aria-current="page"] { color: var(--flame-deep); border-left: 3px solid var(--flame); padding-left: 15px; }
 @media (min-width: 820px) { .burger { display: none; } }
-.burger svg { display: block; }
+
+/* Mobile pill-nav — visible primary links beneath the masthead on small
+   screens. Hidden on desktop where the full .site-nav is shown. */
+.pill-nav {
+  display: flex; gap: 6px; align-items: center;
+  padding: 10px var(--gutter) 12px;
+  border-bottom: var(--hairline); background: var(--paper);
+  overflow-x: auto; scrollbar-width: none;
+}
+.pill-nav::-webkit-scrollbar { display: none; }
+.pill-nav a {
+  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
+  padding: 8px 14px; border-radius: 999px; white-space: nowrap;
+  border: var(--hairline);
+  transition: background var(--dur-fast) var(--ease-standard),
+              color var(--dur-fast) var(--ease-standard);
+}
+.pill-nav a[aria-current="page"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.pill-nav a:not([aria-current="page"]):hover { color: var(--flame-deep); border-color: var(--flame); }
+@media (min-width: 820px) { .pill-nav { display: none; } }
 
 .edition-strip { border-top: var(--hairline-soft); border-bottom: var(--hairline); background: var(--paper); }
 .edition-strip .inner {
@@ -582,11 +623,26 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
       </ul>
     </nav>
     <span class="nav-meta">{updated}</span>
-    <button class="burger" aria-label="More links">
-      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
-        <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.5"/>
-      </svg>
-    </button>
+    <details class="burger">
+      <summary class="burger-btn" aria-label="More links">
+        <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+          <rect y="0"  width="16" height="1.5" fill="currentColor"/>
+          <rect y="5"  width="16" height="1.5" fill="currentColor"/>
+          <rect y="10" width="16" height="1.5" fill="currentColor"/>
+        </svg>
+      </summary>
+      <ul class="burger-menu">
+        <li><a href="/"{cur('home')}>Home</a></li>
+        <li><a href="/matches/"{cur('matches')}>Upcoming matches</a></li>
+        <li><a href="/outrights/"{cur('outrights')}>Outright winners</a></li>
+        <li><a href="/methodology"{cur('methodology')}>How it works</a></li>
+        <li><a href="/learn"{cur('learn')}>Learn</a></li>
+        <li><a href="/about"{cur('about')}>About</a></li>
+        <li><a href="/responsible-use">Responsible use</a></li>
+        <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>
+        <li><a href="/corrections">Corrections</a></li>
+      </ul>
+    </details>
   </div>
 </header>
 <div class="edition-strip">
@@ -595,6 +651,14 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
     <span class="live">Markets live</span>
   </div>
 </div>
+<nav class="pill-nav" aria-label="Primary (mobile)">
+  <a href="/"{cur('home')}>Home</a>
+  <a href="/matches/"{cur('matches')}>Matches</a>
+  <a href="/outrights/"{cur('outrights')}>Winners</a>
+  <a href="/methodology"{cur('methodology')}>How it works</a>
+  <a href="/learn"{cur('learn')}>Learn</a>
+  <a href="/about"{cur('about')}>About</a>
+</nav>
 """
 
 
