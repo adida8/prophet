@@ -34,3 +34,19 @@ ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
 # ── Sport registry default ────────────────────────────────────────────
 # v1 ships football only. Sports config in v2 reads sources.yaml.
 DEFAULT_ACTIVE_SPORTS: tuple[str, ...] = ("football",)
+
+# ── Competition allowlist ─────────────────────────────────────────────
+# Live ingest only emits fixtures whose mapped competition code is in
+# this set. Default is WC26-only — the launch wedge. Override with
+# `DESK_COMPETITIONS=wc26,epl,ucl` (comma-separated codes) or set to
+# `*` to disable the filter entirely.
+def _parse_competitions(raw: str) -> frozenset[str] | None:
+    raw = raw.strip()
+    if raw == "*" or raw == "":
+        return None
+    return frozenset(c.strip().lower() for c in raw.split(",") if c.strip())
+
+
+COMPETITION_ALLOWLIST: frozenset[str] | None = _parse_competitions(
+    os.getenv("DESK_COMPETITIONS", "wc26")
+)

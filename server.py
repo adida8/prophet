@@ -363,6 +363,14 @@ if (SITE_PUBLIC / "index.html").exists():
         outright_id = outright_id.removesuffix("/").removesuffix(".html")
         return _serve_site(f"o/{outright_id}.html")
 
+    # Stable shortlinks for the launch outright. `/outrights/wc26` is
+    # the URL we cite externally; it lands on the same rendered page as
+    # `/o/fb-wc26-winner`.
+    @app.get("/outrights/wc26", include_in_schema=False)
+    @app.get("/outrights/wc26/", include_in_schema=False)
+    async def site_outright_wc26():
+        return _serve_site("o/fb-wc26-winner.html")
+
 
 # ── Static frontend ───────────────────────────────────────────────────
 

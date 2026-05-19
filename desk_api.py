@@ -20,6 +20,12 @@ GET /api/desk/matches?competition=wc26&sport=football
 
 GET /api/desk/match/{match_id}?sport=football
     Full MatchOutput JSON for one fixture.
+
+GET /api/desk/outrights
+    Index of all outright winner markets (e.g. WC 2026 winner).
+
+GET /api/desk/outright/{outright_id}
+    Full outright JSON — model ladder, verdict, copy, snapshot meta.
 """
 
 from __future__ import annotations
@@ -42,8 +48,10 @@ _OUTPUT_ROOT  = _PROJECT_ROOT / "desk" / "data" / "output"
 
 # Defence-in-depth: the writer guarantees this shape, but the API
 # never trusts the URL path to match it.
-_MATCH_ID_RE = re.compile(r"^[a-z0-9]{2,8}-[a-z0-9]+(?:-[a-z0-9]+){2,}-\d{8}$")
-_SPORT_RE    = re.compile(r"^[a-z]{2,16}$")
+_MATCH_ID_RE    = re.compile(r"^[a-z0-9]{2,8}-[a-z0-9]+(?:-[a-z0-9]+){2,}-\d{8}$")
+_OUTRIGHT_ID_RE = re.compile(r"^[a-z0-9]{2,8}-[a-z0-9-]{2,64}$")
+_SPORT_RE       = re.compile(r"^[a-z]{2,16}$")
+_OUTRIGHTS_DIR  = "outrights"
 
 
 def _sport_dir(sport: str) -> Path:
@@ -121,3 +129,31 @@ async def list_matches(
 @router.get("/match/{match_id}")
 async def get_match(match_id: str, sport: str = "football") -> dict[str, Any]:
     return _load_match(_sport_dir(sport), match_id)
+
+
+# ── Outrights ────────────────────────────────────────────────────────
+# Per `desk.outrights.run` the engine writes to
+# `desk/data/output/outrights/{outright_id}.json` and maintains
+# `index.json` in the same directory.
+
+def _outrights_dir() -> Path:
+    return _OUTPUT_ROOT / _OUTRIGHTS_DIR
+
+
+@router.get("/outrights")
+async def list_outrights() -> dict[str, Any]:
+    """Index of outright winner markets currently published."""
+    index_path = _outrights_dir() / "index.json"
+    if not index_path.is_file():
+        return {"outrights": [], "updated_at": None}
+    return json.loads(index_path.read_text(encoding="utf-8"))
+
+
+@router.get("/outright/{outright_id}")
+async def get_outright(outright_id: str) -> dict[str, Any]:
+    if not _OUTRIGHT_ID_RE.match(outright_id):
+        raise HTTPException(status_code=400, detail="invalid outright_id")
+    path = _outrights_dir() / f"{outright_id}.json"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail=f"outright not found: {outright_id}")
+    return json.loads(path.read_text(encoding="utf-8"))

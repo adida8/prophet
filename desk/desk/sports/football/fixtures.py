@@ -18,6 +18,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Iterable
 
+from desk import config
 from desk.sport import FixtureRef
 from desk.sports.football.teams import (
     is_international_competition,
@@ -133,11 +134,14 @@ async def list_priced_football_fixtures() -> list[FixtureRef]:
 
     fixtures: list[FixtureRef] = []
     seen: set[str] = set()
+    allow = config.COMPETITION_ALLOWLIST
 
     # Polymarket (real)
     try:
         events = await PolymarketSoccerEventsSource().fetch()
         for fx in fixtures_from_polymarket(events):
+            if allow is not None and fx.competition_code not in allow:
+                continue
             if fx.match_id not in seen:
                 seen.add(fx.match_id)
                 fixtures.append(fx)
