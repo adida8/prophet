@@ -158,17 +158,18 @@ a { color: inherit; }
 .lv-card:hover { background: var(--paper-warm); }
 .lv-card .lv-bar { grid-column: 1; grid-row: 1 / -1; background: var(--rule); }
 
-/* Overlay link — the entire card is clickable to the match/outright detail
-   page. The market CTA (.cta below) sits above this via z-index so it
-   captures clicks first and opens the venue in a new tab instead. */
+/* Overlay link — the entire card is clickable. Content sits visually on top
+   (z-index 2) but has `pointer-events: none` so clicks anywhere fall through
+   to the overlay link. The market CTAs explicitly re-enable pointer-events
+   so they capture their own clicks. */
 .lv-card .lv-card-link {
   position: absolute; inset: 0;
   z-index: 1;
   text-indent: -9999px; overflow: hidden;
   background: transparent;
 }
-.lv-card > *:not(.lv-card-link) { position: relative; z-index: 2; }
-.lv-card .lv-action a.cta { position: relative; z-index: 3; }
+.lv-card > *:not(.lv-card-link) { position: relative; z-index: 2; pointer-events: none; }
+.lv-card .lv-action a.cta { pointer-events: auto; z-index: 3; }
 
 .lv-card .lv-head { grid-column: 2; grid-row: 1; display: flex; align-items: baseline; gap: 12px; }
 .lv-card .lv-glyph { font-family: var(--font-sans); font-weight: 700; font-size: 16px; line-height: 1; color: var(--graphite-soft); }
@@ -260,6 +261,26 @@ a { color: inherit; }
 .lv-card:hover .lv-action .cta .arr,
 .lv-card .lv-action .cta:hover .arr { color: var(--paper); transform: translate(2px, -2px); }
 .lv-card .lv-action a.cta:focus-visible { outline: 2px solid var(--flame); outline-offset: 2px; }
+
+/* Placeholder venue pill — Kalshi is wired as a search-fallback until
+   the live Kalshi ingest lands. Visually differentiated so it doesn't
+   read as the primary CTA. */
+.lv-card .lv-action a.cta.is-placeholder {
+  background: var(--paper-pure);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+}
+.lv-card .lv-action a.cta.is-placeholder .arr { color: var(--ink); }
+.lv-card:hover .lv-action a.cta.is-placeholder,
+.lv-card .lv-action a.cta.is-placeholder:hover {
+  background: var(--ink); color: var(--paper-pure);
+}
+.lv-card:hover .lv-action a.cta.is-placeholder .arr,
+.lv-card .lv-action a.cta.is-placeholder:hover .arr { color: var(--flame); }
+
+/* Allow CTAs to wrap onto a second row on narrow viewports. */
+.lv-card .lv-action { flex-wrap: wrap; gap: 10px; }
+.lv-card .lv-foot   { flex-wrap: wrap; row-gap: 12px; }
 
 /* Pass-state cards now also carry the CTA — keep the flat-msg in the same
    row as the action button. */
@@ -439,7 +460,7 @@ a { color: inherit; }
         <li><a href="/matches/">Upcoming matches</a></li>
       </ul>
     </nav>
-    <span class="nav-meta">Updated 11:18 UTC</span>
+    <span class="nav-meta">Updated 11:28 UTC</span>
     <button class="burger" aria-label="More links">
       <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
         <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.5"/>
@@ -453,7 +474,7 @@ a { color: inherit; }
     <span class="live">Markets live</span>
   </div>
 </div>
-<main class="page"><section class="page-header"><a class="crumb" href="/outrights/"><span class="arr">←</span> All outrights</a><h1>World Cup 2026 winner · markets agree across the field</h1></section><div class="lv-card is-pass"><a class="lv-card-link" href="/o/fb-wc26-winner" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">—</span><span class="lv-lab">Pass</span><span class="lv-when">Resolves 20 Jul 2026</span></div><h3 class="lv-teams">—</h3><p class="lv-venue-meta">World Cup 2026 — outright winner</p><p class="lv-thesis">The model and the market agree on the field. The biggest gap is Argentina on the YES side at +6.5pp — not wide enough on the lower-bound check to call a Pick.</p><div class="lv-foot"><span class="lv-flat-msg">Markets agree on this field.</span><div class="lv-action"><a class="cta market-cta" href="https://polymarket.com/event/2026-fifa-world-cup-winner-595" target="_blank" rel="nofollow noopener">Polymarket <span class="arr">↗</span></a></div></div></div><div class="blurb"><p>The Desk simulates the tournament ten thousand times to produce a per-team probability. Across the 48-team field the biggest disagreement with the market is on Argentina (YES) at +6.5pp — a gap the bootstrap lower bound can&#x27;t sustain. No position clears the +3.0pp Pick gate today.</p>
+<main class="page"><section class="page-header"><a class="crumb" href="/outrights/"><span class="arr">←</span> All outrights</a><h1>World Cup 2026 winner · markets agree across the field</h1></section><div class="lv-card is-pass"><a class="lv-card-link" href="/o/fb-wc26-winner" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">—</span><span class="lv-lab">Pass</span><span class="lv-when">Resolves 20 Jul 2026</span></div><h3 class="lv-teams">World Cup 2026</h3><p class="lv-venue-meta">World Cup 2026 — outright winner</p><p class="lv-thesis">The model and the market agree on the field. The biggest gap is Argentina on the YES side at +6.5pp — not wide enough on the lower-bound check to call a Pick.</p><div class="lv-foot"><span class="lv-flat-msg">Markets agree on this field.</span><div class="lv-action"><a class="cta market-cta" href="https://polymarket.com/event/2026-fifa-world-cup-winner-595" target="_blank" rel="nofollow noopener">Trade on Polymarket <span class="arr">↗</span></a><a class="cta market-cta is-placeholder" href="https://kalshi.com/markets?q=World+Cup+2026+winner" target="_blank" rel="nofollow noopener">Trade on Kalshi <span class="arr">↗</span></a></div></div></div><div class="blurb"><p>The Desk simulates the tournament ten thousand times to produce a per-team probability. Across the 48-team field the biggest disagreement with the market is on Argentina (YES) at +6.5pp — a gap the bootstrap lower bound can&#x27;t sustain. No position clears the +3.0pp Pick gate today.</p>
 <p>The field can move quickly — qualifying clarifies team ratings, draws change the bracket, and the market reprices around news. We re-run on the data layer&#x27;s late-binding cadence and republish when something opens up.</p></div><section class="drivers"><h2>The drivers</h2><ol><li>Top market: Argentina (YES) at +6.5pp point-estimate edge.</li>
 <li>Field size: 48 priced participants × YES + NO = 96 positions.</li>
 <li>Sims: 10,000. Bootstrap: 100 samples × 1,000 sims with ±50 Elo perturbation.</li></ol></section></main><footer class="site-foot page">
