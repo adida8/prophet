@@ -199,6 +199,19 @@ a { color: inherit; }
 .lv-card:hover { background: var(--paper-warm); }
 .lv-card .lv-bar { grid-column: 1; grid-row: 1 / -1; background: var(--rule); }
 
+/* Overlay link — the entire card is clickable. Content sits visually on top
+   (z-index 2) but has `pointer-events: none` so clicks anywhere fall through
+   to the overlay link. The market CTAs explicitly re-enable pointer-events
+   so they capture their own clicks. */
+.lv-card .lv-card-link {
+  position: absolute; inset: 0;
+  z-index: 1;
+  text-indent: -9999px; overflow: hidden;
+  background: transparent;
+}
+.lv-card > *:not(.lv-card-link) { position: relative; z-index: 2; pointer-events: none; }
+.lv-card .lv-action a.cta { pointer-events: auto; z-index: 3; }
+
 .lv-card .lv-head { grid-column: 2; grid-row: 1; display: flex; align-items: baseline; gap: 12px; }
 .lv-card .lv-glyph { font-family: var(--font-sans); font-weight: 700; font-size: 16px; line-height: 1; color: var(--graphite-soft); }
 .lv-card .lv-lab {
@@ -280,6 +293,7 @@ a { color: inherit; }
   font-family: var(--font-sans); font-size: 11px; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase;
   white-space: nowrap;
+  text-decoration: none;
   transition: background var(--dur-fast) var(--ease-standard);
 }
 .lv-card .lv-action .cta .arr { color: var(--flame); transition: transform var(--dur-fast) var(--ease-standard); }
@@ -287,6 +301,50 @@ a { color: inherit; }
 .lv-card .lv-action .cta:hover { background: var(--flame-deep); }
 .lv-card:hover .lv-action .cta .arr,
 .lv-card .lv-action .cta:hover .arr { color: var(--paper); transform: translate(2px, -2px); }
+.lv-card .lv-action a.cta:focus-visible { outline: 2px solid var(--flame); outline-offset: 2px; }
+
+/* Placeholder venue pill — Kalshi is wired as a search-fallback until
+   the live Kalshi ingest lands. Visually differentiated so it doesn't
+   read as the primary CTA. */
+.lv-card .lv-action a.cta.is-placeholder {
+  background: var(--paper-pure);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+}
+.lv-card .lv-action a.cta.is-placeholder .arr { color: var(--ink); }
+.lv-card:hover .lv-action a.cta.is-placeholder,
+.lv-card .lv-action a.cta.is-placeholder:hover {
+  background: var(--ink); color: var(--paper-pure);
+}
+.lv-card:hover .lv-action a.cta.is-placeholder .arr,
+.lv-card .lv-action a.cta.is-placeholder:hover .arr { color: var(--flame); }
+
+/* Allow CTAs to wrap onto a second row on narrow viewports. */
+.lv-card .lv-action { flex-wrap: wrap; gap: 10px; }
+.lv-card .lv-foot   { flex-wrap: wrap; row-gap: 12px; }
+
+/* Secondary "Read the case" CTA — text link, no pill. Sits next to the
+   two primary trade pills as a tertiary action. */
+.lv-card .lv-action a.cta-secondary {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink); text-decoration: none;
+  padding: 7px 6px 6px;
+  border-bottom: 1.5px solid transparent;
+  pointer-events: auto;
+  position: relative; z-index: 3;
+  transition: color var(--dur-fast) var(--ease-standard),
+              border-color var(--dur-fast) var(--ease-standard);
+}
+.lv-card .lv-action a.cta-secondary .arr { color: var(--flame); }
+.lv-card .lv-action a.cta-secondary:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
+.lv-card .lv-action a.cta-secondary:hover .arr { transform: translateX(2px); }
+
+/* Pass-state cards now also carry the CTA — keep the flat-msg in the same
+   row as the action button. */
+.lv-card.is-pass .lv-foot { display: flex; align-items: center; gap: 16px; justify-content: space-between; flex-wrap: wrap; }
+.lv-card.is-pass .lv-flat-msg { margin: 0; }
 
 /* Verdict variants */
 .lv-card.is-pick { background: var(--flame-tint); border-color: var(--flame); }
@@ -442,53 +500,6 @@ a { color: inherit; }
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
 }
 .site-foot .left { color: var(--ink); }
-
-/* OUTRIGHT LADDER — table of every priced participant + per-team verdict */
-.ladder { margin: 40px 0 0; }
-.ladder .section-label { margin-top: 0; }
-.ladder .legend {
-  margin: 14px 0 12px; font-family: var(--font-sans); font-size: 13px;
-  color: var(--graphite); display: flex; flex-wrap: wrap; gap: 12px 24px;
-}
-.ladder .legend strong { color: var(--ink); }
-.ladder-table-wrap { overflow-x: auto; }
-.ladder-table {
-  width: 100%; border-collapse: collapse; margin: 0;
-  font-family: var(--font-sans); font-size: 13px;
-  font-variant-numeric: tabular-nums; color: var(--ink);
-}
-.ladder-table thead th {
-  text-align: right; padding: 10px 12px;
-  border-bottom: var(--hairline-strong);
-  font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--graphite-soft); white-space: nowrap;
-}
-.ladder-table thead th.left { text-align: left; }
-.ladder-table tbody td {
-  padding: 9px 12px; border-bottom: var(--hairline-soft);
-  text-align: right; white-space: nowrap;
-}
-.ladder-table tbody td.left { text-align: left; }
-.ladder-table tbody tr:hover { background: var(--rule-soft); }
-.ladder-table .team { font-weight: 600; }
-.ladder-table .ci { color: var(--graphite-soft); font-size: 11.5px; }
-.ladder-table .edge.pos { color: var(--flame-deep); font-weight: 600; }
-.ladder-table .edge.neg { color: var(--graphite-soft); }
-.ladder-table .vbadge {
-  display: inline-block; padding: 2px 8px; border-radius: 999px;
-  font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.ladder-table .vbadge.is-pick {
-  background: var(--flame-tint); color: var(--flame-deep);
-}
-.ladder-table .vbadge.is-pass {
-  background: var(--paper-warm); color: var(--graphite-soft);
-}
-@media (max-width: 720px) {
-  .ladder-table thead th, .ladder-table tbody td { padding: 8px 9px; font-size: 12px; }
-  .ladder-table .ci { display: none; }
-}
 """
 
 # ─── Page chrome (shared across all pages) ───
@@ -588,6 +599,104 @@ def kickoff_date_key(iso: str) -> str:
     """YYYY-MM-DD for grouping."""
     return iso[:10]
 
+def venue_name_from_url(market_url: str | None) -> str | None:
+    """Derive a display venue name from a market URL. Used as a fallback
+    when verdict.market_venue isn't populated (e.g. Pass rows).
+    """
+    if not market_url:
+        return None
+    low = market_url.lower()
+    if "polymarket.com" in low:
+        return "Polymarket"
+    if "kalshi.com" in low:
+        return "Kalshi"
+    return None
+
+
+def venue_label_for(verdict: dict) -> str | None:
+    """Best display string for the venue: explicit field first, then derived."""
+    explicit = (verdict.get("market_venue") or "").strip()
+    if explicit:
+        return explicit.title()
+    return venue_name_from_url(verdict.get("market_url"))
+
+
+def _polymarket_url_for(verdict: dict, fallback_search: str | None = None) -> str:
+    """Polymarket URL — use the explicit one when present, fall back to a
+    search on the event slug. Never returns empty; the venue is always
+    surfaceable.
+    """
+    url = (verdict.get("market_url") or "").strip()
+    if url and "polymarket.com" in url.lower():
+        return url
+    # No explicit Polymarket URL → degrade to a search.
+    if fallback_search:
+        from urllib.parse import quote_plus
+        return f"https://polymarket.com/markets?_q={quote_plus(fallback_search)}"
+    return "https://polymarket.com/"
+
+
+def _kalshi_url_for(fallback_search: str | None = None) -> str:
+    """Kalshi placeholder URL. We don't ingest Kalshi event ids yet, so
+    every Kalshi CTA today points to a search on Kalshi's site keyed off
+    the match / outright identity. When the Kalshi ingest lands, swap
+    this for an explicit per-market URL.
+    """
+    if fallback_search:
+        from urllib.parse import quote_plus
+        return f"https://kalshi.com/markets?q={quote_plus(fallback_search)}"
+    return "https://kalshi.com/markets"
+
+
+def _cta_pill(label: str, url: str, *, placeholder: bool = False) -> str:
+    """Render a single trade CTA pill. `placeholder=True` adds a class
+    so the pill can be visually distinguished from a real venue link
+    (e.g. softened colour) — we use it for Kalshi until live URLs land.
+    """
+    extra = " is-placeholder" if placeholder else ""
+    return (
+        f'<a class="cta market-cta{extra}" href="{escape(url)}" '
+        f'target="_blank" rel="nofollow noopener">'
+        f'{escape(label)} <span class="arr">↗</span>'
+        f'</a>'
+    )
+
+
+def _read_case_link(detail_href: str) -> str:
+    """Secondary CTA — text-only "Read the case" link to the match/outright
+    detail page. Styled tertiary so the two trade pills are the visual
+    primary CTAs.
+    """
+    return (
+        f'<a class="cta-secondary read-case" href="{escape(detail_href)}">'
+        f'Read the case <span class="arr">→</span>'
+        f'</a>'
+    )
+
+
+def market_cta(
+    verdict: dict,
+    *,
+    price: str | None = None,
+    search_key: str | None = None,
+    detail_href: str | None = None,
+) -> str:
+    """Render the CTAs for a card: two primary trade pills (Polymarket
+    + Kalshi) and a secondary "Read the case" text link to the detail
+    page. Kalshi today is a placeholder linking to a Kalshi search (no
+    live Kalshi ingest yet). `price` shows the American odds next to
+    the Polymarket pill on Pick rows.
+    """
+    poly_url   = _polymarket_url_for(verdict, fallback_search=search_key)
+    kalshi_url = _kalshi_url_for(fallback_search=search_key)
+
+    price_html = f'<span class="price">{escape(str(price))}</span>' if price else ""
+    poly_pill   = _cta_pill("Trade on Polymarket", poly_url)
+    kalshi_pill = _cta_pill("Trade on Kalshi", kalshi_url, placeholder=True)
+    secondary   = _read_case_link(detail_href) if detail_href else ""
+    return f'{price_html}{poly_pill}{kalshi_pill}{secondary}'
+
+
 def venue_meta(match: dict) -> str:
     """Stadium · City · Competition stage."""
     parts = []
@@ -630,11 +739,17 @@ def render_card(match: dict, *, is_lead: bool = False) -> str:
     vmeta = venue_meta(match)
     thesis = escape(match["copy"]["summary"] or "")
 
+    # Search-fallback key for Kalshi (no live ingest yet) and for
+    # Polymarket if market_url is missing.
+    search_key = f"{match.get('team_a','')} {match.get('team_b','')}".strip()
+
     # Foot — different for pick/avoid vs pass
     if state == "pass":
+        cta_html = market_cta(v, search_key=search_key, detail_href=href)
         foot = (
             '<div class="lv-foot">'
-            f'<span class="lv-flat-msg">Markets agree — within 1pp on every side. <strong>Read the case →</strong></span>'
+            f'<span class="lv-flat-msg">Markets agree — within 1pp on every side.</span>'
+            f'<div class="lv-action">{cta_html}</div>'
             '</div>'
         )
     else:
@@ -653,12 +768,7 @@ def render_card(match: dict, *, is_lead: bool = False) -> str:
         if edge_str:
             reads += f'<span class="edge{edge_class}">{edge_str}</span>'
 
-        venue = (v.get("market_venue") or "").title()
-        price = v.get("price") or ""
-        action_bits = ''
-        if venue: action_bits += f'<span class="venue">{escape(venue)}</span>'
-        if price: action_bits += f'<span class="price">{escape(str(price))}</span>'
-        action_bits += '<span class="cta">Read the case <span class="arr">↗</span></span>'
+        action_bits = market_cta(v, price=v.get("price"), search_key=search_key, detail_href=href)
 
         foot = (
             '<div class="lv-foot">'
@@ -667,15 +777,20 @@ def render_card(match: dict, *, is_lead: bool = False) -> str:
             '</div>'
         )
 
+    # Card is a <div> so we can nest the venue CTA as a real <a>. The
+    # whole card is still clickable via an absolute-positioned overlay
+    # link that goes to the match detail page; the venue CTA sits above
+    # it (z-index) so a click on the pill opens the market instead.
     return (
-        f'<a class="lv-card {state_class}" href="{href}">'
+        f'<div class="lv-card {state_class}">'
+        f'<a class="lv-card-link" href="{href}" aria-label="Read the case"></a>'
         '<span class="lv-bar" aria-hidden="true"></span>'
         f'<div class="lv-head">{head}</div>'
         f'<h3 class="lv-teams">{title}</h3>'
         f'<p class="lv-venue-meta">{vmeta}</p>'
         f'<p class="lv-thesis">{thesis}</p>'
         f'{foot}'
-        '</a>'
+        '</div>'
     )
 
 
@@ -888,10 +1003,22 @@ def render_outright_card(outright: dict) -> str:
         f'<span class="lv-when">{escape(when)}</span>'
     )
 
+    # The outright top-level carries market_url / market_venue; the
+    # nested verdict only carries them on Pick state. Compose a single
+    # dict the CTA helper can read from.
+    cta_dict = {
+        "market_url":   v.get("market_url")   or outright.get("market_url"),
+        "market_venue": v.get("market_venue") or outright.get("market_venue"),
+    }
+
+    search_key = "World Cup 2026 winner"
+
     if state == "pass":
+        cta_html = market_cta(cta_dict, search_key=search_key, detail_href=href)
         foot = (
             '<div class="lv-foot">'
-            '<span class="lv-flat-msg">Markets agree on this field. <strong>Read the case →</strong></span>'
+            '<span class="lv-flat-msg">Markets agree on this field.</span>'
+            f'<div class="lv-action">{cta_html}</div>'
             '</div>'
         )
     else:
@@ -905,23 +1032,19 @@ def render_outright_card(outright: dict) -> str:
         )
         if edge_str:
             reads += f'<span class="edge{edge_class}">{edge_str}</span>'
-        venue = (v.get("market_venue") or "").title()
-        price = v.get("price") or ""
-        action = ''
-        if venue: action += f'<span class="venue">{escape(venue)}</span>'
-        if price: action += f'<span class="price">{escape(str(price))}</span>'
-        action += '<span class="cta">Read the case <span class="arr">↗</span></span>'
+        action = market_cta(cta_dict, price=v.get("price"), search_key=search_key, detail_href=href)
         foot = f'<div class="lv-foot"><div class="lv-reads">{reads}</div><div class="lv-action">{action}</div></div>'
 
     return (
-        f'<a class="lv-card {state_class}" href="{href}">'
+        f'<div class="lv-card {state_class}">'
+        f'<a class="lv-card-link" href="{href}" aria-label="Read the case"></a>'
         '<span class="lv-bar" aria-hidden="true"></span>'
         f'<div class="lv-head">{head}</div>'
         f'<h3 class="lv-teams">{escape(candidate)}</h3>'
         f'<p class="lv-venue-meta">{escape(label)}</p>'
         f'<p class="lv-thesis">{escape(summary)}</p>'
         f'{foot}'
-        '</a>'
+        '</div>'
     )
 
 
@@ -945,12 +1068,7 @@ def render_outrights_index(outrights: list[dict]) -> str:
             + chrome_footer()
         )
 
-    # Card + full ladder per outright. Today there's only one (WC26
-    # winner) so this just stacks them; future outrights (group winner,
-    # golden boot) will land below.
-    cards = "\n".join(
-        render_outright_card(o) + render_outright_ladder(o) for o in outrights
-    )
+    cards = "\n".join(render_outright_card(o) for o in outrights)
     return (
         chrome_head("Outright winners · Odds Primer")
         + chrome_masthead("outrights")
@@ -962,86 +1080,6 @@ def render_outrights_index(outrights: list[dict]) -> str:
         + cards
         + '</main>'
         + chrome_footer()
-    )
-
-
-def render_outright_ladder(outright: dict) -> str:
-    """Full per-team ladder — one row per priced participant, sorted by
-    model P(win) desc. Shows model probability with bootstrap band,
-    both market sides, edge in pp, and a per-team verdict badge.
-    """
-    rows = outright.get("ladder") or []
-    if not rows:
-        return ""
-
-    body_rows = []
-    for r in rows:
-        team = escape(r.get("team", ""))
-        model_p = r.get("model_p", 0)
-        lo = r.get("model_p_lower")
-        hi = r.get("model_p_upper")
-        ci = ""
-        if lo is not None and hi is not None:
-            ci = f' <span class="ci">[{fmt_pct(lo)}–{fmt_pct(hi)}]</span>'
-
-        yes_p = r.get("yes_market_p", 0)
-        no_p  = r.get("no_market_p", 0)
-        yes_edge = r.get("yes_edge_pp")
-        no_edge  = r.get("no_edge_pp")
-
-        def edge_cell(e):
-            if e is None: return '<td>—</td>'
-            cls = "pos" if e > 0 else ("neg" if e < 0 else "")
-            return f'<td class="edge {cls}">{fmt_edge(e)}</td>'
-
-        v_state = r.get("verdict", "pass")
-        pick_side = r.get("pick_side")
-        v_label = "Pass"
-        if v_state == "pick" and pick_side:
-            v_label = f"Pick · {pick_side}"
-        badge = f'<span class="vbadge is-{v_state}">{escape(v_label)}</span>'
-
-        body_rows.append(
-            "<tr>"
-            f'<td class="left team">{team}</td>'
-            f'<td>{fmt_pct(model_p)}{ci}</td>'
-            f'<td>{fmt_pct(yes_p)}</td>'
-            f'{edge_cell(yes_edge)}'
-            f'<td>{fmt_pct(no_p)}</td>'
-            f'{edge_cell(no_edge)}'
-            f'<td>{badge}</td>'
-            "</tr>"
-        )
-
-    n = len(rows)
-    n_pick = sum(1 for r in rows if r.get("verdict") == "pick")
-    legend = (
-        '<div class="legend">'
-        f'<span><strong>{n} priced teams</strong> · sorted by model P(win)</span>'
-        f'<span><strong>{n_pick} Pick{"s" if n_pick != 1 else ""}</strong> · '
-        f'{n - n_pick} Pass</span>'
-        '<span>Edge = model − market, in percentage points</span>'
-        '</div>'
-    )
-
-    return (
-        '<section class="ladder">'
-        '<div class="section-label"><span>The field · per-team verdict</span></div>'
-        + legend
-        + '<div class="ladder-table-wrap"><table class="ladder-table">'
-          '<thead><tr>'
-          '<th class="left">Team</th>'
-          '<th>Model P(win)</th>'
-          '<th>Market YES</th>'
-          '<th>Edge YES</th>'
-          '<th>Market NO</th>'
-          '<th>Edge NO</th>'
-          '<th>Verdict</th>'
-          '</tr></thead>'
-          '<tbody>'
-        + "".join(body_rows)
-        + '</tbody></table></div>'
-          '</section>'
     )
 
 
@@ -1081,7 +1119,6 @@ def render_outright_page(outright: dict) -> str:
           '</section>'
         + render_outright_card(outright)
         + (f'<div class="blurb">{blurb_paras}</div>' if blurb_paras else "")
-        + render_outright_ladder(outright)
         + cta_row
         + drivers_html
         + '</main>'

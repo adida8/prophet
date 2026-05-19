@@ -158,6 +158,19 @@ a { color: inherit; }
 .lv-card:hover { background: var(--paper-warm); }
 .lv-card .lv-bar { grid-column: 1; grid-row: 1 / -1; background: var(--rule); }
 
+/* Overlay link — the entire card is clickable. Content sits visually on top
+   (z-index 2) but has `pointer-events: none` so clicks anywhere fall through
+   to the overlay link. The market CTAs explicitly re-enable pointer-events
+   so they capture their own clicks. */
+.lv-card .lv-card-link {
+  position: absolute; inset: 0;
+  z-index: 1;
+  text-indent: -9999px; overflow: hidden;
+  background: transparent;
+}
+.lv-card > *:not(.lv-card-link) { position: relative; z-index: 2; pointer-events: none; }
+.lv-card .lv-action a.cta { pointer-events: auto; z-index: 3; }
+
 .lv-card .lv-head { grid-column: 2; grid-row: 1; display: flex; align-items: baseline; gap: 12px; }
 .lv-card .lv-glyph { font-family: var(--font-sans); font-weight: 700; font-size: 16px; line-height: 1; color: var(--graphite-soft); }
 .lv-card .lv-lab {
@@ -239,6 +252,7 @@ a { color: inherit; }
   font-family: var(--font-sans); font-size: 11px; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase;
   white-space: nowrap;
+  text-decoration: none;
   transition: background var(--dur-fast) var(--ease-standard);
 }
 .lv-card .lv-action .cta .arr { color: var(--flame); transition: transform var(--dur-fast) var(--ease-standard); }
@@ -246,6 +260,50 @@ a { color: inherit; }
 .lv-card .lv-action .cta:hover { background: var(--flame-deep); }
 .lv-card:hover .lv-action .cta .arr,
 .lv-card .lv-action .cta:hover .arr { color: var(--paper); transform: translate(2px, -2px); }
+.lv-card .lv-action a.cta:focus-visible { outline: 2px solid var(--flame); outline-offset: 2px; }
+
+/* Placeholder venue pill — Kalshi is wired as a search-fallback until
+   the live Kalshi ingest lands. Visually differentiated so it doesn't
+   read as the primary CTA. */
+.lv-card .lv-action a.cta.is-placeholder {
+  background: var(--paper-pure);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+}
+.lv-card .lv-action a.cta.is-placeholder .arr { color: var(--ink); }
+.lv-card:hover .lv-action a.cta.is-placeholder,
+.lv-card .lv-action a.cta.is-placeholder:hover {
+  background: var(--ink); color: var(--paper-pure);
+}
+.lv-card:hover .lv-action a.cta.is-placeholder .arr,
+.lv-card .lv-action a.cta.is-placeholder:hover .arr { color: var(--flame); }
+
+/* Allow CTAs to wrap onto a second row on narrow viewports. */
+.lv-card .lv-action { flex-wrap: wrap; gap: 10px; }
+.lv-card .lv-foot   { flex-wrap: wrap; row-gap: 12px; }
+
+/* Secondary "Read the case" CTA — text link, no pill. Sits next to the
+   two primary trade pills as a tertiary action. */
+.lv-card .lv-action a.cta-secondary {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink); text-decoration: none;
+  padding: 7px 6px 6px;
+  border-bottom: 1.5px solid transparent;
+  pointer-events: auto;
+  position: relative; z-index: 3;
+  transition: color var(--dur-fast) var(--ease-standard),
+              border-color var(--dur-fast) var(--ease-standard);
+}
+.lv-card .lv-action a.cta-secondary .arr { color: var(--flame); }
+.lv-card .lv-action a.cta-secondary:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
+.lv-card .lv-action a.cta-secondary:hover .arr { transform: translateX(2px); }
+
+/* Pass-state cards now also carry the CTA — keep the flat-msg in the same
+   row as the action button. */
+.lv-card.is-pass .lv-foot { display: flex; align-items: center; gap: 16px; justify-content: space-between; flex-wrap: wrap; }
+.lv-card.is-pass .lv-flat-msg { margin: 0; }
 
 /* Verdict variants */
 .lv-card.is-pick { background: var(--flame-tint); border-color: var(--flame); }
@@ -401,53 +459,6 @@ a { color: inherit; }
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
 }
 .site-foot .left { color: var(--ink); }
-
-/* OUTRIGHT LADDER — table of every priced participant + per-team verdict */
-.ladder { margin: 40px 0 0; }
-.ladder .section-label { margin-top: 0; }
-.ladder .legend {
-  margin: 14px 0 12px; font-family: var(--font-sans); font-size: 13px;
-  color: var(--graphite); display: flex; flex-wrap: wrap; gap: 12px 24px;
-}
-.ladder .legend strong { color: var(--ink); }
-.ladder-table-wrap { overflow-x: auto; }
-.ladder-table {
-  width: 100%; border-collapse: collapse; margin: 0;
-  font-family: var(--font-sans); font-size: 13px;
-  font-variant-numeric: tabular-nums; color: var(--ink);
-}
-.ladder-table thead th {
-  text-align: right; padding: 10px 12px;
-  border-bottom: var(--hairline-strong);
-  font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--graphite-soft); white-space: nowrap;
-}
-.ladder-table thead th.left { text-align: left; }
-.ladder-table tbody td {
-  padding: 9px 12px; border-bottom: var(--hairline-soft);
-  text-align: right; white-space: nowrap;
-}
-.ladder-table tbody td.left { text-align: left; }
-.ladder-table tbody tr:hover { background: var(--rule-soft); }
-.ladder-table .team { font-weight: 600; }
-.ladder-table .ci { color: var(--graphite-soft); font-size: 11.5px; }
-.ladder-table .edge.pos { color: var(--flame-deep); font-weight: 600; }
-.ladder-table .edge.neg { color: var(--graphite-soft); }
-.ladder-table .vbadge {
-  display: inline-block; padding: 2px 8px; border-radius: 999px;
-  font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.ladder-table .vbadge.is-pick {
-  background: var(--flame-tint); color: var(--flame-deep);
-}
-.ladder-table .vbadge.is-pass {
-  background: var(--paper-warm); color: var(--graphite-soft);
-}
-@media (max-width: 720px) {
-  .ladder-table thead th, .ladder-table tbody td { padding: 8px 9px; font-size: 12px; }
-  .ladder-table .ci { display: none; }
-}
 </style>
 </head>
 <body>
@@ -467,7 +478,7 @@ a { color: inherit; }
         <li><a href="/matches/" aria-current="page">Upcoming matches</a></li>
       </ul>
     </nav>
-    <span class="nav-meta">Updated 11:48 UTC</span>
+    <span class="nav-meta">Updated 13:20 UTC</span>
     <button class="burger" aria-label="More links">
       <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
         <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.5"/>
@@ -481,7 +492,7 @@ a { color: inherit; }
     <span class="live">Markets live</span>
   </div>
 </div>
-<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Egypt v IR Iran · model and market agree</h1></section><a class="lv-card is-pass is-lead" href="/m/fb-wc26-egy-irn-20260627"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">—</span><span class="lv-lab">Pass</span><span class="lv-when">Sat 27 Jun · 03:00 UTC</span></div><h3 class="lv-teams">Egypt <span class="vs">v</span> IR Iran</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">Across all three sides the model and the market sit within a percentage point. The state reads Pass — no actionable edge today.</p><div class="lv-foot"><span class="lv-flat-msg">Markets agree — within 1pp on every side. <strong>Read the case →</strong></span></div></a><div class="blurb"><p>For Egypt versus IR Iran, our Elo prior — adjusted for venue and altitude — agrees with the closing line within a percentage point on every side. Pass is the honest call when calibration is in agreement; we&#x27;ll re-evaluate as kickoff approaches and late-binding signals (form, weather, confirmed XI) come in.</p></div><div class="cta-row"><a class="open-market" href="https://polymarket.com/event/fifwc-egy-irn-2026-06-26" rel="nofollow noopener" target="_blank">Open on market <span class="arr">↗</span></a><span class="meta-note">Odds Primer is editorial. Trades happen at the venue, not here.</span></div><section class="drivers"><h2>The drivers</h2><ol><li>Model and market sit within a percentage point on every side.</li>
+<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Egypt v IR Iran · model and market agree</h1></section><div class="lv-card is-pass is-lead"><a class="lv-card-link" href="/m/fb-wc26-egy-irn-20260627" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">—</span><span class="lv-lab">Pass</span><span class="lv-when">Sat 27 Jun · 03:00 UTC</span></div><h3 class="lv-teams">Egypt <span class="vs">v</span> IR Iran</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">Across all three sides the model and the market sit within a percentage point. The state reads Pass — no actionable edge today.</p><div class="lv-foot"><span class="lv-flat-msg">Markets agree — within 1pp on every side.</span><div class="lv-action"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-egy-irn-2026-06-26" target="_blank" rel="nofollow noopener">Trade on Polymarket <span class="arr">↗</span></a><a class="cta market-cta is-placeholder" href="https://kalshi.com/markets?q=Egypt+IR+Iran" target="_blank" rel="nofollow noopener">Trade on Kalshi <span class="arr">↗</span></a><a class="cta-secondary read-case" href="/m/fb-wc26-egy-irn-20260627">Read the case <span class="arr">→</span></a></div></div></div><div class="blurb"><p>For Egypt versus IR Iran, our Elo prior — adjusted for venue and altitude — agrees with the closing line within a percentage point on every side. Pass is the honest call when calibration is in agreement; we&#x27;ll re-evaluate as kickoff approaches and late-binding signals (form, weather, confirmed XI) come in.</p></div><div class="cta-row"><a class="open-market" href="https://polymarket.com/event/fifwc-egy-irn-2026-06-26" rel="nofollow noopener" target="_blank">Open on market <span class="arr">↗</span></a><span class="meta-note">Odds Primer is editorial. Trades happen at the venue, not here.</span></div><section class="drivers"><h2>The drivers</h2><ol><li>Model and market sit within a percentage point on every side.</li>
 <li>No structural disagreement to publish — both are pricing the same shape.</li>
 <li>Late-binding signals (form, weather, confirmed XI) re-evaluate near kickoff.</li></ol></section><aside class="voice"><h3>How to read this</h3><p>The verdict compares our <em>model probability</em> against the <em>best available market probability</em>. A <em>Pick</em> means the model rates a side three or more percentage points higher than the market. <em>Pass</em> means the line is doing its job. <em>Avoid</em> means every side looks overpriced.</p></aside></main><footer class="site-foot page">
   <span class="left">Odds Primer · educational, not advice</span>
