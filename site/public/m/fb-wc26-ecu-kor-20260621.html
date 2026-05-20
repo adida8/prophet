@@ -5,6 +5,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ecuador v Curaçao · the model leans Curaçao · Odds Primer</title>
 <meta name="description" content="Educational verdicts on Polymarket and Kalshi prices. Pick · Pass · Avoid.">
+<!-- Google Analytics (gtag.js) — only loads on oddsprimer.com -->
+<script>
+(function(){
+  var h = location.hostname;
+  if (h !== 'oddsprimer.com' && h !== 'www.oddsprimer.com') return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=G-DH4D6X8YRN';
+  document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){dataLayer.push(arguments);};
+  gtag('js', new Date());
+  gtag('config', 'G-DH4D6X8YRN');
+})();
+</script>
 <style>@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
@@ -75,14 +90,55 @@ a { color: inherit; }
 }
 @media (min-width: 820px) { .nav-meta { display: inline; } }
 
-.burger {
+/* Burger — native <details>/<summary> disclosure. No JS needed. */
+.burger { position: relative; display: inline-block; }
+.burger-btn {
+  list-style: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
   width: 36px; height: 36px;
   border: var(--hairline); background: var(--paper-pure);
-  display: inline-flex; align-items: center; justify-content: center;
-  cursor: pointer;
+  color: var(--ink); border-radius: 2px;
 }
+.burger-btn::-webkit-details-marker { display: none; }
+.burger-btn::marker { content: ""; }
+.burger-btn:hover { color: var(--flame-deep); }
+.burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
+.burger-menu {
+  position: absolute; right: 0; top: calc(100% + 8px);
+  min-width: 240px; background: var(--paper-pure); border: var(--hairline);
+  list-style: none; margin: 0; padding: 6px 0;
+  box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08); z-index: 50;
+}
+.burger-menu li { padding: 0; margin: 0; list-style: none; }
+.burger-menu a {
+  display: block; padding: 10px 18px;
+  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
+}
+.burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
+.burger-menu a[aria-current="page"] { color: var(--flame-deep); border-left: 3px solid var(--flame); padding-left: 15px; }
 @media (min-width: 820px) { .burger { display: none; } }
-.burger svg { display: block; }
+
+/* Mobile pill-nav — visible primary links beneath the masthead on small
+   screens. Hidden on desktop where the full .site-nav is shown. */
+.pill-nav {
+  display: flex; gap: 6px; align-items: center;
+  padding: 10px var(--gutter) 12px;
+  border-bottom: var(--hairline); background: var(--paper);
+  overflow-x: auto; scrollbar-width: none;
+}
+.pill-nav::-webkit-scrollbar { display: none; }
+.pill-nav a {
+  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
+  padding: 8px 14px; border-radius: 999px; white-space: nowrap;
+  border: var(--hairline);
+  transition: background var(--dur-fast) var(--ease-standard),
+              color var(--dur-fast) var(--ease-standard);
+}
+.pill-nav a[aria-current="page"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.pill-nav a:not([aria-current="page"]):hover { color: var(--flame-deep); border-color: var(--flame); }
+@media (min-width: 820px) { .pill-nav { display: none; } }
 
 .edition-strip { border-top: var(--hairline-soft); border-bottom: var(--hairline); background: var(--paper); }
 .edition-strip .inner {
@@ -117,6 +173,64 @@ a { color: inherit; }
   border-bottom: 1.5px solid var(--flame); padding-bottom: 1px;
 }
 @media (max-width: 720px) { .hero { padding: 28px 0 20px; } }
+
+/* VERDICT KEY — legend strip below the hero. Colour, glyph, and label
+   all carry the same meaning so the reader can scan a card at a glance. */
+.verdict-key {
+  margin: 8px 0 0;
+  padding: 18px 0 20px;
+  border-top: var(--hairline);
+  border-bottom: var(--hairline);
+  display: grid;
+  grid-template-columns: max-content repeat(3, 1fr);
+  column-gap: 36px; row-gap: 14px;
+  align-items: center;
+}
+.verdict-key .vk-label {
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+}
+.verdict-key .vk-item { display: flex; align-items: center; gap: 14px; }
+.verdict-key .vk-icon {
+  position: relative;
+  width: 44px; height: 30px;
+  background: var(--paper-pure);
+  border: var(--hairline);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--font-sans); font-weight: 800;
+  line-height: 1; flex-shrink: 0;
+}
+.verdict-key .vk-icon::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+}
+.verdict-key .vk-icon.is-pick::before { background: var(--flame); }
+.verdict-key .vk-icon.is-pick { color: var(--flame); font-size: 16px; }
+.verdict-key .vk-icon.is-pass::before { background: var(--graphite-soft); }
+.verdict-key .vk-icon.is-pass { color: var(--graphite-soft); font-size: 18px; }
+.verdict-key .vk-icon.is-avoid::before { background: var(--ink); }
+.verdict-key .vk-icon.is-avoid { color: var(--flame-deep); font-size: 16px; }
+.verdict-key .vk-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.verdict-key .vk-name {
+  font-family: var(--font-sans); font-size: 12px; font-weight: 800;
+  letter-spacing: 0.14em; text-transform: uppercase;
+}
+.verdict-key .vk-name.is-pick  { color: var(--flame); }
+.verdict-key .vk-name.is-pass  { color: var(--ink); }
+.verdict-key .vk-name.is-avoid { color: var(--ink); border-bottom: 1.5px solid var(--flame); padding-bottom: 1px; align-self: flex-start; }
+.verdict-key .vk-desc {
+  font-family: var(--font-serif); font-style: italic; font-size: 13.5px;
+  color: var(--graphite); line-height: 1.4;
+}
+.verdict-key .vk-note {
+  grid-column: 1 / -1;
+  font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
+  letter-spacing: 0.02em;
+}
+.verdict-key .vk-note em { color: var(--ink); font-style: normal; font-weight: 600; }
+@media (max-width: 720px) {
+  .verdict-key { grid-template-columns: 1fr; column-gap: 0; row-gap: 12px; padding: 16px 0 18px; }
+  .verdict-key .vk-label { margin-bottom: 2px; }
+}
 
 /* SECTION label */
 .section-label {
@@ -279,8 +393,29 @@ a { color: inherit; }
 .lv-card .lv-action a.cta.is-placeholder:hover .arr { color: var(--flame); }
 
 /* Allow CTAs to wrap onto a second row on narrow viewports. */
-.lv-card .lv-action { flex-wrap: wrap; gap: 10px; }
+.lv-card .lv-action { flex-wrap: wrap; gap: 14px; align-items: flex-start; }
 .lv-card .lv-foot   { flex-wrap: wrap; row-gap: 12px; }
+
+/* Stacked CTA — the pill plus its small "best price / live / search"
+   caption beneath. The caption is the editorial signal that tells the
+   reader which venue to trade on. */
+.lv-card .lv-action .cta-stack {
+  display: inline-flex; flex-direction: column;
+  align-items: stretch; gap: 4px;
+  pointer-events: none;   /* the child <a> re-enables clicks */
+}
+.lv-card .lv-action .cta-stack .cta { pointer-events: auto; }
+.lv-card .lv-action .cta-caption {
+  font-family: var(--font-sans); font-size: 9.5px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--graphite-soft);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  padding: 0 4px;
+}
+.lv-card .lv-action .cta-caption.is-best   { color: var(--flame-deep); }
+.lv-card .lv-action .cta-caption.is-live   { color: var(--ink); }
+.lv-card .lv-action .cta-caption.is-search { color: var(--graphite-soft); font-style: italic; letter-spacing: 0.04em; text-transform: none; font-size: 11px; font-weight: 500; }
 
 /* Secondary "Read the case" CTA — text link, no pill. Sits next to the
    two primary trade pills as a tertiary action. */
@@ -454,27 +589,28 @@ a { color: inherit; }
 
 .site-foot {
   margin: 48px 0 28px; padding-top: 18px; border-top: var(--hairline);
-  display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: space-between;
+  display: flex; flex-direction: column; gap: 14px;
   font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
 }
+.site-foot .foot-row {
+  display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: space-between;
+}
 .site-foot .left { color: var(--ink); }
+.site-foot .foot-nav {
+  display: flex; flex-wrap: wrap; gap: 8px 22px;
+  padding-top: 12px; border-top: var(--hairline-soft);
+}
+.site-foot .foot-nav a {
+  color: var(--graphite-soft); text-decoration: none;
+  font-size: 10.5px; letter-spacing: 0.12em;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  transition: color var(--dur-fast) var(--ease-standard),
+              border-color var(--dur-fast) var(--ease-standard);
+}
+.site-foot .foot-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
 </style>
-<!-- Google Analytics (gtag.js) — only loads on oddsprimer.com -->
-<script>
-(function(){
-  var h = location.hostname;
-  if (h !== 'oddsprimer.com' && h !== 'www.oddsprimer.com') return;
-  var s = document.createElement('script');
-  s.async = true;
-  s.src = 'https://www.googletagmanager.com/gtag/js?id=G-DH4D6X8YRN';
-  document.head.appendChild(s);
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = function(){dataLayer.push(arguments);};
-  gtag('js', new Date());
-  gtag('config', 'G-DH4D6X8YRN');
-})();
-</script>
 </head>
 <body>
 <header class="masthead">
@@ -489,16 +625,34 @@ a { color: inherit; }
     <nav class="site-nav" aria-label="Primary">
       <ul>
         <li><a href="/">Home</a></li>
-        <li><a href="/outrights/">Outright winners</a></li>
         <li><a href="/matches/" aria-current="page">Upcoming matches</a></li>
+        <li><a href="/outrights/">Outright winners</a></li>
+        <li><a href="/methodology">How it works</a></li>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/about">About</a></li>
       </ul>
     </nav>
-    <span class="nav-meta">Updated 13:20 UTC</span>
-    <button class="burger" aria-label="More links">
-      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
-        <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.5"/>
-      </svg>
-    </button>
+    <span class="nav-meta">Updated 17:14 UTC</span>
+    <details class="burger">
+      <summary class="burger-btn" aria-label="More links">
+        <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+          <rect y="0"  width="16" height="1.5" fill="currentColor"/>
+          <rect y="5"  width="16" height="1.5" fill="currentColor"/>
+          <rect y="10" width="16" height="1.5" fill="currentColor"/>
+        </svg>
+      </summary>
+      <ul class="burger-menu">
+        <li><a href="/">Home</a></li>
+        <li><a href="/matches/" aria-current="page">Upcoming matches</a></li>
+        <li><a href="/outrights/">Outright winners</a></li>
+        <li><a href="/methodology">How it works</a></li>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/responsible-use">Responsible use</a></li>
+        <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>
+        <li><a href="/corrections">Corrections</a></li>
+      </ul>
+    </details>
   </div>
 </header>
 <div class="edition-strip">
@@ -507,7 +661,15 @@ a { color: inherit; }
     <span class="live">Markets live</span>
   </div>
 </div>
-<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Ecuador v Curaçao · the model leans Curaçao</h1></section><div class="lv-card is-pick is-lead"><a class="lv-card-link" href="/m/fb-wc26-ecu-kor-20260621" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Sun 21 Jun · 00:00 UTC</span></div><h3 class="lv-teams">Ecuador <span class="vs">v</span> Curaçao</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">The model thinks Curaçao are mispriced. Our number reads 34% on the away side; the market reads 9%. The +24.1pp gap is the Pick.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">34%</span></span><span class="rp"><span class="k">Market</span><span class="v">9%</span></span><span class="edge">+24.1pp</span></div><div class="lv-action"><span class="price">+958</span><a class="cta market-cta" href="https://polymarket.com/event/fifwc-ecu-kor-2026-06-20" target="_blank" rel="nofollow noopener">Trade on Polymarket <span class="arr">↗</span></a><a class="cta market-cta is-placeholder" href="https://kalshi.com/markets?q=Ecuador+Cura%C3%A7ao" target="_blank" rel="nofollow noopener">Trade on Kalshi <span class="arr">↗</span></a><a class="cta-secondary read-case" href="/m/fb-wc26-ecu-kor-20260621">Read the case <span class="arr">→</span></a></div></div></div><div class="blurb"><p>A +24.1pp gap on the Curaçao side. Ecuador v Curaçao in FIFA World Cup 2026 is the match. The model has Curaçao stronger than the market does — that&#x27;s the reason this fires as a Pick rather than a Pass.</p>
+<nav class="pill-nav" aria-label="Primary (mobile)">
+  <a href="/">Home</a>
+  <a href="/matches/" aria-current="page">Matches</a>
+  <a href="/outrights/">Winners</a>
+  <a href="/methodology">How it works</a>
+  <a href="/learn">Learn</a>
+  <a href="/about">About</a>
+</nav>
+<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Ecuador v Curaçao · the model leans Curaçao</h1></section><div class="lv-card is-pick is-lead"><a class="lv-card-link" href="/m/fb-wc26-ecu-kor-20260621" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Sun 21 Jun · 00:00 UTC</span></div><h3 class="lv-teams">Ecuador <span class="vs">v</span> Curaçao</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">The model thinks Curaçao are mispriced. Our number reads 34% on the away side; the market reads 9%. The +24.1pp gap is the Pick.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">34%</span></span><span class="rp"><span class="k">Market</span><span class="v">9%</span></span><span class="edge">+24.1pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-ecu-kor-2026-06-20" target="_blank" rel="nofollow noopener">Trade on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +958</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">Trade on Kalshi <span class="arr">↗</span></a></span><a class="cta-secondary read-case" href="/m/fb-wc26-ecu-kor-20260621">Read the case <span class="arr">→</span></a></div></div></div><div class="blurb"><p>A +24.1pp gap on the Curaçao side. Ecuador v Curaçao in FIFA World Cup 2026 is the match. The model has Curaçao stronger than the market does — that&#x27;s the reason this fires as a Pick rather than a Pass.</p>
 <p>Public Elo rates Ecuador 20 points higher than the other side (Ecuador 1810, Curaçao 1790). The match model&#x27;s logistic translates that Elo gap directly into a win-probability. Both Elo numbers are pulled live from the public Elo source. No host, home-ground, or altitude adjustments apply here; the prior reads straight from Elo.</p>
 <p>Three-way split from the model: Ecuador to win at 38%, the draw at 29%, and Curaçao to win at 34%. Draw share decays with Elo gap; on a fixture this evenly matched the draw carries more probability than a casual reader might guess. Curaçao on the win side reads 34%.</p>
 <p>On the same three-way, Polymarket: Ecuador to win at 78%, the draw at 14%, and Curaçao to win at 9%. The Curaçao side trades at 9% on Polymarket, which prices out at American odds of +958. That&#x27;s where the engine differs: our number reads 34%, +24.1pp wider.</p>
@@ -516,8 +678,19 @@ a { color: inherit; }
 <li>The +24.1pp gap clears our 3 percentage point threshold for a Pick.</li>
 <li>Calibration sits with the closing market across recent fixtures, so selection is the lever.</li>
 <li>Late-binding signals — form, confirmed XI, weather — re-evaluate closer to kickoff.</li></ol></section><aside class="voice"><h3>How to read this</h3><p>The verdict compares our <em>model probability</em> against the <em>best available market probability</em>. A <em>Pick</em> means the model rates a side three or more percentage points higher than the market. <em>Pass</em> means the line is doing its job. <em>Avoid</em> means every side looks overpriced.</p></aside></main><footer class="site-foot page">
-  <span class="left">Odds Primer · educational, not advice</span>
-  <span>The Desk · v1.1 · 19 May 2026</span>
+  <div class="foot-row">
+    <span class="left">Odds Primer · educational, not advice</span>
+    <span>The Desk · v1.1 · 20 May 2026</span>
+  </div>
+  <nav class="foot-nav" aria-label="Trust and editorial">
+    <a href="/responsible-use">Responsible use</a>
+    <a href="/affiliate-disclosure">Affiliate disclosure</a>
+    <a href="/corrections">Corrections</a>
+    <a href="/methodology">Methodology</a>
+    <a href="/terms">Terms</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/cookies">Cookies</a>
+  </nav>
 </footer>
 </body>
 </html>

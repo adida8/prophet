@@ -1,328 +1,545 @@
-# The Desk — Outrights Build Spec
+# The Desk — Outrights (Winner-Market) Spec
 
-**Status:** v0.1 build spec, 2026-05-11.
-**Target consumer:** Claude Code (agentic CLI).
-**Owner:** Adi.
-**Scope:** WC 2026 outright winner only.
-**Source market:** [Polymarket — "2026 FIFA World Cup Winner"](https://polymarket.com/event/2026-fifa-world-cup-winner-595).
+**Status:** v0.2 build spec, 2026-05-18. Supersedes v0.1 (prophet folder, 2026-05-11) and TASK-311 (the market-anchored draft in the integration repo). Both predecessors got *half* of the problem right: v0.1 had the right model approach (Monte Carlo tournament simulation, independent), TASK-311 had the right plumbing (event_id identity, reuse the wire). This spec is the consolidation — and adds the position-list framing the waist refactor unlocks.
+**Target consumer:** Claude Code (agentic CLI), Faktor (engineering).
+**Owner:** Adi (product).
+**Sits on top of:** `THE_DESK_POSITION_WAIST_SPEC.md` v0.2 (refactor must land first) and `THE_DESK_DATA_LAYER_SPEC.md` v0.5 Phase 1b (live Elo — credibility-load-bearing).
+**Launch market:** the FIFA World Cup 2026 winner market on Polymarket.
+
+> **Before you build — verify the codebase.** Inherits the data layer spec's
+> verify-first preamble. The outright code paths live in the same modules the
+> data layer spec asserts the shape of (`desk/desk/ingest/base.py`,
+> `process_event.py`, `desk/sports/football/...`); confirm those before writing
+> outright code, same drill as the other specs.
 
 ---
 
-## 1. Mission
+## 0. Mission
 
-Extend The Desk from a per-match verdict engine to also evaluate the **tournament outright** — for each of the 48 teams priced in the WC 2026 Winner market, produce a fair P(win) from a Monte Carlo simulation of the bracket and compare it to Polymarket's implied probability. Output a sister contract `outright.json` per tournament, consumed by the website the same way per-match `MatchOutput` JSONs are consumed.
+The desk today evaluates priced *matches*. **Outrights** — single, long-dated
+markets where you bet on the winner of a whole tournament — are a different
+shape: one market per team, ~48 teams, no head-to-head. Today's adapter
+discards them.
 
-WC 2026 is the launch wedge. The architecture must admit club outrights (UCL winner, EPL champion, La Liga winner) in v1.1 without a refactor — so the sport boundary stays clean, and "tournament" is a first-class concept the way "match" already is.
+This spec adds outright support. Launch wedge: the WC 2026 winner market. The
+architecture is sport-tagged so club outrights (UCL winner, EPL champion) plug
+in later without a refactor.
 
-The model **does not** read market prices. Fair P(win) is derived purely from the existing Elo + host + home + altitude pipeline, simulated forward through the tournament's actual fixture graph.
+The model is a Monte Carlo simulation of the tournament: stable inputs (live
+Elo from the data layer, the fixed bracket structure) produce per-team
+`P(team wins)` by simulating the tournament thousands of times. The verdict
+step is **unchanged** — outrights feed the same generic `PositionSet` that
+matches do, into the same generic `decide()`. The waist refactor made this
+possible.
 
-## 2. Out of scope (do not build)
+### 0.1 What's settled, what was wrong before
 
-- Live in-play probability shifts (we revisit when PR 6's scheduler ships — outrights refresh on the same cadence as match verdicts).
-- Real-money sizing, Kelly, "place bet" CTAs.
-- A separate goal model bolted onto match verdicts. The Poisson tilt used here is **outright-internal** — match verdicts continue to use the existing `p_a/p_draw/p_b` triplet untouched.
-- Group-stage subdivision Picks (e.g. "to win Group D") — only the tournament winner ships in v1.
-- Top-N markets (top scorer, golden boot) — separate ingest shape, deferred.
-- Non-football outrights — the abstraction admits them but v1 ships football only.
-- Polymarket fees and slippage. Outright edge_pp is computed against the mid as published by gamma.
+Two earlier drafts touched this territory; both are now superseded:
 
-## 3. Output contract — `TournamentOutright`
+- **prophet v0.1 outrights spec.** Got the model right (MC sim, independent
+  from the market) but predates the waist refactor — proposed a parallel
+  `TournamentOutright` contract and a per-team-verdict array, building a
+  parallel pipeline next to the match pipeline.
+- **TASK-311.** Got the plumbing right (event_id identity, additive `kind`
+  enum, reuse the published contract) but proposed a **market-anchored
+  model** (80% market prior + 20% Elo tilt). Both adversarial reviews flagged
+  this as the structural flaw — a model that's 80% market can't meaningfully
+  disagree with the market, so it can almost never Pick. The
+  *independent-`model_p`* invariant codified in the waist spec rules it out
+  on principle.
 
-A new sibling shape to `MatchOutput`, living in the same `desk/publish/contract.py` Pydantic module. The schema generation step extends `desk/contract.schema.json` so consumers validate independently.
+v0.2 takes the good half of each: **independent MC model** (v0.1) + **event_id
+identity, contract reuse where possible** (TASK-311). Plus the one thing
+neither had: outrights feed the **position-list waist** — YES *and* NO per
+team are first-class positions, which dissolves the broken "Avoid" state on
+this market shape and naturally surfaces both "buy YES on Argentina" and "buy
+NO on Holland" with the same verdict logic.
 
-```jsonc
-{
-  "tournament_id": "fb-wc26",
-  "sport": "football",
-  "competition": { "code": "wc26", "label": "FIFA World Cup 2026" },
-  "kickoff_utc": "2026-06-11T18:00:00Z",       // first match of the tournament
-  "final_utc":   "2026-07-19T19:00:00Z",       // scheduled final
-  "market_url":  "https://polymarket.com/event/2026-fifa-world-cup-winner-595",
-  "teams": [
-    {
-      "team":     "Spain",
-      "team_id":  "esp",
-      "verdict": {
-        "state":        "pick",
-        "market_venue": "polymarket",
-        "price":        "+650",                 // best market price for the side
-        "model_p":      0.182,
-        "market_p":     0.133,
-        "edge_pp":      4.9,
-        "market_url":   "https://polymarket.com/event/2026-fifa-world-cup-winner-595/will-spain-win-the-2026-fifa-world-cup",
-        "model_p_lower": 0.142,                 // 5th percentile from bootstrap
-        "model_p_upper": 0.224                  // 95th percentile from bootstrap
-      },
-      "copy": {
-        "title":   "Spain — the model's pick to lift it",
-        "summary": "Two sentences in Odds Primer voice.",
-        "blurb":   "Sixty to ninety words explaining the Pick.",
-        "citations": [],
-        "drivers": [
-          "Highest Elo of any tournament entrant by 22 points",
-          "Strong path: Round-of-32 draw avoids top-eight seeds",
-          "No host-nation discount; venues neutral for La Roja"
-        ]
-      }
-    },
-    /* one entry per priced team — 48 in total for WC 2026 */
-  ],
-  "summary": {
-    "picks":  ["Spain", "Brazil"],
-    "passes": 41,
-    "avoids": ["Iran", "South Africa", "Algeria", "Canada", "Mexico"]
-  },
-  "updated_at": "2026-05-11T08:00:00Z"
-}
+## 1. Out of scope
+
+- **Anything but the WC 2026 winner market in v1.** Architecture is sport- +
+  market-type-tagged so club outrights / golden boot / group winners plug in
+  later; only WC-winner wired in v1.
+- **In-tournament re-conditioning.** Once the tournament starts, real results
+  collapse the bracket. v1 freezes the sim on pre-tournament inputs (or
+  re-runs nightly with results-as-givens, but no live mid-match shifts). Live
+  conditioning is an outright-v1.1 follow-up.
+- **Backtest harness for outrights.** WC 2022 is a natural target (Argentina
+  won) but the desk's backtest is match-shaped; an outright backtest is its
+  own multi-PR effort. v1 ships forward-validated only.
+- **Kalshi outright ingest.** Polymarket only in v1; Kalshi follows with a
+  separate `Source` registration once Polymarket is stable.
+- **Penalty-shootout modelling.** v1 resolves drawn knockout ties by
+  Elo-weighted coin flip (a stronger side outperforms in extra time even if
+  penalties are roughly coin flips). Explicit-penalty modelling is a v1.1
+  refinement if backtest demands it.
+
+## 2. Identity — `OutrightRef`
+
+A new frozen dataclass parallel to `FixtureRef`, in `desk/desk/sport.py`:
+
+```python
+@dataclass(frozen=True)
+class OutrightRef:
+    """A tournament / season-long winner market as the engine sees it.
+
+    Parallels FixtureRef: where a match has (team_a, team_b, kickoff_utc),
+    an outright has (field, resolution_utc). Identified by event_id
+    (the Supabase UUID), not a synthetic match_id — outrights have no
+    kickoff to encode.
+    """
+    event_id:          str            # canonical Supabase UUID
+    sport:             str
+    competition_code:  str            # "wc26"
+    competition_label: str            # "FIFA World Cup 2026"
+    competition_stage: str | None     # "group_stage_open" / "knockouts_in_progress" / etc.
+    market_type:       str            # "outright_winner"
+    field:             tuple[str, ...]  # ordered participant team names
+    resolution_utc:    datetime         # tournament close (the final)
+    venue_country:     str | None       # host country (ISO-2) when known
+    source_event_slug: str | None = None
+    source_venue:      str | None = None   # "polymarket" / "kalshi"
 ```
 
-### Field rules
+Key choices, locked:
 
-- **`tournament_id`** is canonical: `fb-{competition_code}` (no kickoff date — a tournament is identified by competition).
-- **`teams`** carries every team Polymarket prices, including ones we'd call Pass — so the website can render the full ladder. Order is descending by `verdict.model_p`.
-- **`teams[].verdict`** uses the **same `VerdictState` enum** as `MatchOutput.verdict` (Pick / Pass / Avoid) — thresholds in §6 — but `side` and `market_outcomes` are absent (the team itself is the side). `model_p_lower` / `model_p_upper` carry the bootstrap band, mirroring `MatchOutput.verdict.model_p` per the optimization spec.
-- **`teams[].copy.drivers`** is the structured "Why this call" list, capped at 4 entries per the existing `Copy` model. Distinct from match-level drivers (no `Driver(name, value, side)` here — outright drivers are plain prose).
-- **`summary`** is a denormalized convenience block so the front-of-house can render a hero row without re-scanning `teams`.
-- **`updated_at`** advances on each scheduler tick. Outrights ETag (SHA-256 of canonical JSON) tracks the file the same way per-match ETags do today.
+- **`event_id` is the identity, not `match_id`.** The match_id regex
+  (`^[a-z0-9]{2,8}-[a-z0-9]+(?:-[a-z0-9]+){2,}-\d{8}$`) hard-codes a date
+  suffix; outrights don't have one. Reusing `event_id` removes the temptation
+  to invent a fake date. The match_id regex stays unchanged — outrights don't
+  use it.
+- **`field`** is an ordered tuple of participant names (display strings,
+  resolved to canonical team ids via the data-layer registry §3.3 — inbound
+  resolution).
+- **`resolution_utc`** replaces `kickoff_utc`. The freshness gate "data must
+  be fresher than the event" still applies: snapshots must be before
+  `resolution_utc`.
 
-### Validation invariants
+## 3. The 7-stage pipeline — what changes, what doesn't
 
-- `sum(verdict.model_p) over teams` ∈ [0.98, 1.02]. We tolerate ±2pp from MC noise + the "no team wins" tail (extra-time exhaustion, abandoned tournament — modelled as 0 mass). A model that returns more than 2pp off triggers a publish refusal with a clear error.
-- `sum(verdict.market_p) over teams` ∈ [0.95, 1.10]. Polymarket overrounds — typical sum is ~1.04. We refuse a publish below 0.95 (something is missing).
-- Every team's `model_p_lower ≤ model_p ≤ model_p_upper`.
-- Exactly one of `state` is set per team. Pick requires `price`, `market_venue`, `edge_pp`, `model_p`, `market_p`, `market_url` (same invariants as match Pick).
+The waist refactor (v0.2) made stages 5–7 generic. Outright support is
+therefore concentrated above the waist — stages 1–4 + the 4.5 converter.
 
-## 4. Ingest — Polymarket outrights
+### Stage 1 — anon Supabase REST read (UNCHANGED)
 
-New source class `PolymarketWorldCupWinnerSource` in `desk/ingest/polymarket_outrights.py` (file is sport-agnostic by convention but the source ID encodes WC 2026 because the market does). Registers itself the same way the existing soccer-events source does.
+Same `GET /rest/v1/events?id=eq.<uuid>&select=*,markets(*,outcomes(*))`. The
+read doesn't care whether the event is a match or an outright — the dispatch
+happens at stage 2.
 
-### Endpoint shape
+### Stage 2 — adapter (NEW — `supabase_outrights.py`)
 
-Polymarket gamma has two relevant endpoints:
-
-- `GET /events/{slug-or-id}` — one event with embedded `markets[]`. For WC 2026 Winner, each child market is "Will {team} win the 2026 FIFA World Cup?" with a `lastTradePrice` and `outcomes` array of `["Yes", "No"]`. The slug is `2026-fifa-world-cup-winner-595` (URL fragment confirmed).
-- `GET /markets?event_id=...` — alternative; less ergonomic.
-
-We pull the event by slug, iterate `markets[]`, extract `(team_name, p_yes)` pairs. Team names are human-readable ("Argentina", "Saudi Arabia") so we run them through `desk/sports/football/teams.py:normalize_team(name, is_national=True)` to land on the canonical ISO3 (`arg`, `sau`).
-
-### Failure modes
-
-- A market that fails to map to a team (e.g. "Field" / "Any other team") is logged + skipped. We never publish a `team_id="field"` row in v1.
-- A market with `archived=true` or `closed=true` is excluded (teams already eliminated). The summary's `avoids` count is the call-state count, not the eliminated count.
-- Per the spec's failure-mode rule, an empty gamma response logs a warning and the publisher **leaves the previous `outright.json` in place**. We never publish a degraded outrights file.
-
-### Match-graph ingest (separate from price ingest)
-
-The MC sim needs the bracket structure, not just prices. The schedule comes from `desk/sports/football/data/wc26_venues.py` (already partial — needs the fixture list, not just venues). We extend that module with the canonical WC 2026 group draw + bracket, sourced from FIFA's official schedule once the December 2025 draw is final. Until then, the source-of-truth file carries a `draw_complete: bool` flag — if false, the sim uses Elo-weighted random groups (and the explainer says so).
-
-## 5. Model — Monte Carlo from Elo
-
-Lives at [desk/sports/football/outrights.py](desk/sports/football/outrights.py) (new file). Sport-specific by design — basketball outrights would get their own `desk/sports/basketball/outrights.py`. The sport-agnostic orchestration sits in `desk/outrights/` (new directory) and calls `Sport.simulate_tournament(...)` through the protocol.
-
-### Per-match probability inside the sim
-
-The existing `desk/sports/football/model.py:compute()` returns `(p_a, p_draw, p_b)`. The MC sim uses these directly for group-stage outcomes (W / D / L). No new maths.
-
-For **tiebreakers** within a group (points → GD → GF → head-to-head → fair play → lots), we need goals, not just outcomes. We derive expected goals from the same Elo diff:
+A sibling to `supabase_fixtures.py`, in `desk/desk/sports/football/`. The
+dispatch is by `events.kind` (per TASK-311's schema addition — kept; one
+additive enum column on `events`):
 
 ```
-λ_total = 2.6                            # WC 2026 baseline goals per match (configurable)
-expected_a = 1 / (1 + 10**(-elo_diff/400))
-λ_a = λ_total * expected_a
-λ_b = λ_total * (1 - expected_a)
-goals_a ~ Poisson(λ_a)
-goals_b ~ Poisson(λ_b)
+events.kind ∈ {'match', 'outright'} -- default 'match' for backward-compat
 ```
 
-This Poisson layer is **outright-internal**. It does not feed back into match verdicts. The `compute()` triplet remains the authoritative match-level probability — the MC just needs a scoreline to break ties.
+When `kind = 'outright'`, dispatch goes to `outright_from_row(row)` →
+`OutrightRef` + the raw per-team Polymarket binary markets the row carries.
 
-### Knockout matches
+Inside the adapter:
+- Each child market is one participant (one binary YES/NO market — "Will
+  Argentina win the 2026 FIFA World Cup?"). The participant name is extracted
+  from `markets.question` (regex `^Will (.+?) win the 2026 FIFA World Cup\??$`),
+  normalised to a canonical team id via the data-layer registry (§3.3 inbound).
+- "Field" / "Other" / "Any other team" sub-markets — explicitly skipped.
+  They aren't a real team; the model has nothing meaningful to say about
+  them. The operator can re-include via the data-layer registry's per-source
+  config later if it matters.
+- Resolved markets (`markets.status = 'resolved'`) — the participant is
+  eliminated. The adapter drops them; the model re-normalises over the
+  remaining live field on each tick. Out at v1 if you'd rather freeze the
+  pre-tournament field — operator config flag.
 
-There's no draw in knockout. In the sim we draw `(p_a, p_draw, p_b)` from the model and:
+### Stage 3 — features (NEW — `outright_features_builder.py`)
 
-```
-if uniform() < p_a / (p_a + p_b):
-    winner = team_a
-else:
-    winner = team_b
-```
+The match `features_builder.py` produces `FootballFeatures` per fixture. The
+outright equivalent produces an `OutrightFeatures` per outright event:
 
-i.e. we redistribute the draw mass proportionally to the two sides' win shares — equivalent to assuming penalty shootouts split by relative strength (a simplification; pure 50/50 is the alternative). Decision: **proportional split**, because a stronger side outperforms in extra time even if penalties are coin flips, and the lit on penalties is mixed enough that we don't claim 50/50 is more honest than proportional.
-
-### Bracket structure (WC 2026)
-
-- 48 teams, 12 groups of 4.
-- Round of 32 = top 2 from each group (24) + 8 best third-place teams (ranked by points → GD → GF across all 12 groups).
-- Bracket from R32 onward is **fixed** by FIFA — we encode it in the schedule file.
-- Final at MetLife Stadium, NJ, USA on 2026-07-19.
-
-### Sim parameters
-
-| Constant | Default | Why |
-|---|---|---|
-| `OUTRIGHTS_BASELINE_SIMS` | 50,000 | Stable P(win) for tail teams (P < 1%). |
-| `OUTRIGHTS_BOOTSTRAP_SAMPLES` | 20 | Each samples a perturbed Elo prior; 20 × 5,000 = 100K bracket sims for the band. |
-| `OUTRIGHTS_BOOTSTRAP_SIMS` | 5,000 | Per bootstrap sample. |
-| `OUTRIGHTS_GOALS_PER_MATCH` | 2.6 | WC 2022 was 2.69; we round to 2.6. Override via `.env`. |
-| `OUTRIGHTS_RNG_SEED` | 42 | Deterministic for diffable backtests. |
-
-Baseline runs once with the unperturbed Elo prior. Bootstrap reuses the same Elo perturbation magnitudes as the match-model band (`ELO_PERTURBATION = 50`, `HOST_BONUS_PERTURBATION = 15`, etc. — see `model.py`). The 5th / 95th percentile across the 20 × 5,000 bracket sims gives `model_p_lower` / `model_p_upper`.
-
-### Performance
-
-A single bracket sim is 12 × 6 = 72 group matches + ~31 knockout matches = ~103 match draws. Each match draw is two Poisson + one categorical → maybe 50µs in pure Python. 150K sims × 100 matches × 50µs ≈ 12 minutes. Acceptable for a daily refresh — outrights aren't on the per-minute cadence match verdicts are. If profiling shows the sim is hot, vectorise over numpy: 150K sims × ~100 matches in <30 seconds with batched Poisson draws.
-
-PR 1's acceptance bar is **correctness over speed**. Profile and vectorise in a follow-up PR if the daily refresh slips past 5 minutes.
-
-## 6. Verdict thresholds
-
-Reuse the match verdict thresholds with one adjustment for the longer tail:
-
-| State | Match rule | Outright rule |
-|---|---|---|
-| Pick | `model_p − market_p ≥ 3.0pp` | `model_p − market_p ≥ 3.0pp` **and** `model_p_lower − market_p ≥ 0pp` |
-| Pass | `\|model_p − market_p\| < 1.0pp` | `\|model_p − market_p\| < 1.0pp` |
-| Avoid | `model_p − market_p ≤ −2.0pp` | `model_p − market_p ≤ −2.0pp` |
-| Default | else → Pass | else → Pass |
-
-The lower-bound gate on Pick is the same honesty rule the match engine uses post-Phase A.2: even if the central estimate clears 3pp, we don't Pick when the confidence band crosses the market — too noisy to ride.
-
-Override via `.env`: `DESK_OUTRIGHTS_PICK_PP`, `DESK_OUTRIGHTS_PASS_PP`, `DESK_OUTRIGHTS_AVOID_PP`. Default to the match values unless explicitly set.
-
-### Why no separate threshold tier
-
-A team priced at 5% with model 8% has a 3pp edge but a 60% relative gap — by ratio, a much bigger call than a 50% match with a 53% model. We considered relative-edge thresholds (e.g. `model_p / market_p ≥ 1.5`) but **rejected**: outright tail teams are noisy precisely *because* the sim is rare-event sensitive, and a relative threshold rewards exactly the noise we don't trust. The 3pp + lower-bound rule keeps the engine conservative on long shots, which matches editorial taste.
-
-## 7. Explainer
-
-Reuses the existing `desk/explainer/stub.py` + voice rules. Outright explainer lives at `desk/sports/football/explainer_outrights.py` and emits the same `Copy` shape (title / summary / blurb / drivers).
-
-### Driver attribution
-
-Each outright Pick blurb cites 2–4 drivers, ranked by influence on the model's P(win):
-
-1. **Elo rank delta** — where this team sits in the prior vs the market's implied rank.
-2. **Bracket path** — average opponent strength on the most-probable knockout path.
-3. **Host / altitude advantage** — does this team benefit from venue effects? (USA, Canada, Mexico get host bonus; Andean / high-altitude sides get altitude bonus in Mexico City / Guadalajara.)
-4. **Group strength** — easy vs. hard group of 4.
-
-These are derived from the MC sim's per-team aggregates (counted draw outcomes, mean opponent Elo by round, advance rate from group), not hand-written per team. The driver text is templated; PR 5's Haiku replacement rewrites them in voice.
-
-### Voice rule
-
-Outright blurbs follow the same banned-phrase suite (no "bet/back/lock", no emoji, sentence case, attribution required for sourced facts). Two outright-specific rules:
-
-- **No leaderboards.** Never say "the favourites" or "the dark horse" — those are tipster framings. Say "the model rates X at Y%" instead.
-- **No false certainty on long shots.** If `model_p < 5%`, the blurb must contain the words "the model rates" or "the model gives" — never a declarative "X will…".
-
-Both rules are post-generation regex assertions in `tests/test_outrights_voice.py`.
-
-## 8. Publish
-
-New publisher path: `data/output/football/outrights/wc26.json`. Index entry added to `data/output/football/index.json` under a new `outrights:` key — sibling to `matches:` — so existing consumers continue to read `matches[]` unchanged.
-
-```jsonc
-{
-  "sport": "football",
-  "matches": [...],                                  // existing per-match index
-  "outrights": [
-    { "tournament_id": "fb-wc26",
-      "kickoff_utc":  "2026-06-11T18:00:00Z",
-      "updated_at":   "2026-05-11T08:00:00Z" }
-  ],
-  "updated_at": "2026-05-11T08:00:00Z"
-}
+```python
+@dataclass(frozen=True)
+class OutrightFeatures:
+    field:              tuple[str, ...]            # canonical team ids
+    field_display:      tuple[str, ...]            # display names
+    elo_by_team:        dict[str, float]
+    elo_source_by_team: dict[str, str]             # "wiki" / "clubelo" / "stub"
+    bracket:            BracketStructure           # see §4
+    host_iso3:          str | None                 # for host-nation bonus inside sim
+    altitude_acclim:    dict[str, bool]            # per team — for altitude bonus inside sim
+    asof:               datetime
 ```
 
-Adding `outrights` to `OutputIndex` is a contract change → ADR required.
+`elo_by_team` is fetched via the data layer (Phase 1b live national Elo). A
+team in the field that resolves to **stub** Elo via the registry → that team
+keeps `elo_source = "stub"`; the model treats it as a low-confidence
+participant (see §4.5 abstain rule).
 
-ETag on `outrights/wc26.json` is SHA-256 of canonical JSON, same as match files.
+### Stage 4 — the model (NEW — `outright_model.py`)
 
-## 9. Build order — three PRs
+See §4 below.
 
-Each PR ships green tests + a README update + a regenerated dashboard (where applicable). Don't open the next until the previous is merged.
+### Stage 4.5 — `build_position_set_outright` (NEW)
 
-### PR O1 — outright contract + ingest + stub model (1 day)
+Converts the MC output + market snapshot into the generic `PositionSet`. See
+§5.
 
-- Extend `desk/publish/contract.py` with `TournamentOutright`, `OutrightTeam`, `OutrightSummary` models.
-- Regenerate `desk/contract.schema.json` (the in-sync test enforces this).
-- Add `PolymarketWorldCupWinnerSource` in `desk/ingest/polymarket_outrights.py`.
-- Add `desk/sports/football/outrights.py` with `compute_outright(market_snapshot, draw)` returning a `TournamentOutright` built from a **stub model**: P(win) = `softmax(elo / 100)` normalized across the 48 priced teams. No MC yet.
-- `desk run --once --outrights` writes `data/output/football/outrights/wc26.json`. Verdict will be Pass-heavy because the stub model is uninformative, but the contract round-trips.
+### Stage 5 — decide (UNCHANGED — generic per waist v0.2)
 
-**Acceptance.** `pytest tests/test_outrights_contract.py` green. Curl `/output/football/outrights/wc26.json` returns a schema-valid file with 48 teams. ADR-0002 for the `outrights[]` index field shipped.
+The waist's `decide(positions: PositionSet, thresholds=None) -> Verdict` runs
+the existing Pick/Pass/Avoid ladder, unchanged. With ~96 positions in the set
+(YES + NO per team for ~48 teams), it iterates them all, computes per-position
+edges, returns the max-edge candidate that clears the lower-bound gate.
 
-### PR O2 — Monte Carlo simulator (1.5 days)
+### Stage 6 — explainer (UNCHANGED interface, outright-aware copy)
 
-- Encode WC 2026 fixture graph in `desk/sports/football/data/wc26_schedule.py`. Until the December 2025 draw is final, ship with `draw_complete = False` and Elo-weighted random groups inside the sim.
-- Implement `simulate_tournament(elo_priors, schedule, n_sims, seed) -> dict[team_id, float]` in `desk/sports/football/outrights.py`. Pure Python first — vectorise only if profiling demands.
-- Wire it into PR O1's `compute_outright()` — replace the stub with MC P(win).
-- Add Poisson goal model + tiebreaker logic. Frozen-input test: a 1500-vs-1500 group of 4 should produce ~25/25/25/25% advance rates ±1pp at N=50K sims.
-- Add bootstrap band over 20 perturbed Elo samples → `model_p_lower` / `model_p_upper`.
+`build_copy((PositionSet, Verdict))` is the same interface; the football copy
+builder gains an outright branch reading `competition_label` /
+`competition_stage` off the `PositionSet`. Verdict prose for an outright Pick
+reads naturally:
 
-**Acceptance.** `pytest tests/test_outrights_sim.py` green — covers a frozen WC 2022 retrospective (run the sim with 2022 Elo priors and 2022 schedule; Argentina's modeled P(win) should land in [0.10, 0.25] at N=50K — the closing market was at 0.11). Sim deterministic at seed=42. `desk run --once --outrights` writes a meaningful `outright.json` with at least one Pick at `edge_pp ≥ 3.0`.
+> The model gives Argentina a 20.9% chance to lift the trophy; Polymarket
+> prices that at 8.6%. The +12.3pp gap is the basis for the Pick.
 
-### PR O3 — explainer + dashboard + publisher integration (1 day)
+For an outright Pick on a NO position:
 
-- Add `desk/sports/football/explainer_outrights.py` with templated `Copy` generation.
-- Voice tests in `tests/test_outrights_voice.py` — banned-phrase suite + the two outright-specific rules from §7.
-- Extend the backtest dashboard (`desk/backtest/writers/`) with an outright section: ladder of teams, model P vs market P, Picks highlighted.
-- Wire outrights into the FastAPI route table so `/desk` (and the website) can fetch the outright file the same way they fetch match files.
+> The model gives Holland a 4.2% chance to lift the trophy; Polymarket prices
+> that at 7.1%. The -2.9pp gap on the YES side flips to a +2.9pp Pick on the
+> NO — the position pays out if Holland *don't* win, which the model thinks
+> is more likely than the market.
 
-**Acceptance.** Backtest dashboard renders the outright ladder. Three picks (or however many fire) read in Odds Primer voice and pass the banned-phrase suite. Live `/desk` page links to the outright ladder.
+### Stage 7 — publish (LIKELY UNCHANGED — see §7 ADR)
 
-## 10. Scheduler cadence
+The published `DeskContentPublish` shape can probably stay event-agnostic at
+the column level. The only outright-specific question is whether to add a
+`verdict_participants[]` payload for the website's outright ladder render.
+That's an ADR — see §7.
 
-Outrights refresh **daily**, not per-minute. Reasons:
+## 4. The model — Monte Carlo tournament simulation
 
-- Polymarket outright prices move on news cycles, not by the minute.
-- The MC sim is the expensive step in the engine. Running it on the verdict job's 60s cadence would dominate compute.
-- Confidence is built by *not* re-publishing on every gamma jitter. A daily ETag advance is a stronger signal than a minute-by-minute one.
+Lives in `desk/desk/sports/football/outright_model.py`. The maths is
+deliberately small — same posture as the match model. Engine edge comes from
+clean inputs (live Elo from Phase 1b), not from a clever simulator.
 
-PR 6 (the scheduler PR) will register an `outrights` job at `0 8 * * *` UTC (08:00 daily) alongside the existing match-verdict and explainer jobs. T−7d through T+0 of the tournament itself, we'd accelerate to hourly — wire as a config switch, not hardcoded.
+### 4.1 The pairwise primitive — reuse the match model
 
-## 11. Backtest
+Per simulated game, the model uses **the existing match-model probability
+function** `_probs_from_elos(elo_a, elo_b)` from
+`desk/sports/football/model.py`. Same Elo logistic, same draw-share function,
+same constants (`DRAW_PEAK`, `DRAW_FLOOR`, `DRAW_DECAY_PER_ELO`). The
+optimization spec's Phase A bootstrap CI work applies inside the sim too —
+each sample of the bootstrap perturbs Elo across the tournament.
 
-The existing backtest harness (`desk backtest --tournament wc-2022`) replays match-level verdicts. We extend it to **also** replay outrights:
+This is non-negotiable: the per-tie maths is shared with matches. Two reasons:
+- **Calibration.** If the match model and the outright model disagree on the
+  same fixture, the engine is incoherent.
+- **No new constants.** No new draw curve, no new Elo logistic. The MC sim
+  is *just structure on top of the existing primitive.*
 
-```bash
-cd desk && PYTHONPATH=. python3 -m desk backtest --tournament wc-2022 --outrights
+### 4.2 The bracket structure
+
+`BracketStructure` is bundled data in `desk/desk/sports/football/data/wc26_bracket.py`:
+
+- The 12 groups of 4 (per Wikipedia / FIFA — already encoded in the prototype).
+- The progression rule: top 2 of each group + 8 best 3rd-place teams →
+  Round of 32.
+- The R32 → final knockout bracket per FIFA's published cross-group
+  assignments.
+
+For v1, ship a **standard seeded R32 bracket** (1 vs 32, 2 vs 31, …) if the
+FIFA cross-group bracket isn't fully encoded yet — note clearly in the spec
+that this is a simplification and the headline P(win) is close (within a few
+pp for top teams) but not exact. Replace with the FIFA bracket as soon as the
+data is loaded.
+
+### 4.3 The simulation
+
+```
+SIMS = 10_000             # tunable; balance precision vs compute
+SEED = 42                 # deterministic; required for diffable runs
+
+for sim in range(SIMS):
+    standings = run_group_stage(bracket.groups)     # uses _probs_from_elos for each game
+    qualifiers = resolve_qualifiers(standings)      # top 2 + 8 best 3rds
+    winner = run_knockout(qualifiers, bracket.knockout_bracket)
+    tally[winner] += 1
+
+model_p[team] = tally[team] / SIMS
 ```
 
-This runs the sim with WC 2022's frozen Elo prior + WC 2022's actual schedule, then compares the model's pre-tournament P(win) per team against:
+Per-game resolution:
+- **Group stage:** 3 outcomes (W/D/L), sampled from `_probs_from_elos`.
+- **Knockout:** no draws — resample from the same triplet, with the draw
+  share redistributed to the two winning sides proportionally (Elo-weighted
+  coin flip — stronger side wins draws more often, reflecting extra-time
+  performance).
 
-1. The 2022 closing market (Polymarket / Betfair historical) — calibration check.
-2. The actual winner (Argentina) — single-sample, but useful as a sanity headline.
+Standings tiebreak (group stage):
+- Points → goal differential (Elo-based proxy in v1 — no goal model yet)
+  → Elo as final tiebreak.
 
-Acceptance bar from the backtest:
+The simulation is the desk's heaviest single piece of compute. It runs **on
+the data layer's late-binding cadence** — weekly outside T−5d of the
+tournament start, daily inside T−5d, hourly inside T−24h. Cached in the
+data-layer cache (§3.4 of the data layer spec); rerun is gated by Elo
+freshness, not market freshness.
 
-- Argentina's modeled P(win) ∈ [0.10, 0.25]. (Closing market was ~0.11; we want to be in the same neighbourhood, not 0.50.)
-- Brazil + France together ≤ 0.45 of mass. (They were the market favourites; our model shouldn't concentrate more than the market.)
-- Brier vs closing market ≤ market's self-Brier + 0.02. (We tolerate being slightly noisier than the market but not wildly miscalibrated.)
+### 4.4 The confidence band (Phase A bootstrap, applied to outrights)
 
-These bars are advisory in PR O2; they become required gates in PR O3.
+The match model has a 100-sample bootstrap producing a 90% CI per outcome.
+Outrights need the same — the verdict's lower-bound Pick gate
+(`model_p_lower − market_p ≥ pick_pp`) is the *whole* reason Phase A worked
+on matches.
 
-## 12. Open questions for Adi
+Bootstrap design:
+- 100 samples (same as match model).
+- Per sample, perturb each team's Elo by uniform(±`ELO_PERTURBATION`) — same
+  constant as the match model (currently 50).
+- Each sample runs `BOOTSTRAP_SIMS = 1_000` tournaments (10× smaller than the
+  point estimate's 10k — total compute: 100 × 1k = 100k sims per outright
+  refresh, ~10× the baseline).
+- Per-team P(win) distribution across the 100 samples → 5th / 95th
+  percentile → `model_p_lower` / `model_p_upper`.
 
-- **WC 2026 schedule source.** FIFA's official fixture list isn't fully fixed until the December 2025 draw. Until then: ship with `draw_complete = False` and Elo-weighted random groups, or freeze a placeholder draw and re-run when real one lands? Default: random groups + a banner on the dashboard.
-- **Confidence band on the website.** Per-team `model_p_lower`/`upper` is in the contract. Render it as a range ("12–22%") or just the central estimate ("17%")? Match Picks render the central estimate only — keep consistent? Default: central estimate only; lower bound used internally to gate Picks.
-- **Polymarket-only or also Kalshi outrights?** Kalshi has a WC winner market too. v1 = Polymarket only; v1.1 adds Kalshi. Confirm.
-- **Penalty-shootout split.** §5 picks proportional; the alternative is 50/50. Confirm proportional before PR O2 lands the knockout logic.
-- **Brier acceptance bar.** §11 sets ≤ market's self-Brier + 0.02. Tighter? Looser? This is the line between "model is good enough" and "model needs work".
+Per-team seed (for the bootstrap *itself*, not each sim within) derived
+deterministically from event_id + bind-window timestamp so two runs at the
+same bind window produce identical bands.
 
-## 13. Forward-compat — what v1.1 needs
+### 4.5 Abstain rules
 
-These are pre-conditions baked into PR O1–O3 so v1.1 (club outrights) is additive:
+The outright model abstains (sets `abstain_reason` on the PositionSet → Pass)
+when:
 
-- `TournamentOutright` is sport-agnostic in `desk/publish/contract.py`. UCL would publish to `data/output/football/outrights/ucl-2026-27.json` with `tournament_id = "fb-ucl-2026-27"`.
-- The MC sim is parameterised by a `Schedule` object — group structure, knockout bracket, host metadata. Club tournaments swap in a different `Schedule`; the sim code is unchanged.
-- The Polymarket source class is parameterised by event slug. WC 2026, UCL 2026/27, EPL 2026/27 each have their own `PolymarketOutrightSource(slug=...)` instance registered.
-- The explainer template is parameterised by competition (clubs say "Premier League title" not "World Cup", etc.) — driver text stays templated.
+- Any of the top-10 teams (by Elo) in the field resolves to **stub** Elo
+  source. Top-10 stub means the simulator can't trust the tournament's
+  contenders; better to publish Pass than a confident wrong Pick.
+- Market snapshot has < 80% participant coverage from any single venue. A
+  snapshot with 12 of 48 teams priced is unreliable.
+- Snapshot is `stale(now, max_age_sec=1800)` — same TTL as
+  `OutrightSnapshot` (see §5).
 
-## 14. References
+Below-top-10 stub Elo is *not* an abstain — the field carries longshots whose
+Elo nobody quite knows; the simulator handles those by giving them their stub
+1500 and letting the bracket carry them out cheaply.
 
-- `THE_DESK_SPEC.md` — six-PR build plan; this spec is additive to the existing pipeline, not a rewrite.
-- `THE_DESK_OPTIMIZATION_SPEC.md` — Phase A bootstrap CI; the outright band reuses the same perturbation magnitudes.
-- `desk/sports/football/model.py` — match-level Elo model. Outrights call into this for per-match probabilities inside the sim.
-- `desk/publish/contract.py` — Pydantic source of truth. Extended (not replaced) by PR O1.
-- `Odds Primer Design System/` — voice + visual rules for the outright dashboard section in PR O3.
+## 5. Building the `PositionSet` — YES and NO per team
+
+The waist's generic `PositionSet` carries a `tuple[Position, ...]`. The
+outright converter (`build_position_set_outright`) emits **two positions per
+participant** — a YES and a NO — read from the per-team binary markets.
+
+```python
+def build_position_set_outright(
+    outright: OutrightRef,
+    model: OutrightModelOutput,           # P(win) + bootstrap band per team
+    snapshot: OutrightSnapshot,            # per-team YES + NO prices
+) -> PositionSet:
+    positions = []
+    for team in outright.field:
+        # YES position
+        positions.append(Position(
+            key          = f"{team}-yes",
+            label        = f"YES {team}",
+            model_p      = model.p_win[team],
+            model_p_lower= model.p_win_lower[team],
+            model_p_upper= model.p_win_upper[team],
+            market_price = snapshot.yes_price[team],     # READ DIRECTLY, not derived
+            market_venue = snapshot.venue[team],
+            market_url   = snapshot.market_url_yes[team],
+        ))
+        # NO position — symmetric
+        positions.append(Position(
+            key          = f"{team}-no",
+            label        = f"NO {team}",
+            model_p      = 1.0 - model.p_win[team],
+            model_p_lower= 1.0 - model.p_win_upper[team],   # bound flips
+            model_p_upper= 1.0 - model.p_win_lower[team],
+            market_price = snapshot.no_price[team],         # READ DIRECTLY
+            market_venue = snapshot.venue[team],
+            market_url   = snapshot.market_url_no[team],
+        ))
+    return PositionSet(
+        event_id          = outright.event_id,
+        asof              = snapshot.asof,
+        positions         = tuple(positions),
+        competition_label = outright.competition_label,
+        competition_stage = outright.competition_stage,
+        market_url        = ...,                        # set-level event URL
+        abstain_reason    = model.abstain_reason,       # propagates §4.5
+    )
+```
+
+**Key points:**
+
+- **YES and NO are *both* first-class positions.** The waist's invariant
+  ("read `market_price` directly, never derive as `1 − something`") matters
+  here: the YES/NO spread on a longshot is real money, and naïve `1 − YES`
+  would systematically misprice the NO side. Read from each token's own
+  market.
+- **Model `model_p_lower` / `model_p_upper` flip** for the NO side
+  (`1 − upper` becomes the new lower, etc.). The verdict step doesn't care —
+  it just compares `(model_p_lower − market_price)` per position.
+- **The output is one `PositionSet` with ~96 `Position`s** for the WC winner
+  market (48 teams × 2). The waist's `decide()` iterates all of them,
+  computes edges, finds the max-edge candidate. No code in `decide()`
+  changes; it just sees a longer list.
+
+### 5.1 Devig — *not* a problem on this market shape
+
+A common worry on outright markets is the field-wide overround (the 48 YES
+prices sum to ~1.05–1.10, not 1.0). The position-list framing dissolves it:
+each binary market has YES + NO ≈ 1.0 with a small per-market vig. We
+evaluate each *position* against *its own market* — no field-wide
+normalisation needed. The overround manifests naturally as a small bias
+toward "Pick NO" on longshots (where YES is overpriced because the longshot
+carries disproportionate vig), which is correct behaviour.
+
+This is intentional and worth flagging: the v0.1 spec proposed a field-wide
+normalisation, which would have introduced a modelling assumption we don't
+need to make.
+
+## 6. Verdict — what falls out
+
+The waist's `decide()` returns a `Verdict` with `state` ∈ {pick, pass, avoid}
+and `side` = the winning position's `label` (e.g. `"YES Argentina"` or
+`"NO Holland"`).
+
+Natural outcomes for an outright Pick:
+
+- **YES Pick on a contender:** model thinks Argentina has more chance to win
+  than the market does. Standard underdog-Pick framing.
+- **NO Pick on a longshot:** model thinks Holland's YES is overpriced; the
+  NO is the underpriced position. The verdict reads "Pick: NO Holland"
+  naturally — no shoehorning into "Avoid YES."
+
+**The "Avoid" state dissolves cleanly on this market shape.** v0.4 of the
+data layer spec (and Phase A.4 of the optimization spec) noted that "Avoid"
+is structurally impossible on single-venue normalised markets. On outrights
+with YES + NO as separate positions, "Avoid the YES" *is* "Pick the NO" —
+the same call, framed positively. v1 outright Picks/Passes; Avoid is
+effectively unreachable on this market shape, by design.
+
+## 7. Contract — ADR question
+
+The website (Faktor's side) consumes the published JSON contract. Two
+options:
+
+- **Reuse `DeskContentPublish` as-is.** Set `verdict_side` to the winning
+  position's label (e.g. `"NO Holland"`). The B2C renderer is event-agnostic
+  at the column level. Cheapest, no contract change. **But:** the renderer
+  only shows the single Pick; the rest of the ~48-team field is invisible.
+  Outrights have a natural "show the whole ladder" UX that this throws away.
+- **Add an additive `verdict_participants[]` field** (per TASK-311's §7.2 —
+  the one piece of TASK-311 worth keeping). Nullable, forward-only, no
+  schema-version bump. Carries per-team `{name, model_p, market_p, edge_pp,
+  market_venue}` for the full field.
+
+**My recommendation:** ship v1 with option 1 (reuse), and propose
+`verdict_participants[]` as a follow-up ADR once the outright B2C renderer
+is designed. Reasoning: the website's outright page doesn't exist yet, so
+designing the contract for it is premature. Pick what the website actually
+needs, ADR it, ship together.
+
+Either way, this is a **contract change** (or a deliberate non-change) →
+**ADR + Faktor sign-off** per the data layer spec's §7. Flagged here, not
+decided in this spec.
+
+## 8. PR plan
+
+Each PR ships green tests + a backtest regen where applicable. Sequenced so
+each merges in a working state. Branch off the integration repo's `main`.
+
+### Prerequisites (must land first)
+
+- `THE_DESK_POSITION_WAIST_SPEC.md` v0.2 → both PRs merged. The position-list
+  is the spine.
+- `THE_DESK_DATA_LAYER_SPEC.md` v0.5 Phase 1a + 1b → live Elo. The MC sim is
+  not credible on stub Elo.
+
+### PR O1 — `OutrightRef` + adapter + stub model
+
+- `desk/desk/sport.py`: add `OutrightRef` alongside `FixtureRef`.
+- TS-side migration (per TASK-311 §2.1, kept): `events.kind` enum + column.
+  Default `'match'` for backward compatibility.
+- `desk/desk/sports/football/supabase_outrights.py`: `outright_from_row` +
+  the participant-extraction regex + the resolved-market skip.
+- `desk/desk/sports/football/outright_model.py`: a **stub model** for this
+  PR — produces `P(win) = softmax(elo / 200)` over the field. No MC sim yet.
+  Lets the rest of the pipeline get wired without compute risk.
+- `build_position_set_outright` per §5.
+- `process_event.py` dispatch: route by `events.kind`.
+
+**Acceptance.** End-to-end with a mocked Supabase row for the WC winner
+event produces a valid `PositionSet` of ~96 `Position`s; `decide()` runs on
+it without crashing; verdict is Pass-heavy (the stub model is uninformative)
+but the contract round-trips.
+
+### PR O2 — Monte Carlo simulator
+
+- `desk/desk/sports/football/data/wc26_bracket.py`: the groups + R32 +
+  knockout structure.
+- `desk/desk/sports/football/outright_model.py`: replace stub with the MC
+  sim per §4. 10,000 baseline sims, deterministic seed.
+- Bootstrap CI per §4.4 — 100 samples × 1k sims, perturbed Elo. Per-team
+  lower/upper bounds.
+- Abstain rules per §4.5.
+
+**Acceptance.** Deterministic at seed=42 (two runs produce identical
+output). `P(win)` sums to 1.0 ± 1e-4 across the field. Sanity-check
+top-5 by `P(win)` matches a frozen test fixture (the prototype's output is
+the reference: Argentina ≥ 15%, France/Spain in the top 5). A frozen WC 2022
+retrospective (run the sim with 2022 Elo + 2022 schedule) puts Argentina
+in [0.10, 0.25] — closing market was ~0.11.
+
+### PR O3 — outright explainer + dashboard surface
+
+- `desk/desk/explainer/...`: outright copy templates per §3 stage 6.
+- Voice tests (banned-phrase suite + no "the favourites" / "the dark horse"
+  framings + the `model rates / model gives` longshot rule).
+- Backtest dashboard extension: an outright section showing the field
+  ladder, model vs market, Picks highlighted (per the prototype's output
+  format).
+
+**Acceptance.** A Pick / Pass verdict has voice-checked copy. The dashboard
+renders the outright ladder. The route `/desk/outrights/wc26` (or whatever
+the integration repo chooses) serves the latest `OutrightOutput` from
+`event_contents`.
+
+## 9. Open questions
+
+- **Contract shape — `verdict_participants[]` or reuse?** See §7. ADR
+  needed; my recommendation is reuse v1, add the field once the website's
+  outright UX is designed.
+- **In-tournament re-conditioning.** Once the tournament starts, real
+  results collapse the bracket. v1 keeps the sim pre-tournament-frozen
+  (or nightly-refresh with results-as-givens); live mid-match conditioning
+  is a v1.1 follow-up. Is nightly-refresh acceptable for the WC launch
+  window? Default: yes.
+- **Sim count (`SIMS = 10_000`) and bootstrap budget.** 10k is the
+  prototype's target. Tunable per profiling; the data layer's late-binding
+  cadence absorbs the cost.
+- **Outright Pick rate target.** Match Picks target 5–20% per the
+  optimization spec. Outrights are a 96-position field; many edges will be
+  small. Expected v1 Pick rate per tournament: 0–5 Picks (where "Pick" is a
+  single position clearing the lower-bound gate). Confirm this is the
+  product expectation.
+
+## 10. References
+
+- `THE_DESK_POSITION_WAIST_SPEC.md` v0.2 — the spine; outrights feed its
+  generic `PositionSet`.
+- `THE_DESK_DATA_LAYER_SPEC.md` v0.5 — Phase 1b is the live-Elo dependency;
+  §3.3 is the team registry (inbound resolution closes the field's identity
+  problem).
+- `THE_DESK_OPTIMIZATION_SPEC.md` — Phase A bootstrap CI; the lower-bound
+  Pick gate from A.3 applies on outrights too.
+- `THE_DESK_SPEC.md` — parent architecture; §9 failure-isolation rules
+  apply unchanged.
+- `desk_prototype.py` + `desk_prototype_output.txt` — reference for what
+  shape of outright numbers to expect. Not a build target.
+- Predecessors (this spec supersedes both):
+  - `THE_DESK_OUTRIGHTS_SPEC.md` v0.1 (prophet folder, 2026-05-11) — right
+    model approach, wrong on architecture (predates the waist).
+  - `tasks/research/TASK-311-desk-outrights-plan.md` — right plumbing,
+    wrong on the model (market-anchored).

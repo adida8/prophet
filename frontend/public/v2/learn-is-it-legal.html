@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Is it legal? — Odds Primer · Learn</title>
+<meta name="description" content="A state-by-state read on prediction markets in the US — Kalshi, Polymarket, and the sportsbook-run prediction products. We're not lawyers, but we've read the rules.">
+<link rel="stylesheet" href="./colors_and_type.css">
+<style>
+  body { padding: 0; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter-page); }
+
+  .site-masthead { border-bottom: var(--hairline); background: var(--paper); }
+  .site-masthead .inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 14px var(--gutter-page) 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    border-top: var(--hairline-strong);
+  }
+  /* Canonical lockup — same on every page so the masthead height is stable
+     across home → about → learn navigation. */
+  .brand-lock {
+    display: inline-flex; flex-direction: column; gap: 4px;
+    text-decoration: none;
+  }
+  .brand-lock svg { display: block; }
+  .brand-lock .wm-row { display: flex; align-items: baseline; gap: 12px; }
+  .brand-lock .wm {
+    font-family: var(--font-sans); font-weight: 700; font-size: 22px;
+    color: var(--ink); letter-spacing: -0.022em; line-height: 1;
+  }
+  .brand-lock .tag {
+    font-family: var(--font-serif); font-style: italic; font-weight: 400;
+    font-size: 12px; line-height: 1.3; color: var(--graphite);
+    padding-left: 0;
+  }
+  .brand-lock .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+  .site-nav { display: none; }
+  .site-nav ul { list-style: none; padding: 0; margin: 0; display: flex; gap: 26px; }
+  .site-nav a {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ink); text-decoration: none;
+    padding: 6px 0; border-bottom: 1.5px solid transparent;
+  }
+  .site-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
+  .site-nav a[aria-current="page"] { border-bottom-color: var(--flame); }
+  @media (min-width: 820px) { .site-nav { display: block; } }
+  .edition-strip { border-top: var(--hairline-soft); background: var(--paper); }
+  .edition-strip .inner {
+    max-width: 1180px; margin: 0 auto; padding: 8px var(--gutter-page);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  /* ---------- mobile pill-style nav (replaces burger) ---------- */
+  .pill-nav {
+    display: flex; gap: 6px; align-items: center;
+    padding: 12px var(--gutter-page);
+    border-bottom: var(--hairline);
+    background: var(--paper);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .pill-nav::-webkit-scrollbar { display: none; }
+  .pill-nav a {
+    font-family: var(--font-sans); font-size: 15px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
+    padding: 10px 18px; border-radius: 999px;
+    white-space: nowrap;
+    transition: background var(--dur-fast) var(--ease-standard),
+                color var(--dur-fast) var(--ease-standard);
+  }
+  .pill-nav a[aria-current="page"] {
+    background: var(--ink); color: var(--paper);
+  }
+  .pill-nav a:not([aria-current="page"]):hover {
+    color: var(--flame-deep);
+  }
+  @media (min-width: 820px) {
+    .pill-nav { display: none; }
+  }
+
+  /* ---------- burger menu (About + Learn — secondary overflow) ---------- */
+  .burger { position: relative; display: inline-block; }
+  .burger-btn {
+    list-style: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    border: var(--hairline); background: var(--paper-pure);
+    color: var(--ink); border-radius: 2px;
+    transition: background var(--dur-fast) var(--ease-standard),
+                color var(--dur-fast) var(--ease-standard);
+  }
+  .burger-btn::-webkit-details-marker { display: none; }
+  .burger-btn::marker { content: ""; }
+  .burger-btn:hover { color: var(--flame-deep); }
+  .burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
+  .burger-menu {
+    position: absolute; right: 0; top: calc(100% + 8px);
+    min-width: 180px;
+    background: var(--paper-pure); border: var(--hairline);
+    list-style: none; margin: 0; padding: 6px 0;
+    box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08);
+    z-index: 50;
+  }
+  .burger-menu li { padding: 0; margin: 0; list-style: none; }
+  .burger-menu a {
+    display: block; padding: 10px 18px;
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
+  }
+  .burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
+
+
+
+  .crumb {
+    padding: 32px 0 0;
+    font-family: var(--font-sans); font-size: 12px; color: var(--graphite-soft);
+    letter-spacing: 0.04em;
+  }
+  .crumb a { color: var(--graphite); text-decoration: none; }
+  .crumb a:hover { color: var(--flame-deep); }
+  .crumb .sep { margin: 0 8px; color: var(--rule); }
+
+  article.learn-article { padding: 28px 0 64px; max-width: 760px; }
+  article.learn-article .eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--flame-deep);
+    margin-bottom: 14px;
+  }
+  article.learn-article h1 {
+    font-family: var(--font-serif); font-weight: 600;
+    font-size: clamp(2rem, 4.2vw, 3rem);
+    line-height: 1.04; letter-spacing: -0.018em;
+    margin: 0; color: var(--ink); text-wrap: balance; max-width: 22ch;
+  }
+  article.learn-article .standfirst {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: clamp(17px, 1.6vw, 20px);
+    line-height: 1.5; color: var(--ink-soft);
+    margin: 20px 0 8px; max-width: 56ch;
+  }
+  article.learn-article .meta {
+    font-family: var(--font-sans); font-size: 12px;
+    letter-spacing: 0.04em; color: var(--graphite-soft);
+    margin: 12px 0 0; padding-bottom: 24px; border-bottom: var(--hairline);
+  }
+
+  .article-body {
+    margin-top: 32px;
+    font-family: var(--font-serif); font-size: 17px; line-height: 1.6; color: var(--ink);
+  }
+  .article-body > * { max-width: 62ch; }
+  .article-body p { margin: 0 0 18px; }
+  .article-body p + p { text-indent: 1.2em; }
+  .article-body h2 {
+    font-family: var(--font-serif); font-size: clamp(22px, 2.6vw, 26px);
+    font-weight: 600; letter-spacing: -0.005em; color: var(--ink);
+    margin: 36px 0 12px;
+  }
+  .article-body strong { font-weight: 600; }
+  .article-body .em { color: var(--flame); font-weight: 600; font-style: normal; }
+  .article-body .dag { color: var(--flame); font-style: italic; }
+  .article-body a {
+    color: var(--ink); text-decoration: underline;
+    text-decoration-color: var(--rule); text-underline-offset: 3px;
+  }
+  .article-body a:hover { color: var(--flame-deep); text-decoration-color: var(--flame); }
+
+  /* venue table */
+  .venues {
+    margin: 16px 0 28px; border: var(--hairline);
+    border-collapse: collapse; max-width: 62ch; width: 100%; background: var(--paper-pure);
+  }
+  .venues th, .venues td {
+    padding: 12px 14px; text-align: left; border-bottom: var(--hairline);
+    font-family: var(--font-sans); font-size: 13.5px; color: var(--ink);
+    vertical-align: baseline;
+  }
+  .venues th {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--graphite-soft); background: var(--paper-warm);
+  }
+  .venues tr:last-child td { border-bottom: 0; }
+  .venues .v { font-weight: 700; }
+  .venues .frame {
+    font-family: var(--font-serif); font-style: italic; color: var(--graphite);
+    font-size: 13px;
+  }
+
+  /* notice box */
+  .notice {
+    margin: 32px 0 0; padding: 18px 22px;
+    border: var(--hairline); border-left: 3px solid var(--flame);
+    background: var(--paper-warm);
+    font-family: var(--font-serif); font-size: 15.5px; line-height: 1.5;
+    color: var(--ink); max-width: 62ch;
+  }
+  .notice strong { color: var(--ink); font-weight: 600; }
+  .notice .em { color: var(--flame); font-weight: 600; font-style: normal; }
+
+  .nextup {
+    margin-top: 56px; padding: 28px 0;
+    border-top: var(--hairline-strong); border-bottom: var(--hairline);
+    display: grid; grid-template-columns: 1fr; gap: 14px;
+  }
+  @media (min-width: 720px) { .nextup { grid-template-columns: auto 1fr; align-items: center; gap: 24px; } }
+  .nextup .nlbl {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .nextup a {
+    font-family: var(--font-serif); font-size: clamp(20px, 2.4vw, 26px);
+    font-weight: 600; color: var(--ink); text-decoration: none;
+    letter-spacing: -0.005em; line-height: 1.2;
+  }
+  .nextup a:hover { color: var(--flame-deep); }
+  .nextup a .arr { color: var(--flame); margin-left: 6px; }
+
+  footer.site-footer { border-top: var(--hairline-strong); background: var(--paper); }
+  footer.site-footer .foot-inner { max-width: 1180px; margin: 0 auto; padding: 36px var(--gutter-page) 28px; }
+  .foot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 28px; margin-bottom: 22px; }
+  .foot-col h4 {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+    margin: 0 0 10px;
+  }
+  .foot-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .foot-col a { font-family: var(--font-sans); font-size: 13px; color: var(--ink); text-decoration: none; }
+  .foot-col a:hover { color: var(--flame-deep); }
+  .foot-brand {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 11px;
+    border-top: var(--hairline); padding-top: 22px; margin-top: 4px;
+  }
+  .foot-brand .wm { font-family: var(--font-sans); font-weight: 700; font-size: 22px; color: var(--ink); letter-spacing: -0.022em; }
+  .foot-brand .pub { font-family: var(--font-serif); font-style: italic; color: var(--graphite); font-size: 13px; }
+  .foot-brand .pub .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+  .foot-discl {
+    font-family: var(--font-serif); font-size: 12.5px; color: var(--graphite);
+    line-height: 1.55; max-width: 78ch; padding-top: 18px; border-top: var(--hairline-soft);
+  }
+  .foot-discl .dag { color: var(--flame); font-style: italic; }
+  .foot-meta {
+    margin-top: 16px;
+    font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
+    letter-spacing: 0.04em; display: flex; flex-wrap: wrap; gap: 6px 16px;
+  }
+  @media (min-width: 720px) {
+    .foot-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 36px; }
+    .foot-brand { grid-column: auto; border-top: 0; padding-top: 0; margin-top: 0;
+      flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+  <header class="site-masthead">
+    <div class="inner">
+      <a class="brand-lock" href="./home-v3.html" aria-label="Odds Primer — the AI sports desk for market edge">
+        <span class="wm-row">
+          <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
+          <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+          <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+          <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+          <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+          <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+        </svg>
+          <span class="wm">Odds Primer</span>
+        </span>
+        <span class="tag">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span></span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+              <ul>
+                <li><a href="./home-v3.html">Home</a></li>
+                <li><a href="./outrights.html">Outright winners</a></li>
+                <li><a href="./matches.html">Upcoming matches</a></li>
+              </ul>
+            </nav>
+
+      <details class="burger">
+        <summary class="burger-btn" aria-label="More links">
+          <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+            <rect y="0"  width="16" height="1.5" fill="currentColor"/>
+            <rect y="5"  width="16" height="1.5" fill="currentColor"/>
+            <rect y="10" width="16" height="1.5" fill="currentColor"/>
+          </svg>
+        </summary>
+        <ul class="burger-menu">
+          <li><a href="./about.html">About</a></li>
+          <li><a href="./learn.html">Learn the basics</a></li>
+        </ul>
+      </details>
+    </div>
+    <div class="edition-strip">
+      <div class="inner">
+        <span>Learn · 03 of 03</span>
+        <span>4 min read</span>
+      </div>
+    </div>
+    <nav class="pill-nav" aria-label="Primary (mobile)">
+          <a href="./outrights.html">Winners</a>
+          <a href="./matches.html">Matches</a>
+        </nav>
+  </header>
+
+  <main class="page">
+    <div class="crumb">
+      <a href="./learn.html">Learn</a><span class="sep">·</span><span>Is it legal?</span>
+    </div>
+
+    <article class="learn-article">
+      <div class="eyebrow">Geo + age · 03</div>
+      <h1>Is it legal?</h1>
+      <p class="standfirst">
+        Mostly yes, in the United States, with state-by-state caveats. We're not
+        lawyers — but we've read the rules, and here's what you need to know
+        before you open an account anywhere.
+      </p>
+      <div class="meta">The Editors · 12 May 2026 · 4 min read</div>
+
+      <div class="article-body">
+        <p>
+          Three different legal frames apply to the venues we cover. They each
+          read your trade as a different kind of thing. The shorthand version
+          first; the nuance afterwards.
+        </p>
+
+        <h2>Three frames, three regulators</h2>
+
+        <table class="venues">
+          <thead>
+            <tr>
+              <th scope="col">Venue</th>
+              <th scope="col">Regulator</th>
+              <th scope="col">What your trade is, legally</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="v">Kalshi</td>
+              <td>CFTC (federal)</td>
+              <td class="frame">An event contract on a Designated Contract Market.</td>
+            </tr>
+            <tr>
+              <td class="v">Polymarket</td>
+              <td>None in the US <span class="dag">†</span></td>
+              <td class="frame">An offshore crypto-denominated derivative.</td>
+            </tr>
+            <tr>
+              <td class="v">DraftKings Predictions</td>
+              <td>State gaming commission</td>
+              <td class="frame">A wager under state gambling rules.</td>
+            </tr>
+            <tr>
+              <td class="v">FanDuel Predicts</td>
+              <td>State gaming commission</td>
+              <td class="frame">A wager under state gambling rules.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Kalshi — the regulated route</h2>
+        <p>
+          Kalshi is the only US prediction-market venue listed with the
+          <strong>Commodity Futures Trading Commission</strong> as a Designated
+          Contract Market. That federal listing means it can offer event
+          contracts to residents of every US state — at least, that's what the
+          Third Circuit confirmed earlier this year on the sports-event-contract
+          question. The CFTC has rulemaking on the subject due later in 2026;
+          the legal frame could narrow.
+        </p>
+        <p>
+          One state-level wrinkle: <strong>Nevada</strong> has blocked Kalshi's
+          sports-event contracts under state gambling law. Most other states
+          haven't. Age minimum is <span class="num">18+</span>.
+        </p>
+
+        <h2>Polymarket — open internationally, restricted in the US</h2>
+        <p>
+          Polymarket is the largest prediction market by volume, but it operates
+          outside the US regulatory perimeter. <strong>US residents in eight
+          states</strong> — AZ, IL, MA, MD, MI, MT, NV, and OH — are blocked
+          outright. Several countries are blocked too. The venue checks your
+          IP and asks you to confirm residency on signup.
+        </p>
+        <p>
+          Internationally Polymarket is generally available, with the usual
+          jurisdictional caveats. If you're in the UK, the EU, most of Asia,
+          or most of Latin America, you can trade. If you're in the US, your
+          state determines whether you can.
+        </p>
+
+        <h2>DraftKings Predictions and FanDuel Predicts — the sportsbook route</h2>
+        <p>
+          These are operated by US sportsbooks under their existing state
+          gambling licences. That means they're available <strong>only in states
+          where the parent sportsbook is licensed</strong>, with the same
+          state-by-state patchwork sports betting already lives inside.
+          Age minimum is <span class="num">21+</span> in most states.
+        </p>
+        <p>
+          Functionally they look like prediction markets — but legally they're
+          wagers, not derivatives. The user experience is closer to a sportsbook.
+        </p>
+
+        <h2>The age line</h2>
+        <p>
+          <strong>18+</strong> at Kalshi and Polymarket. <strong>21+</strong> at
+          DraftKings Predictions and FanDuel Predicts (state-dependent; a few
+          states like New Jersey allow 18+ for sportsbook products).
+          Every venue runs identity verification.
+        </p>
+
+        <div class="notice">
+          <p>
+            <strong>We're not lawyers.</strong> Nothing on this page is legal
+            advice. The rules are state-by-state, they shift, and the
+            <span class="em">venue's own geo-restriction page</span> is the
+            authoritative read. Check it before you open an account, and
+            again if you've moved.
+          </p>
+        </div>
+      </div>
+
+      <div class="nextup">
+        <span class="nlbl">You've finished the primers</span>
+        <a href="./home-v3.html#today">
+          See today's board <span class="arr">↘</span>
+        </a>
+      </div>
+
+      <p style="margin-top: 28px; font-family: var(--font-serif); font-size: 13px; font-style: italic; color: var(--graphite-soft); max-width: 62ch;">
+        <span class="dag">†</span> Polymarket settled with the CFTC in 2022 and
+        currently operates as a non-US venue. Whether that status changes is
+        one of the live regulatory questions in this space.
+      </p>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="foot-inner">
+      <div class="foot-grid">
+        <div class="foot-brand">
+          <svg viewBox="0 0 38 34" width="44" height="40" aria-hidden="true">
+            <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+            <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+            <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+            <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+            <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+          </svg>
+          <span class="wm">Odds Primer</span>
+          <span class="pub">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span>.</span>
+        </div>
+        <div class="foot-col">
+          <h4>Editorial</h4>
+          <ul>
+            <li><a href="./home-v3.html#today">Today's board</a></li>
+            <li><a href="./home-v3.html#outrights">Outright winners</a></li>
+            <li><a href="./learn.html">Learn the basics</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="./about.html">About</a></li>
+            <li><a href="/methodology">Methodology</a></li>
+            <li><a href="mailto:hello@oddsprimer.com">Contact</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="/privacy">Privacy</a></li>
+            <li><a href="/terms">Terms of use</a></li>
+            <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>
+            <li><a href="/responsible-use">Responsible use</a></li>
+            <li><a href="/cookies">Cookies</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="foot-discl">
+        <span class="dag">†</span> Odds Primer is an editorial publication. We do not take wagers,
+        hold reader funds, or execute trades. Prediction-market trading involves risk; check your
+        local laws before acting on what you read.
+      </p>
+      <div class="foot-meta">
+        <span>© 2026 Odds Primer.</span>
+        <span>Published from the United Kingdom.</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

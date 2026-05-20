@@ -1,0 +1,73 @@
+event_id,event_name,polymarket_slug,kalshi_slug,home_team,away_team
+0e1a99fa-34ae-4d60-9b38-22e5592b6ad2,Algeria vs Austria,fifwc-alg-aut-2026-06-27,kxwcgame-26jun27dzaaut,Algeria,Austria
+ac0524c7-a556-4778-a3cf-5aaafdb8dafb,Argentina vs Algeria,fifwc-arg-alg-2026-06-16,kxwcgame-26jun16argdza,Argentina,Algeria
+8f70c1d5-543d-4ed6-8229-f4e64246fcd4,Argentina vs Austria,fifwc-arg-aut-2026-06-22,kxwcgame-26jun22argaut,Argentina,Austria
+83517f35-f70d-41ad-b885-267646fabbdc,Australia vs Turkey,fifwc-aus-tur-2026-06-14,null,Australia,Turkey
+4347c585-035c-4177-9080-ec9d4d70cb3f,Austria vs Jordan,fifwc-aut-jor-2026-06-17,kxwcgame-26jun17autjor,Austria,Jordan
+f50019b8-3bf4-4857-9f56-a4d4b50b88c9,Belgium vs Egypt,fifwc-bel-egy-2026-06-15,kxwcgame-26jun15belegy,Belgium,Egypt
+91ff4efa-0117-40c7-95fb-857939deb273,Belgium vs Iran,fifwc-bel-irn-2026-06-21,kxwcgame-26jun21beliri,Belgium,Iran
+e3253475-5862-4a7d-825d-1389a42f1965,Bosnia and Herzegovina vs Qatar,fifwc-bih-qat-2026-06-24,null,Bosnia and Herzegovina,Qatar
+e3db5ff8-4b56-42d0-8032-9ad43c200713,Brazil vs Haiti,fifwc-bra-hai-2026-06-19,kxwcgame-26jun19brahti,Brazil,Haiti
+4d2d560e-e91a-46a4-82af-5e4aa8ccbf0f,Brazil vs Morocco,fifwc-bra-mar-2026-06-13,kxwcgame-26jun13bramar,Brazil,Morocco
+79ff99f9-0114-4f1c-a60a-059cee15533e,Canada vs Bosnia and Herzegovina,fifwc-can-bih-2026-06-12,null,Canada,Bosnia and Herzegovina
+410b191a-86c7-4140-bcb0-12e51d66e9b3,Canada vs Qatar,fifwc-can-qat-2026-06-18,kxwcgame-26jun18canqat,Canada,Qatar
+694ba486-7250-412a-b1c7-23feea4445d4,Cape Verde vs Saudi Arabia,fifwc-cvi-ksa-2026-06-26,kxwcgame-26jun26cpvksa,Cape Verde,Saudi Arabia
+74cd7e03-bfbc-4908-b57b-e6a09ca7989b,Colombia vs DR Congo,fifwc-col-cdr-2026-06-23,null,Colombia,DR Congo
+f15196fc-0f8b-4a5b-b0b5-a005968ef5cb,Colombia vs Portugal,fifwc-col-prt-2026-06-27,kxwcgame-26jun27colpor,Colombia,Portugal
+908046d0-f324-4cc4-b34d-b284e033b578,Croatia vs Ghana,fifwc-hrv-gha-2026-06-27,kxwcgame-26jun27crogha,Croatia,Ghana
+d7cdbacd-c0c4-4008-8adc-2f06a7d96be4,Curacao vs Ivory Coast,fifwc-kor-civ-2026-06-25,kxwcgame-26jun25cuwciv,Curaçao,Ivory Coast
+ca583556-1ff1-41f9-b675-bfdf13aacdcf,Czech Republic vs Mexico,fifwc-cze-mex-2026-06-24,null,Czech Republic,Mexico
+9f96185e-1592-439c-bc15-c5b98b456065,Czech Republic vs South Africa,fifwc-cze-rsa-2026-06-18,null,Czech Republic,South Africa
+e52ee26b-88d4-45b6-b512-c13a37c9f692,DR Congo vs Uzbekistan,fifwc-cdr-uzb-2026-06-27,null,DR Congo,Uzbekistan
+ba08a07c-430c-4986-90bc-5463fa84335b,Ecuador vs Curacao,fifwc-ecu-kor-2026-06-20,kxwcgame-26jun20ecucuw,Ecuador,Curaçao
+02c6c095-9bf2-424b-b800-79a68e350325,Ecuador vs Germany,fifwc-ecu-ger-2026-06-25,kxwcgame-26jun25ecuger,Ecuador,Germany
+3933edab-f1e4-4c44-a672-87c0dfb03eaf,Egypt vs Iran,fifwc-egy-irn-2026-06-26,kxwcgame-26jun26egyiri,Egypt,Iran
+46ec619f-768f-445a-b543-5169395d1c6a,England vs Croatia,fifwc-eng-hrv-2026-06-17,kxwcgame-26jun17engcro,England,Croatia
+00fdcb5e-95f0-4db5-a879-bce3dc864807,England vs Ghana,fifwc-eng-gha-2026-06-23,kxwcgame-26jun23enggha,England,Ghana
+9e970e67-91c6-48be-9d82-c39e1e84a90e,France vs Iraq,fifwc-fra-irq-2026-06-22,null,France,Iraq
+fd0b66d2-baff-4bde-b404-50a4360a8104,France vs Senegal,fifwc-fra-sen-2026-06-16,kxwcgame-26jun16frasen,France,Senegal
+5a879bf8-7d1a-437c-98b4-0fb3f9801145,Germany vs Curacao,fifwc-ger-kor-2026-06-14,kxwcgame-26jun14gercuw,Germany,Curaçao
+b0b3cb8f-497a-45a9-94cf-f7d6cf924ee9,Germany vs Ivory Coast,fifwc-ger-civ-2026-06-20,kxwcgame-26jun20gerciv,Germany,Ivory Coast
+07600324-7ec0-4b85-a127-aba1c3e8be8f,Ghana vs Panama,fifwc-gha-pan-2026-06-17,kxwcgame-26jun17ghapan,Ghana,Panama
+c1e0d4c8-03d9-4d97-b443-5c21653f2cc9,Haiti vs Scotland,fifwc-hai-sco-2026-06-13,kxwcgame-26jun13htisco,Haiti,Scotland
+b1f3a710-2a63-42fc-9f81-fe2d155ba7f1,Iran vs New Zealand,fifwc-irn-nzl-2026-06-15,kxwcgame-26jun15irinzl,Iran,New Zealand
+5dbaa1ca-b775-4574-873a-270dac15c051,Iraq vs Norway,fifwc-irq-nor-2026-06-16,null,Iraq,Norway
+da3a4433-82a1-4d87-8392-789e91a7a0e5,Ivory Coast vs Ecuador,fifwc-civ-ecu-2026-06-14,kxwcgame-26jun14civecu,Ivory Coast,Ecuador
+c1fe8dcf-ec24-4f11-870b-86cba0198d0c,Japan vs Sweden,fifwc-jpn-swe-2026-06-25,null,Japan,Sweden
+573f22c7-822a-4e7f-8ee1-d5ac6b491bcf,Jordan vs Algeria,fifwc-jor-alg-2026-06-22,kxwcgame-26jun22jordza,Jordan,Algeria
+9d35cd53-6a9b-4d0a-88bf-e7eb41e5670a,Jordan vs Argentina,fifwc-jor-arg-2026-06-27,kxwcgame-26jun27jorarg,Jordan,Argentina
+6db2d384-90b0-41a6-bb57-261f5530f5c2,Mexico vs South Africa,fifwc-mex-rsa-2026-06-11,kxwcgame-26jun11mexrsa,Mexico,South Africa
+3a5d888d-b72a-495f-8471-bb7396455b35,Mexico vs South Korea,fifwc-mex-kr-2026-06-18,kxwcgame-26jun18mexkor,Mexico,South Korea
+d9837a28-02de-4c11-a652-6cd46c776fb4,Morocco vs Haiti,fifwc-mar-hai-2026-06-24,kxwcgame-26jun24marhti,Morocco,Haiti
+dc537a48-080b-4273-9a85-f5a2d52e9a96,Netherlands vs Japan,fifwc-nld-jpn-2026-06-14,kxwcgame-26jun14nedjpn,Netherlands,Japan
+ed8316ee-145e-45f3-b699-9ac282d772f3,Netherlands vs Sweden,fifwc-nld-swe-2026-06-20,null,Netherlands,Sweden
+dc009476-48f4-40b6-b3ef-05aa4a863373,New Zealand vs Belgium,fifwc-nzl-bel-2026-06-26,kxwcgame-26jun26nzlbel,New Zealand,Belgium
+dda90afa-0e40-4daa-9733-e32104b8518f,New Zealand vs Egypt,fifwc-nzl-egy-2026-06-21,kxwcgame-26jun21nzlegy,New Zealand,Egypt
+9cabbdc3-9664-4df6-a3d7-46cc983194c0,Norway vs France,fifwc-nor-fra-2026-06-26,kxwcgame-26jun26norfra,Norway,France
+1b431693-0efa-44af-8940-50ade62b18ec,Norway vs Senegal,fifwc-nor-sen-2026-06-22,kxwcgame-26jun22norsen,Norway,Senegal
+15bc1a28-87ae-4f04-9b9e-e09d07985f13,Panama vs Croatia,fifwc-pan-hrv-2026-06-23,kxwcgame-26jun23pancro,Panama,Croatia
+6484db77-746e-4453-bb90-bb5c04b44371,Panama vs England,fifwc-pan-eng-2026-06-27,kxwcgame-26jun27paneng,Panama,England
+9ebf894a-07ba-4958-8f70-18fcd43011bd,Paraguay vs Australia,fifwc-par-aus-2026-06-25,kxwcgame-26jun25paraus,Paraguay,Australia
+3f03cbda-2002-4f19-bb2c-c9cf36a0f0f8,Portugal vs DR Congo,fifwc-prt-cdr-2026-06-17,null,Portugal,DR Congo
+5a694b1d-509a-4a78-848b-360a4924be47,Portugal vs Uzbekistan,fifwc-prt-uzb-2026-06-23,kxwcgame-26jun23poruzb,Portugal,Uzbekistan
+3f9e735e-4b46-481e-9fe4-cfe9f5a1a01f,Qatar vs Switzerland,fifwc-qat-che-2026-06-13,kxwcgame-26jun13qatsui,Qatar,Switzerland
+6d2331d5-f11d-4562-b40e-0462ea90d3d9,Saudi Arabia vs Uruguay,fifwc-ksa-ury-2026-06-15,kxwcgame-26jun15ksauru,Saudi Arabia,Uruguay
+639fe44e-77aa-4e9a-bdc6-86858a75d116,Scotland vs Brazil,fifwc-sco-bra-2026-06-24,kxwcgame-26jun24scobra,Scotland,Brazil
+bab1cebe-649d-4227-ba4e-3deaec551007,Scotland vs Morocco,fifwc-sco-mar-2026-06-19,kxwcgame-26jun19scomar,Scotland,Morocco
+dfdf9b25-80d1-4453-823a-105d67b67150,Senegal vs Iraq,fifwc-sen-irq-2026-06-26,null,Senegal,Iraq
+3c8a3b5d-6ef6-4ce0-a4cc-93be6a3a79e2,South Africa vs South Korea,fifwc-rsa-kr-2026-06-24,kxwcgame-26jun24rsakor,South Africa,South Korea
+b5c0e3d3-5614-4cbe-bd7c-e7a2ba3badf3,South Korea vs Czech Republic,fifwc-kr-cze-2026-06-11,null,South Korea,Czech Republic
+2ca29445-5cc0-4b79-9194-98f310b21ccd,Spain vs Cape Verde,fifwc-esp-cvi-2026-06-15,kxwcgame-26jun15espcpv,Spain,Cape Verde
+3c1c2dc6-dc0e-48fa-90ce-0577c525f737,Spain vs Saudi Arabia,fifwc-esp-ksa-2026-06-21,kxwcgame-26jun21espksa,Spain,Saudi Arabia
+9bd5a5a7-0641-4089-99d6-aed38fae05dd,Sweden vs Tunisia,fifwc-swe-tun-2026-06-14,null,Sweden,Tunisia
+467b3963-ab63-47a6-998f-2ec63258472c,Switzerland vs Bosnia and Herzegovina,fifwc-che-bih-2026-06-18,null,Switzerland,Bosnia and Herzegovina
+40bb3fb3-f676-4d32-b711-835e74ddd069,Switzerland vs Canada,fifwc-che-can-2026-06-24,kxwcgame-26jun24suican,Switzerland,Canada
+edda5fd8-050f-4454-a8fb-f403d9b9b2c9,Tunisia vs Japan,fifwc-tun-jpn-2026-06-21,kxwcgame-26jun21tunjpn,Tunisia,Japan
+b1f3a319-7590-4c01-821c-dee5b5450022,Tunisia vs Netherlands,fifwc-tun-nld-2026-06-25,kxwcgame-26jun25tunned,Tunisia,Netherlands
+e92c06fc-27ab-454d-be5e-3fccaecac0bf,Turkey vs Paraguay,fifwc-tur-par-2026-06-19,null,Turkey,Paraguay
+55dd03f9-1ba9-4ac6-92f1-2b4718c9a0d5,Turkey vs United States,fifwc-tur-usa-2026-06-25,null,Turkey,United States
+cb782a7d-6298-4f24-afc0-89066ea5285b,United States vs Australia,fifwc-usa-aus-2026-06-19,kxwcgame-26jun19usaaus,United States,Australia
+200ea468-852b-4e67-84b5-eef6d3e22caa,United States vs Paraguay,fifwc-usa-par-2026-06-12,kxwcgame-26jun12usapar,United States,Paraguay
+d02cae2d-60bd-4db0-a7ab-2185cbccb7d5,Uruguay vs Cape Verde,fifwc-ury-cvi-2026-06-21,kxwcgame-26jun21urucpv,Uruguay,Cape Verde
+82110924-0f5c-4604-942d-35a42e163385,Uruguay vs Spain,fifwc-ury-esp-2026-06-26,kxwcgame-26jun26uruesp,Uruguay,Spain
+8909e504-3e79-4c14-b98c-1c376a35f1d2,Uzbekistan vs Colombia,fifwc-uzb-col-2026-06-17,kxwcgame-26jun17uzbcol,Uzbekistan,Colombia

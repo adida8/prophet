@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What is a prediction market? — Odds Primer · Learn</title>
+<meta name="description" content="A prediction market is a market where you trade contracts that pay out on real-world events. The price is the probability — that's the part that matters.">
+<link rel="stylesheet" href="./colors_and_type.css">
+<style>
+  body { padding: 0; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter-page); }
+
+  /* shared chrome */
+  .site-masthead { border-bottom: var(--hairline); background: var(--paper); }
+  .site-masthead .inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 14px var(--gutter-page) 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    border-top: var(--hairline-strong);
+  }
+  /* Canonical lockup — same on every page so the masthead height is stable
+     across home → about → learn navigation. */
+  .brand-lock {
+    display: inline-flex; flex-direction: column; gap: 4px;
+    text-decoration: none;
+  }
+  .brand-lock svg { display: block; }
+  .brand-lock .wm-row { display: flex; align-items: baseline; gap: 12px; }
+  .brand-lock .wm {
+    font-family: var(--font-sans); font-weight: 700; font-size: 22px;
+    color: var(--ink); letter-spacing: -0.022em; line-height: 1;
+  }
+  .brand-lock .tag {
+    font-family: var(--font-serif); font-style: italic; font-weight: 400;
+    font-size: 12px; line-height: 1.3; color: var(--graphite);
+    padding-left: 0;
+  }
+  .brand-lock .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+  .site-nav { display: none; }
+  .site-nav ul { list-style: none; padding: 0; margin: 0; display: flex; gap: 26px; }
+  .site-nav a {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ink); text-decoration: none;
+    padding: 6px 0; border-bottom: 1.5px solid transparent;
+  }
+  .site-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
+  .site-nav a[aria-current="page"] { border-bottom-color: var(--flame); }
+  @media (min-width: 820px) { .site-nav { display: block; } }
+  .edition-strip { border-top: var(--hairline-soft); background: var(--paper); }
+  .edition-strip .inner {
+    max-width: 1180px; margin: 0 auto; padding: 8px var(--gutter-page);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  /* ---------- mobile pill-style nav (replaces burger) ---------- */
+  .pill-nav {
+    display: flex; gap: 6px; align-items: center;
+    padding: 12px var(--gutter-page);
+    border-bottom: var(--hairline);
+    background: var(--paper);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .pill-nav::-webkit-scrollbar { display: none; }
+  .pill-nav a {
+    font-family: var(--font-sans); font-size: 15px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
+    padding: 10px 18px; border-radius: 999px;
+    white-space: nowrap;
+    transition: background var(--dur-fast) var(--ease-standard),
+                color var(--dur-fast) var(--ease-standard);
+  }
+  .pill-nav a[aria-current="page"] {
+    background: var(--ink); color: var(--paper);
+  }
+  .pill-nav a:not([aria-current="page"]):hover {
+    color: var(--flame-deep);
+  }
+  @media (min-width: 820px) {
+    .pill-nav { display: none; }
+  }
+
+  /* ---------- burger menu (About + Learn — secondary overflow) ---------- */
+  .burger { position: relative; display: inline-block; }
+  .burger-btn {
+    list-style: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    border: var(--hairline); background: var(--paper-pure);
+    color: var(--ink); border-radius: 2px;
+    transition: background var(--dur-fast) var(--ease-standard),
+                color var(--dur-fast) var(--ease-standard);
+  }
+  .burger-btn::-webkit-details-marker { display: none; }
+  .burger-btn::marker { content: ""; }
+  .burger-btn:hover { color: var(--flame-deep); }
+  .burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
+  .burger-menu {
+    position: absolute; right: 0; top: calc(100% + 8px);
+    min-width: 180px;
+    background: var(--paper-pure); border: var(--hairline);
+    list-style: none; margin: 0; padding: 6px 0;
+    box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08);
+    z-index: 50;
+  }
+  .burger-menu li { padding: 0; margin: 0; list-style: none; }
+  .burger-menu a {
+    display: block; padding: 10px 18px;
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
+  }
+  .burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
+
+
+
+  /* article layout */
+  .crumb {
+    padding: 32px 0 0;
+    font-family: var(--font-sans); font-size: 12px; color: var(--graphite-soft);
+    letter-spacing: 0.04em;
+  }
+  .crumb a { color: var(--graphite); text-decoration: none; }
+  .crumb a:hover { color: var(--flame-deep); }
+  .crumb .sep { margin: 0 8px; color: var(--rule); }
+
+  article.learn-article {
+    padding: 28px 0 64px;
+    display: grid; grid-template-columns: 1fr; gap: 0;
+    max-width: 760px;
+  }
+  article.learn-article .eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--flame-deep);
+    margin-bottom: 14px;
+  }
+  article.learn-article h1 {
+    font-family: var(--font-serif); font-weight: 600;
+    font-size: clamp(2rem, 4.2vw, 3rem);
+    line-height: 1.04; letter-spacing: -0.018em;
+    margin: 0; color: var(--ink); text-wrap: balance; max-width: 22ch;
+  }
+  article.learn-article .standfirst {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: clamp(17px, 1.6vw, 20px);
+    line-height: 1.5; color: var(--ink-soft);
+    margin: 20px 0 8px; max-width: 56ch;
+  }
+  article.learn-article .meta {
+    font-family: var(--font-sans); font-size: 12px;
+    letter-spacing: 0.04em; color: var(--graphite-soft);
+    margin: 12px 0 0; padding-bottom: 24px; border-bottom: var(--hairline);
+  }
+
+  .article-body {
+    margin-top: 32px;
+    font-family: var(--font-serif); font-size: 17px; line-height: 1.6;
+    color: var(--ink);
+  }
+  .article-body > * { max-width: 62ch; }
+  .article-body p { margin: 0 0 18px; }
+  .article-body p + p { text-indent: 1.2em; }
+  .article-body h2 {
+    font-family: var(--font-serif); font-size: clamp(22px, 2.6vw, 26px);
+    font-weight: 600; letter-spacing: -0.005em; color: var(--ink);
+    margin: 36px 0 12px;
+  }
+  .article-body strong { font-weight: 600; }
+  .article-body .em { color: var(--flame); font-weight: 600; font-style: normal; }
+  .article-body .dag { color: var(--flame); font-style: italic; }
+  .article-body a {
+    color: var(--ink); text-decoration: underline;
+    text-decoration-color: var(--rule); text-underline-offset: 3px;
+  }
+  .article-body a:hover { color: var(--flame-deep); text-decoration-color: var(--flame); }
+
+  .pullbox {
+    margin: 28px 0; padding: 18px 22px;
+    border-left: 3px solid var(--flame);
+    background: var(--paper-warm);
+    font-family: var(--font-serif); font-size: 17px; line-height: 1.5;
+    color: var(--ink); max-width: 56ch;
+  }
+  .pullbox em { color: var(--flame); font-style: normal; font-weight: 600; }
+  .pullbox p { margin: 0 0 8px; }
+  .pullbox p:last-child { margin-bottom: 0; }
+
+  /* next-up footer */
+  .nextup {
+    margin-top: 56px; padding: 28px 0;
+    border-top: var(--hairline-strong); border-bottom: var(--hairline);
+    display: grid; grid-template-columns: 1fr; gap: 14px;
+  }
+  @media (min-width: 720px) { .nextup { grid-template-columns: auto 1fr; align-items: center; gap: 24px; } }
+  .nextup .nlbl {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .nextup a {
+    font-family: var(--font-serif); font-size: clamp(20px, 2.4vw, 26px);
+    font-weight: 600; color: var(--ink); text-decoration: none;
+    letter-spacing: -0.005em; line-height: 1.2;
+  }
+  .nextup a:hover { color: var(--flame-deep); }
+  .nextup a .arr { color: var(--flame); margin-left: 6px; }
+
+  /* footer (shared) */
+  footer.site-footer { border-top: var(--hairline-strong); background: var(--paper); }
+  footer.site-footer .foot-inner { max-width: 1180px; margin: 0 auto; padding: 36px var(--gutter-page) 28px; }
+  .foot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 28px; margin-bottom: 22px; }
+  .foot-col h4 {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+    margin: 0 0 10px;
+  }
+  .foot-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .foot-col a { font-family: var(--font-sans); font-size: 13px; color: var(--ink); text-decoration: none; }
+  .foot-col a:hover { color: var(--flame-deep); }
+  .foot-brand {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 11px;
+    border-top: var(--hairline); padding-top: 22px; margin-top: 4px;
+  }
+  .foot-brand .wm { font-family: var(--font-sans); font-weight: 700; font-size: 22px; color: var(--ink); letter-spacing: -0.022em; }
+  .foot-brand .pub { font-family: var(--font-serif); font-style: italic; color: var(--graphite); font-size: 13px; }
+  .foot-brand .pub .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+  .foot-discl {
+    font-family: var(--font-serif); font-size: 12.5px; color: var(--graphite);
+    line-height: 1.55; max-width: 78ch;
+    padding-top: 18px; border-top: var(--hairline-soft);
+  }
+  .foot-discl .dag { color: var(--flame); font-style: italic; }
+  .foot-meta {
+    margin-top: 16px;
+    font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
+    letter-spacing: 0.04em; display: flex; flex-wrap: wrap; gap: 6px 16px;
+  }
+  @media (min-width: 720px) {
+    .foot-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 36px; }
+    .foot-brand { grid-column: auto; border-top: 0; padding-top: 0; margin-top: 0;
+      flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+  <header class="site-masthead">
+    <div class="inner">
+      <a class="brand-lock" href="./home-v3.html" aria-label="Odds Primer — the AI sports desk for market edge">
+        <span class="wm-row">
+          <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
+          <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+          <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+          <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+          <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+          <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+        </svg>
+          <span class="wm">Odds Primer</span>
+        </span>
+        <span class="tag">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span></span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+              <ul>
+                <li><a href="./home-v3.html">Home</a></li>
+                <li><a href="./outrights.html">Outright winners</a></li>
+                <li><a href="./matches.html">Upcoming matches</a></li>
+              </ul>
+            </nav>
+
+      <details class="burger">
+        <summary class="burger-btn" aria-label="More links">
+          <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+            <rect y="0"  width="16" height="1.5" fill="currentColor"/>
+            <rect y="5"  width="16" height="1.5" fill="currentColor"/>
+            <rect y="10" width="16" height="1.5" fill="currentColor"/>
+          </svg>
+        </summary>
+        <ul class="burger-menu">
+          <li><a href="./about.html">About</a></li>
+          <li><a href="./learn.html">Learn the basics</a></li>
+        </ul>
+      </details>
+    </div>
+    <div class="edition-strip">
+      <div class="inner">
+        <span>Learn · 01 of 03</span>
+        <span>3 min read</span>
+      </div>
+    </div>
+    <nav class="pill-nav" aria-label="Primary (mobile)">
+          <a href="./outrights.html">Winners</a>
+          <a href="./matches.html">Matches</a>
+        </nav>
+  </header>
+
+  <main class="page">
+    <div class="crumb">
+      <a href="./learn.html">Learn</a><span class="sep">·</span><span>What is a prediction market?</span>
+    </div>
+
+    <article class="learn-article">
+      <div class="eyebrow">The basics · 01</div>
+      <h1>What is a prediction market?</h1>
+      <p class="standfirst">
+        A market where you trade contracts that pay out on real-world events.
+        Different from a sportsbook in one important way — the price <em>is</em>
+        the probability.
+      </p>
+      <div class="meta">The Editors · 12 May 2026 · 3 min read</div>
+
+      <div class="article-body">
+        <p>
+          A prediction market is a market where you trade contracts whose value
+          depends on whether a real-world event happens. <strong>Will Brazil win
+          the 2026 World Cup?</strong> Will the Fed cut rates at the next meeting?
+          Will Bitcoin close above $200,000 by Friday? Each of those is a contract
+          you can buy or sell — and the price of the contract is the market's
+          best guess at the probability of the outcome.
+        </p>
+        <p>
+          The standard form is a <strong>YES/NO binary</strong>. A YES contract
+          pays out $1 if the event happens and $0 if it doesn't. If the market
+          thinks there's a 27% chance Brazil wins the World Cup, the YES contract
+          on "Brazil wins" trades at about 27 cents. Sell it and you get someone
+          else's 27 cents now; if Brazil wins, you owe them a dollar. If Brazil
+          doesn't, you keep their cents and they get nothing.
+        </p>
+
+        <h2>How is it different from sports betting?</h2>
+        <p>
+          On a sportsbook, you're betting against the house. The bookmaker sets
+          the line, takes the other side of your wager, and earns a margin
+          (the <span class="em">vig</span>) regardless of who's right. The line
+          moves to balance the book, not to find the true probability.
+        </p>
+        <p>
+          On a prediction market, you're trading with <strong>other users</strong>.
+          The venue runs the order book and takes a small fee on each trade, but
+          it doesn't take the other side. That changes what the price means:
+          it stops being "what the bookmaker thinks will balance the book" and
+          becomes "what the marginal buyer and the marginal seller agree on right now."
+          The closer that is to the true probability, the harder it is to find an edge.
+        </p>
+
+        <div class="pullbox">
+          <p>
+            The headline difference: on a sportsbook the price tells you the
+            <em>line</em>. On a prediction market the price tells you the
+            <em>probability</em>.
+          </p>
+        </div>
+
+        <h2>Where does it happen?</h2>
+        <p>
+          A short list. <strong>Polymarket</strong> is the largest and operates
+          on a USDC-denominated order book; you'll see prices quoted in cents
+          out of a dollar. <strong>Kalshi</strong> is the US-regulated venue,
+          listed under the CFTC; prices are also in cents, with a smaller but
+          mostly overlapping universe of markets. <strong>DraftKings Predictions</strong>
+          and <strong>FanDuel Predicts</strong> sit closer to the sportsbook
+          tradition but expose event-contract pricing. Several smaller venues
+          round out the field. <a href="./learn-is-it-legal.html">Which ones you can use
+          depends on where you are.</a>
+        </p>
+
+        <h2>Why does it matter?</h2>
+        <p>
+          Two reasons. First, prices move in real time — markets aggregate the
+          information of everyone trading and reprice the instant new information
+          arrives. That makes them <strong>useful as forecasts</strong> long after
+          the news article goes stale. Second, two venues quoting the same outcome
+          at different prices is a tell that one of them is wrong about
+          something. Our job is to <a href="./home-v3.html#today">show you which one,</a>
+          and to tell you when neither is.
+        </p>
+
+        <p style="color: var(--graphite); font-style: italic; font-size: 15px; margin-top: 28px;">
+          That's the whole idea. The next primer covers how the price is set
+          on the order book, and how to read a quoted price as a probability.
+        </p>
+      </div>
+
+      <div class="nextup">
+        <span class="nlbl">Next up · 02</span>
+        <a href="./learn-how-prices-are-set.html">
+          How are prices set? <span class="arr">→</span>
+        </a>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="foot-inner">
+      <div class="foot-grid">
+        <div class="foot-brand">
+          <svg viewBox="0 0 38 34" width="44" height="40" aria-hidden="true">
+            <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+            <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+            <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+            <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+            <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+          </svg>
+          <span class="wm">Odds Primer</span>
+          <span class="pub">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span>.</span>
+        </div>
+        <div class="foot-col">
+          <h4>Editorial</h4>
+          <ul>
+            <li><a href="./home-v3.html#today">Today's board</a></li>
+            <li><a href="./home-v3.html#outrights">Outright winners</a></li>
+            <li><a href="./learn.html">Learn the basics</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="./about.html">About</a></li>
+            <li><a href="/methodology">Methodology</a></li>
+            <li><a href="mailto:hello@oddsprimer.com">Contact</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="/privacy">Privacy</a></li>
+            <li><a href="/terms">Terms of use</a></li>
+            <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>
+            <li><a href="/responsible-use">Responsible use</a></li>
+            <li><a href="/cookies">Cookies</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="foot-discl">
+        <span class="dag">†</span> Odds Primer is an editorial publication. We do not take wagers,
+        hold reader funds, or execute trades. Prediction-market trading involves risk; check your
+        local laws before acting on what you read.
+      </p>
+      <div class="foot-meta">
+        <span>© 2026 Odds Primer.</span>
+        <span>Published from the United Kingdom.</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Odds Primer · home — single-chip card, standout CTA</title>
+<meta name="description" content="Homepage: one card across matches, winners, and the headline verdict. MODEL · MARKET · edge on the left, venue + price + standout CTA on the right.">
+<style>
+  /* ============================================================
+     Card design — single-chip lv-card pattern (reverted from v5
+     dual-chip experiment back to home-v3's structure).
+       · Foot row: reads (model / market / edge) on left,
+         venue + price + small-bold CTA on right.
+       · Desktop CTA: small, ink-on-paper with flame underline.
+       · Mobile (≤720px): foot stacks, CTA promotes to a full-width
+         44px ink button — small but bold, can't be missed.
+     Same skeleton across Match · Outright · Headline.
+     ============================================================ */
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root {
+    --paper:        #FAF7F0;
+    --paper-pure:   #FFFFFF;
+    --paper-warm:   #F0ECE2;
+    --ink:          #0E2240;
+    --ink-soft:     #2A3957;
+    --graphite:     #3A3F47;
+    --graphite-soft:#6B7079;
+    --rule:         #D9D2C0;
+    --rule-soft:    #EDE7D6;
+    --flame:        #D9461C;
+    --flame-deep:   #A8341A;
+    --flame-tint:   #F7E4DA;
+
+    --hairline:        1px solid var(--rule);
+    --hairline-soft:   1px solid var(--rule-soft);
+    --hairline-strong: 2px solid var(--ink);
+
+    --font-sans:    'Inter Tight', 'Söhne', 'Inter', system-ui, sans-serif;
+    --font-serif:   'Source Serif 4', 'Charter', 'Georgia', serif;
+    --font-mono:    'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+
+    --gutter: clamp(16px, 4vw, 56px);
+    --dur-fast: 160ms;
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  body { font-family: var(--font-sans); font-size: 15px; line-height: 1.5; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter); }
+  a { color: inherit; }
+
+  /* ============================================================
+     MASTHEAD
+     ============================================================ */
+  .masthead { border-top: var(--hairline-strong); background: var(--paper); }
+  .masthead .inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 14px var(--gutter) 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .brand { display: inline-flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--ink); }
+  .brand .wm-row { display: flex; align-items: baseline; gap: 10px; }
+  .brand .glyph { display: inline-flex; align-items: flex-end; gap: 2px; height: 22px; }
+  .brand .glyph span { display: block; width: 4px; background: var(--ink); border-radius: 0.5px; }
+  .brand .glyph span:nth-child(1) { height: 22%; }
+  .brand .glyph span:nth-child(2) { height: 38%; }
+  .brand .glyph span:nth-child(3) { height: 65%; background: var(--flame); }
+  .brand .glyph span:nth-child(4) { height: 30%; }
+  .brand .wm {
+    font-family: var(--font-serif); font-weight: 800; font-size: 22px;
+    letter-spacing: -0.02em; line-height: 1;
+  }
+  .brand .tag {
+    font-family: var(--font-serif); font-style: italic; font-weight: 400;
+    font-size: 12px; line-height: 1.3; color: var(--graphite);
+  }
+  .brand .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+
+  .site-nav { display: none; }
+  @media (min-width: 820px) {
+    .site-nav { display: block; }
+  }
+  .site-nav ul { list-style: none; padding: 0; margin: 0; display: flex; gap: 26px; }
+  .site-nav a {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ink); text-decoration: none;
+    padding: 6px 0; border-bottom: 1.5px solid transparent;
+  }
+  .site-nav a[aria-current="page"] { border-bottom-color: var(--flame); }
+  .site-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
+
+  .nav-meta {
+    display: none;
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--graphite-soft); font-variant-numeric: tabular-nums;
+  }
+  @media (min-width: 820px) { .nav-meta { display: inline; } }
+
+  .burger {
+    width: 36px; height: 36px;
+    border: var(--hairline); background: var(--paper-pure);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  @media (min-width: 820px) { .burger { display: none; } }
+  .burger svg { display: block; }
+
+  .edition-strip { border-top: var(--hairline-soft); border-bottom: var(--hairline); background: var(--paper); }
+  .edition-strip .inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 8px var(--gutter);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .edition-strip .vol { color: var(--ink); }
+  .edition-strip .live::before {
+    content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 999px;
+    background: var(--flame); margin-right: 8px; vertical-align: 1px;
+  }
+
+  /* ============================================================
+     HERO
+     ============================================================ */
+  .hero { padding: 40px 0 24px; }
+  .hero h1 {
+    font-family: var(--font-serif); font-weight: 600;
+    font-size: clamp(2rem, 4.6vw, 3.5rem);
+    line-height: 1.04; letter-spacing: -0.02em;
+    margin: 0; color: var(--ink); text-wrap: balance; max-width: 18ch;
+  }
+  .hero .standfirst {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: clamp(15px, 1.5vw, 18px);
+    line-height: 1.5; color: var(--ink-soft);
+    margin: 16px 0 0; max-width: 58ch;
+  }
+  .hero .standfirst em.vlead {
+    font-style: italic; font-weight: 600; color: var(--ink);
+    border-bottom: 1.5px solid var(--flame); padding-bottom: 1px;
+  }
+  @media (max-width: 720px) { .hero { padding: 28px 0 20px; } }
+
+  /* ============================================================
+     SECTION label
+     ============================================================ */
+  .section-label {
+    margin-top: 32px; padding-bottom: 10px; border-bottom: var(--hairline);
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  }
+  .section-label .see-all {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .section-label .see-all .arr { color: var(--flame); }
+  .section-label .see-all:hover { color: var(--flame-deep); }
+
+  /* ============================================================
+     LV-CARD — the canonical card.
+     Same skeleton drives match, outright, and headline (.is-lead).
+     ============================================================ */
+  .lv-card {
+    position: relative; display: grid;
+    grid-template-columns: 6px 1fr;
+    grid-template-rows: auto auto auto auto auto;
+    column-gap: 22px; row-gap: 6px;
+    padding: 22px 26px 22px 0;
+    background: var(--paper-pure);
+    border: var(--hairline);
+    text-decoration: none; color: var(--ink);
+    transition: background var(--dur-fast) var(--ease-standard);
+  }
+  .lv-card + .lv-card { margin-top: 14px; }
+  .lv-card:hover { background: var(--paper-warm); }
+  .lv-card .lv-bar { grid-column: 1; grid-row: 1 / -1; background: var(--rule); }
+
+  /* head row */
+  .lv-card .lv-head {
+    grid-column: 2; grid-row: 1;
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .lv-card .lv-glyph {
+    font-family: var(--font-sans); font-weight: 700; font-size: 16px;
+    line-height: 1; color: var(--graphite-soft);
+  }
+  .lv-card .lv-lab {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .lv-card .lv-when {
+    font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
+    letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-left: auto;
+  }
+
+  /* title */
+  .lv-card .lv-teams {
+    grid-column: 2; grid-row: 2;
+    font-family: var(--font-serif); font-weight: 600;
+    font-size: clamp(22px, 2.6vw, 28px);
+    line-height: 1.08; letter-spacing: -0.015em;
+    color: var(--ink); margin: 4px 0 0; text-wrap: balance;
+  }
+  .lv-card .lv-teams .vs {
+    color: var(--graphite-soft); font-weight: 400; font-style: italic; margin: 0 6px;
+  }
+  .lv-card .lv-venue-meta {
+    grid-column: 2; grid-row: 3;
+    font-family: var(--font-sans); font-size: 11.5px; color: var(--graphite);
+    letter-spacing: 0.04em; margin: 0;
+  }
+
+  /* thesis */
+  .lv-card .lv-thesis {
+    grid-column: 2; grid-row: 4;
+    font-family: var(--font-serif); font-size: 15px; line-height: 1.55;
+    color: var(--graphite); margin: 8px 0 0; max-width: 60ch;
+  }
+  .lv-card .lv-thesis em { font-style: italic; color: var(--ink); font-weight: 600; }
+
+  /* foot — reads + action.
+     Desktop: single row, action floats right.
+     Mobile: stacks, action promotes to full-width ink button. */
+  .lv-card .lv-foot {
+    grid-column: 2; grid-row: 5;
+    display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: baseline;
+    margin-top: 10px; padding-top: 14px;
+    border-top: var(--hairline-soft);
+  }
+  .lv-card .lv-reads { display: flex; gap: 14px; flex-wrap: wrap; align-items: baseline; }
+  .lv-card .rp { display: inline-flex; align-items: baseline; gap: 6px; }
+  .lv-card .rp .k {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .lv-card .rp .v {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 700; font-size: 14px; color: var(--ink);
+  }
+  .lv-card .edge {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 700; font-size: 13px; color: var(--flame-deep);
+    border-bottom: 2px solid var(--flame); padding-bottom: 1px; line-height: 1;
+  }
+  .lv-card .edge.is-neg { color: var(--ink); border-bottom-color: var(--ink); }
+  .lv-card .edge.is-flat { color: var(--graphite-soft); border-bottom-color: var(--rule); }
+
+  .lv-card .lv-action {
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 12px;
+  }
+  .lv-card .lv-action .venue {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .lv-card .lv-action .price {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 700; font-size: 16px; color: var(--ink);
+    border-bottom: 2px solid var(--flame); padding-bottom: 1px;
+  }
+
+  /* THE CTA — small but bold + standout.
+     Ink-bg pill on desktop. Compact (≤32px height). Flame arrow. */
+  .lv-card .lv-action .cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 12px 6px;
+    background: var(--ink); color: var(--paper);
+    border-radius: 4px;
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    white-space: nowrap;
+    transition: background var(--dur-fast) var(--ease-standard);
+  }
+  .lv-card .lv-action .cta .arr { color: var(--flame); transition: transform var(--dur-fast) var(--ease-standard); }
+  .lv-card:hover .lv-action .cta,
+  .lv-card .lv-action .cta:hover { background: var(--flame-deep); }
+  .lv-card:hover .lv-action .cta .arr,
+  .lv-card .lv-action .cta:hover .arr { color: var(--paper); transform: translate(2px, -2px); }
+
+  /* ----- Verdict variants ----- */
+  .lv-card.is-pick { background: var(--flame-tint); border-color: var(--flame); }
+  .lv-card.is-pick .lv-bar { background: var(--flame); }
+  .lv-card.is-pick .lv-glyph { color: var(--flame); }
+  .lv-card.is-pick .lv-lab { color: var(--flame-deep); }
+  .lv-card.is-pick:hover { filter: brightness(0.985); }
+
+  .lv-card.is-pass .lv-bar { background: var(--rule); }
+  .lv-card.is-pass .lv-glyph { color: var(--graphite-soft); }
+  .lv-card.is-pass .lv-lab { color: var(--graphite-soft); }
+  .lv-card.is-pass .lv-teams { font-size: clamp(20px, 2.2vw, 24px); }
+  .lv-card.is-pass .lv-thesis { font-size: 14.5px; }
+
+  .lv-card.is-avoid .lv-bar { background: var(--ink); }
+  .lv-card.is-avoid .lv-glyph { color: var(--flame); }
+  .lv-card.is-avoid .lv-lab {
+    color: var(--ink); border-bottom: 1.5px solid var(--flame); padding-bottom: 1px;
+  }
+  .lv-card.is-avoid .lv-action .price {
+    text-decoration: line-through; text-decoration-color: var(--flame); text-decoration-thickness: 1.5px;
+  }
+
+  /* ----- Lead headline (scale-up, same skeleton) ----- */
+  .lv-card.is-lead {
+    padding: 28px 32px 28px 0;
+  }
+  .lv-card.is-lead .lv-teams { font-size: clamp(28px, 4.2vw, 42px); line-height: 1.04; }
+  .lv-card.is-lead .lv-thesis { font-size: 16.5px; }
+  .lv-card.is-lead .lv-action .price { font-size: 19px; }
+  .lv-card.is-lead .lv-action .cta { padding: 9px 14px 8px; font-size: 11.5px; }
+
+  /* ----- Mobile (≤720px) ----- */
+  @media (max-width: 720px) {
+    .lv-card { padding: 18px 16px 18px 0; column-gap: 14px; row-gap: 4px; }
+    .lv-card .lv-when { display: none; }
+    .lv-card .lv-teams { font-size: 22px; }
+    .lv-card.is-lead .lv-teams { font-size: 26px; }
+    .lv-card .lv-thesis { font-size: 14.5px; }
+    .lv-card .lv-foot { flex-direction: column; align-items: stretch; gap: 14px; }
+    .lv-card .lv-action {
+      margin-left: 0; width: 100%;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    }
+    .lv-card .lv-action .venue,
+    .lv-card .lv-action .price { flex: 0 0 auto; }
+    /* Mobile CTA — full-width 44px tap target, ink button, bold + standout. */
+    .lv-card .lv-action .cta {
+      flex: 1 1 100%;
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 44px; padding: 11px 14px;
+      font-size: 12px; letter-spacing: 0.08em;
+    }
+  }
+
+  /* ============================================================
+     FOOTNOTE — affiliate disclosure + voice block
+     ============================================================ */
+  .affiliate-note {
+    margin: 16px 0 0;
+    font-family: var(--font-serif); font-style: italic; font-size: 13px;
+    color: var(--graphite); max-width: 60ch;
+  }
+  .voice {
+    margin: 40px 0 0;
+    padding: 22px 22px;
+    background: var(--paper-warm); border-left: 3px solid var(--flame);
+    border-radius: 0 4px 4px 0;
+  }
+  .voice h3 {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--flame-deep);
+    margin: 0 0 8px;
+  }
+  .voice p {
+    font-family: var(--font-serif); font-size: 14.5px; line-height: 1.55;
+    color: var(--ink); margin: 0; max-width: 60ch;
+  }
+  .voice p em { font-weight: 600; font-style: italic; }
+
+  .site-foot {
+    margin: 48px 0 28px; padding-top: 18px; border-top: var(--hairline);
+    display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: space-between;
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .site-foot .left { color: var(--ink); }
+</style>
+</head>
+<body>
+
+  <!-- ==================================================== MASTHEAD ==================================================== -->
+  <header class="masthead">
+    <div class="inner">
+      <a class="brand" href="/" aria-label="Odds Primer home">
+        <span class="wm-row">
+          <span class="glyph" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </span>
+          <span class="wm">Odds Primer</span>
+        </span>
+        <span class="tag">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span></span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary">
+        <ul>
+          <li><a href="/" aria-current="page">Home</a></li>
+          <li><a href="/outrights">Outright winners</a></li>
+          <li><a href="/matches">Upcoming matches</a></li>
+        </ul>
+      </nav>
+
+      <span class="nav-meta">Updated 14:08 ET</span>
+
+      <button class="burger" aria-label="More links">
+        <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+          <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+  <div class="edition-strip">
+    <div class="inner">
+      <span class="vol">Vol. 1 · World Cup 2026 · Matchday 2</span>
+      <span class="live">Markets live</span>
+    </div>
+  </div>
+
+  <main class="page">
+
+    <!-- ==================================================== HERO ==================================================== -->
+    <section class="hero" aria-labelledby="hero-title">
+      <h1 id="hero-title">The 2026 World Cup, priced.</h1>
+      <p class="standfirst">
+        Our AI model compares Polymarket and Kalshi prices against its own read of
+        every match. Every market gets one verdict:
+        <em class="vlead">Pick</em>, <em class="vlead">Pass</em>, or <em class="vlead">Avoid</em>.
+        We show the price, the edge, and the reasoning. We don't tip.
+      </p>
+    </section>
+
+    <!-- ==================================================== 01 HEADLINE VERDICT ==================================================== -->
+    <div class="section-label">
+      <span>Today's headline verdict · Matchday 2 · Saturday</span>
+      <a class="see-all" href="/matches">All matches <span class="arr">→</span></a>
+    </div>
+
+    <a class="lv-card is-pick is-lead" href="/m/fb-wc26-fra-mex-20260612">
+      <span class="lv-bar"></span>
+      <div class="lv-head">
+        <span class="lv-glyph">▲</span>
+        <span class="lv-lab">Pick</span>
+        <span class="lv-when">Sat · 21:00 ET · Group F</span>
+      </div>
+      <h2 class="lv-teams">France <span class="vs">v</span> Mexico</h2>
+      <p class="lv-venue-meta">MEX · Estadio Azteca</p>
+      <p class="lv-thesis">
+        <em>France look four points underpriced.</em>
+        Polymarket is pricing France lower than our model. Our model has France
+        at 56% to win; the market has them at 52%. That gap is the edge.
+      </p>
+      <div class="lv-foot">
+        <div class="lv-reads">
+          <span class="rp"><span class="k">Model</span><span class="v">56%</span></span>
+          <span class="rp"><span class="k">Market</span><span class="v">52%</span></span>
+          <span class="edge">+4pp</span>
+        </div>
+        <div class="lv-action">
+          <span class="venue">Polymarket</span>
+          <span class="price">−180</span>
+          <span class="cta">Read the case <span class="arr">↗</span></span>
+        </div>
+      </div>
+    </a>
+
+    <p class="affiliate-note">
+      Odds Primer may earn a referral fee if you use a partner venue. Verdicts are editorial and independent.
+    </p>
+
+    <!-- ==================================================== 02 UPCOMING MATCHES ==================================================== -->
+    <div class="section-label">
+      <span>Upcoming matches · Matchday 2</span>
+      <a class="see-all" href="/matches">See all 8 <span class="arr">→</span></a>
+    </div>
+
+    <a class="lv-card is-pass" href="/m/fb-wc26-cmr-ksa-20260518">
+      <span class="lv-bar"></span>
+      <div class="lv-head">
+        <span class="lv-glyph">—</span>
+        <span class="lv-lab">Pass</span>
+        <span class="lv-when">Mon · 18:00 ET · Group F</span>
+      </div>
+      <h3 class="lv-teams">Cameroon <span class="vs">v</span> Saudi Arabia</h3>
+      <p class="lv-venue-meta">USA · MetLife Stadium</p>
+      <p class="lv-thesis">
+        <em>No clear edge.</em>
+        Both Polymarket and Kalshi sit within half a point of our model. The line is doing its job.
+      </p>
+      <div class="lv-foot">
+        <div class="lv-reads">
+          <span class="rp"><span class="k">Model</span><span class="v">42%</span></span>
+          <span class="rp"><span class="k">Market</span><span class="v">42%</span></span>
+          <span class="edge is-flat">+0pp</span>
+        </div>
+        <div class="lv-action">
+          <span class="venue">Polymarket</span>
+          <span class="price">+138</span>
+          <span class="cta">Read the case <span class="arr">↗</span></span>
+        </div>
+      </div>
+    </a>
+
+    <a class="lv-card is-avoid" href="/m/fb-wc26-mex-ksa-20260623">
+      <span class="lv-bar"></span>
+      <div class="lv-head">
+        <span class="lv-glyph">✕</span>
+        <span class="lv-lab">Avoid</span>
+        <span class="lv-when">Tue · 18:00 ET · Group F</span>
+      </div>
+      <h3 class="lv-teams">Mexico <span class="vs">v</span> Saudi Arabia</h3>
+      <p class="lv-venue-meta">MEX · Guadalajara · Estadio Akron</p>
+      <p class="lv-thesis">
+        Mexico priced as the home favourite at numbers our model can't justify. Both sides cost too much.
+      </p>
+      <div class="lv-foot">
+        <div class="lv-reads">
+          <span class="rp"><span class="k">Model</span><span class="v">62%</span></span>
+          <span class="rp"><span class="k">Market</span><span class="v">71%</span></span>
+          <span class="edge is-neg">−9pp</span>
+        </div>
+        <div class="lv-action">
+          <span class="venue">Polymarket</span>
+          <span class="price">−245</span>
+          <span class="cta">Read the case <span class="arr">↗</span></span>
+        </div>
+      </div>
+    </a>
+
+    <!-- ==================================================== 03 OUTRIGHT WINNERS ==================================================== -->
+    <div class="section-label">
+      <span>Outright winners · World Cup 2026</span>
+      <a class="see-all" href="/outrights">See all 12 <span class="arr">→</span></a>
+    </div>
+
+    <a class="lv-card is-pick" href="/o/wc26-winner-fra">
+      <span class="lv-bar"></span>
+      <div class="lv-head">
+        <span class="lv-glyph">▲</span>
+        <span class="lv-lab">Pick</span>
+        <span class="lv-when">Resolves 19 Jul 2026 · WC 2026 winner</span>
+      </div>
+      <h3 class="lv-teams">France</h3>
+      <p class="lv-venue-meta">Group D · holders of form, priced like outsiders</p>
+      <p class="lv-thesis">
+        <em>The market has France four spots back in the field.</em>
+        Our Monte Carlo over 10,000 rollouts puts them clear of England;
+        the market hasn't priced the run-form yet.
+      </p>
+      <div class="lv-foot">
+        <div class="lv-reads">
+          <span class="rp"><span class="k">Model</span><span class="v">21%</span></span>
+          <span class="rp"><span class="k">Market</span><span class="v">16%</span></span>
+          <span class="edge">+5pp</span>
+        </div>
+        <div class="lv-action">
+          <span class="venue">Polymarket</span>
+          <span class="price">+525</span>
+          <span class="cta">Read the case <span class="arr">↗</span></span>
+        </div>
+      </div>
+    </a>
+
+    <a class="lv-card is-avoid" href="/o/wc26-winner-bra">
+      <span class="lv-bar"></span>
+      <div class="lv-head">
+        <span class="lv-glyph">✕</span>
+        <span class="lv-lab">Avoid</span>
+        <span class="lv-when">Resolves 19 Jul 2026 · WC 2026 winner</span>
+      </div>
+      <h3 class="lv-teams">Brazil</h3>
+      <p class="lv-venue-meta">Group B · favourite by clear daylight</p>
+      <p class="lv-thesis">
+        Tournament favourite at 22¢ on both venues; our Monte Carlo has them closer to 18%.
+        Favourite is priced thin — better value elsewhere in the field.
+      </p>
+      <div class="lv-foot">
+        <div class="lv-reads">
+          <span class="rp"><span class="k">Model</span><span class="v">18%</span></span>
+          <span class="rp"><span class="k">Market</span><span class="v">22%</span></span>
+          <span class="edge is-neg">−4pp</span>
+        </div>
+        <div class="lv-action">
+          <span class="venue">Polymarket</span>
+          <span class="price">+355</span>
+          <span class="cta">Read the case <span class="arr">↗</span></span>
+        </div>
+      </div>
+    </a>
+
+    <!-- ==================================================== VOICE ==================================================== -->
+    <aside class="voice">
+      <h3>One card. Every event type.</h3>
+      <p>
+        Same skeleton drives <em>matches</em>, <em>outright winners</em> and the
+        <em>headline verdict</em>. Model and market sit on the left; venue, price
+        and CTA on the right. On mobile the foot stacks and the CTA promotes to
+        a 44px ink button.
+      </p>
+    </aside>
+
+    <footer class="site-foot">
+      <span class="left">Odds Primer · educational, not advice</span>
+      <span>The Desk · v1.1 · 18 May 2026</span>
+    </footer>
+
+  </main>
+
+</body>
+</html>

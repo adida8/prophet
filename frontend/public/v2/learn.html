@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Learn the basics — Odds Primer</title>
+<meta name="description" content="Three short primers on prediction markets — what they are, how prices are set, and whether they're legal where you live. Plain English, no jargon.">
+<link rel="stylesheet" href="./colors_and_type.css">
+<style>
+  body { padding: 0 0 0; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter-page); }
+
+  /* shared chrome (same as about.html / home-v3) */
+  .site-masthead { border-bottom: var(--hairline); background: var(--paper); }
+  .site-masthead .inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 14px var(--gutter-page) 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    border-top: var(--hairline-strong);
+  }
+  /* Canonical lockup — same on every page so the masthead height is stable
+     across home → about → learn navigation. */
+  .brand-lock {
+    display: inline-flex; flex-direction: column; gap: 4px;
+    text-decoration: none;
+  }
+  .brand-lock svg { display: block; }
+  .brand-lock .wm-row { display: flex; align-items: baseline; gap: 12px; }
+  .brand-lock .wm {
+    font-family: var(--font-sans); font-weight: 700; font-size: 22px;
+    color: var(--ink); letter-spacing: -0.022em; line-height: 1;
+  }
+  .brand-lock .tag {
+    font-family: var(--font-serif); font-style: italic; font-weight: 400;
+    font-size: 12px; line-height: 1.3; color: var(--graphite);
+    padding-left: 0;
+  }
+  .brand-lock .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+  .site-nav { display: none; }
+  .site-nav ul { list-style: none; padding: 0; margin: 0; display: flex; gap: 26px; }
+  .site-nav a {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ink); text-decoration: none;
+    padding: 6px 0; border-bottom: 1.5px solid transparent;
+  }
+  .site-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
+  .site-nav a[aria-current="page"] { border-bottom-color: var(--flame); }
+  .nav-meta {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    display: none;
+  }
+  @media (min-width: 820px) {
+    .site-nav { display: block; }
+    .nav-meta { display: inline; }
+  }
+  .edition-strip { border-top: var(--hairline-soft); background: var(--paper); }
+  .edition-strip .inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 8px var(--gutter-page);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  /* ---------- mobile pill-style nav (replaces burger) ---------- */
+  .pill-nav {
+    display: flex; gap: 6px; align-items: center;
+    padding: 12px var(--gutter-page);
+    border-bottom: var(--hairline);
+    background: var(--paper);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .pill-nav::-webkit-scrollbar { display: none; }
+  .pill-nav a {
+    font-family: var(--font-sans); font-size: 15px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
+    padding: 10px 18px; border-radius: 999px;
+    white-space: nowrap;
+    transition: background var(--dur-fast) var(--ease-standard),
+                color var(--dur-fast) var(--ease-standard);
+  }
+  .pill-nav a[aria-current="page"] {
+    background: var(--ink); color: var(--paper);
+  }
+  .pill-nav a:not([aria-current="page"]):hover {
+    color: var(--flame-deep);
+  }
+  @media (min-width: 820px) {
+    .pill-nav { display: none; }
+  }
+
+  /* ---------- burger menu (About + Learn — secondary overflow) ---------- */
+  .burger { position: relative; display: inline-block; }
+  .burger-btn {
+    list-style: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    border: var(--hairline); background: var(--paper-pure);
+    color: var(--ink); border-radius: 2px;
+    transition: background var(--dur-fast) var(--ease-standard),
+                color var(--dur-fast) var(--ease-standard);
+  }
+  .burger-btn::-webkit-details-marker { display: none; }
+  .burger-btn::marker { content: ""; }
+  .burger-btn:hover { color: var(--flame-deep); }
+  .burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
+  .burger-menu {
+    position: absolute; right: 0; top: calc(100% + 8px);
+    min-width: 180px;
+    background: var(--paper-pure); border: var(--hairline);
+    list-style: none; margin: 0; padding: 6px 0;
+    box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08);
+    z-index: 50;
+  }
+  .burger-menu li { padding: 0; margin: 0; list-style: none; }
+  .burger-menu a {
+    display: block; padding: 10px 18px;
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
+  }
+  .burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
+
+
+
+  /* hero */
+  .learn-hero { padding: 56px 0 24px; }
+  .learn-eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-bottom: 16px;
+  }
+  .learn-hero h1 {
+    font-family: var(--font-serif); font-weight: 600;
+    font-size: clamp(2.25rem, 4.4vw, 3.25rem);
+    line-height: 1.04; letter-spacing: -0.015em;
+    margin: 0; color: var(--ink); text-wrap: balance; max-width: 18ch;
+  }
+  .learn-hero .standfirst {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: clamp(17px, 1.6vw, 20px);
+    line-height: 1.5; color: var(--ink-soft);
+    margin: 20px 0 0; max-width: 60ch;
+  }
+
+  /* primer grid */
+  .primers {
+    margin-top: 48px;
+    padding-top: 18px;
+    border-top: var(--hairline);
+    display: grid; grid-template-columns: 1fr; gap: 0;
+  }
+  .primer {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr) auto;
+    align-items: center; gap: 18px;
+    padding: 28px 0;
+    border-bottom: var(--hairline);
+    text-decoration: none; color: var(--ink);
+    transition: background var(--dur-fast) var(--ease-standard);
+  }
+  .primer:hover { background: var(--paper-warm); }
+  .primer .num {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 28px; font-weight: 600; color: var(--graphite-soft);
+    line-height: 1; align-self: start; margin-top: 6px;
+  }
+  .primer:hover .num { color: var(--flame); }
+  .primer .meta {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--flame-deep);
+    margin-bottom: 6px;
+  }
+  .primer h2 {
+    font-family: var(--font-serif); font-size: clamp(20px, 2.4vw, 26px);
+    font-weight: 600; letter-spacing: -0.005em; line-height: 1.18;
+    margin: 0 0 6px; color: var(--ink); text-wrap: balance;
+  }
+  .primer p {
+    font-family: var(--font-serif); font-size: 15px; line-height: 1.5;
+    color: var(--graphite); margin: 0; max-width: 56ch;
+  }
+  .primer .read {
+    font-family: var(--font-sans); font-size: 12px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ink); text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 6px;
+    align-self: center;
+  }
+  .primer .read .arr { color: var(--flame); transition: transform var(--dur-fast) var(--ease-standard); }
+  .primer:hover .read { color: var(--flame-deep); }
+  .primer:hover .read .arr { transform: translate(2px, -2px); }
+  @media (max-width: 720px) {
+    .primer { grid-template-columns: 40px minmax(0, 1fr); }
+    .primer .read { display: none; }
+    .primer .num { font-size: 22px; }
+  }
+
+  /* outro CTA back to home */
+  .outro {
+    margin-top: 64px; padding: 36px 0 56px;
+    border-top: var(--hairline-strong);
+  }
+  .outro h3 {
+    font-family: var(--font-serif); font-size: clamp(22px, 2.6vw, 28px);
+    font-weight: 600; letter-spacing: -0.005em; color: var(--ink);
+    margin: 0 0 8px; text-wrap: balance; max-width: 28ch;
+  }
+  .outro p {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 15px; color: var(--graphite); line-height: 1.5;
+    margin: 0 0 22px; max-width: 56ch;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-sans); font-size: 14px; font-weight: 600;
+    letter-spacing: 0.02em; color: var(--paper); background: var(--ink);
+    padding: 12px 18px; border: 0; border-radius: 4px;
+    text-decoration: none; cursor: pointer;
+    min-height: 44px;
+  }
+  .btn-primary:hover { background: var(--flame-deep); }
+  .btn-primary .arr { color: var(--flame); }
+  .btn-primary:hover .arr { color: var(--paper); }
+
+  /* shared footer */
+  footer.site-footer { border-top: var(--hairline-strong); background: var(--paper); }
+  footer.site-footer .foot-inner { max-width: 1180px; margin: 0 auto; padding: 36px var(--gutter-page) 28px; }
+  .foot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 28px; margin-bottom: 22px; }
+  .foot-col h4 {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+    margin: 0 0 10px;
+  }
+  .foot-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .foot-col a { font-family: var(--font-sans); font-size: 13px; color: var(--ink); text-decoration: none; }
+  .foot-col a:hover { color: var(--flame-deep); }
+  .foot-brand {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 11px;
+    border-top: var(--hairline); padding-top: 22px; margin-top: 4px;
+  }
+  .foot-brand .wm { font-family: var(--font-sans); font-weight: 700; font-size: 22px; color: var(--ink); letter-spacing: -0.022em; }
+  .foot-brand .pub { font-family: var(--font-serif); font-style: italic; color: var(--graphite); font-size: 13px; }
+  .foot-brand .pub .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+  .foot-discl {
+    font-family: var(--font-serif); font-size: 12.5px; color: var(--graphite);
+    line-height: 1.55; max-width: 78ch;
+    padding-top: 18px; border-top: var(--hairline-soft);
+  }
+  .foot-discl .dag { color: var(--flame); font-style: italic; }
+  .foot-meta {
+    margin-top: 16px;
+    font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
+    letter-spacing: 0.04em; display: flex; flex-wrap: wrap; gap: 6px 16px;
+  }
+  @media (min-width: 720px) {
+    .foot-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 36px; }
+    .foot-brand { grid-column: auto; border-top: 0; padding-top: 0; margin-top: 0;
+      flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="site-masthead">
+    <div class="inner">
+      <a class="brand-lock" href="./home-v3.html" aria-label="Odds Primer — the AI sports desk for market edge">
+        <span class="wm-row">
+          <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
+          <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+          <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+          <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+          <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+          <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+        </svg>
+          <span class="wm">Odds Primer</span>
+        </span>
+        <span class="tag">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span></span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+              <ul>
+                <li><a href="./home-v3.html">Home</a></li>
+                <li><a href="./outrights.html">Outright winners</a></li>
+                <li><a href="./matches.html">Upcoming matches</a></li>
+              </ul>
+            </nav>
+      <span class="nav-meta">Three primers · 12 min total</span>
+      <details class="burger">
+        <summary class="burger-btn" aria-label="More links">
+          <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+            <rect y="0"  width="16" height="1.5" fill="currentColor"/>
+            <rect y="5"  width="16" height="1.5" fill="currentColor"/>
+            <rect y="10" width="16" height="1.5" fill="currentColor"/>
+          </svg>
+        </summary>
+        <ul class="burger-menu">
+          <li><a href="./about.html">About</a></li>
+          <li><a href="./learn.html">Learn the basics</a></li>
+        </ul>
+      </details>
+    </div>
+    <div class="edition-strip">
+      <div class="inner">
+        <span>Learn · The basics</span>
+        <span>Updated 12 May 2026</span>
+      </div>
+    </div>
+    <nav class="pill-nav" aria-label="Primary (mobile)">
+          <a href="./outrights.html">Winners</a>
+          <a href="./matches.html">Matches</a>
+        </nav>
+  </header>
+
+  <main class="page">
+    <section class="learn-hero">
+      <div class="learn-eyebrow">Learn · Volume 1</div>
+      <h1>Three short reads, and you'll know how to read the rest of the site.</h1>
+      <p class="standfirst">
+        You don't need a finance background to read a prediction market — you need
+        about twelve minutes and a willingness to think in percentages instead of
+        slogans. Start with the first; the others are stand-alone.
+      </p>
+    </section>
+
+    <section class="primers" aria-label="Primers">
+      <a class="primer" href="./learn-what-is-a-prediction-market.html">
+        <span class="num">01</span>
+        <div>
+          <div class="meta">3 min read · The basics</div>
+          <h2>What is a prediction market?</h2>
+          <p>A market where you trade contracts that pay out on real-world events. Different from sports betting in one important way — the price <em>is</em> the probability.</p>
+        </div>
+        <span class="read">Read <span class="arr">↗</span></span>
+      </a>
+
+      <a class="primer" href="./learn-how-prices-are-set.html">
+        <span class="num">02</span>
+        <div>
+          <div class="meta">5 min read · Reading the numbers</div>
+          <h2>How are prices set?</h2>
+          <p>Order books, implied probability, and the reason two venues can quote the same outcome at different prices. With one worked example you can replay in your head.</p>
+        </div>
+        <span class="read">Read <span class="arr">↗</span></span>
+      </a>
+
+      <a class="primer" href="./learn-is-it-legal.html">
+        <span class="num">03</span>
+        <div>
+          <div class="meta">4 min read · Geo + age</div>
+          <h2>Is it legal?</h2>
+          <p>It depends on where you live and which venue you use. A state-by-state read on Kalshi, Polymarket, and the sportsbook-run prediction products — without the lawyer-pretending tone.</p>
+        </div>
+        <span class="read">Read <span class="arr">↗</span></span>
+      </a>
+    </section>
+
+    <section class="outro">
+      <h3>Ready to read a market?</h3>
+      <p>The board is grouped by tournament group. Tap any row to read the case behind the call.</p>
+      <a class="btn-primary" href="./home-v3.html#today">See today's board <span class="arr">↘</span></a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="foot-inner">
+      <div class="foot-grid">
+        <div class="foot-brand">
+          <svg viewBox="0 0 38 34" width="44" height="40" aria-hidden="true">
+            <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+            <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+            <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+            <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+            <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+          </svg>
+          <span class="wm">Odds Primer</span>
+          <span class="pub">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span>.</span>
+        </div>
+        <div class="foot-col">
+          <h4>Editorial</h4>
+          <ul>
+            <li><a href="./home-v3.html#today">Today's board</a></li>
+            <li><a href="./home-v3.html#outrights">Outright winners</a></li>
+            <li><a href="/columns">Columns</a></li>
+            <li><a href="./learn.html">Learn the basics</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="./about.html">About</a></li>
+            <li><a href="/methodology">Methodology</a></li>
+            <li><a href="/corrections">Corrections</a></li>
+            <li><a href="mailto:hello@oddsprimer.com">Contact</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="/privacy">Privacy</a></li>
+            <li><a href="/terms">Terms of use</a></li>
+            <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>
+            <li><a href="/responsible-use">Responsible use</a></li>
+            <li><a href="/cookies">Cookies</a></li>
+            <li><a href="/accessibility">Accessibility</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="foot-discl">
+        <span class="dag">†</span> Odds Primer is an editorial publication. We do not take wagers,
+        hold reader funds, or execute trades. Prediction-market trading involves risk; check your
+        local laws before acting on what you read. 21+ in NY, MA, NJ, and others. When you act on
+        a "View source on" link and trade at a partner venue, the venue may share a portion of
+        its trading fee with us — disclosed in full on the
+        <a href="/affiliate-disclosure">Affiliate disclosure</a> page.
+      </p>
+      <div class="foot-meta">
+        <span>© 2026 Odds Primer.</span>
+        <span>Published from the United Kingdom.</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
