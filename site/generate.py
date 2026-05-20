@@ -943,11 +943,33 @@ def chrome_head(title: str, description: str = "", *, path: str = "/") -> str:
 """
 
 
+def _desk_last_refresh_utc() -> datetime | None:
+    """Most-recent timestamp the Desk pipeline published — read from the
+    `updated_at` field of the football and outrights `index.json` files.
+    Falls back to None if neither exists (fresh checkout)."""
+    stamps: list[datetime] = []
+    for idx in (FOOTBALL_DIR / "index.json", OUTRIGHTS_DIR / "index.json"):
+        if not idx.exists():
+            continue
+        try:
+            blob = json.loads(idx.read_text())
+            iso  = blob.get("updated_at")
+            if iso:
+                stamps.append(datetime.fromisoformat(iso.replace("Z", "+00:00")))
+        except (json.JSONDecodeError, ValueError):
+            continue
+    return max(stamps) if stamps else None
+
+
 def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
     """Masthead + edition strip. `active` is one of 'home' / 'matches' / 'outrights'."""
     def cur(name: str) -> str:
         return ' aria-current="page"' if active == name else ""
-    updated = datetime.now(timezone.utc).strftime("Updated %H:%M UTC")
+    last_run = _desk_last_refresh_utc()
+    if last_run is not None:
+        updated = last_run.strftime("Last refresh %H:%M UTC")
+    else:
+        updated = "Awaiting first refresh"
     return f"""<header class="masthead">
   <div class="inner">
     <a class="brand" href="/" aria-label="Odds Primer home">
