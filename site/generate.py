@@ -582,6 +582,23 @@ a { color: inherit; }
 
 # ─── Page chrome (shared across all pages) ───
 
+GA_SNIPPET = """<!-- Google Analytics (gtag.js) — only loads on oddsprimer.com -->
+<script>
+(function(){
+  var h = location.hostname;
+  if (h !== 'oddsprimer.com' && h !== 'www.oddsprimer.com') return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=G-DH4D6X8YRN';
+  document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){dataLayer.push(arguments);};
+  gtag('js', new Date());
+  gtag('config', 'G-DH4D6X8YRN');
+})();
+</script>"""
+
+
 def chrome_head(title: str, description: str = "") -> str:
     """Return the <head> section for any page."""
     desc = description or "Educational verdicts on Polymarket and Kalshi prices. Pick · Pass · Avoid."
@@ -592,6 +609,7 @@ def chrome_head(title: str, description: str = "") -> str:
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{escape(title)}</title>
 <meta name="description" content="{escape(desc)}">
+{GA_SNIPPET}
 <style>{CSS}</style>
 </head>
 <body>
