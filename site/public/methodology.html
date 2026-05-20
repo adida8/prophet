@@ -697,7 +697,7 @@ body.op-noscroll { overflow: hidden; }
         <ul class="burger-menu">
           <li><a href="./about.html">About</a></li>
           <li><a href="./method.html">Method</a></li>
-          <li><a href="./methodology.html" aria-current="page">Methodology (detail)</a></li>
+          <li><a href="./methodology.html" aria-current="page">The Desk</a></li>
           <li><a href="./learn.html">Learn the basics</a></li>
           <li><a href="./corrections.html">Corrections</a></li>
         </ul>
@@ -716,78 +716,276 @@ body.op-noscroll { overflow: hidden; }
   </header>
 
   <main class="page">
-    <article class="content">
-      <aside class="content-rail" aria-label="On this page">
-      <span class="rail-lbl">On this page</span>
-      <a href="#analyze">What we analyze</a>
-      <a href="#market">Market probability</a>
-      <a href="#model">Model probability</a>
-      <a href="#edge">The edge</a>
-      <a href="#verdicts">Verdicts</a>
-      <a href="#thresholds">When a gap is meaningful</a>
-      <a href="#dont">What we don't do</a>
-      <a href="#limits">Limitations</a>
-    </aside>
-    <div class="content-prose">
-        <div class="page-eyebrow">Methodology · detail</div>
-        <h1>How The Desk reads a market</h1>
-        <p class="standfirst">Our goal is not to predict every result correctly. Our goal is to identify where the market price and the model disagree enough to deserve attention.</p>
-        <p class="meta-line">Methodology · 8 min read · <a href="./method.html" style="color:var(--ink);">See the six-stage overview ↗</a></p>
-        <div class="in-short"><span class="lbl">In short</span>The Desk compares market probability with model probability. When the gap is meaningful, we publish Pick, Pass, or Avoid. The verdict is an editorial read, not an instruction.</div>
-        <section id="analyze">
-          <h2>What we analyze</h2>
-          <p>For each covered market, The Desk looks at:</p>
-          <ul><li>The event being priced</li><li>The venue price</li><li>The implied probability of that price</li><li>The model probability</li><li>The gap between market and model</li><li>Relevant context around the event</li><li>Whether the gap is meaningful enough to publish a verdict</li></ul>
-        </section>
-        <section id="market">
-          <h2>Market probability</h2>
-          <p>Prediction markets express prices as probabilities.</p>
-          <p>For example, a market price of 52% means the market is roughly pricing the outcome as a 52-in-100 event.</p>
-          <p>Odds Primer translates market prices into plain-English probability terms so readers can understand what the market is saying.</p>
-        </section>
-        <section id="model">
-          <h2>Model probability</h2>
-          <p>Model probability is the independent estimate produced by The Desk.</p>
-          <p>It may include structured inputs, market context, historical data, team information, and other relevant signals. The exact model may change over time as we improve the product.</p>
-          <p>Model probability is not a guarantee. It is an estimate, and it can be wrong.</p>
-        </section>
-        <section id="edge">
-          <h2>The edge</h2>
-          <p>The edge is the difference between the model probability and the market-implied probability.</p>
-          <ul><li>Model: 56%</li><li>Market: 52%</li><li>Edge: +4 percentage points</li></ul>
-          <p>A positive edge means the model sees the outcome as more likely than the market currently prices it. It does not mean the outcome will happen.</p>
-        </section>
-        <section id="verdicts">
-          <h2>Verdicts</h2>
-          <p>Each market receives one editorial verdict.</p>
-          <h3>Pick</h3>
-          <p>The Desk sees the market as underpriced. This does not mean the outcome is guaranteed. It means the model and market disagree enough for the market to deserve closer inspection.</p>
-          <h3>Pass</h3>
-          <p>The model and market broadly agree. There may still be an interesting story, but we do not see a meaningful pricing gap.</p>
-          <h3>Avoid</h3>
-          <p>The price looks unattractive. This can happen when both sides of a market appear expensive, unclear, or poorly structured from a value perspective.</p>
-        </section>
-        <section id="thresholds">
-          <h2>When a gap is meaningful</h2>
-          <p>As a baseline, small gaps are usually Pass. Larger model-market gaps may become Pick or Avoid depending on liquidity, data quality, market structure, and sport.</p>
-          <p>We generally look for a meaningful gap before publishing a Pick. Small differences between market and model are usually treated as Pass unless there is a strong reason to explain the discrepancy.</p>
-        </section>
-        <section id="dont">
-          <h2>What we do not do</h2>
-          <p>Odds Primer does not:</p>
-          <ul><li>Take wagers</li><li>Hold reader funds</li><li>Execute trades</li><li>Offer personalized financial advice</li><li>Guarantee outcomes</li><li>Promise profit</li><li>Tell readers what to do with their money</li></ul>
-          <p>The Desk does not know a reader’s location, finances, eligibility, or risk tolerance. A verdict is a read on the price, not a read on the reader.</p>
-        </section>
-        <section id="limits">
-          <h2>Limitations</h2>
-          <p>Markets move quickly. Prices can change after publication.</p>
-          <p>Prices and model reads should show a last-updated timestamp on market pages, so readers can see how fresh a read is.</p>
-          <p>Models can be wrong. Data can be incomplete. Sports outcomes are uncertain.</p>
-          <p>Readers should always check the live source market before acting on anything they read.</p>
-          <div class="related"><div class="rl-lbl">Related</div><a href="./learn.html">Learn the basics</a><a href="./responsible-use.html">Responsible use</a><a href="./corrections.html">Corrections</a></div>
-        </section>
+
+    <!-- HERO -->
+    <section class="desk-hero">
+      <div class="eyebrow">The Desk</div>
+      <h1>The Desk reads every price so you don't have to.</h1>
+      <p class="standfirst">It's the engine behind every verdict on Odds Primer. The Desk compares what the market thinks will happen with what our model thinks will happen — then tells you, in plain English, when the two disagree enough to matter.</p>
+      <div class="in-short">
+        <span class="lbl">In short</span>
+        The Desk isn't a tipster. It's a reading. It scans every priced match, measures the gap between market and model, and publishes one of three verdicts — Pick, Pass, or Avoid.
       </div>
+    </section>
+
+    <!-- SECTION LEAD INTO DIAGRAM -->
+    <section class="section-lead">
+      <div class="kicker">How it works</div>
+      <h2>One match, start to verdict.</h2>
+      <p>Every covered fixture moves through the same six stages. Here's the whole pipeline — from the prices we ingest to the call you read.</p>
+    </section>
+
+    <!-- DIAGRAM -->
+    <div class="diagram-mount">
+      <section class="dd" aria-label="How The Desk works">
+        <div class="dd-eyebrow"><span>the desk · pipeline</span><span class="right">v1 · 2026</span></div>
+
+        <div class="trust-tease" aria-label="What we publish">
+          <div class="trust-stamps" aria-hidden="true">
+            <span class="stamp-mini stamp-pick">Pick</span>
+            <span class="stamp-mini stamp-pass">Pass</span>
+            <span class="stamp-mini stamp-avoid">Avoid</span>
+          </div>
+          <p class="trust-line">Three verdicts. We use all three. <strong>Most prices don't clear our bar</strong> — and we say so out loud.</p>
+        </div>
+
+        <h1 class="dd-h">One match. Six stages. One verdict.</h1>
+        <p class="dd-sub">We watch the markets. We do the maths. We publish a Pick, Pass, or Avoid on the price — and show our reasoning.</p>
+        <div class="dd-rule"></div>
+
+        <!-- 01 INGEST -->
+        <div class="stage">
+          <div class="stage-head">
+            <div class="stage-num">01</div>
+            <div class="stage-meta">
+              <div class="stage-eyebrow">Ingest</div>
+              <h2 class="stage-title">Every fixture the market prices, we evaluate</h2>
+              <p class="stage-cap">Multiple sources, joined on one fixture.</p>
+            </div>
+          </div>
+          <div class="src-grid" aria-label="Data sources">
+            <div class="src"><div class="src-tag"><span class="src-swatch" style="background:#2A6FDB"></span><span class="src-name">POLYMARKET</span></div><div class="src-body">Live prices.</div></div>
+            <div class="src"><div class="src-tag"><span class="src-swatch" style="background:#00C46A"></span><span class="src-name">KALSHI</span></div><div class="src-body">Live prices.</div></div>
+            <div class="src"><div class="src-tag"><span class="src-swatch" style="background:#0E2240"></span><span class="src-name">TEAM RATINGS</span></div><div class="src-body">Strength over time.</div></div>
+            <div class="src"><div class="src-tag"><span class="src-swatch" style="background:#3A3F47"></span><span class="src-name">FIXTURE DATA</span></div><div class="src-body">Venue, stage, kickoff.</div></div>
+            <div class="src"><div class="src-tag"><span class="src-swatch" style="background:#B89968"></span><span class="src-name">CONDITIONS</span></div><div class="src-body">What changes on the day.</div></div>
+            <div class="src"><div class="src-tag"><span class="src-swatch" style="background:#D9461C"></span><span class="src-name">NEWSROOM</span></div><div class="src-body">Vetted, sport-tagged.</div></div>
+          </div>
+          <div class="src-funnel" aria-hidden="true">
+            <svg viewBox="0 0 200 24" preserveAspectRatio="none">
+              <line x1="10"  y1="2" x2="80"  y2="22" stroke="#D9D2C0" stroke-width="0.8"/>
+              <line x1="60"  y1="2" x2="92"  y2="22" stroke="#D9D2C0" stroke-width="0.8"/>
+              <line x1="110" y1="2" x2="100" y2="22" stroke="#D9D2C0" stroke-width="0.8"/>
+              <line x1="100" y1="2" x2="108" y2="22" stroke="#D9D2C0" stroke-width="0.8"/>
+              <line x1="160" y1="2" x2="116" y2="22" stroke="#D9D2C0" stroke-width="0.8"/>
+              <line x1="190" y1="2" x2="120" y2="22" stroke="#D9D2C0" stroke-width="0.8"/>
+            </svg>
+          </div>
+        </div>
+        <div class="arrow-down"></div>
+
+        <!-- 02 CONTEXT -->
+        <div class="stage">
+          <div class="stage-head">
+            <div class="stage-num">02</div>
+            <div class="stage-meta">
+              <div class="stage-eyebrow">Context</div>
+              <h2 class="stage-title">We watch the match all the way to kickoff</h2>
+              <p class="stage-cap">Some context is stable. Some only matters at the end.</p>
+            </div>
+          </div>
+          <div class="tl">
+            <div class="tl-row"><div class="tl-pill stable" style="left:0%; right:0%;">Stable context</div></div>
+            <div class="tl-row"><div class="tl-pill late"   style="left:62%; right:0%;">Late context</div></div>
+            <div class="tl-axis">
+              <div class="tl-tick" style="left:0%;"></div>   <div class="tl-tick-label" style="left:0%;">Weeks out</div>
+              <div class="tl-tick" style="left:62%;"></div>
+              <div class="tl-tick" style="left:100%;"></div> <div class="tl-tick-label" style="left:100%; transform:translateX(-100%);">Kickoff</div>
+            </div>
+            <p class="tl-caption">If a piece of context isn't ready yet, we wait — we don't guess.</p>
+          </div>
+        </div>
+        <div class="arrow-down"></div>
+
+        <!-- 03 MODEL -->
+        <div class="stage">
+          <div class="stage-head">
+            <div class="stage-num">03</div>
+            <div class="stage-meta">
+              <div class="stage-eyebrow">Model</div>
+              <h2 class="stage-title">We work out the odds — independently</h2>
+              <p class="stage-cap">Our number, before we look at theirs.</p>
+            </div>
+          </div>
+          <div class="pb">
+            <div class="pb-row">
+              <div class="pb-label">France</div>
+              <div class="pb-track"><div class="pb-fill home" style="width:48%"></div></div>
+              <div class="pb-pct">48.0%</div>
+            </div>
+            <div class="pb-row">
+              <div class="pb-label">Draw</div>
+              <div class="pb-track"><div class="pb-fill draw" style="width:27%"></div></div>
+              <div class="pb-pct">27.0%</div>
+            </div>
+            <div class="pb-row">
+              <div class="pb-label">Mexico</div>
+              <div class="pb-track"><div class="pb-fill away" style="width:25%"></div></div>
+              <div class="pb-pct">25.0%</div>
+            </div>
+            <div class="pb-sum">Trained on every priced match. Never reads the market it's about to evaluate.</div>
+          </div>
+        </div>
+        <div class="arrow-down"></div>
+
+        <!-- 04 VERDICT -->
+        <div class="stage">
+          <div class="stage-head">
+            <div class="stage-num">04</div>
+            <div class="stage-meta">
+              <div class="stage-eyebrow">Verdict</div>
+              <h2 class="stage-title">Pick, Pass, or Avoid</h2>
+              <p class="stage-cap">Our number, against the best market price on the board.</p>
+            </div>
+          </div>
+          <div class="vc">
+            <div class="vc-bars">
+              <div class="vc-label">The Desk<span class="meta">our model</span></div>
+              <div class="vc-track"><div class="vc-fill desk" style="width:48%"></div></div>
+              <div class="vc-pct">48.0%</div>
+            </div>
+            <div class="vc-bars">
+              <div class="vc-label">Polymarket<span class="meta">best price</span></div>
+              <div class="vc-track"><div class="vc-fill market" style="width:43.8%"></div></div>
+              <div class="vc-pct">43.8%</div>
+            </div>
+            <div class="vc-edge">
+              <span class="vc-edge-label">edge in our favour</span>
+              <span class="vc-edge-value">+4.2pp</span>
+            </div>
+
+            <div class="ts">
+              <div class="ts-label">where the edge lands</div>
+              <div class="ts-scale">
+                <div class="ts-band avoid">Avoid</div>
+                <div class="ts-band pass">Pass</div>
+                <div class="ts-band pick">Pick</div>
+                <div class="ts-bar-label" style="left:30%;">market ahead</div>
+                <div class="ts-bar-label" style="left:70%;">our bar</div>
+                <div class="ts-here" style="left:84%;">
+                  <span class="ts-here-flag">this match</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="arrow-down"></div>
+
+        <!-- 05 EXPLAINER -->
+        <div class="stage">
+          <div class="stage-head">
+            <div class="stage-num">05</div>
+            <div class="stage-meta">
+              <div class="stage-eyebrow">Editorial</div>
+              <h2 class="stage-title">A verdict, in plain words</h2>
+              <p class="stage-cap">What the reader actually sees.</p>
+            </div>
+          </div>
+          <div class="pub-card">
+            <span class="pub-stamp">Pick</span>
+            <div class="pub-eyebrow">FIFA World Cup 2026 · Group D · 12 June</div>
+            <h3 class="pub-title">France v Mexico · class shows</h3>
+            <p class="pub-summary">Our number sits clear of the market on France. Group context, conditions in Guadalajara, and the spine of the squad all line up the same way.</p>
+            <div class="pub-foot">
+              <span class="pub-cite"><a href="/matches/">View source on Polymarket ↗</a></span>
+              <span class="pub-time">Updated 17:00 UTC</span>
+            </div>
+          </div>
+        </div>
+        <div class="arrow-down"></div>
+
+        <!-- 06 REACH -->
+        <div class="stage">
+          <div class="stage-head">
+            <div class="stage-num">06</div>
+            <div class="stage-meta">
+              <div class="stage-eyebrow">Reach</div>
+              <h2 class="stage-title">Same verdict, wherever you read</h2>
+              <p class="stage-cap">One call. Many surfaces.</p>
+            </div>
+          </div>
+          <div class="reach">
+            <div class="reach-row">
+              <span class="reach-where">Site</span>
+              <span class="reach-what">France · <span class="flame">PICK</span> · +4.2pp · <em>view source on Polymarket</em></span>
+            </div>
+            <div class="reach-row">
+              <span class="reach-where">API</span>
+              <span class="reach-what"><span class="mono">{ side: "France", state: "pick", edge_pp: 4.2 }</span></span>
+            </div>
+            <div class="reach-row">
+              <span class="reach-where">Partners</span>
+              <span class="reach-what">Embed-ready verdict tiles for editorial &amp; affiliate desks.</span>
+            </div>
+          </div>
+          <p class="reach-cap">When the call changes, every surface updates together.</p>
+        </div>
+
+        <div class="dd-rule-ink"></div>
+        <div class="promise-head">What we won't do</div>
+        <ul class="promises">
+          <li>Let the market influence our own number.</li>
+          <li>Quote tipsters or hide behind anonymous picks.</li>
+          <li>Tell you how much to stake.</li>
+          <li>Hide the reasoning behind a published verdict.</li>
+        </ul>
+
+        <div class="dd-foot">From The Desk · odds primer</div>
+      </section>
+    </div>
+
+    <!-- PROSE DETAIL -->
+    <article class="detail">
+      <div class="detail-kicker">The detail</div>
+
+      <section style="border-top:0; padding-top:8px; margin-top:0;">
+        <h2>The three verdicts</h2>
+        <p>Every market gets exactly one editorial verdict. It's a read on the price — not an instruction, and not a promise about the result.</p>
+        <h3>Pick</h3>
+        <p>The Desk sees the market as underpricing one side. The model and the price disagree enough for the market to deserve a closer look. It does not mean the outcome is guaranteed.</p>
+        <h3>Pass</h3>
+        <p>Market and model broadly agree. There may still be a good story, but there's no meaningful pricing gap. Most matches land here — and that's the point.</p>
+        <h3>Avoid</h3>
+        <p>The price looks unattractive from every side. This happens when both sides of a market appear expensive, unclear, or poorly structured from a value perspective.</p>
+      </section>
+
+      <section>
+        <h2>Why "Pass" is the point</h2>
+        <p>Most tipsters shout on every game. The Desk mostly stays quiet. It only speaks up when the gap is real — and the discipline to say nothing is what makes a Pick worth reading.</p>
+        <p>A meaningful gap depends on more than the headline number: liquidity, data quality, market structure, and the sport all feed into whether a gap becomes a Pick, an Avoid, or just a Pass.</p>
+      </section>
+
+      <section>
+        <h2>What we don't do</h2>
+        <p>Odds Primer does not:</p>
+        <ul>
+          <li>Take wagers or hold reader funds</li>
+          <li>Execute trades</li>
+          <li>Offer personalised financial advice</li>
+          <li>Guarantee outcomes or promise profit</li>
+          <li>Tell readers what to do with their money</li>
+        </ul>
+        <p>The Desk does not know a reader's location, finances, eligibility, or risk tolerance. A verdict is a read on the price, not a read on the reader.</p>
+      </section>
+
+      <section>
+        <h2>Limitations</h2>
+        <p>Markets move quickly, and prices can change after publication. Every market page shows a last-updated timestamp so you can see how fresh a read is.</p>
+        <p>Models can be wrong. Data can be incomplete. Sports outcomes are uncertain. Always check the live source market before acting on anything you read here.</p>
+        <div class="related"><div class="rl-lbl">Related</div><a href="./learn.html">Learn the basics</a><a href="./responsible-use.html">Responsible use</a><a href="./corrections.html">Corrections</a></div>
+      </section>
     </article>
+
   </main>
 
   
