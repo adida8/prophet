@@ -29,7 +29,7 @@ Build specs live alongside the code:
 Two deploy branches, both watched by Railway:
 
 - **`staging`** — pre-prod copy of the site. Work lands here first. Adi clicks around the staging URL to confirm things look right before promoting. (Staging URL: TODO — fill in.)
-- **`init/project-setup`** — production. Live URL: `https://web-production-9e0f9.up.railway.app/`. Only receives merges *from* `staging` once changes look good.
+- **`init/project-setup`** — production. Live URL: `https://oddsprimer.com` (Railway-deployed; the older `web-production-9e0f9.up.railway.app` host still resolves to the same service). Only receives merges *from* `staging` once changes look good.
 
 Default workflow: commit on `staging` → push → eyeball the staging URL → when happy, merge `staging` → `init/project-setup` to ship. Feature branches are optional; Adi typically works directly on `staging` since it's a solo build.
 
