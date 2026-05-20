@@ -3,9 +3,352 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Odds Primer — the 2026 World Cup, priced.</title>
+<title>Mockup C — lead verdict · Odds Primer</title>
 <meta name="description" content="We compare prices on the World Cup across Polymarket, Kalshi, and the sportsbooks. We explain what the numbers mean. We don't tip.">
-<link rel="stylesheet" href="./colors_and_type.css">
+<!-- design-system tokens inlined for standalone review -->
+<style>
+/* ============================================================
+   Odds Primer — Colors & Type
+   Editorial register. Sports-desk voice. Charts are the art.
+   ------------------------------------------------------------
+   Three palette directions are defined. The DEFAULT palette
+   (warm editorial) lives at :root. The other two are scoped
+   to data-palette attributes on <html> or any container.
+   ============================================================ */
+
+/* ---------- WEB FONTS ----------
+   Anthropic-adjacent stack, all free Google Fonts substitutes:
+     - Inter Tight   ≈ Styrene B (display sans, tight)
+     - Söhne is the closer reference; Inter Tight is the best free match
+     - Source Serif 4 ≈ Tiempos Text (body serif, editorial)
+     - JetBrains Mono ≈ for prices/odds (legible numerics)
+   Substitutions are documented in README.md.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ============================================================
+   PALETTE 1 — WARM EDITORIAL (default)
+   The user's working draft, refined.
+   - Flame orange shifted dustier (less alarm, more Penguin)
+   - Cream paper instead of pure white (less screen, more page)
+   - Navy retained as anchor; graphite as secondary structure
+   ============================================================ */
+:root,
+[data-palette="warm-editorial"] {
+  /* surfaces */
+  --paper:        #FAF7F0;       /* cream, the page */
+  --paper-pure:   #FFFFFF;       /* pure white for cards-on-paper */
+  --paper-warm:   #F0ECE2;       /* soft warm block */
+  --paper-deep:   #E8E2D2;       /* warm rule, divider blocks */
+
+  /* ink */
+  --ink:          #0E2240;       /* deep navy, primary type */
+  --ink-soft:     #2A3957;       /* secondary type */
+  --graphite:     #3A3F47;       /* tertiary structure */
+  --graphite-soft:#6B7079;       /* meta, captions */
+  --rule:         #D9D2C0;       /* hairline rules on paper */
+  --rule-soft:    #EDE7D6;
+
+  /* accent — single, used sparingly */
+  --flame:        #D9461C;       /* dustier than #FF5A1F; reads editorial not alarm */
+  --flame-deep:   #A8341A;       /* hover/press */
+  --flame-tint:   #F7E4DA;       /* highlight wash */
+
+  /* semantic — derived from ink, NOT traffic-light */
+  --best-price:   #0E2240;       /* "best" is just bold ink, not green */
+  --disagreement: #D9461C;       /* flame, used as "look here" */
+  --consensus:   #6B7079;        /* muted, "everyone agrees" */
+
+  /* chart palette — from the same family, orderable */
+  --chart-1: #0E2240;            /* ink */
+  --chart-2: #D9461C;            /* flame */
+  --chart-3: #6B7079;            /* graphite-soft */
+  --chart-4: #B89968;            /* warm tan */
+  --chart-5: #2A3957;            /* ink-soft */
+  --chart-6: #8A6F3D;            /* deep tan */
+
+  /* venues — assigned, not invented */
+  --venue-kalshi:     #00C46A;   /* their green, used at low saturation only */
+  --venue-polymarket: #2A6FDB;   /* their blue */
+  --venue-sportsbook: #6B7079;   /* generic graphite for "the books" */
+
+  --selection-bg: var(--flame-tint);
+  --selection-fg: var(--ink);
+}
+
+/* ============================================================
+   TYPOGRAPHY
+   Display sans (Inter Tight) for chrome, headlines, numerics-as-data.
+   Body serif (Source Serif 4) for prose, footnotes, captions.
+   Mono (JetBrains) for prices, odds, percentages — anywhere a number
+   needs to align in a column.
+   ============================================================ */
+:root {
+  --font-sans:    'Inter Tight', 'Söhne', 'Inter', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+  --font-serif:   'Source Serif 4', 'Tiempos Text', 'Charter', 'Georgia', serif;
+  --font-mono:    'JetBrains Mono', 'SF Mono', 'Menlo', 'Monaco', monospace;
+
+  /* type scale — editorial, not utility.
+     The jumps are wider than a typical web product's;
+     headlines are noticeably bigger than body, on purpose. */
+  --t-display:    clamp(2.75rem, 5vw, 4.25rem);   /* 44–68px — page-level title */
+  --t-h1:         clamp(2rem, 3.5vw, 3rem);       /* 32–48px */
+  --t-h2:         clamp(1.5rem, 2.5vw, 2rem);     /* 24–32px */
+  --t-h3:         1.25rem;                         /* 20px */
+  --t-h4:         1.0625rem;                       /* 17px */
+  --t-body:       1.0625rem;                       /* 17px reading */
+  --t-body-sm:    0.9375rem;                       /* 15px UI body */
+  --t-caption:    0.8125rem;                       /* 13px */
+  --t-micro:      0.6875rem;                       /* 11px — tags, eyebrows */
+
+  /* line-heights */
+  --lh-display:   1.04;
+  --lh-heading:   1.15;
+  --lh-body:      1.55;       /* serif body, generous */
+  --lh-ui:        1.4;
+  --lh-mono:      1.3;
+
+  /* tracking */
+  --track-eyebrow: 0.08em;
+  --track-display: -0.02em;
+  --track-heading: -0.01em;
+  --track-mono:    0;
+
+  /* spacing scale — 4px base, editorial-generous.
+     Most products stop at 64; we go to 128 because pages need air. */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-7:  48px;
+  --space-8:  64px;
+  --space-9:  96px;
+  --space-10: 128px;
+
+  /* radii — modest. This is a magazine, not a SaaS app.
+     Most things are square. Buttons get 4px. Cards 6px. Pills 999. */
+  --radius-0:    0px;
+  --radius-1:    2px;
+  --radius-2:    4px;
+  --radius-3:    6px;
+  --radius-4:    8px;
+  --radius-pill: 999px;
+
+  /* hairlines & shadows — barely-there. No drama. */
+  --hairline:        1px solid var(--rule);
+  --hairline-soft:   1px solid var(--rule-soft);
+  --hairline-strong: 1px solid var(--ink);
+
+  --shadow-1: 0 1px 0 var(--rule);
+  --shadow-2: 0 1px 2px rgba(14, 34, 64, 0.06), 0 0 0 1px var(--rule);
+  --shadow-3: 0 8px 24px rgba(14, 34, 64, 0.08), 0 0 0 1px var(--rule);
+
+  /* layout */
+  --measure-prose:  62ch;       /* serif reading column */
+  --measure-narrow: 38ch;       /* sidebar text */
+  --gutter-page:    clamp(20px, 4vw, 64px);
+
+  /* motion — short, restrained, no bounces */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasis: cubic-bezier(0.3, 0, 0, 1);
+  --dur-fast:    120ms;
+  --dur-base:    200ms;
+  --dur-slow:    320ms;
+}
+
+/* ============================================================
+   SEMANTIC TYPOGRAPHY CLASSES
+   Use these directly OR copy the property block.
+   ============================================================ */
+
+.op-eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--graphite-soft);
+}
+
+.op-display {
+  /* Now serif-led. Editorial register; closer to a weekly magazine than a SaaS app. */
+  font-family: var(--font-serif);
+  font-size: var(--t-display);
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.op-h1 {
+  font-family: var(--font-serif);
+  font-size: var(--t-h1);
+  font-weight: 600;
+  line-height: var(--lh-heading);
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.op-h2 {
+  font-family: var(--font-serif);
+  font-size: var(--t-h2);
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.op-h3 {
+  /* Sans for chrome subheads (in-product) */
+  font-family: var(--font-sans);
+  font-size: var(--t-h3);
+  font-weight: 600;
+  line-height: var(--lh-heading);
+  color: var(--ink);
+}
+
+.op-headline-sans {
+  /* alt headline — when chrome needs a sans display (rare) */
+  font-family: var(--font-sans);
+  font-size: var(--t-h1);
+  font-weight: 700;
+  line-height: var(--lh-heading);
+  letter-spacing: var(--track-heading);
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.op-prose {
+  font-family: var(--font-serif);
+  font-size: var(--t-body);
+  font-weight: 400;
+  line-height: var(--lh-body);
+  color: var(--ink);
+  max-width: var(--measure-prose);
+}
+
+.op-prose p + p {
+  margin-top: var(--space-4);
+  text-indent: 1.25em;       /* book-style indented paragraphs after the first */
+}
+.op-prose > p:first-child { text-indent: 0; }
+
+.op-ui {
+  font-family: var(--font-sans);
+  font-size: var(--t-body-sm);
+  font-weight: 400;
+  line-height: var(--lh-ui);
+  color: var(--ink);
+}
+
+.op-caption {
+  font-family: var(--font-sans);
+  font-size: var(--t-caption);
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--graphite-soft);
+}
+
+.op-footnote {
+  font-family: var(--font-serif);
+  font-size: var(--t-caption);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--graphite);
+}
+
+.op-num {
+  /* prices, odds, percentages */
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1, "ss01" 1;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+
+.op-num--display {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: var(--t-h1);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.op-byline {
+  font-family: var(--font-sans);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  color: var(--graphite);
+}
+
+.op-dagger {
+  /* the footnote dagger — used as a system glyph and a footnote marker */
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--flame);
+}
+
+/* ============================================================
+   GLOBAL DEFAULTS
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--t-body-sm);
+  line-height: var(--lh-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--selection-bg);
+  color: var(--selection-fg);
+}
+
+a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color var(--dur-fast) var(--ease-standard),
+              color var(--dur-fast) var(--ease-standard);
+}
+a:hover { text-decoration-color: var(--flame); color: var(--flame-deep); }
+a:focus-visible {
+  outline: 2px solid var(--flame);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+hr {
+  border: 0;
+  border-top: var(--hairline);
+  margin: var(--space-6) 0;
+}
+
+/* ============================================================
+   UTILITY HELPERS used across components
+   ============================================================ */
+.op-rule        { border-top: var(--hairline); }
+.op-rule-strong { border-top: var(--hairline-strong); }
+.op-block-warm  { background: var(--paper-warm); }
+.op-block-deep  { background: var(--paper-deep); }
+.op-tabular     { font-variant-numeric: tabular-nums; }
+
+</style>
 <style>
   /* ============================================================
      home-v3 — v2 plan implemented
@@ -1022,20 +1365,7 @@
   .sticky-bar a.pill .arr { color: var(--flame); margin-left: 6px; }
   @media (min-width: 820px) { .sticky-bar { display: none; } }
 
-  /* ====================================================
-     CANONICAL: hero-token styling + lead verdict + path + key
-     ==================================================== */
-
-  /* hero standfirst tokens — A + #2 */
-  .hero .standfirst .ai-token {
-    color: var(--ai-deep, var(--ink)); font-style: italic; font-weight: 600;
-  }
-  .hero .standfirst .vlead {
-    color: var(--flame-deep); font-style: normal; font-weight: 600;
-    border-bottom: 1.5px solid var(--flame); padding-bottom: 1px;
-  }
-
-  /* lead verdict — C */
+  /* Option C — lead verdict block */
   .lead-verdict {
     padding: 32px 0 0;
     border-top: var(--hairline);
@@ -1059,7 +1389,10 @@
     transition: background var(--dur-fast) var(--ease-standard);
   }
   .lv-card:hover { filter: brightness(0.985); }
-  .lv-card .lv-bar { grid-column: 1; grid-row: 1 / -1; background: var(--flame); }
+  .lv-card .lv-bar {
+    grid-column: 1; grid-row: 1 / -1;
+    background: var(--flame);
+  }
   .lv-card .lv-head {
     grid-column: 2; grid-row: 1;
     display: flex; align-items: baseline; gap: 12px;
@@ -1074,7 +1407,8 @@
   }
   .lv-card .lv-when {
     font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
-    letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-left: auto;
+    letter-spacing: 0.04em; font-variant-numeric: tabular-nums;
+    margin-left: auto;
   }
   .lv-card .lv-teams {
     grid-column: 2; grid-row: 2;
@@ -1105,7 +1439,9 @@
     border-top: var(--hairline-soft);
   }
   .lv-card .lv-reads { display: flex; gap: 14px; flex-wrap: wrap; }
-  .lv-card .rp { display: inline-flex; align-items: baseline; gap: 6px; }
+  .lv-card .rp {
+    display: inline-flex; align-items: baseline; gap: 6px;
+  }
   .lv-card .rp .k {
     font-family: var(--font-sans); font-size: 10px; font-weight: 700;
     letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft);
@@ -1119,7 +1455,10 @@
     font-weight: 700; font-size: 13.5px; color: var(--flame-deep);
     border-bottom: 2px solid var(--flame); padding-bottom: 1px; line-height: 1;
   }
-  .lv-card .lv-action { margin-left: auto; display: inline-flex; align-items: baseline; gap: 14px; }
+  .lv-card .lv-action {
+    margin-left: auto;
+    display: inline-flex; align-items: baseline; gap: 14px;
+  }
   .lv-card .lv-action .venue {
     font-family: var(--font-sans); font-size: 10px; font-weight: 700;
     letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-soft);
@@ -1135,101 +1474,46 @@
   }
   .lv-card .lv-action .cta .arr { color: var(--flame); margin-left: 4px; }
   .lv-card:hover .lv-action .cta { color: var(--flame-deep); }
+
   @media (max-width: 720px) {
-    /* Fix #6 — tighten hero on mobile so the lead verdict comes up sooner */
-    .hero { padding: 28px 0 20px; }
-    /* Fix #7 — tighten lead-verdict spacing on mobile */
-    .lead-verdict { padding: 22px 0 0; margin-top: 18px; }
     .lv-card { padding: 22px 20px 22px 0; column-gap: 16px; }
     .lv-card .lv-when { display: none; }
-    .lv-card .lv-foot { flex-direction: column; align-items: stretch; gap: 12px; }
-    /* Fix #2 — the action row stacks the venue/price line then promotes the CTA to a real button */
-    .lv-card .lv-action {
-      margin-left: 0; width: 100%;
-      display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
-    }
-    .lv-card .lv-action .venue,
-    .lv-card .lv-action .price { flex: 0 0 auto; }
-    .lv-card .lv-action .cta {
-      flex: 1 1 100%;
-      display: inline-flex; align-items: center; justify-content: center;
-      min-height: 44px; padding: 11px 14px;
-      background: var(--ink); color: var(--paper);
-      border-radius: 4px;
-      letter-spacing: 0.04em;
-    }
-    .lv-card .lv-action .cta .arr { color: var(--flame); margin-left: 6px; }
-    /* Fix #8 — path explainer compresses on mobile */
-    .path-explainer { padding: 12px 0; font-size: 11.5px; }
+    .lv-card .lv-foot { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .lv-card .lv-action { margin-left: 0; }
   }
 
-  /* path explainer — 3-step row, editorial register */
-  .path-explainer {
-    margin: 18px 0 0; padding: 14px 0;
-    border-top: var(--hairline-soft); border-bottom: var(--hairline-soft);
-    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
-    font-family: var(--font-sans); font-size: 12.5px;
-    color: var(--graphite); letter-spacing: 0.02em;
+  /* ---------- mockup A/B/C switcher (review-only) ---------- */
+  .mockup-switcher {
+    position: fixed; right: 14px; bottom: 14px; z-index: 100;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 8px 12px;
+    background: var(--paper-pure); border: var(--hairline);
+    box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08);
+    border-radius: 999px;
+    font-family: var(--font-sans); font-size: 11.5px; color: var(--ink);
   }
-  .path-explainer .step { display: inline-flex; align-items: center; gap: 8px; }
-  .path-explainer .num {
-    font-family: var(--font-mono); font-size: 10.5px; font-weight: 700;
-    color: var(--flame-deep);
-    border: 1px solid var(--flame); border-radius: 999px;
-    padding: 2px 7px; line-height: 1.1;
+  .mockup-switcher .ms-lbl {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--graphite-soft);
+    padding-right: 6px; border-right: 1px solid var(--rule);
+    margin-right: 2px;
   }
-  .path-explainer .path-arr {
-    color: var(--flame); font-family: var(--font-sans); font-weight: 700;
+  .mockup-switcher a {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 999px;
+    font-weight: 700; color: var(--ink); text-decoration: none;
+  }
+  .mockup-switcher a:hover { background: var(--paper-warm); color: var(--flame-deep); }
+  .mockup-switcher a[aria-current="page"] {
+    background: var(--ink); color: var(--paper);
+  }
+  .mockup-switcher .ms-name {
+    padding-left: 8px; border-left: 1px solid var(--rule);
+    margin-left: 4px; color: var(--graphite); font-style: italic;
+    white-space: nowrap;
   }
   @media (max-width: 720px) {
-    .path-explainer { gap: 6px 10px; font-size: 12px; }
-    .path-explainer .path-arr { display: none; }
-    .path-explainer .step { width: 100%; }
-  }
-
-  /* verdict key — B, BELOW the lead verdict */
-  .verdict-key {
-    padding: 32px 0 8px;
-    margin-top: 32px;
-  }
-  .verdict-key .vk-eyebrow {
-    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
-    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
-    margin-bottom: 18px;
-  }
-  .vk-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
-  @media (min-width: 720px) { .vk-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; } }
-  .vk-card {
-    position: relative;
-    padding: 18px 22px 20px 26px;
-    background: var(--paper-pure);
-    border: var(--hairline);
-    border-left: 4px solid var(--rule);
-  }
-  .vk-card .vk-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .vk-card .vk-glyph {
-    font-family: var(--font-sans); font-weight: 700; font-size: 18px;
-    line-height: 1; width: 22px; text-align: center;
-  }
-  .vk-card .vk-lab {
-    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.14em; text-transform: uppercase; line-height: 1;
-  }
-  .vk-card .vk-what {
-    font-family: var(--font-serif); font-size: 14.5px; line-height: 1.5;
-    color: var(--graphite); margin: 0;
-  }
-  .vk-card .vk-what em { color: var(--ink); font-style: italic; font-weight: 600; }
-  .vk-pick { background: var(--flame-tint); border-left-color: var(--flame); }
-  .vk-pick .vk-glyph { color: var(--flame); }
-  .vk-pick .vk-lab   { color: var(--flame-deep); }
-  .vk-pass .vk-glyph { color: var(--graphite-soft); }
-  .vk-pass .vk-lab   { color: var(--graphite-soft); }
-  .vk-avoid { border-left-color: var(--ink); }
-  .vk-avoid .vk-glyph { color: var(--flame); }
-  .vk-avoid .vk-lab {
-    color: var(--ink); border-bottom: 1.5px solid var(--flame);
-    padding-bottom: 1px; align-self: center;
+    .mockup-switcher .ms-name { display: none; }
   }
 </style>
 </head>
@@ -1283,9 +1567,10 @@
       </div>
     </div>
     <nav class="pill-nav" aria-label="Primary (mobile)">
-      <a href="./outrights.html">Winners</a>
-      <a href="./matches.html">Matches</a>
-    </nav>
+          <a href="./home-v3.html" aria-current="page">Home</a>
+          <a href="./outrights.html">Outright winners</a>
+          <a href="./matches.html">Upcoming matches</a>
+        </nav>
   </header>
 
   <main class="page">
@@ -1294,10 +1579,8 @@
     <section class="hero" aria-labelledby="hero-title">
       <h1 id="hero-title">The 2026 World Cup, priced.</h1>
       <p class="standfirst">
-        Our <em class="ai-token">AI model</em> compares Polymarket and Kalshi
-        prices with its own read of each match. Every market gets one verdict:
-        <em class="vlead">Pick</em>, <em class="vlead">Pass</em>, or <em class="vlead">Avoid</em>.
-        We show the price, the edge, and the reasoning. We don't tip.
+        We compare prices on the World Cup across Polymarket, Kalshi, and the sportsbooks.
+        We explain what the numbers mean. We don't tip.
       </p>
     </section>
 
@@ -1321,8 +1604,8 @@
 
         <p class="lv-thesis">
           <em>France look four points underpriced.</em>
-          Polymarket is pricing France lower than our model — that gap is the edge.
-          Our model has France at 56%; the market has them at 52%.
+          Polymarket is the slower of the two markets — that's where to read the price.
+          Our model has France at 56% to win; the market has them at 52%.
         </p>
 
         <div class="lv-foot">
@@ -1334,60 +1617,10 @@
           <div class="lv-action">
             <span class="venue">Polymarket</span>
             <span class="price">−180</span>
-            <span class="cta">Read the market case <span class="arr">↗</span></span>
+            <span class="cta">Read the case <span class="arr">↗</span></span>
           </div>
         </div>
       </a>
-
-      <!-- ============ 3-step path explainer ============ -->
-      <aside class="path-explainer" aria-label="How to read a verdict">
-        <span class="step"><span class="num">1</span>Read the market case</span>
-        <span class="path-arr">→</span>
-        <span class="step"><span class="num">2</span>Compare the price</span>
-        <span class="path-arr">→</span>
-        <span class="step"><span class="num">3</span>View source on Polymarket or Kalshi</span>
-      </aside>
-    </section>
-
-    <!-- ============ 2.6 VERDICT KEY — three states (below the lead, demo first then teach) ============ -->
-    <section class="verdict-key" aria-label="How to read a verdict">
-      <div class="vk-eyebrow">The verdict · three states</div>
-      <div class="vk-grid">
-
-        <div class="vk-card vk-pick">
-          <div class="vk-head">
-            <span class="vk-glyph">▲</span>
-            <span class="vk-lab">Pick</span>
-          </div>
-          <p class="vk-what">
-            <em>The model finds the market underpriced.</em> Clean value
-            on the side the market has gone slow on.
-          </p>
-        </div>
-
-        <div class="vk-card vk-pass">
-          <div class="vk-head">
-            <span class="vk-glyph">—</span>
-            <span class="vk-lab">Pass</span>
-          </div>
-          <p class="vk-what">
-            <em>The market is close to our model.</em> No clear edge —
-            the line is doing its job.
-          </p>
-        </div>
-
-        <div class="vk-card vk-avoid">
-          <div class="vk-head">
-            <span class="vk-glyph">✕</span>
-            <span class="vk-lab">Avoid</span>
-          </div>
-          <p class="vk-what">
-            <em>Both sides overpriced.</em> A rare two-way no — neither side
-            gives clean value.
-          </p>
-        </div>
-
-      </div>
     </section>
 
     <!-- ============ 3. ARTICLE PREVIEWS — outrights + upcoming matches ============ -->
@@ -1562,13 +1795,23 @@
   <!-- ============ 10. STICKY MOBILE BOTTOM BAR ============ -->
   <div class="sticky-bar" role="navigation" aria-label="Quick actions">
     <a class="count" href="./matches.html">
-      Today: <strong><span class="pp">3 picks</span> · top edge <span class="pp">+5pp</span></strong>
+      Today: <strong><span class="pp">3 picks</span> · 4 passes · 1 avoid</strong>
     </a>
-    <a class="pill" href="./matches.html">See reads <span class="arr">↗</span></a>
+    <a class="pill" href="./learn.html">Learn <span class="arr">↗</span></a>
   </div>
 
   <style>
     .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
   </style>
+
+  <!-- ============ mockup A/B/C switcher (remove when shipping) ============ -->
+  <div class="mockup-switcher" role="navigation" aria-label="Mockup switcher">
+    <span class="ms-lbl">Verdict mockup</span>
+    <a href="./home-v3-option-a.html" >A</a>
+    <a href="./home-v3-option-b.html" >B</a>
+    <a href="./home-v3-option-c.html" aria-current="page">C</a>
+    <span class="ms-name">Lead verdict · Matchday headline call</span>
+  </div>
+
 </body>
 </html>

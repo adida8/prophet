@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Odds Primer — the 2026 World Cup, priced.</title>
-<meta name="description" content="We compare prices on the World Cup across Polymarket, Kalshi, and the sportsbooks. We explain what the numbers mean. We don't tip.">
+<title>Odds Primer · Pick, Pass, Avoid — World Cup 2026 prediction-market reads</title>
+<meta name="description" content="World Cup 2026 prediction-market verdicts. We compare Polymarket and Kalshi prices against our model and publish Pick, Pass, or Avoid on each. We don't tip.">
 <link rel="stylesheet" href="./colors_and_type.css">
 <style>
   /* ============================================================
@@ -1231,6 +1231,182 @@
     color: var(--ink); border-bottom: 1.5px solid var(--flame);
     padding-bottom: 1px; align-self: center;
   }
+
+  /* v4 — affiliate disclosure near outbound CTAs */
+  .affiliate-note {
+    margin-top: 10px;
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--graphite-soft);
+    max-width: 60ch;
+  }
+
+  /* v5 — beginner reassurance strip, sits between hero and lead verdict */
+  .trust-strip {
+    margin: 0 0 20px;
+    padding: 12px 16px;
+    border-left: 3px solid var(--flame);
+    background: var(--paper-warm);
+    font-family: var(--font-serif);
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--ink);
+    max-width: 64ch;
+  }
+  .trust-strip strong { font-weight: 600; }
+
+  /* v5 — explainer doorway from each verdict to /method */
+  .lv-method-link {
+    margin: 12px 0 0;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .lv-method-link a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--rule);
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+  }
+  .lv-method-link a:hover { color: var(--flame-deep); text-decoration-color: var(--flame); }
+  .lv-method-link .arr { color: var(--flame); margin-left: 2px; }
+
+  /* v4 — cookie banner */
+  .cookie-banner {
+    position: fixed; left: 14px; right: 14px; bottom: 14px; z-index: 60;
+    background: var(--paper-pure); border: var(--hairline);
+    box-shadow: 0 12px 32px rgba(14, 34, 64, 0.12);
+    border-radius: 6px;
+    padding: 16px 18px;
+    display: grid; grid-template-columns: 1fr; gap: 12px;
+    font-family: var(--font-sans); color: var(--ink); font-size: 13px;
+    max-width: 900px; margin: 0 auto;
+  }
+  .cookie-banner[hidden] { display: none; }
+  .cookie-banner .cb-msg { line-height: 1.5; color: var(--graphite); max-width: 64ch; }
+  .cookie-banner .cb-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .cookie-banner button {
+    font-family: var(--font-sans); font-size: 12.5px; font-weight: 600;
+    padding: 9px 16px; border-radius: 4px; cursor: pointer;
+    border: var(--hairline); background: var(--paper-pure); color: var(--ink);
+  }
+  .cookie-banner button:hover { background: var(--paper-warm); }
+  .cookie-banner button.cb-accept { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .cookie-banner button.cb-accept:hover { background: var(--flame-deep); border-color: var(--flame-deep); }
+  .cookie-banner .cb-prefs { display: none; padding: 14px 0 0; border-top: var(--hairline); }
+  .cookie-banner.is-managing .cb-prefs { display: grid; gap: 10px; }
+  .cookie-banner .cb-pref { display: flex; align-items: baseline; gap: 10px; font-size: 12.5px; }
+  .cookie-banner .cb-pref .cb-name { font-weight: 700; color: var(--ink); }
+  .cookie-banner .cb-pref .cb-desc { color: var(--graphite); }
+  @media (min-width: 720px) {
+    .cookie-banner { grid-template-columns: 1fr auto; gap: 18px; align-items: center; }
+    .cookie-banner .cb-actions { justify-content: flex-end; }
+    .cookie-banner .cb-prefs { grid-column: 1 / -1; }
+  }
+  .foot-col button {
+    font-family: var(--font-sans); font-size: 13px; color: var(--ink);
+    background: none; border: 0; padding: 0; cursor: pointer; text-align: left;
+  }
+  .foot-col button:hover { color: var(--flame-deep); }
+
+  .foot-affiliate {
+    font-family: var(--font-sans); font-size: 11.5px; color: var(--graphite-soft);
+    line-height: 1.5; max-width: 82ch; margin-top: 10px;
+  }
+
+  /* ============================================================
+     Card v4 — dual-chip lead verdict (replaces the old .lv-card)
+     ============================================================ */
+  .card-v4 {
+    display: grid;
+    grid-template-columns: 4px 1fr;
+    column-gap: 18px;
+    padding: 20px 22px 18px 0;
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    text-decoration: none;
+    color: var(--ink);
+    transition: background 160ms ease;
+  }
+  .cv-bar { grid-column: 1; background: transparent; border-radius: 4px 0 0 4px; }
+  .cv-body { grid-column: 2; min-width: 0; }
+
+  .cv-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+  .cv-verdict { display: inline-flex; align-items: baseline; gap: 7px; font-family: var(--font-sans); }
+  .cv-verdict .glyph { font-size: 14px; font-weight: 700; line-height: 1; width: 14px; text-align: center; }
+  .cv-verdict .lab { font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; line-height: 1; }
+  .cv-when { font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+
+  .cv-title { font-family: var(--font-serif); font-weight: 600; font-size: clamp(20px, 2.4vw, 24px); line-height: 1.1; letter-spacing: -0.012em; color: var(--ink); margin: 4px 0 0; text-wrap: balance; }
+  .cv-title .vs { color: var(--graphite-soft); font-weight: 400; font-style: italic; margin: 0 8px; }
+  .cv-meta { font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft); letter-spacing: 0.04em; margin: 4px 0 0; }
+  .cv-thesis { font-family: var(--font-serif); font-size: 15px; line-height: 1.5; color: var(--graphite); margin: 12px 0 0; max-width: 64ch; }
+  .cv-thesis em { font-style: italic; color: var(--ink); font-weight: 600; }
+
+  /* single Model stat */
+  .cv-model { margin: 14px 0 0; padding: 10px 0 0; border-top: 1px solid var(--rule-soft); display: inline-flex; align-items: baseline; gap: 8px; font-family: var(--font-sans); flex-wrap: wrap; }
+  .cv-model .k { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft); }
+  .cv-model .v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 16px; color: var(--ink); }
+  .cv-model .note { font-family: var(--font-serif); font-style: italic; font-size: 12.5px; color: var(--graphite); margin-left: 4px; }
+
+  /* dual venue chips */
+  .cv-venues { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0 0; }
+  @media (max-width: 520px) {
+    .cv-venues { grid-template-columns: 1fr; gap: 8px; }
+    .cv-chip { padding: 10px 12px 9px; gap: 5px; }
+    .cv-chip .cents { font-size: 19px; }
+    .cv-chip .odds { font-size: 12px; }
+    .cv-chip .name { font-size: 10px; }
+    .cv-chip .open-btn { min-height: 36px; padding: 8px 10px; font-size: 11px; }
+    .card-v4.is-lead .cv-chip .open-btn { min-height: 38px; font-size: 11.5px; padding: 9px 12px; }
+  }
+
+  .cv-chip { display: flex; flex-direction: column; gap: 6px; padding: 12px 12px 10px; background: var(--paper-pure); border: 1px solid var(--rule); border-radius: 6px; text-decoration: none; color: var(--ink); transition: border-color 160ms ease, background 160ms ease; }
+  .cv-chip:hover { border-color: var(--ink); background: var(--paper-warm); }
+  .cv-chip-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .cv-chip .name { font-family: var(--font-sans); font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft); }
+  .cv-chip .chip-edge { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 12px; color: var(--flame-deep); border-bottom: 2px solid var(--flame); padding-bottom: 1px; line-height: 1; }
+  .cv-chip .chip-edge.is-neg { color: var(--ink); border-bottom-color: var(--ink); }
+  .cv-chip .chip-edge.is-flat { color: var(--graphite-soft); border-bottom-color: var(--rule); }
+  .cv-chip-prices { display: flex; align-items: baseline; gap: 8px; }
+  .cv-chip .cents { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 20px; color: var(--ink); line-height: 1; }
+  .cv-chip .odds { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; font-size: 13px; color: var(--graphite); }
+
+  /* solid ink CTA button (L3 push) */
+  .cv-chip .open-btn { margin-top: 2px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 7px 12px; background: var(--ink); color: var(--paper); border-radius: 4px; font-family: var(--font-sans); font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; transition: background 160ms ease; }
+  .cv-chip .open-btn .arr { color: var(--flame); transition: transform 160ms ease; }
+  .cv-chip:hover .open-btn { background: var(--flame-deep); }
+  .cv-chip:hover .open-btn .arr { color: var(--paper); transform: translate(2px, -2px); }
+
+  /* "Read the market case →" overflow (editorial dossier) */
+  .cv-foot { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--rule-soft); text-align: right; }
+  .cv-read-case { font-family: var(--font-sans); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+  .cv-read-case .arr { color: var(--flame); transition: transform 160ms ease; }
+  .cv-read-case:hover { color: var(--flame-deep); }
+  .cv-read-case:hover .arr { transform: translateX(3px); }
+
+  /* Pick variant */
+  .card-v4.is-pick { background: var(--flame-tint); border-color: var(--flame); }
+  .card-v4.is-pick .cv-bar { background: var(--flame); }
+  .card-v4.is-pick .cv-verdict .glyph { color: var(--flame); }
+  .card-v4.is-pick .cv-verdict .lab { color: var(--flame-deep); }
+  .card-v4.is-pick:hover { filter: brightness(0.985); }
+
+  /* Lead variant (home masthead scale-up) */
+  .card-v4.is-lead {
+    grid-template-columns: 6px 1fr;
+    padding: 28px 30px 26px 0;
+    column-gap: 24px;
+  }
+  .card-v4.is-lead .cv-title { font-size: clamp(28px, 3.6vw, 38px); line-height: 1.05; letter-spacing: -0.018em; }
+  .card-v4.is-lead .cv-thesis { font-size: 16.5px; }
+  .card-v4.is-lead .cv-chip .cents { font-size: 22px; }
+  .card-v4.is-lead .cv-chip .open-btn { min-height: 38px; font-size: 12px; padding: 9px 14px; }
+
 </style>
 </head>
 <body>
@@ -1238,7 +1414,7 @@
   <!-- ============ 1. MASTHEAD + NAV ============ -->
   <header class="site-masthead">
     <div class="inner">
-      <a class="brand-lock" href="./home-v3.html" aria-label="Odds Primer — the AI sports desk for market edge">
+      <a class="brand-lock" href="./home.html" aria-label="Odds Primer — the AI sports desk for market edge">
         <span class="wm-row">
           <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
             <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
@@ -1254,7 +1430,7 @@
 
       <nav class="site-nav" aria-label="Primary">
               <ul>
-                <li><a href="./home-v3.html" aria-current="page">Home</a></li>
+                <li><a href="./home.html" aria-current="page">Home</a></li>
                 <li><a href="./outrights.html">Outright winners</a></li>
                 <li><a href="./matches.html">Upcoming matches</a></li>
               </ul>
@@ -1271,7 +1447,9 @@
         </summary>
         <ul class="burger-menu">
           <li><a href="./about.html">About</a></li>
+          <li><a href="./method.html">Method</a></li>
           <li><a href="./learn.html">Learn the basics</a></li>
+          <li><a href="./corrections.html">Corrections</a></li>
         </ul>
       </details>
 
@@ -1294,50 +1472,86 @@
     <section class="hero" aria-labelledby="hero-title">
       <h1 id="hero-title">The 2026 World Cup, priced.</h1>
       <p class="standfirst">
-        Our <em class="ai-token">AI model</em> compares Polymarket and Kalshi
-        prices with its own read of each match. Every market gets one verdict:
-        <em class="vlead">Pick</em>, <em class="vlead">Pass</em>, or <em class="vlead">Avoid</em>.
-        We show the price, the edge, and the reasoning. We don't tip.
+        Our <em class="ai-token">AI model</em> compares Polymarket and Kalshi prices
+        with its own read of each World Cup market. Every market gets one verdict:
+        <em class="vlead">Pick</em>, <em class="vlead">Pass</em>, or
+        <em class="vlead">Avoid</em>. We show the price, the edge, and the reasoning.
+        We don't tip.
       </p>
     </section>
+
+    <!-- ============ 2.2 TRUST STRIP — reassure beginners before the verdict lands ============ -->
+    <aside class="trust-strip" aria-label="Editorial framing">
+      <strong>Odds Primer is an editorial site.</strong>
+      You can read every verdict without using a venue. Source links go to third-party markets for readers who want to inspect the live price.
+    </aside>
 
     <!-- ============ 2.5 LEAD VERDICT — today's headline call ============ -->
     <section class="lead-verdict" aria-labelledby="lv-title">
       <div class="lv-eyebrow">Today's headline verdict · Matchday 2 · Saturday</div>
 
-      <a class="lv-card is-pick" href="./market-v2-newspaper-deck.html">
-        <span class="lv-bar"></span>
+      <article class="card-v4 is-pick is-lead" aria-labelledby="lv-title">
+        <span class="cv-bar"></span>
+        <div class="cv-body">
 
-        <div class="lv-head">
-          <span class="lv-glyph">▲</span>
-          <span class="lv-lab">Pick</span>
-          <span class="lv-when">Sat · 21:00 ET · Group F</span>
-        </div>
-
-        <h2 class="lv-teams" id="lv-title">
-          France <span class="vs">v</span> Mexico
-        </h2>
-        <p class="lv-venue-meta">MEX · Estadio Azteca</p>
-
-        <p class="lv-thesis">
-          <em>France look four points underpriced.</em>
-          Polymarket is pricing France lower than our model — that gap is the edge.
-          Our model has France at 56%; the market has them at 52%.
-        </p>
-
-        <div class="lv-foot">
-          <div class="lv-reads">
-            <span class="rp"><span class="k">model</span><span class="v">56%</span></span>
-            <span class="rp"><span class="k">market</span><span class="v">52%</span></span>
-            <span class="edge">+4pp</span>
+          <div class="cv-head">
+            <span class="cv-verdict"><span class="glyph">▲</span><span class="lab">Pick</span></span>
+            <span class="cv-when">Sat · 21:00 ET · Group F</span>
           </div>
-          <div class="lv-action">
-            <span class="venue">Polymarket</span>
-            <span class="price">−180</span>
-            <span class="cta">Read the market case <span class="arr">↗</span></span>
+
+          <h2 class="cv-title" id="lv-title">France <span class="vs">v</span> Mexico</h2>
+          <p class="cv-meta">MEX · Estadio Azteca</p>
+
+          <p class="cv-thesis">
+            <em>France look four points underpriced.</em>
+            Polymarket is pricing France lower than our model. Our model has France
+            at 56% to win; the market has them at 52%. That gap is the edge.
+          </p>
+
+          <div class="cv-model">
+            <span class="k">Model</span><span class="v">56%</span>
+            <span class="note">The Desk's estimate, before venue prices</span>
           </div>
+
+          <div class="cv-venues">
+            <a class="cv-chip" href="#" aria-label="Open Polymarket">
+              <div class="cv-chip-head">
+                <span class="name">Polymarket</span>
+                <span class="chip-edge">+4pp</span>
+              </div>
+              <div class="cv-chip-prices">
+                <span class="cents">52¢</span>
+                <span class="odds">−108</span>
+              </div>
+              <span class="open-btn">Open Polymarket <span class="arr">↗</span></span>
+            </a>
+            <a class="cv-chip" href="#" aria-label="Open Kalshi">
+              <div class="cv-chip-head">
+                <span class="name">Kalshi</span>
+                <span class="chip-edge">+3pp</span>
+              </div>
+              <div class="cv-chip-prices">
+                <span class="cents">53¢</span>
+                <span class="odds">−113</span>
+              </div>
+              <span class="open-btn">Open Kalshi <span class="arr">↗</span></span>
+            </a>
+          </div>
+
+          <p class="cv-foot">
+            <a href="./world-cup-2026-france-v-mexico.html" class="cv-read-case">
+              Read the market case <span class="arr">→</span>
+            </a>
+          </p>
+
         </div>
-      </a>
+      </article>
+      <p class="lv-method-link">
+        <a href="./method.html#verdict">How we made this call <span class="arr">↗</span></a>
+      </p>
+      <p class="affiliate-note">
+        Odds Primer may earn a referral fee if you use a partner venue. Verdicts are editorial and independent.
+      </p>
 
       <!-- ============ 3-step path explainer ============ -->
       <aside class="path-explainer" aria-label="How to read a verdict">
@@ -1360,8 +1574,8 @@
             <span class="vk-lab">Pick</span>
           </div>
           <p class="vk-what">
-            <em>The model finds the market underpriced.</em> Clean value
-            on the side the market has gone slow on.
+            <em>The model sees the market as underpriced.</em>
+            Worth inspecting, not a guaranteed outcome.
           </p>
         </div>
 
@@ -1371,8 +1585,8 @@
             <span class="vk-lab">Pass</span>
           </div>
           <p class="vk-what">
-            <em>The market is close to our model.</em> No clear edge —
-            the line is doing its job.
+            <em>No clear edge.</em>
+            The market is close to our model.
           </p>
         </div>
 
@@ -1382,8 +1596,8 @@
             <span class="vk-lab">Avoid</span>
           </div>
           <p class="vk-what">
-            <em>Both sides overpriced.</em> A rare two-way no — neither side
-            gives clean value.
+            <em>The price looks unattractive.</em>
+            Interesting event, poor market structure.
           </p>
         </div>
 
@@ -1444,41 +1658,16 @@
         </div>
         <div class="how-col">
           <h3>We don't tip</h3>
-          <p>No "bet now". No lock-of-the-day. The Desk flags fixtures where the line looks slow, fair, or both-sides expensive — a structural read on the prices, not a pick against the outcome.</p>
+          <p>No hype, no tip-of-the-day, no instructions. The Desk flags fixtures where the line looks slow, fair, or both-sides expensive — a structural read on the prices, not a call on the outcome.</p>
         </div>
       </div>
       <div class="how-foot">
-        <a class="link-secondary" href="./learn.html">Read the methodology →</a>
+        <a class="link-secondary" href="./method.html">See the method in six stages →</a>
       </div>
     </section>
 
-    <!-- ============ 7. FEATURED COLUMNS ============ -->
-    <section class="features" aria-labelledby="features-title">
-      <div class="f-head">
-        <h2 id="features-title">Featured columns</h2>
-        <a href="/columns">All columns <span class="arr">→</span></a>
-      </div>
-      <div class="f-grid">
-        <a class="f-card" href="/columns/poly-kalshi-france">
-          <span class="kicker">Outright winner</span>
-          <span class="title">Why Polymarket and Kalshi don't agree on France</span>
-          <p class="deck">A two-cent gap on a binary contract is a two-percentage-point gap on the same outcome. Small in the abstract, large for a market this liquid.</p>
-          <span class="meta">6 min read · The Editors · 12 May</span>
-        </a>
-        <a class="f-card" href="/columns/what-plus-130-means">
-          <span class="kicker">Reading the numbers</span>
-          <span class="title">What +130 actually means</span>
-          <p class="deck">American odds, decimal odds, and "cents" on a contract — three notations for the same idea. A short conversion table, with examples.</p>
-          <span class="meta">4 min read · 10 May</span>
-        </a>
-        <a class="f-card" href="/columns/group-d-priced-closest">
-          <span class="kicker">Group stage</span>
-          <span class="title">Group D is priced as the closest in the tournament</span>
-          <p class="deck">France is favored, but four cents separates the field. We look at why the books and the markets disagree most where the football is closest.</p>
-          <span class="meta">5 min read · 09 May</span>
-        </a>
-      </div>
-    </section>
+    <!-- Featured columns removed at launch — three placeholder /columns/* pages don't exist yet. -->
+    <!-- Restore this section once those columns ship; canonical content lives in git history. -->
   </main>
 
   <!-- ============ 8. NEWSLETTER ============ -->
@@ -1515,46 +1704,46 @@
         <div class="foot-col">
           <h4>Editorial</h4>
           <ul>
-            <li><a href="#today">Today's board</a></li>
-            <li><a href="#outrights">Outright winners</a></li>
-            <li><a href="/columns">Columns</a></li>
+            <li><a href="./home.html">Home</a></li>
+            <li><a href="./outrights.html">Outright winners</a></li>
+            <li><a href="./matches.html">Upcoming matches</a></li>
             <li><a href="./learn.html">Learn the basics</a></li>
           </ul>
         </div>
         <div class="foot-col">
-          <h4>Company</h4>
+          <h4>About</h4>
           <ul>
-            <li><a href="./about.html">About</a></li>
-            <li><a href="/methodology">Methodology</a></li>
-            <li><a href="/corrections">Corrections</a></li>
-            <li><a href="mailto:hello@oddsprimer.com">Contact</a></li>
+            <li><a href="./about.html">About Odds Primer</a></li>
+            <li><a href="./method.html">Method</a></li>
+            <li><a href="./methodology.html">Methodology (detail)</a></li>
+            <li><a href="./corrections.html">Corrections policy</a></li>
+            <li><a href="mailto:desk@oddsprimer.com">Contact the Desk</a></li>
           </ul>
         </div>
         <div class="foot-col">
           <h4>Legal</h4>
           <ul>
-            <li><a href="/privacy">Privacy</a></li>
-            <li><a href="/terms">Terms of use</a></li>
-            <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>
-            <li><a href="/responsible-use">Responsible use</a></li>
-            <li><a href="/cookies">Cookies</a></li>
-            <li><a href="/accessibility">Accessibility</a></li>
+            <li><a href="./privacy.html">Privacy</a></li>
+            <li><a href="./terms.html">Terms of use</a></li>
+            <li><a href="./affiliate-disclosure.html">Affiliate disclosure</a></li>
+            <li><a href="./responsible-use.html">Responsible use</a></li>
+            <li><a href="./cookies.html">Cookie policy</a></li>
+            <li><button type="button" onclick="document.getElementById('cookie-banner').hidden=false; document.getElementById('cookie-banner').classList.add('is-managing');">Cookie settings</button></li>
           </ul>
         </div>
       </div>
-
       <p class="foot-discl">
-        <span class="dag">†</span> Odds Primer is an editorial publication. We do not take wagers, hold reader funds, or execute trades.
-        Prediction-market trading involves risk; check your local laws before acting on what you read.
-        21+ in NY, MA, NJ, and others. When you act on a "View source on" link and trade at a partner venue,
-        the venue may share a portion of its trading fee with us — disclosed in full on the
-        <a href="/affiliate-disclosure">Affiliate disclosure</a> page. Our editorial coverage is independent of that revenue.
+        <span class="dag">†</span> Odds Primer is editorial information only. We are not a sportsbook, broker, exchange,
+        financial adviser, or betting adviser. We do not take wagers, hold funds, execute trades, or provide personalized advice.
+        Prediction-market participation involves risk and may not be available in your location.
+      </p>
+      <p class="foot-affiliate">
+        Some outbound source links may be affiliate links. Affiliate relationships do not determine our editorial verdicts.
       </p>
 
       <div class="foot-meta">
-        <span>© 2026 Odds Primer.</span>
-        <span>Published from the United Kingdom.</span>
-        <span>Built with the Odds Primer Design System.</span>
+        <span>© 2026 Odds Primer</span>
+        <span>An independent editorial website — not a registered company, broker, or sportsbook</span>
       </div>
     </div>
   </footer>
@@ -1570,5 +1759,34 @@
   <style>
     .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
   </style>
+
+  <div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Cookie preferences">
+    <div class="cb-msg">
+      Odds Primer uses cookies and similar technologies to run the site, understand usage, and measure outbound links.
+      You can accept, reject, or manage non-essential cookies.
+    </div>
+    <div class="cb-actions">
+      <button type="button" onclick="document.getElementById('cookie-banner').classList.add('is-managing');">Manage</button>
+      <button type="button" onclick="document.getElementById('cookie-banner').hidden=true;">Reject</button>
+      <button class="cb-accept" type="button" onclick="document.getElementById('cookie-banner').hidden=true;">Accept</button>
+    </div>
+    <div class="cb-prefs">
+      <label class="cb-pref">
+        <input type="checkbox" checked disabled>
+        <span><span class="cb-name">Essential cookies</span> — always on</span>
+      </label>
+      <label class="cb-pref">
+        <input type="checkbox">
+        <span><span class="cb-name">Analytics cookies</span> — <span class="cb-desc">help us understand site usage</span></span>
+      </label>
+      <label class="cb-pref">
+        <input type="checkbox">
+        <span><span class="cb-name">Affiliate measurement</span> — <span class="cb-desc">helps us measure outbound partner links</span></span>
+      </label>
+      <div class="cb-actions" style="margin-top: 4px;">
+        <button type="button" onclick="document.getElementById('cookie-banner').hidden=true;">Save preferences</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

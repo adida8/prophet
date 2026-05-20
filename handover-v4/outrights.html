@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Odds Primer — the 2026 World Cup, priced.</title>
-<meta name="description" content="We compare prices on the World Cup across Polymarket, Kalshi, and the sportsbooks. We explain what the numbers mean. We don't tip.">
+<title>Outright winners · World Cup 2026 — Odds Primer</title>
+<meta name="description" content="World Cup 2026 outright winner prices across Polymarket and Kalshi, with editorial reads on where the model and market disagree.">
 <link rel="stylesheet" href="./colors_and_type.css">
 <style>
   /* ============================================================
@@ -1022,214 +1022,57 @@
   .sticky-bar a.pill .arr { color: var(--flame); margin-left: 6px; }
   @media (min-width: 820px) { .sticky-bar { display: none; } }
 
-  /* ====================================================
-     CANONICAL: hero-token styling + lead verdict + path + key
-     ==================================================== */
-
-  /* hero standfirst tokens — A + #2 */
-  .hero .standfirst .ai-token {
-    color: var(--ai-deep, var(--ink)); font-style: italic; font-weight: 600;
-  }
-  .hero .standfirst .vlead {
-    color: var(--flame-deep); font-style: normal; font-weight: 600;
-    border-bottom: 1.5px solid var(--flame); padding-bottom: 1px;
+  /* v4 — affiliate disclosure near outbound CTAs */
+  .affiliate-note {
+    margin-top: 10px;
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--graphite-soft);
+    max-width: 60ch;
   }
 
-  /* lead verdict — C */
-  .lead-verdict {
-    padding: 32px 0 0;
-    border-top: var(--hairline);
-    margin-top: 28px;
+  /* v4 — cookie banner */
+  .cookie-banner {
+    position: fixed; left: 14px; right: 14px; bottom: 14px; z-index: 60;
+    background: var(--paper-pure); border: var(--hairline);
+    box-shadow: 0 12px 32px rgba(14, 34, 64, 0.12);
+    border-radius: 6px;
+    padding: 16px 18px;
+    display: grid; grid-template-columns: 1fr; gap: 12px;
+    font-family: var(--font-sans); color: var(--ink); font-size: 13px;
+    max-width: 900px; margin: 0 auto;
   }
-  .lead-verdict .lv-eyebrow {
-    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
-    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
-    margin-bottom: 14px;
+  .cookie-banner[hidden] { display: none; }
+  .cookie-banner .cb-msg { line-height: 1.5; color: var(--graphite); max-width: 64ch; }
+  .cookie-banner .cb-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .cookie-banner button {
+    font-family: var(--font-sans); font-size: 12.5px; font-weight: 600;
+    padding: 9px 16px; border-radius: 4px; cursor: pointer;
+    border: var(--hairline); background: var(--paper-pure); color: var(--ink);
   }
-  .lv-card {
-    position: relative;
-    display: grid;
-    grid-template-columns: 6px 1fr;
-    grid-template-rows: auto auto auto auto auto;
-    column-gap: 22px; row-gap: 8px;
-    padding: 26px 28px 26px 0;
-    background: var(--flame-tint);
-    border: var(--hairline);
-    text-decoration: none; color: var(--ink);
-    transition: background var(--dur-fast) var(--ease-standard);
+  .cookie-banner button:hover { background: var(--paper-warm); }
+  .cookie-banner button.cb-accept { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .cookie-banner button.cb-accept:hover { background: var(--flame-deep); border-color: var(--flame-deep); }
+  .cookie-banner .cb-prefs { display: none; padding: 14px 0 0; border-top: var(--hairline); }
+  .cookie-banner.is-managing .cb-prefs { display: grid; gap: 10px; }
+  .cookie-banner .cb-pref { display: flex; align-items: baseline; gap: 10px; font-size: 12.5px; }
+  .cookie-banner .cb-pref .cb-name { font-weight: 700; color: var(--ink); }
+  .cookie-banner .cb-pref .cb-desc { color: var(--graphite); }
+  @media (min-width: 720px) {
+    .cookie-banner { grid-template-columns: 1fr auto; gap: 18px; align-items: center; }
+    .cookie-banner .cb-actions { justify-content: flex-end; }
+    .cookie-banner .cb-prefs { grid-column: 1 / -1; }
   }
-  .lv-card:hover { filter: brightness(0.985); }
-  .lv-card .lv-bar { grid-column: 1; grid-row: 1 / -1; background: var(--flame); }
-  .lv-card .lv-head {
-    grid-column: 2; grid-row: 1;
-    display: flex; align-items: baseline; gap: 12px;
+  .foot-col button {
+    font-family: var(--font-sans); font-size: 13px; color: var(--ink);
+    background: none; border: 0; padding: 0; cursor: pointer; text-align: left;
   }
-  .lv-card .lv-glyph {
-    font-family: var(--font-sans); font-weight: 700; font-size: 18px;
-    color: var(--flame); line-height: 1;
-  }
-  .lv-card .lv-lab {
-    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.14em; text-transform: uppercase; color: var(--flame-deep);
-  }
-  .lv-card .lv-when {
-    font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
-    letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-left: auto;
-  }
-  .lv-card .lv-teams {
-    grid-column: 2; grid-row: 2;
-    font-family: var(--font-serif); font-weight: 600;
-    font-size: clamp(26px, 3.4vw, 38px);
-    line-height: 1.04; letter-spacing: -0.018em;
-    color: var(--ink); margin: 0; text-wrap: balance;
-  }
-  .lv-card .lv-teams .vs {
-    color: var(--graphite-soft); font-weight: 400;
-    font-style: italic; margin: 0 8px;
-  }
-  .lv-card .lv-venue-meta {
-    grid-column: 2; grid-row: 3;
-    font-family: var(--font-sans); font-size: 12px; color: var(--graphite);
-    letter-spacing: 0.04em; margin: 0;
-  }
-  .lv-card .lv-thesis {
-    grid-column: 2; grid-row: 4;
-    font-family: var(--font-serif); font-size: 16.5px; line-height: 1.55;
-    color: var(--graphite); margin: 6px 0 0; max-width: 60ch;
-  }
-  .lv-card .lv-thesis em { font-style: italic; color: var(--ink); font-weight: 600; }
-  .lv-card .lv-foot {
-    grid-column: 2; grid-row: 5;
-    display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: baseline;
-    margin-top: 10px; padding-top: 14px;
-    border-top: var(--hairline-soft);
-  }
-  .lv-card .lv-reads { display: flex; gap: 14px; flex-wrap: wrap; }
-  .lv-card .rp { display: inline-flex; align-items: baseline; gap: 6px; }
-  .lv-card .rp .k {
-    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
-    letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite-soft);
-  }
-  .lv-card .rp .v {
-    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
-    font-weight: 600; font-size: 14.5px; color: var(--ink);
-  }
-  .lv-card .edge {
-    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
-    font-weight: 700; font-size: 13.5px; color: var(--flame-deep);
-    border-bottom: 2px solid var(--flame); padding-bottom: 1px; line-height: 1;
-  }
-  .lv-card .lv-action { margin-left: auto; display: inline-flex; align-items: baseline; gap: 14px; }
-  .lv-card .lv-action .venue {
-    font-family: var(--font-sans); font-size: 10px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-soft);
-  }
-  .lv-card .lv-action .price {
-    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
-    font-weight: 600; font-size: 17px; color: var(--ink);
-    border-bottom: 2px solid var(--flame); padding-bottom: 1px;
-  }
-  .lv-card .lv-action .cta {
-    font-family: var(--font-sans); font-size: 11.5px; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink);
-  }
-  .lv-card .lv-action .cta .arr { color: var(--flame); margin-left: 4px; }
-  .lv-card:hover .lv-action .cta { color: var(--flame-deep); }
-  @media (max-width: 720px) {
-    /* Fix #6 — tighten hero on mobile so the lead verdict comes up sooner */
-    .hero { padding: 28px 0 20px; }
-    /* Fix #7 — tighten lead-verdict spacing on mobile */
-    .lead-verdict { padding: 22px 0 0; margin-top: 18px; }
-    .lv-card { padding: 22px 20px 22px 0; column-gap: 16px; }
-    .lv-card .lv-when { display: none; }
-    .lv-card .lv-foot { flex-direction: column; align-items: stretch; gap: 12px; }
-    /* Fix #2 — the action row stacks the venue/price line then promotes the CTA to a real button */
-    .lv-card .lv-action {
-      margin-left: 0; width: 100%;
-      display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
-    }
-    .lv-card .lv-action .venue,
-    .lv-card .lv-action .price { flex: 0 0 auto; }
-    .lv-card .lv-action .cta {
-      flex: 1 1 100%;
-      display: inline-flex; align-items: center; justify-content: center;
-      min-height: 44px; padding: 11px 14px;
-      background: var(--ink); color: var(--paper);
-      border-radius: 4px;
-      letter-spacing: 0.04em;
-    }
-    .lv-card .lv-action .cta .arr { color: var(--flame); margin-left: 6px; }
-    /* Fix #8 — path explainer compresses on mobile */
-    .path-explainer { padding: 12px 0; font-size: 11.5px; }
-  }
+  .foot-col button:hover { color: var(--flame-deep); }
 
-  /* path explainer — 3-step row, editorial register */
-  .path-explainer {
-    margin: 18px 0 0; padding: 14px 0;
-    border-top: var(--hairline-soft); border-bottom: var(--hairline-soft);
-    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
-    font-family: var(--font-sans); font-size: 12.5px;
-    color: var(--graphite); letter-spacing: 0.02em;
-  }
-  .path-explainer .step { display: inline-flex; align-items: center; gap: 8px; }
-  .path-explainer .num {
-    font-family: var(--font-mono); font-size: 10.5px; font-weight: 700;
-    color: var(--flame-deep);
-    border: 1px solid var(--flame); border-radius: 999px;
-    padding: 2px 7px; line-height: 1.1;
-  }
-  .path-explainer .path-arr {
-    color: var(--flame); font-family: var(--font-sans); font-weight: 700;
-  }
-  @media (max-width: 720px) {
-    .path-explainer { gap: 6px 10px; font-size: 12px; }
-    .path-explainer .path-arr { display: none; }
-    .path-explainer .step { width: 100%; }
-  }
-
-  /* verdict key — B, BELOW the lead verdict */
-  .verdict-key {
-    padding: 32px 0 8px;
-    margin-top: 32px;
-  }
-  .verdict-key .vk-eyebrow {
-    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
-    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
-    margin-bottom: 18px;
-  }
-  .vk-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
-  @media (min-width: 720px) { .vk-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; } }
-  .vk-card {
-    position: relative;
-    padding: 18px 22px 20px 26px;
-    background: var(--paper-pure);
-    border: var(--hairline);
-    border-left: 4px solid var(--rule);
-  }
-  .vk-card .vk-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .vk-card .vk-glyph {
-    font-family: var(--font-sans); font-weight: 700; font-size: 18px;
-    line-height: 1; width: 22px; text-align: center;
-  }
-  .vk-card .vk-lab {
-    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.14em; text-transform: uppercase; line-height: 1;
-  }
-  .vk-card .vk-what {
-    font-family: var(--font-serif); font-size: 14.5px; line-height: 1.5;
-    color: var(--graphite); margin: 0;
-  }
-  .vk-card .vk-what em { color: var(--ink); font-style: italic; font-weight: 600; }
-  .vk-pick { background: var(--flame-tint); border-left-color: var(--flame); }
-  .vk-pick .vk-glyph { color: var(--flame); }
-  .vk-pick .vk-lab   { color: var(--flame-deep); }
-  .vk-pass .vk-glyph { color: var(--graphite-soft); }
-  .vk-pass .vk-lab   { color: var(--graphite-soft); }
-  .vk-avoid { border-left-color: var(--ink); }
-  .vk-avoid .vk-glyph { color: var(--flame); }
-  .vk-avoid .vk-lab {
-    color: var(--ink); border-bottom: 1.5px solid var(--flame);
-    padding-bottom: 1px; align-self: center;
+  .foot-affiliate {
+    font-family: var(--font-sans); font-size: 11.5px; color: var(--graphite-soft);
+    line-height: 1.5; max-width: 82ch; margin-top: 10px;
   }
 </style>
 </head>
@@ -1238,7 +1081,7 @@
   <!-- ============ 1. MASTHEAD + NAV ============ -->
   <header class="site-masthead">
     <div class="inner">
-      <a class="brand-lock" href="./home-v3.html" aria-label="Odds Primer — the AI sports desk for market edge">
+      <a class="brand-lock" href="./home.html" aria-label="Odds Primer — the AI sports desk for market edge">
         <span class="wm-row">
           <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
             <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
@@ -1254,8 +1097,8 @@
 
       <nav class="site-nav" aria-label="Primary">
               <ul>
-                <li><a href="./home-v3.html" aria-current="page">Home</a></li>
-                <li><a href="./outrights.html">Outright winners</a></li>
+                <li><a href="./home.html">Home</a></li>
+                <li><a href="./outrights.html" aria-current="page">Outright winners</a></li>
                 <li><a href="./matches.html">Upcoming matches</a></li>
               </ul>
             </nav>
@@ -1270,8 +1113,10 @@
           </svg>
         </summary>
         <ul class="burger-menu">
-          <li><a href="./about.html">About</a></li>
+                    <li><a href="./about.html">About</a></li>
+          <li><a href="./method.html">Method</a></li>
           <li><a href="./learn.html">Learn the basics</a></li>
+          <li><a href="./corrections.html">Corrections</a></li>
         </ul>
       </details>
 
@@ -1283,202 +1128,157 @@
       </div>
     </div>
     <nav class="pill-nav" aria-label="Primary (mobile)">
-      <a href="./outrights.html">Winners</a>
-      <a href="./matches.html">Matches</a>
-    </nav>
+          <a href="./outrights.html" aria-current="page">Winners</a>
+          <a href="./matches.html">Matches</a>
+        </nav>
   </header>
 
   <main class="page">
 
-    <!-- ============ 2. HERO ============ -->
+    <!-- ============ HERO — OUTRIGHTS ============ -->
     <section class="hero" aria-labelledby="hero-title">
-      <h1 id="hero-title">The 2026 World Cup, priced.</h1>
+      <div class="h-eyebrow">Vol. 1 · Outright winners · World Cup 2026</div>
+      <h1 id="hero-title">Three reads on who lifts the trophy.</h1>
       <p class="standfirst">
-        Our <em class="ai-token">AI model</em> compares Polymarket and Kalshi
-        prices with its own read of each match. Every market gets one verdict:
-        <em class="vlead">Pick</em>, <em class="vlead">Pass</em>, or <em class="vlead">Avoid</em>.
-        We show the price, the edge, and the reasoning. We don't tip.
+        Where the model and the market disagree most on the World Cup 2026
+        winner. Pick where our model reads the line as slow; Avoid where
+        the favourite is priced thin. The outright engine is <em>v0.1</em>.
       </p>
     </section>
 
-    <!-- ============ 2.5 LEAD VERDICT — today's headline call ============ -->
-    <section class="lead-verdict" aria-labelledby="lv-title">
-      <div class="lv-eyebrow">Today's headline verdict · Matchday 2 · Saturday</div>
+    <!-- ============ OUTRIGHT PICKS ============ -->
+    <section class="outright" id="outrights" aria-labelledby="o-title">
 
-      <a class="lv-card is-pick" href="./market-v2-newspaper-deck.html">
-        <span class="lv-bar"></span>
-
-        <div class="lv-head">
-          <span class="lv-glyph">▲</span>
-          <span class="lv-lab">Pick</span>
-          <span class="lv-when">Sat · 21:00 ET · Group F</span>
-        </div>
-
-        <h2 class="lv-teams" id="lv-title">
-          France <span class="vs">v</span> Mexico
-        </h2>
-        <p class="lv-venue-meta">MEX · Estadio Azteca</p>
-
-        <p class="lv-thesis">
-          <em>France look four points underpriced.</em>
-          Polymarket is pricing France lower than our model — that gap is the edge.
-          Our model has France at 56%; the market has them at 52%.
+      <div class="o-section-head" style="margin-top:0;">
+        <div class="o-eyebrow">Outright picks · World Cup 2026 winner</div>
+        <h2 class="op-h2" id="o-title" style="font-family:var(--font-serif); font-weight:600; font-size:clamp(22px,2.8vw,28px); letter-spacing:-0.005em; color:var(--ink); margin:0 0 10px;">Where the model and the market disagree</h2>
+        <p class="o-sub">
+          Three outright reads. The Desk is in v0.1 on outright winners
+          <span class="dag">†</span> — we show the model and the market side
+          by side and let you read the gap.
         </p>
+      </div>
 
-        <div class="lv-foot">
-          <div class="lv-reads">
-            <span class="rp"><span class="k">model</span><span class="v">56%</span></span>
-            <span class="rp"><span class="k">market</span><span class="v">52%</span></span>
+      <div class="o-picks">
+
+        <a class="opick is-pick" href="#">
+          <span class="bar"></span>
+          <div class="verdict-cell"><span class="gly">▲</span><span class="lab">Pick</span></div>
+          <div class="who">
+            <div class="team">France</div>
+            <div class="meta">Group D · holders of form, priced like outsiders</div>
+          </div>
+          <div class="thesis">
+            <em>The market has them four spots back in the field.</em>
+            Our read on form and draw says the gap should be smaller.
+          </div>
+          <div class="reads">
+            <span class="read-pair"><span class="k">model</span><span class="v">21%</span></span>
+            <span class="read-pair"><span class="k">market</span><span class="v">16%</span></span>
+            <span class="edge">+5pp</span>
+          </div>
+          <div class="line">
+            <span class="venue">Polymarket</span>
+            <span class="price">16¢</span>
+          </div>
+          <div class="action"><span class="open">Read <span class="arr">↗</span></span></div>
+        </a>
+        <p class="affiliate-note">Odds Primer may earn a referral fee if you use a partner venue. Verdicts are editorial and independent.</p>
+
+        <a class="opick is-pick" href="#">
+          <span class="bar"></span>
+          <div class="verdict-cell"><span class="gly">▲</span><span class="lab">Pick</span></div>
+          <div class="who">
+            <div class="team">Argentina</div>
+            <div class="meta">Group A · defending champions, Kalshi runs slow</div>
+          </div>
+          <div class="thesis">
+            <em>The slower of the two venues.</em> Polymarket has them
+            22¢; Kalshi sits at 18¢ — the read is the venue, not the team.
+          </div>
+          <div class="reads">
+            <span class="read-pair"><span class="k">model</span><span class="v">22%</span></span>
+            <span class="read-pair"><span class="k">market</span><span class="v">18%</span></span>
             <span class="edge">+4pp</span>
           </div>
-          <div class="lv-action">
+          <div class="line">
+            <span class="venue">Kalshi</span>
+            <span class="price">18¢</span>
+          </div>
+          <div class="action"><span class="open">Read <span class="arr">↗</span></span></div>
+        </a>
+        <p class="affiliate-note">Odds Primer may earn a referral fee if you use a partner venue. Verdicts are editorial and independent.</p>
+
+        <a class="opick is-avoid" href="#">
+          <span class="bar"></span>
+          <div class="verdict-cell"><span class="gly">✕</span><span class="lab">Avoid</span></div>
+          <div class="who">
+            <div class="team">Brazil</div>
+            <div class="meta">Group B · favourite by clear daylight</div>
+          </div>
+          <div class="thesis">
+            Tournament favourite at 22¢ both venues; our read has them
+            closer to 18%. The model says the favourite is priced thin.
+          </div>
+          <div class="reads">
+            <span class="read-pair"><span class="k">model</span><span class="v">18%</span></span>
+            <span class="read-pair"><span class="k">market</span><span class="v">22%</span></span>
+            <span class="edge edge-neg">−4pp</span>
+          </div>
+          <div class="line">
             <span class="venue">Polymarket</span>
-            <span class="price">−180</span>
-            <span class="cta">Read the market case <span class="arr">↗</span></span>
+            <span class="price">22¢</span>
           </div>
-        </div>
-      </a>
-
-      <!-- ============ 3-step path explainer ============ -->
-      <aside class="path-explainer" aria-label="How to read a verdict">
-        <span class="step"><span class="num">1</span>Read the market case</span>
-        <span class="path-arr">→</span>
-        <span class="step"><span class="num">2</span>Compare the price</span>
-        <span class="path-arr">→</span>
-        <span class="step"><span class="num">3</span>View source on Polymarket or Kalshi</span>
-      </aside>
-    </section>
-
-    <!-- ============ 2.6 VERDICT KEY — three states (below the lead, demo first then teach) ============ -->
-    <section class="verdict-key" aria-label="How to read a verdict">
-      <div class="vk-eyebrow">The verdict · three states</div>
-      <div class="vk-grid">
-
-        <div class="vk-card vk-pick">
-          <div class="vk-head">
-            <span class="vk-glyph">▲</span>
-            <span class="vk-lab">Pick</span>
-          </div>
-          <p class="vk-what">
-            <em>The model finds the market underpriced.</em> Clean value
-            on the side the market has gone slow on.
-          </p>
-        </div>
-
-        <div class="vk-card vk-pass">
-          <div class="vk-head">
-            <span class="vk-glyph">—</span>
-            <span class="vk-lab">Pass</span>
-          </div>
-          <p class="vk-what">
-            <em>The market is close to our model.</em> No clear edge —
-            the line is doing its job.
-          </p>
-        </div>
-
-        <div class="vk-card vk-avoid">
-          <div class="vk-head">
-            <span class="vk-glyph">✕</span>
-            <span class="vk-lab">Avoid</span>
-          </div>
-          <p class="vk-what">
-            <em>Both sides overpriced.</em> A rare two-way no — neither side
-            gives clean value.
-          </p>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ============ 3. ARTICLE PREVIEWS — outrights + upcoming matches ============ -->
-    <section class="article-previews" aria-label="Today's lead reads">
-      <div class="prev-grid">
-
-        <a class="article-preview prev-outrights" href="./outrights.html">
-          <span class="kicker">Outright winners · World Cup 2026</span>
-          <h2 class="prev-title">Three reads on who lifts the trophy.</h2>
-          <p class="prev-deck">
-            Where the model and the market disagree most.
-            <em>France</em> and <em>Argentina</em> look underpriced;
-            <em>Brazil</em> is the favourite priced thin.
-          </p>
-          <div class="prev-peek">
-            <span class="peek-stat"><span class="pn">3</span><span class="pl">picks</span></span>
-            <span class="peek-stat"><span class="pn">1</span><span class="pl">avoid</span></span>
-            <span class="peek-stat"><span class="pn">+5pp</span><span class="pl">top edge</span></span>
-          </div>
-          <span class="prev-cta">Read the outright board <span class="arr">→</span></span>
+          <div class="action"><span class="open">Read <span class="arr">↗</span></span></div>
         </a>
-
-        <a class="article-preview prev-matches" href="./matches.html">
-          <span class="kicker">Upcoming matches · Matchday 2</span>
-          <h2 class="prev-title">Where today's prices look wrong.</h2>
-          <p class="prev-deck">
-            Eight fixtures across three groups — three Picks, four Passes,
-            one rare two-way Avoid. <em>France v Mexico</em> is the
-            headline read.
-          </p>
-          <div class="prev-peek">
-            <span class="peek-stat"><span class="pn">3</span><span class="pl">picks</span></span>
-            <span class="peek-stat"><span class="pn">4</span><span class="pl">passes</span></span>
-            <span class="peek-stat"><span class="pn">1</span><span class="pl">avoid</span></span>
-          </div>
-          <span class="prev-cta">Read the match board <span class="arr">→</span></span>
-        </a>
+        <p class="affiliate-note">Odds Primer may earn a referral fee if you use a partner venue. Verdicts are editorial and independent.</p>
 
       </div>
-    </section>
 
-    <!-- ============ 6. HOW WE WORK ============ -->
-    <section class="how" aria-labelledby="how-title">
-      <h2 id="how-title">How we work</h2>
-      <p class="lede">Three things every page on this site shows: a price, a comparison, and an explanation.</p>
-      <div class="how-cols">
-        <div class="how-col">
-          <h3>We compare</h3>
-          <p>Prices on Polymarket, Kalshi, and the major US sportsbooks, refreshed every minute. <span class="em">Best price</span> is bold ink, not a green badge — it isn't a buy signal.</p>
-        </div>
-        <div class="how-col">
-          <h3>We explain</h3>
-          <p>Plain English on what the market resolves to, how implied probability works, and why two venues might disagree on the same outcome.</p>
-        </div>
-        <div class="how-col">
-          <h3>We don't tip</h3>
-          <p>No "bet now". No lock-of-the-day. The Desk flags fixtures where the line looks slow, fair, or both-sides expensive — a structural read on the prices, not a pick against the outcome.</p>
-        </div>
-      </div>
-      <div class="how-foot">
-        <a class="link-secondary" href="./learn.html">Read the methodology →</a>
-      </div>
-    </section>
-
-    <!-- ============ 7. FEATURED COLUMNS ============ -->
-    <section class="features" aria-labelledby="features-title">
-      <div class="f-head">
-        <h2 id="features-title">Featured columns</h2>
-        <a href="/columns">All columns <span class="arr">→</span></a>
-      </div>
-      <div class="f-grid">
-        <a class="f-card" href="/columns/poly-kalshi-france">
-          <span class="kicker">Outright winner</span>
-          <span class="title">Why Polymarket and Kalshi don't agree on France</span>
-          <p class="deck">A two-cent gap on a binary contract is a two-percentage-point gap on the same outcome. Small in the abstract, large for a market this liquid.</p>
-          <span class="meta">6 min read · The Editors · 12 May</span>
-        </a>
-        <a class="f-card" href="/columns/what-plus-130-means">
-          <span class="kicker">Reading the numbers</span>
-          <span class="title">What +130 actually means</span>
-          <p class="deck">American odds, decimal odds, and "cents" on a contract — three notations for the same idea. A short conversion table, with examples.</p>
-          <span class="meta">4 min read · 10 May</span>
-        </a>
-        <a class="f-card" href="/columns/group-d-priced-closest">
-          <span class="kicker">Group stage</span>
-          <span class="title">Group D is priced as the closest in the tournament</span>
-          <p class="deck">France is favored, but four cents separates the field. We look at why the books and the markets disagree most where the football is closest.</p>
-          <span class="meta">5 min read · 09 May</span>
+      <div class="o-field-head">
+        <div class="o-eyebrow">Where the field stands · Implied probability · Polymarket consensus, Kalshi best</div>
+        <a class="o-source" href="#"
+           aria-label="View the Outright Winner market source on Polymarket">
+          View source on Polymarket <span class="arr">↗</span>
         </a>
       </div>
+
+      <div class="o-bar-wrap">
+        <div class="o-bar" role="img"
+             aria-label="Outright winner implied probability: Brazil 22%, Argentina 18%, France 16%, England 12%, Spain 11%, Field 21%">
+          <div class="seg-lead" style="width:22%"></div>
+          <div class="seg-2"    style="width:18%"></div>
+          <div class="seg-3"    style="width:16%"></div>
+          <div class="seg-4"    style="width:12%"></div>
+          <div class="seg-5"    style="width:11%"></div>
+          <div class="seg-6"    style="width:21%"></div>
+        </div>
+        <div class="o-legend">
+          <span class="pill lead"><span class="swatch" style="background:var(--flame)"></span>Brazil <span class="num">22%</span></span>
+          <span class="pill"><span class="swatch" style="background:var(--ink-soft)"></span>Argentina <span class="num">18%</span></span>
+          <span class="pill"><span class="swatch" style="background:var(--graphite)"></span>France <span class="num">16%</span></span>
+          <span class="pill"><span class="swatch" style="background:#B89968"></span>England <span class="num">12%</span></span>
+          <span class="pill"><span class="swatch" style="background:var(--paper-deep)"></span>Spain <span class="num">11%</span></span>
+          <span class="pill"><span class="swatch" style="background:var(--paper-warm); border:1px solid var(--rule)"></span>Field <span class="num">21%</span></span>
+        </div>
+      </div>
+
+      <div class="o-cards" role="list" aria-label="Outright winner standings">
+        <a class="o-card is-lead" role="listitem" href="#"><span class="name">Brazil</span><span class="pct">22%</span><span class="src">Polymarket best</span></a>
+        <a class="o-card"         role="listitem" href="#"><span class="name">Argentina</span><span class="pct">18%</span><span class="src">Kalshi best</span></a>
+        <a class="o-card"         role="listitem" href="#"><span class="name">France</span><span class="pct">16%</span><span class="src">Polymarket best</span></a>
+        <a class="o-card"         role="listitem" href="#"><span class="name">England</span><span class="pct">12%</span><span class="src">Polymarket best</span></a>
+        <a class="o-card"         role="listitem" href="#"><span class="name">Spain</span><span class="pct">11%</span><span class="src">Kalshi best</span></a>
+        <a class="o-card"         role="listitem" href="#"><span class="name">Field</span><span class="pct">21%</span><span class="src">28 other teams</span></a>
+      </div>
+
+      <p class="o-foot">
+        <span class="dag">†</span> The outright model is in v0.1 — calibrated on
+        WC-22 backtests, in production for v1.2. Until then, treat outright
+        picks as editorial reads, not verdict-engine output.
+      </p>
     </section>
+
   </main>
 
   <!-- ============ 8. NEWSLETTER ============ -->
@@ -1515,60 +1315,78 @@
         <div class="foot-col">
           <h4>Editorial</h4>
           <ul>
-            <li><a href="#today">Today's board</a></li>
-            <li><a href="#outrights">Outright winners</a></li>
-            <li><a href="/columns">Columns</a></li>
+            <li><a href="./home.html">Home</a></li>
+            <li><a href="./outrights.html">Outright winners</a></li>
+            <li><a href="./matches.html">Upcoming matches</a></li>
             <li><a href="./learn.html">Learn the basics</a></li>
           </ul>
         </div>
         <div class="foot-col">
-          <h4>Company</h4>
+          <h4>About</h4>
           <ul>
-            <li><a href="./about.html">About</a></li>
-            <li><a href="/methodology">Methodology</a></li>
-            <li><a href="/corrections">Corrections</a></li>
-            <li><a href="mailto:hello@oddsprimer.com">Contact</a></li>
+                        <li><a href="./about.html">About Odds Primer</a></li>
+            <li><a href="./method.html">Method</a></li>
+            <li><a href="./methodology.html">Methodology (detail)</a></li>
+            <li><a href="./corrections.html">Corrections policy</a></li>
+            <li><a href="mailto:desk@oddsprimer.com">Contact the Desk</a></li>
           </ul>
         </div>
         <div class="foot-col">
           <h4>Legal</h4>
           <ul>
-            <li><a href="/privacy">Privacy</a></li>
-            <li><a href="/terms">Terms of use</a></li>
-            <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>
-            <li><a href="/responsible-use">Responsible use</a></li>
-            <li><a href="/cookies">Cookies</a></li>
-            <li><a href="/accessibility">Accessibility</a></li>
+            <li><a href="./privacy.html">Privacy</a></li>
+            <li><a href="./terms.html">Terms of use</a></li>
+            <li><a href="./affiliate-disclosure.html">Affiliate disclosure</a></li>
+            <li><a href="./responsible-use.html">Responsible use</a></li>
+            <li><a href="./cookies.html">Cookie policy</a></li>
+            <li><button type="button" onclick="document.getElementById('cookie-banner').hidden=false; document.getElementById('cookie-banner').classList.add('is-managing');">Cookie settings</button></li>
           </ul>
         </div>
       </div>
-
       <p class="foot-discl">
-        <span class="dag">†</span> Odds Primer is an editorial publication. We do not take wagers, hold reader funds, or execute trades.
-        Prediction-market trading involves risk; check your local laws before acting on what you read.
-        21+ in NY, MA, NJ, and others. When you act on a "View source on" link and trade at a partner venue,
-        the venue may share a portion of its trading fee with us — disclosed in full on the
-        <a href="/affiliate-disclosure">Affiliate disclosure</a> page. Our editorial coverage is independent of that revenue.
+        <span class="dag">†</span> Odds Primer is editorial information only. We are not a sportsbook, broker, exchange,
+        financial adviser, or betting adviser. We do not take wagers, hold funds, execute trades, or provide personalized advice.
+        Prediction-market participation involves risk and may not be available in your location.
+      </p>
+      <p class="foot-affiliate">
+        Some outbound source links may be affiliate links. Affiliate relationships do not determine our editorial verdicts.
       </p>
 
       <div class="foot-meta">
-        <span>© 2026 Odds Primer.</span>
-        <span>Published from the United Kingdom.</span>
-        <span>Built with the Odds Primer Design System.</span>
+        <span>© 2026 Odds Primer</span>
+        <span>An independent editorial website — not a registered company, broker, or sportsbook</span>
       </div>
     </div>
   </footer>
 
-  <!-- ============ 10. STICKY MOBILE BOTTOM BAR ============ -->
-  <div class="sticky-bar" role="navigation" aria-label="Quick actions">
-    <a class="count" href="./matches.html">
-      Today: <strong><span class="pp">3 picks</span> · top edge <span class="pp">+5pp</span></strong>
-    </a>
-    <a class="pill" href="./matches.html">See reads <span class="arr">↗</span></a>
-  </div>
 
-  <style>
-    .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
-  </style>
+  <div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Cookie preferences">
+    <div class="cb-msg">
+      Odds Primer uses cookies and similar technologies to run the site, understand usage, and measure outbound links.
+      You can accept, reject, or manage non-essential cookies.
+    </div>
+    <div class="cb-actions">
+      <button type="button" onclick="document.getElementById('cookie-banner').classList.add('is-managing');">Manage</button>
+      <button type="button" onclick="document.getElementById('cookie-banner').hidden=true;">Reject</button>
+      <button class="cb-accept" type="button" onclick="document.getElementById('cookie-banner').hidden=true;">Accept</button>
+    </div>
+    <div class="cb-prefs">
+      <label class="cb-pref">
+        <input type="checkbox" checked disabled>
+        <span><span class="cb-name">Essential cookies</span> — always on</span>
+      </label>
+      <label class="cb-pref">
+        <input type="checkbox">
+        <span><span class="cb-name">Analytics cookies</span> — <span class="cb-desc">help us understand site usage</span></span>
+      </label>
+      <label class="cb-pref">
+        <input type="checkbox">
+        <span><span class="cb-name">Affiliate measurement</span> — <span class="cb-desc">helps us measure outbound partner links</span></span>
+      </label>
+      <div class="cb-actions" style="margin-top: 4px;">
+        <button type="button" onclick="document.getElementById('cookie-banner').hidden=true;">Save preferences</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

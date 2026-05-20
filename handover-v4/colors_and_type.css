@@ -1,0 +1,340 @@
+/* ============================================================
+   Odds Primer — Colors & Type
+   Editorial register. Sports-desk voice. Charts are the art.
+   ------------------------------------------------------------
+   Three palette directions are defined. The DEFAULT palette
+   (warm editorial) lives at :root. The other two are scoped
+   to data-palette attributes on <html> or any container.
+   ============================================================ */
+
+/* ---------- WEB FONTS ----------
+   Anthropic-adjacent stack, all free Google Fonts substitutes:
+     - Inter Tight   ≈ Styrene B (display sans, tight)
+     - Söhne is the closer reference; Inter Tight is the best free match
+     - Source Serif 4 ≈ Tiempos Text (body serif, editorial)
+     - JetBrains Mono ≈ for prices/odds (legible numerics)
+   Substitutions are documented in README.md.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ============================================================
+   PALETTE 1 — WARM EDITORIAL (default)
+   The user's working draft, refined.
+   - Flame orange shifted dustier (less alarm, more Penguin)
+   - Cream paper instead of pure white (less screen, more page)
+   - Navy retained as anchor; graphite as secondary structure
+   ============================================================ */
+:root,
+[data-palette="warm-editorial"] {
+  /* surfaces */
+  --paper:        #FAF7F0;       /* cream, the page */
+  --paper-pure:   #FFFFFF;       /* pure white for cards-on-paper */
+  --paper-warm:   #F0ECE2;       /* soft warm block */
+  --paper-deep:   #E8E2D2;       /* warm rule, divider blocks */
+
+  /* ink */
+  --ink:          #0E2240;       /* deep navy, primary type */
+  --ink-soft:     #2A3957;       /* secondary type */
+  --graphite:     #3A3F47;       /* tertiary structure */
+  --graphite-soft:#6B7079;       /* meta, captions */
+  --rule:         #D9D2C0;       /* hairline rules on paper */
+  --rule-soft:    #EDE7D6;
+
+  /* accent — single, used sparingly */
+  --flame:        #D9461C;       /* dustier than #FF5A1F; reads editorial not alarm */
+  --flame-deep:   #A8341A;       /* hover/press */
+  --flame-tint:   #F7E4DA;       /* highlight wash */
+
+  /* semantic — derived from ink, NOT traffic-light */
+  --best-price:   #0E2240;       /* "best" is just bold ink, not green */
+  --disagreement: #D9461C;       /* flame, used as "look here" */
+  --consensus:   #6B7079;        /* muted, "everyone agrees" */
+
+  /* chart palette — from the same family, orderable */
+  --chart-1: #0E2240;            /* ink */
+  --chart-2: #D9461C;            /* flame */
+  --chart-3: #6B7079;            /* graphite-soft */
+  --chart-4: #B89968;            /* warm tan */
+  --chart-5: #2A3957;            /* ink-soft */
+  --chart-6: #8A6F3D;            /* deep tan */
+
+  /* venues — assigned, not invented */
+  --venue-kalshi:     #00C46A;   /* their green, used at low saturation only */
+  --venue-polymarket: #2A6FDB;   /* their blue */
+  --venue-sportsbook: #6B7079;   /* generic graphite for "the books" */
+
+  --selection-bg: var(--flame-tint);
+  --selection-fg: var(--ink);
+}
+
+/* ============================================================
+   TYPOGRAPHY
+   Display sans (Inter Tight) for chrome, headlines, numerics-as-data.
+   Body serif (Source Serif 4) for prose, footnotes, captions.
+   Mono (JetBrains) for prices, odds, percentages — anywhere a number
+   needs to align in a column.
+   ============================================================ */
+:root {
+  --font-sans:    'Inter Tight', 'Söhne', 'Inter', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+  --font-serif:   'Source Serif 4', 'Tiempos Text', 'Charter', 'Georgia', serif;
+  --font-mono:    'JetBrains Mono', 'SF Mono', 'Menlo', 'Monaco', monospace;
+
+  /* type scale — editorial, not utility.
+     The jumps are wider than a typical web product's;
+     headlines are noticeably bigger than body, on purpose. */
+  --t-display:    clamp(2.75rem, 5vw, 4.25rem);   /* 44–68px — page-level title */
+  --t-h1:         clamp(2rem, 3.5vw, 3rem);       /* 32–48px */
+  --t-h2:         clamp(1.5rem, 2.5vw, 2rem);     /* 24–32px */
+  --t-h3:         1.25rem;                         /* 20px */
+  --t-h4:         1.0625rem;                       /* 17px */
+  --t-body:       1.0625rem;                       /* 17px reading */
+  --t-body-sm:    0.9375rem;                       /* 15px UI body */
+  --t-caption:    0.8125rem;                       /* 13px */
+  --t-micro:      0.6875rem;                       /* 11px — tags, eyebrows */
+
+  /* line-heights */
+  --lh-display:   1.04;
+  --lh-heading:   1.15;
+  --lh-body:      1.55;       /* serif body, generous */
+  --lh-ui:        1.4;
+  --lh-mono:      1.3;
+
+  /* tracking */
+  --track-eyebrow: 0.08em;
+  --track-display: -0.02em;
+  --track-heading: -0.01em;
+  --track-mono:    0;
+
+  /* spacing scale — 4px base, editorial-generous.
+     Most products stop at 64; we go to 128 because pages need air. */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-7:  48px;
+  --space-8:  64px;
+  --space-9:  96px;
+  --space-10: 128px;
+
+  /* radii — modest. This is a magazine, not a SaaS app.
+     Most things are square. Buttons get 4px. Cards 6px. Pills 999. */
+  --radius-0:    0px;
+  --radius-1:    2px;
+  --radius-2:    4px;
+  --radius-3:    6px;
+  --radius-4:    8px;
+  --radius-pill: 999px;
+
+  /* hairlines & shadows — barely-there. No drama. */
+  --hairline:        1px solid var(--rule);
+  --hairline-soft:   1px solid var(--rule-soft);
+  --hairline-strong: 1px solid var(--ink);
+
+  --shadow-1: 0 1px 0 var(--rule);
+  --shadow-2: 0 1px 2px rgba(14, 34, 64, 0.06), 0 0 0 1px var(--rule);
+  --shadow-3: 0 8px 24px rgba(14, 34, 64, 0.08), 0 0 0 1px var(--rule);
+
+  /* layout */
+  --measure-prose:  62ch;       /* serif reading column */
+  --measure-narrow: 38ch;       /* sidebar text */
+  --gutter-page:    clamp(20px, 4vw, 64px);
+
+  /* motion — short, restrained, no bounces */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasis: cubic-bezier(0.3, 0, 0, 1);
+  --dur-fast:    120ms;
+  --dur-base:    200ms;
+  --dur-slow:    320ms;
+}
+
+/* ============================================================
+   SEMANTIC TYPOGRAPHY CLASSES
+   Use these directly OR copy the property block.
+   ============================================================ */
+
+.op-eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--graphite-soft);
+}
+
+.op-display {
+  /* Now serif-led. Editorial register; closer to a weekly magazine than a SaaS app. */
+  font-family: var(--font-serif);
+  font-size: var(--t-display);
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.op-h1 {
+  font-family: var(--font-serif);
+  font-size: var(--t-h1);
+  font-weight: 600;
+  line-height: var(--lh-heading);
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.op-h2 {
+  font-family: var(--font-serif);
+  font-size: var(--t-h2);
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.op-h3 {
+  /* Sans for chrome subheads (in-product) */
+  font-family: var(--font-sans);
+  font-size: var(--t-h3);
+  font-weight: 600;
+  line-height: var(--lh-heading);
+  color: var(--ink);
+}
+
+.op-headline-sans {
+  /* alt headline — when chrome needs a sans display (rare) */
+  font-family: var(--font-sans);
+  font-size: var(--t-h1);
+  font-weight: 700;
+  line-height: var(--lh-heading);
+  letter-spacing: var(--track-heading);
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.op-prose {
+  font-family: var(--font-serif);
+  font-size: var(--t-body);
+  font-weight: 400;
+  line-height: var(--lh-body);
+  color: var(--ink);
+  max-width: var(--measure-prose);
+}
+
+.op-prose p + p {
+  margin-top: var(--space-4);
+  text-indent: 1.25em;       /* book-style indented paragraphs after the first */
+}
+.op-prose > p:first-child { text-indent: 0; }
+
+.op-ui {
+  font-family: var(--font-sans);
+  font-size: var(--t-body-sm);
+  font-weight: 400;
+  line-height: var(--lh-ui);
+  color: var(--ink);
+}
+
+.op-caption {
+  font-family: var(--font-sans);
+  font-size: var(--t-caption);
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--graphite-soft);
+}
+
+.op-footnote {
+  font-family: var(--font-serif);
+  font-size: var(--t-caption);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--graphite);
+}
+
+.op-num {
+  /* prices, odds, percentages */
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1, "ss01" 1;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+
+.op-num--display {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: var(--t-h1);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.op-byline {
+  font-family: var(--font-sans);
+  font-size: var(--t-caption);
+  font-weight: 500;
+  color: var(--graphite);
+}
+
+.op-dagger {
+  /* the footnote dagger — used as a system glyph and a footnote marker */
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--flame);
+}
+
+/* ============================================================
+   GLOBAL DEFAULTS
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--t-body-sm);
+  line-height: var(--lh-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--selection-bg);
+  color: var(--selection-fg);
+}
+
+a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color var(--dur-fast) var(--ease-standard),
+              color var(--dur-fast) var(--ease-standard);
+}
+a:hover { text-decoration-color: var(--flame); color: var(--flame-deep); }
+a:focus-visible {
+  outline: 2px solid var(--flame);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+hr {
+  border: 0;
+  border-top: var(--hairline);
+  margin: var(--space-6) 0;
+}
+
+/* ============================================================
+   UTILITY HELPERS used across components
+   ============================================================ */
+.op-rule        { border-top: var(--hairline); }
+.op-rule-strong { border-top: var(--hairline-strong); }
+.op-block-warm  { background: var(--paper-warm); }
+.op-block-deep  { background: var(--paper-deep); }
+.op-tabular     { font-variant-numeric: tabular-nums; }

@@ -17,11 +17,24 @@
     display: flex; align-items: center; justify-content: space-between; gap: 16px;
     border-top: var(--hairline-strong);
   }
-  .brand-lock { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+  /* Canonical lockup — same on every page so the masthead height is stable
+     across home → about → learn navigation. */
+  .brand-lock {
+    display: inline-flex; flex-direction: column; gap: 4px;
+    text-decoration: none;
+  }
+  .brand-lock svg { display: block; }
+  .brand-lock .wm-row { display: flex; align-items: baseline; gap: 12px; }
   .brand-lock .wm {
     font-family: var(--font-sans); font-weight: 700; font-size: 22px;
     color: var(--ink); letter-spacing: -0.022em; line-height: 1;
   }
+  .brand-lock .tag {
+    font-family: var(--font-serif); font-style: italic; font-weight: 400;
+    font-size: 12px; line-height: 1.3; color: var(--graphite);
+    padding-left: 0;
+  }
+  .brand-lock .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
   .site-nav { display: none; }
   .site-nav ul { list-style: none; padding: 0; margin: 0; display: flex; gap: 26px; }
   .site-nav a {
@@ -39,6 +52,66 @@
     font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
     letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
   }
+  /* ---------- mobile pill-style nav (replaces burger) ---------- */
+  .pill-nav {
+    display: flex; gap: 6px; align-items: center;
+    padding: 12px var(--gutter-page);
+    border-bottom: var(--hairline);
+    background: var(--paper);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .pill-nav::-webkit-scrollbar { display: none; }
+  .pill-nav a {
+    font-family: var(--font-sans); font-size: 15px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
+    padding: 10px 18px; border-radius: 999px;
+    white-space: nowrap;
+    transition: background var(--dur-fast) var(--ease-standard),
+                color var(--dur-fast) var(--ease-standard);
+  }
+  .pill-nav a[aria-current="page"] {
+    background: var(--ink); color: var(--paper);
+  }
+  .pill-nav a:not([aria-current="page"]):hover {
+    color: var(--flame-deep);
+  }
+  @media (min-width: 820px) {
+    .pill-nav { display: none; }
+  }
+
+  /* ---------- burger menu (About + Learn — secondary overflow) ---------- */
+  .burger { position: relative; display: inline-block; }
+  .burger-btn {
+    list-style: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    border: var(--hairline); background: var(--paper-pure);
+    color: var(--ink); border-radius: 2px;
+    transition: background var(--dur-fast) var(--ease-standard),
+                color var(--dur-fast) var(--ease-standard);
+  }
+  .burger-btn::-webkit-details-marker { display: none; }
+  .burger-btn::marker { content: ""; }
+  .burger-btn:hover { color: var(--flame-deep); }
+  .burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
+  .burger-menu {
+    position: absolute; right: 0; top: calc(100% + 8px);
+    min-width: 180px;
+    background: var(--paper-pure); border: var(--hairline);
+    list-style: none; margin: 0; padding: 6px 0;
+    box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08);
+    z-index: 50;
+  }
+  .burger-menu li { padding: 0; margin: 0; list-style: none; }
+  .burger-menu a {
+    display: block; padding: 10px 18px;
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
+  }
+  .burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
+
+
 
   .crumb {
     padding: 32px 0 0;
@@ -182,24 +255,40 @@
 <body>
   <header class="site-masthead">
     <div class="inner">
-      <a class="brand-lock" href="./home-v3.html" aria-label="Odds Primer">
-        <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
+      <a class="brand-lock" href="./home-v3.html" aria-label="Odds Primer — the AI sports desk for market edge">
+        <span class="wm-row">
+          <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
           <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
           <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
           <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
           <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
           <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
         </svg>
-        <span class="wm">Odds Primer</span>
+          <span class="wm">Odds Primer</span>
+        </span>
+        <span class="tag">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span></span>
       </a>
       <nav class="site-nav" aria-label="Primary">
-        <ul>
-          <li><a href="./home-v3.html#today">Today</a></li>
-          <li><a href="./home-v3.html#outrights">Outrights</a></li>
-          <li><a href="./learn.html" aria-current="page">Learn</a></li>
+              <ul>
+                <li><a href="./home-v3.html">Home</a></li>
+                <li><a href="./outrights.html">Outright winners</a></li>
+                <li><a href="./matches.html">Upcoming matches</a></li>
+              </ul>
+            </nav>
+
+      <details class="burger">
+        <summary class="burger-btn" aria-label="More links">
+          <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+            <rect y="0"  width="16" height="1.5" fill="currentColor"/>
+            <rect y="5"  width="16" height="1.5" fill="currentColor"/>
+            <rect y="10" width="16" height="1.5" fill="currentColor"/>
+          </svg>
+        </summary>
+        <ul class="burger-menu">
           <li><a href="./about.html">About</a></li>
+          <li><a href="./learn.html">Learn the basics</a></li>
         </ul>
-      </nav>
+      </details>
     </div>
     <div class="edition-strip">
       <div class="inner">
@@ -207,6 +296,10 @@
         <span>4 min read</span>
       </div>
     </div>
+    <nav class="pill-nav" aria-label="Primary (mobile)">
+          <a href="./outrights.html">Winners</a>
+          <a href="./matches.html">Matches</a>
+        </nav>
   </header>
 
   <main class="page">

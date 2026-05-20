@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>markettips.ai — AI tips for prediction markets</title>
+<meta name="description" content="AI-picked tips on every priced World Cup 2026 market. Polymarket + Kalshi, side by side. With confidence scores. Built for traders.">
+<style>
+  /* ============================================================
+     markettips.ai — ALT BRAND MOCKUP
+     Dark terminal × fintech. Inverse of the Odds Primer
+     warm-editorial register. AI-led, tip-coded, transactional.
+     ============================================================ */
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root {
+    /* surfaces */
+    --bg:           #0B0E13;
+    --surface:      #141923;
+    --surface-hi:   #1A2030;
+    --rule:         #1F2734;
+    --rule-soft:    #161C26;
+
+    /* text */
+    --text-1:       #F5F7FA;
+    --text-2:       #9CA3AF;
+    --text-3:       #5A6478;
+
+    /* signals */
+    --up:           #00E676;
+    --up-deep:      #00B257;
+    --up-tint:      rgba(0, 230, 118, 0.14);
+    --down:         #FF5252;
+    --down-deep:    #C73B3B;
+    --ai:           #7C5CFF;
+    --ai-deep:      #5E3FD9;
+    --ai-tint:      rgba(124, 92, 255, 0.14);
+
+    /* type */
+    --sans: 'Inter', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+    --mono: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+
+    /* layout */
+    --gutter: clamp(20px, 4vw, 64px);
+    --max-w: 1180px;
+
+    /* motion */
+    --ease: cubic-bezier(0.2, 0, 0, 1);
+    --dur: 160ms;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text-1);
+    font-family: var(--sans); font-size: 15px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  .page { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--gutter); }
+
+  /* =========================
+     1. MASTHEAD
+     ========================= */
+  .masthead {
+    position: sticky; top: 0; z-index: 40;
+    background: rgba(11, 14, 19, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .masthead .row {
+    max-width: var(--max-w); margin: 0 auto;
+    padding: 14px var(--gutter);
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .brand {
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .brand .glyph {
+    display: block; width: 26px; height: 22px;
+  }
+  .brand .wm {
+    font-family: var(--sans); font-weight: 800; font-size: 19px;
+    letter-spacing: -0.02em; color: var(--text-1);
+  }
+  .brand .wm .ai {
+    color: var(--ai); font-weight: 700;
+  }
+
+  .nav { display: none; }
+  .nav a {
+    font-size: 13px; font-weight: 600; color: var(--text-2);
+    padding: 8px 14px; border-radius: 6px;
+    transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .nav a:hover { color: var(--text-1); background: var(--surface); }
+  .nav a[aria-current="page"] { color: var(--text-1); background: var(--surface-hi); }
+
+  .ai-status {
+    display: none; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 11px; color: var(--text-2);
+    font-weight: 500;
+  }
+  .ai-status .dot {
+    width: 8px; height: 8px; border-radius: 999px;
+    background: var(--up); box-shadow: 0 0 8px var(--up);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  .cta-trade {
+    background: var(--up); color: #062511;
+    font-family: var(--sans); font-size: 13px; font-weight: 700;
+    padding: 9px 16px; border-radius: 6px;
+    transition: filter var(--dur) var(--ease);
+  }
+  .cta-trade:hover { filter: brightness(1.1); }
+
+  @media (min-width: 880px) {
+    .nav { display: flex; gap: 4px; }
+    .ai-status { display: inline-flex; }
+  }
+
+  /* status strip */
+  .status-strip {
+    border-top: 1px solid var(--rule-soft);
+    background: var(--bg);
+  }
+  .status-strip .row {
+    max-width: var(--max-w); margin: 0 auto;
+    padding: 9px var(--gutter);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.04em; color: var(--text-2);
+    text-transform: uppercase;
+  }
+  .status-strip .live { color: var(--text-1); }
+  .status-strip .live::before {
+    content: ""; display: inline-block; width: 6px; height: 6px;
+    border-radius: 999px; background: var(--up);
+    box-shadow: 0 0 6px var(--up); margin-right: 8px; vertical-align: 1px;
+  }
+  .status-strip .winrate { color: var(--up); }
+
+  /* mobile pill nav */
+  .pill-nav {
+    display: flex; gap: 6px; align-items: center;
+    padding: 12px var(--gutter);
+    border-bottom: 1px solid var(--rule);
+    background: var(--bg);
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .pill-nav::-webkit-scrollbar { display: none; }
+  .pill-nav a {
+    font-family: var(--sans); font-size: 14px; font-weight: 600;
+    color: var(--text-2);
+    padding: 10px 16px; border-radius: 999px;
+    white-space: nowrap;
+    transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .pill-nav a[aria-current="page"] { background: var(--surface-hi); color: var(--text-1); }
+  @media (min-width: 880px) { .pill-nav { display: none; } }
+
+  /* =========================
+     2. HERO
+     ========================= */
+  .hero { padding: 56px 0 28px; }
+  .hero .eyebrow {
+    font-family: var(--mono); font-size: 11.5px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ai); margin-bottom: 18px;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .hero .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 999px; background: var(--ai);
+    box-shadow: 0 0 6px var(--ai);
+  }
+  .hero h1 {
+    font-family: var(--sans); font-weight: 800;
+    font-size: clamp(2.4rem, 5.6vw, 4.4rem);
+    line-height: 1.02; letter-spacing: -0.032em;
+    margin: 0; color: var(--text-1); text-wrap: balance; max-width: 18ch;
+  }
+  .hero h1 .ai-word { color: var(--ai); }
+  .hero .standfirst {
+    font-size: clamp(16px, 1.6vw, 19px);
+    line-height: 1.55; color: var(--text-2);
+    margin: 22px 0 0; max-width: 58ch;
+  }
+  .hero .standfirst strong { color: var(--text-1); font-weight: 600; }
+  .hero .standfirst .ai-token { color: var(--ai); font-weight: 600; }
+
+  /* =========================
+     3. LEAD TIP — today's top AI pick
+     ========================= */
+  .lead-tip {
+    margin-top: 36px; padding-top: 32px;
+    border-top: 1px solid var(--rule);
+  }
+  .lead-tip-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .lead-tip-head .label {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--ai);
+  }
+  .lead-tip-head .conf {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 12px; color: var(--text-2);
+  }
+  .lead-tip-head .conf .num {
+    font-weight: 700; font-size: 14px; color: var(--ai);
+  }
+
+  .tip-card {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--up);
+    padding: 26px 28px;
+    border-radius: 8px;
+    position: relative; overflow: hidden;
+    transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  }
+  .tip-card:hover { background: var(--surface-hi); }
+  .tip-card::before {
+    /* faint AI glow on hover */
+    content: "";
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 600px 200px at 70% 100%, var(--ai-tint), transparent 70%);
+    opacity: 0.6; pointer-events: none;
+  }
+  .tip-card > * { position: relative; }
+
+  .tip-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .tip-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    background: var(--up-tint); color: var(--up);
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .tip-pill .glyph { line-height: 1; }
+  .tip-when {
+    font-family: var(--mono); font-size: 11.5px; color: var(--text-3);
+  }
+  .tip-meta { margin-left: auto; font-family: var(--mono); font-size: 11.5px; color: var(--text-3); }
+
+  .tip-card .teams {
+    font-family: var(--sans); font-weight: 800;
+    font-size: clamp(24px, 3.2vw, 34px);
+    line-height: 1.06; letter-spacing: -0.022em;
+    margin: 0; color: var(--text-1);
+  }
+  .tip-card .teams .v {
+    color: var(--text-3); font-weight: 500; margin: 0 12px; font-size: 0.7em;
+  }
+  .tip-card .venue-meta {
+    font-family: var(--mono); font-size: 12px; color: var(--text-3);
+    margin: 4px 0 0; letter-spacing: 0.02em;
+  }
+
+  .tip-card .thesis {
+    font-size: 15.5px; line-height: 1.6; color: var(--text-2);
+    margin: 16px 0 0; max-width: 64ch;
+  }
+  .tip-card .thesis strong { color: var(--text-1); font-weight: 600; }
+  .tip-card .thesis em {
+    color: var(--ai); font-style: normal; font-weight: 600;
+  }
+
+  .tip-foot {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px;
+    margin-top: 22px; padding-top: 18px;
+    border-top: 1px solid var(--rule);
+  }
+  .tip-reads { display: flex; gap: 18px; }
+  .tip-rp { display: flex; flex-direction: column; gap: 2px; }
+  .tip-rp .k {
+    font-family: var(--mono); font-size: 10px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3);
+  }
+  .tip-rp .v {
+    font-family: var(--mono); font-weight: 700; font-size: 16px; color: var(--text-1);
+    font-variant-numeric: tabular-nums;
+  }
+  .tip-rp.edge .v { color: var(--up); }
+
+  .tip-actions {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 12px;
+  }
+  .tip-price {
+    font-family: var(--mono); font-weight: 700; font-size: 16px;
+    color: var(--text-1); font-variant-numeric: tabular-nums;
+    padding: 8px 14px; background: var(--rule); border-radius: 6px;
+  }
+  .btn-trade {
+    background: var(--up); color: #062511;
+    font-family: var(--sans); font-size: 13px; font-weight: 700;
+    padding: 11px 18px; border-radius: 6px;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: filter var(--dur) var(--ease);
+  }
+  .btn-trade:hover { filter: brightness(1.12); }
+  .btn-trade .arr { display: inline-block; transition: transform var(--dur) var(--ease); }
+  .btn-trade:hover .arr { transform: translateX(2px); }
+
+  /* tiny share row */
+  .tip-share {
+    display: flex; gap: 14px; margin-top: 14px;
+    font-family: var(--mono); font-size: 11px; color: var(--text-3);
+  }
+  .tip-share a { color: var(--text-3); transition: color var(--dur) var(--ease); }
+  .tip-share a:hover { color: var(--ai); }
+
+  /* =========================
+     4. ARTICLE PREVIEWS — two preview cards
+     ========================= */
+  .previews {
+    margin-top: 56px; padding-top: 36px;
+    border-top: 1px solid var(--rule);
+  }
+  .prev-eyebrow {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--text-3); margin-bottom: 18px;
+  }
+  .prev-grid {
+    display: grid; grid-template-columns: 1fr; gap: 16px;
+  }
+  @media (min-width: 820px) {
+    .prev-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+  }
+  .prev-card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 24px;
+    transition: background var(--dur) var(--ease);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .prev-card:hover { background: var(--surface-hi); }
+  .prev-card .kicker {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--ai);
+  }
+  .prev-card h2 {
+    font-family: var(--sans); font-weight: 800;
+    font-size: clamp(20px, 2.4vw, 26px);
+    line-height: 1.15; letter-spacing: -0.018em;
+    color: var(--text-1); margin: 0;
+  }
+  .prev-card .deck {
+    font-size: 14.5px; line-height: 1.55; color: var(--text-2);
+    margin: 0; max-width: 50ch;
+  }
+  .prev-card .deck strong { color: var(--text-1); font-weight: 600; }
+
+  .stat-row {
+    display: flex; gap: 22px; margin-top: 10px;
+    padding-top: 14px; border-top: 1px solid var(--rule);
+  }
+  .stat-row .sx { display: flex; flex-direction: column; gap: 2px; }
+  .stat-row .sx-n {
+    font-family: var(--mono); font-weight: 700; font-size: 22px; color: var(--text-1);
+    line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .stat-row .sx-n.up { color: var(--up); }
+  .stat-row .sx-n.down { color: var(--down); }
+  .stat-row .sx-l {
+    font-family: var(--mono); font-size: 10px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3);
+  }
+  .prev-cta {
+    margin-top: auto; padding-top: 14px;
+    font-family: var(--sans); font-size: 13px; font-weight: 600;
+    color: var(--ai);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .prev-cta .arr {
+    display: inline-block; transition: transform var(--dur) var(--ease);
+  }
+  .prev-card:hover .prev-cta .arr { transform: translateX(3px); }
+
+  /* =========================
+     5. AI TRACK RECORD
+     ========================= */
+  .track {
+    margin-top: 56px; padding: 26px 28px;
+    background: linear-gradient(135deg, var(--ai-tint), transparent 60%), var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    display: grid; grid-template-columns: 1fr; gap: 18px;
+    align-items: center;
+  }
+  @media (min-width: 720px) {
+    .track { grid-template-columns: 1fr auto; gap: 32px; }
+  }
+  .track h3 {
+    font-family: var(--sans); font-weight: 800; font-size: 20px;
+    letter-spacing: -0.012em; color: var(--text-1); margin: 0;
+  }
+  .track p {
+    font-size: 14px; color: var(--text-2); margin: 6px 0 0;
+    max-width: 56ch;
+  }
+  .track-stats {
+    display: flex; gap: 22px;
+  }
+  .track-stats .sx-n { font-family: var(--mono); font-weight: 700; font-size: 26px; line-height: 1; }
+  .track-stats .up { color: var(--up); }
+  .track-stats .sx-l {
+    font-family: var(--mono); font-size: 10px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3);
+    margin-top: 4px;
+  }
+
+  /* =========================
+     6. NEWSLETTER
+     ========================= */
+  .news {
+    margin-top: 56px; padding: 32px 0 0;
+    border-top: 1px solid var(--rule);
+  }
+  .news h2 {
+    font-family: var(--sans); font-weight: 800;
+    font-size: clamp(22px, 2.6vw, 28px);
+    letter-spacing: -0.02em; color: var(--text-1); margin: 0 0 6px;
+  }
+  .news p {
+    font-size: 14.5px; color: var(--text-2); margin: 0 0 18px;
+    max-width: 52ch;
+  }
+  .news form {
+    display: flex; gap: 8px; flex-wrap: wrap; max-width: 480px;
+  }
+  .news input[type="email"] {
+    flex: 1 1 220px;
+    padding: 12px 14px;
+    background: var(--surface); border: 1px solid var(--rule);
+    color: var(--text-1); font-family: var(--sans); font-size: 14px;
+    border-radius: 6px;
+  }
+  .news input:focus { outline: 1px solid var(--ai); border-color: var(--ai); }
+  .news button {
+    padding: 12px 20px;
+    background: var(--ai); color: #fff;
+    font-family: var(--sans); font-size: 13px; font-weight: 700;
+    border: 0; border-radius: 6px; cursor: pointer;
+    transition: background var(--dur) var(--ease);
+  }
+  .news button:hover { background: var(--ai-deep); }
+  .news .fine {
+    font-family: var(--mono); font-size: 11px; color: var(--text-3);
+    margin-top: 10px;
+  }
+
+  /* =========================
+     7. FOOTER
+     ========================= */
+  footer {
+    margin-top: 72px;
+    background: #06090E;
+    border-top: 1px solid var(--rule);
+  }
+  footer .row {
+    max-width: var(--max-w); margin: 0 auto;
+    padding: 32px var(--gutter);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 22px 28px;
+  }
+  @media (min-width: 720px) {
+    footer .row { grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 40px; }
+  }
+  footer .brand-block {
+    grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px;
+    padding-bottom: 22px; border-bottom: 1px solid var(--rule);
+  }
+  @media (min-width: 720px) {
+    footer .brand-block { grid-column: auto; border: 0; padding-bottom: 0; }
+  }
+  footer .tag {
+    font-family: var(--sans); font-size: 13px; color: var(--text-2);
+  }
+  footer h4 {
+    font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-3);
+    margin: 0 0 12px;
+  }
+  footer ul { list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 8px; }
+  footer ul a {
+    font-size: 13px; color: var(--text-2);
+    transition: color var(--dur) var(--ease);
+  }
+  footer ul a:hover { color: var(--ai); }
+  footer .legal {
+    grid-column: 1 / -1; padding-top: 22px;
+    border-top: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 11px; color: var(--text-3);
+    display: flex; flex-wrap: wrap; gap: 8px 18px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ MASTHEAD ============ -->
+  <header class="masthead">
+    <div class="row">
+      <a class="brand" href="./home-markettipsai.html" aria-label="markettips.ai">
+        <svg class="glyph" viewBox="0 0 40 32" aria-hidden="true">
+          <polyline points="3,28 13,18 22,22 36,5"
+                    stroke="#7C5CFF" stroke-width="3" fill="none"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="36" cy="5" r="3" fill="#00E676"/>
+        </svg>
+        <span class="wm">markettips<span class="ai">.ai</span></span>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
+        <a href="#" aria-current="page">Today's tips</a>
+        <a href="#">Outrights</a>
+        <a href="#">Track record</a>
+        <a href="#">Learn</a>
+      </nav>
+
+      <span class="ai-status">
+        <span class="dot"></span>
+        AI · ONLINE
+      </span>
+
+      <a class="cta-trade" href="#">Trade now ↗</a>
+    </div>
+
+    <div class="status-strip">
+      <div class="row">
+        <span><span class="live">LIVE</span> · World Cup 2026 · Matchday 2</span>
+        <span class="winrate">This week: 67% hit rate · 12/18 green</span>
+      </div>
+    </div>
+
+    <nav class="pill-nav" aria-label="Primary (mobile)">
+      <a href="#" aria-current="page">Today's tips</a>
+      <a href="#">Outrights</a>
+      <a href="#">Track record</a>
+      <a href="#">Learn</a>
+    </nav>
+  </header>
+
+  <main class="page">
+
+    <!-- ============ HERO ============ -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="eyebrow"><span class="dot"></span>AI-PICKED · WORLD CUP 2026</div>
+      <h1 id="hero-title">Top tips for the World Cup. Picked by <span class="ai-word">AI</span>.</h1>
+      <p class="standfirst">
+        Our model scans every priced World Cup market on Polymarket and Kalshi
+        every minute. When the line is slow, you get an <span class="ai-token">AI tip</span>
+        with a confidence score, the edge, and the venue to trade on.
+        <strong>One-tap to your broker.</strong>
+      </p>
+    </section>
+
+    <!-- ============ LEAD TIP ============ -->
+    <section class="lead-tip" aria-labelledby="lt-title">
+      <div class="lead-tip-head">
+        <span class="label">Today's top AI tip</span>
+        <span class="conf">AI confidence <span class="num">87%</span></span>
+      </div>
+
+      <a class="tip-card" href="#">
+        <div class="tip-head">
+          <span class="tip-pill"><span class="glyph">▲</span>TIP · BUY</span>
+          <span class="tip-when">Sat · 21:00 ET · Group F</span>
+          <span class="tip-meta">tip #1,247 · 14:08 ET</span>
+        </div>
+
+        <h2 class="teams" id="lt-title">France <span class="v">vs</span> Mexico</h2>
+        <p class="venue-meta">MEX · ESTADIO AZTECA · POLYMARKET + KALSHI</p>
+
+        <p class="thesis">
+          <strong>Model has France at 56% to win; market prices them at 52%.</strong>
+          The slow side is Polymarket — that's where the AI is calling the edge.
+          Liquidity is deep enough to size up; <em>+4pp gap with 87% model confidence</em>
+          is the strongest signal on the board today.
+        </p>
+
+        <div class="tip-foot">
+          <div class="tip-reads">
+            <div class="tip-rp"><span class="k">MODEL</span><span class="v">56%</span></div>
+            <div class="tip-rp"><span class="k">MARKET</span><span class="v">52%</span></div>
+            <div class="tip-rp edge"><span class="k">EDGE</span><span class="v">+4pp</span></div>
+          </div>
+          <div class="tip-actions">
+            <span class="tip-price">−180</span>
+            <span class="btn-trade">Trade on Polymarket <span class="arr">↗</span></span>
+          </div>
+        </div>
+
+        <div class="tip-share">
+          <a href="#">Copy as screenshot</a>
+          <a href="#">Share to X</a>
+          <a href="#">Add to watchlist</a>
+        </div>
+      </a>
+    </section>
+
+    <!-- ============ ARTICLE PREVIEWS ============ -->
+    <section class="previews">
+      <div class="prev-eyebrow">More from the AI · today</div>
+      <div class="prev-grid">
+
+        <a class="prev-card" href="#">
+          <span class="kicker">Today's tips · 5 plays</span>
+          <h2>Five fixtures, five AI calls.</h2>
+          <p class="deck">
+            <strong>France ▲ ·  Argentina ▲ ·  Cameroon ▲ ·  Mexico ▽ ·  Egypt —.</strong>
+            Three buys, one fade, one pass — with confidence scores from
+            71% to 87%.
+          </p>
+          <div class="stat-row">
+            <div class="sx"><span class="sx-n up">3</span><span class="sx-l">buys</span></div>
+            <div class="sx"><span class="sx-n down">1</span><span class="sx-l">fades</span></div>
+            <div class="sx"><span class="sx-n">87%</span><span class="sx-l">top conf</span></div>
+          </div>
+          <span class="prev-cta">See today's full board <span class="arr">→</span></span>
+        </a>
+
+        <a class="prev-card" href="#">
+          <span class="kicker">Outrights · World Cup winner</span>
+          <h2>AI's top three to lift the trophy.</h2>
+          <p class="deck">
+            <strong>France 21% · Argentina 22% · Brazil 18%.</strong>
+            The model disagrees with the market on Brazil — favourite priced
+            thin. Long France + Argentina, fade the Brazil chalk.
+          </p>
+          <div class="stat-row">
+            <div class="sx"><span class="sx-n up">2</span><span class="sx-l">buys</span></div>
+            <div class="sx"><span class="sx-n down">1</span><span class="sx-l">fades</span></div>
+            <div class="sx"><span class="sx-n">+5pp</span><span class="sx-l">top edge</span></div>
+          </div>
+          <span class="prev-cta">Read the outright board <span class="arr">→</span></span>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- ============ AI TRACK RECORD ============ -->
+    <section class="track" aria-labelledby="trk-title">
+      <div>
+        <h3 id="trk-title">The receipts.</h3>
+        <p>
+          Every tip is logged, settled, and graded against close. Updated
+          live. The dashboard shows hit rate by confidence band, ROI per
+          venue, and the model's drift over the tournament.
+        </p>
+      </div>
+      <div class="track-stats">
+        <div class="sx"><div class="sx-n up">67%</div><div class="sx-l">hit rate / 30d</div></div>
+        <div class="sx"><div class="sx-n">+18%</div><div class="sx-l">simulated ROI</div></div>
+        <div class="sx"><div class="sx-n">1,247</div><div class="sx-l">tips logged</div></div>
+      </div>
+    </section>
+
+    <!-- ============ NEWSLETTER ============ -->
+    <section class="news" aria-labelledby="nl-title">
+      <h2 id="nl-title">Get the AI's matchday tip in your inbox.</h2>
+      <p>One short brief per matchday during the World Cup. The headline tip, the edge, and where to trade it.</p>
+      <form onsubmit="event.preventDefault();">
+        <input type="email" placeholder="you@email.com" required>
+        <button type="submit">Get the AI tip</button>
+        <div class="fine" style="flex-basis: 100%;">No spam · unsubscribe in one click · 8,400 readers</div>
+      </form>
+    </section>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>
+    <div class="row">
+      <div class="brand-block">
+        <a class="brand" href="./home-markettipsai.html" aria-label="markettips.ai">
+          <svg class="glyph" viewBox="0 0 40 32" aria-hidden="true">
+            <polyline points="3,28 13,18 22,22 36,5"
+                      stroke="#7C5CFF" stroke-width="3" fill="none"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="36" cy="5" r="3" fill="#00E676"/>
+          </svg>
+          <span class="wm">markettips<span class="ai">.ai</span></span>
+        </a>
+        <p class="tag">AI tips for prediction markets.</p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#">Today's tips</a></li>
+          <li><a href="#">Outrights</a></li>
+          <li><a href="#">Track record</a></li>
+          <li><a href="#">Watchlist</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>About</h4>
+        <ul>
+          <li><a href="#">How the model works</a></li>
+          <li><a href="#">Methodology</a></li>
+          <li><a href="#">Team</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">Affiliate disclosure</a></li>
+          <li><a href="#">Responsible use</a></li>
+        </ul>
+      </div>
+      <div class="legal">
+        <span>© 2026 markettips.ai</span>
+        <span>Not financial advice · 18+</span>
+        <span>Prediction-market trading involves risk · check local laws</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

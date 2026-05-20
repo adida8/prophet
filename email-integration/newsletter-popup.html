@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<!--
+  Odds Primer — Newsletter pop-up (timed delay)
+  ------------------------------------------------------------
+  Design reference for the Mailchimp newsletter pop-up.
+  - Mobile-first; modal centres at all widths.
+  - Fires after POPUP_DELAY_MS (default 18s), once per session,
+    suppressed for visitors who already subscribed/dismissed.
+  - The <form> posts the single email field to your Mailchimp
+    embedded-form action URL. Keep Mailchimp's hidden honeypot
+    field (the off-screen text input named b_xxxx_xxxx).
+  Tokens mirror frontend/src/ledger/op-tokens.css.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Odds Primer — Newsletter pop-up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#FAF7F0; --paper-pure:#FFFFFF; --paper-warm:#F0ECE2;
+    --ink:#0E2240; --ink-soft:#2A3957; --graphite-soft:#6B7079;
+    --flame:#D9461C; --flame-deep:#A8341A;
+    --rule:#D9D2C0; --rule-soft:#EDE7D6;
+    --font-sans:'Inter Tight',system-ui,-apple-system,sans-serif;
+    --font-serif:'Source Serif 4',Georgia,serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);font-family:var(--font-sans);color:var(--ink);min-height:100vh;}
+
+  /* --- faint page behind, for the demo only --- */
+  .demo-page{padding:20px clamp(16px,5vw,40px);max-width:760px;margin:0 auto;}
+  .demo-wordmark{font-weight:700;font-size:20px;letter-spacing:-0.01em;}
+  .demo-eyebrow{margin-top:3px;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--graphite-soft);}
+  .demo-headline{margin-top:24px;font-family:var(--font-serif);font-weight:600;font-size:clamp(26px,5vw,38px);line-height:1.1;}
+  .demo-block{margin-top:16px;height:96px;background:var(--paper-pure);border:1px solid var(--rule);border-radius:6px;}
+
+  /* --- overlay + modal (the reusable component) --- */
+  .op-popup-overlay{position:fixed;inset:0;background:rgba(14,34,64,0.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:1000;}
+  .op-popup{position:relative;width:100%;max-width:420px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;box-shadow:0 18px 48px rgba(14,34,64,0.28);overflow:hidden;}
+  .op-popup__accent{height:5px;background:var(--flame);}
+  .op-popup__body{padding:26px 24px 24px;}
+  .op-popup__close{position:absolute;top:14px;right:12px;width:30px;height:30px;border:none;background:transparent;color:var(--graphite-soft);font-size:20px;line-height:1;cursor:pointer;border-radius:4px;}
+  .op-popup__close:hover{color:var(--ink);background:var(--rule-soft);}
+  .op-eyebrow{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--graphite-soft);}
+  .op-popup__title{margin:10px 0 0;font-family:var(--font-serif);font-weight:600;font-size:27px;line-height:1.12;letter-spacing:-0.01em;}
+  .op-popup__lede{margin:12px 0 0;font-family:var(--font-serif);font-size:16px;line-height:1.5;color:var(--ink-soft);}
+  .op-field-label{display:block;margin:20px 0 6px;font-size:12px;font-weight:500;}
+  .op-input{width:100%;height:48px;border:1px solid var(--rule);border-radius:4px;background:var(--paper-pure);padding:0 14px;font-family:var(--font-sans);font-size:15px;color:var(--ink);outline:none;}
+  .op-input:focus{border-color:var(--flame);box-shadow:0 0 0 2px rgba(217,70,28,0.18);}
+  .op-btn{margin-top:12px;width:100%;height:50px;border:none;border-radius:4px;background:var(--flame);color:#fff;font-family:var(--font-sans);font-weight:600;font-size:15px;cursor:pointer;}
+  .op-btn:hover{background:var(--flame-deep);}
+  .op-microcopy{margin-top:12px;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--graphite-soft);}
+  .op-decline{margin-top:14px;width:100%;border:none;background:transparent;font-family:var(--font-sans);font-size:13px;color:var(--graphite-soft);text-decoration:underline;text-underline-offset:2px;cursor:pointer;}
+  [hidden]{display:none !important;}
+  .visually-hidden{position:absolute;left:-9999px;}
+</style>
+</head>
+<body>
+
+  <main class="demo-page" aria-hidden="true">
+    <div class="demo-wordmark">Odds Primer</div>
+    <div class="demo-eyebrow">World Cup 2026 · The Issue</div>
+    <h1 class="demo-headline">Read the game before the price moves.</h1>
+    <div class="demo-block"></div>
+    <div class="demo-block"></div>
+  </main>
+
+  <div class="op-popup-overlay" id="opPopup" hidden>
+    <section class="op-popup" role="dialog" aria-modal="true" aria-labelledby="opPopupTitle">
+      <div class="op-popup__accent"></div>
+      <div class="op-popup__body">
+        <button class="op-popup__close" id="opPopupClose" aria-label="Close">&times;</button>
+        <p class="op-eyebrow">The newsletter</p>
+        <h2 class="op-popup__title" id="opPopupTitle">Learn to read the odds.</h2>
+        <p class="op-popup__lede">A short weekly primer on prediction markets and the World Cup. Plain English, no tips, no hype — just how to think about a price.</p>
+
+        <!-- Replace action with your Mailchimp embedded-form URL -->
+        <form action="https://YOUR-DC.list-manage.com/subscribe/post?u=USER_ID&amp;id=LIST_ID" method="post" target="_blank" novalidate>
+          <label class="op-field-label" for="opEmail">Email address</label>
+          <input class="op-input" type="email" name="EMAIL" id="opEmail" placeholder="you@email.com" required />
+          <!-- Mailchimp anti-bot honeypot: keep this off-screen, do not remove -->
+          <div class="visually-hidden" aria-hidden="true"><input type="text" name="b_USER_ID_LIST_ID" tabindex="-1" value="" /></div>
+          <button class="op-btn" type="submit">Sign me up</button>
+        </form>
+
+        <p class="op-microcopy"><span aria-hidden="true">&#128274;</span> Free. One email a week. Unsubscribe anytime.</p>
+        <button class="op-decline" id="opPopupDecline">No thanks, maybe later</button>
+      </div>
+    </section>
+  </div>
+
+<script>
+  (function () {
+    var POPUP_DELAY_MS = 18000;          // timed delay
+    var STORAGE_KEY = 'op_newsletter_popup'; // 'subscribed' | 'dismissed'
+    var popup = document.getElementById('opPopup');
+
+    function seen() { try { return sessionStorage.getItem(STORAGE_KEY); } catch (e) { return null; } }
+    function mark(v) { try { sessionStorage.setItem(STORAGE_KEY, v); } catch (e) {} }
+    function open() { if (!seen()) popup.hidden = false; }
+    function close(reason) { popup.hidden = true; mark(reason || 'dismissed'); }
+
+    if (!seen()) setTimeout(open, POPUP_DELAY_MS);
+
+    document.getElementById('opPopupClose').addEventListener('click', function(){ close('dismissed'); });
+    document.getElementById('opPopupDecline').addEventListener('click', function(){ close('dismissed'); });
+    popup.addEventListener('click', function (e) { if (e.target === popup) close('dismissed'); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !popup.hidden) close('dismissed'); });
+    // On a real submit, mark 'subscribed' so it never re-shows this session.
+    var form = popup.querySelector('form');
+    if (form) form.addEventListener('submit', function(){ mark('subscribed'); });
+  })();
+</script>
+</body>
+</html>

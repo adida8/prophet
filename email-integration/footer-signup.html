@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<!--
+  Odds Primer — Site footer with email registration
+  ------------------------------------------------------------
+  Design reference for the global footer.
+  - Mobile-first; columns sit single-file on mobile and split on >=600px.
+  - The <form> posts the single email field to the same Mailchimp
+    embedded-form action URL as the pop-up. Keep the honeypot field.
+  - Disclaimer + physical address + unsubscribe context included to
+    satisfy CAN-SPAM / Mailchimp footer requirements on the site side.
+  Tokens mirror frontend/src/ledger/op-tokens.css.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Odds Primer — Footer signup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#FAF7F0; --ink:#0E2240; --ink-deep:#0A1A30;
+    --flame:#D9461C; --flame-deep:#A8341A; --rule:#D9D2C0;
+    --on-ink:#FFFFFF; --on-ink-soft:#C7CFDD; --on-ink-mute:#9AA6BD; --on-ink-faint:#7F8AA3;
+    --ink-line:rgba(255,255,255,0.14); --ink-input-border:#2A3957;
+    --font-sans:'Inter Tight',system-ui,-apple-system,sans-serif;
+    --font-serif:'Source Serif 4',Georgia,serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);font-family:var(--font-sans);color:var(--ink);}
+  .page-tail{max-width:760px;margin:0 auto;padding:24px clamp(16px,5vw,40px) 8px;}
+  .page-tail__rule{height:1px;background:var(--rule);}
+  .page-tail__hint{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#6B7079;margin-bottom:8px;}
+
+  .op-footer{background:var(--ink);color:var(--on-ink);}
+  .op-footer__inner{max-width:760px;margin:0 auto;padding:32px clamp(16px,5vw,40px) 28px;}
+  .op-wordmark{font-weight:700;font-size:22px;letter-spacing:-0.01em;color:var(--on-ink);}
+  .op-edition{margin-top:5px;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--on-ink-mute);}
+  .op-hr{height:1px;background:var(--ink-line);border:0;margin:22px 0;}
+
+  .op-eyebrow{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;}
+  .op-eyebrow--flame{color:var(--flame);}
+  .op-eyebrow--mute{color:var(--on-ink-mute);}
+  .op-signup__title{margin:9px 0 0;font-family:var(--font-serif);font-weight:600;font-size:22px;line-height:1.18;color:var(--on-ink);}
+  .op-signup__lede{margin:8px 0 0;font-family:var(--font-serif);font-size:15px;line-height:1.5;color:var(--on-ink-soft);}
+  .op-signup__form{margin-top:14px;}
+  .op-input{width:100%;height:48px;border:1px solid var(--ink-input-border);border-radius:4px;background:var(--ink-deep);padding:0 14px;font-family:var(--font-sans);font-size:15px;color:var(--on-ink);outline:none;}
+  .op-input::placeholder{color:var(--on-ink-faint);}
+  .op-input:focus{border-color:var(--flame);box-shadow:0 0 0 2px rgba(217,70,28,0.30);}
+  .op-btn{margin-top:10px;width:100%;height:48px;border:none;border-radius:4px;background:var(--flame);color:#fff;font-family:var(--font-sans);font-weight:600;font-size:15px;cursor:pointer;}
+  .op-btn:hover{background:var(--flame-deep);}
+  .op-signup__micro{margin-top:10px;font-size:11px;color:var(--on-ink-mute);}
+
+  .op-cols{display:flex;flex-wrap:wrap;gap:36px;}
+  .op-col__links{margin-top:10px;font-size:14px;line-height:2;color:#E4E8F0;}
+  .op-col__links a{color:#E4E8F0;text-decoration:none;display:block;}
+  .op-col__links a:hover{color:var(--flame);}
+
+  .op-legal{font-family:var(--font-serif);font-style:italic;font-size:11px;line-height:1.55;color:var(--on-ink-mute);}
+  .op-baseline{margin-top:14px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;}
+  .op-copyright{font-size:11px;color:var(--on-ink-faint);}
+  .op-social{display:flex;gap:16px;}
+  .op-social a{color:var(--on-ink-mute);text-decoration:none;font-size:13px;}
+  .op-social a:hover{color:var(--flame);}
+
+  @media (min-width:600px){
+    .op-signup__form{display:flex;gap:10px;max-width:480px;}
+    .op-signup__form .op-input{flex:1;}
+    .op-btn{margin-top:0;width:auto;padding:0 26px;white-space:nowrap;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="page-tail">
+    <div class="page-tail__hint">↑ end of page</div>
+    <div class="page-tail__rule"></div>
+  </div>
+
+  <footer class="op-footer">
+    <div class="op-footer__inner">
+      <div class="op-wordmark">Odds Primer</div>
+      <div class="op-edition">World Cup 2026 · The Issue</div>
+
+      <hr class="op-hr" />
+
+      <p class="op-eyebrow op-eyebrow--flame">The newsletter</p>
+      <h2 class="op-signup__title">Learn the odds, one email a week.</h2>
+      <p class="op-signup__lede">Plain-English primers on prediction markets and the World Cup. No tips, no hype.</p>
+
+      <!-- Replace action with your Mailchimp embedded-form URL -->
+      <form class="op-signup__form" action="https://YOUR-DC.list-manage.com/subscribe/post?u=USER_ID&amp;id=LIST_ID" method="post" target="_blank" novalidate>
+        <label class="visually-hidden" for="footEmail" style="position:absolute;left:-9999px;">Email address</label>
+        <input class="op-input" type="email" name="EMAIL" id="footEmail" placeholder="you@email.com" required />
+        <!-- Mailchimp anti-bot honeypot: keep off-screen, do not remove -->
+        <div aria-hidden="true" style="position:absolute;left:-9999px;"><input type="text" name="b_USER_ID_LIST_ID" tabindex="-1" value="" /></div>
+        <button class="op-btn" type="submit">Subscribe</button>
+      </form>
+      <p class="op-signup__micro">Free. Unsubscribe anytime.</p>
+
+      <hr class="op-hr" />
+
+      <nav class="op-cols">
+        <div class="op-col">
+          <p class="op-eyebrow op-eyebrow--mute">Read</p>
+          <div class="op-col__links">
+            <a href="/matches">Matches</a>
+            <a href="/outrights">Outrights</a>
+            <a href="/learn">Learn</a>
+          </div>
+        </div>
+        <div class="op-col">
+          <p class="op-eyebrow op-eyebrow--mute">About</p>
+          <div class="op-col__links">
+            <a href="/about">Our method</a>
+            <a href="/learn/read-a-price">How to read a price</a>
+            <a href="/contact">Contact</a>
+          </div>
+        </div>
+      </nav>
+
+      <hr class="op-hr" />
+
+      <p class="op-legal">Odds Primer is an educational publication. It compares prices and explains them — it does not offer betting advice or take wagers. 18+. Please gamble responsibly.</p>
+
+      <div class="op-baseline">
+        <span class="op-copyright">© 2026 Adi Dagan t/a Odds Primer</span>
+        <div class="op-social">
+          <a href="#" aria-label="X">X</a>
+          <a href="#" aria-label="Instagram">Instagram</a>
+          <a href="mailto:hello@oddsprimer.com" aria-label="Email">Email</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

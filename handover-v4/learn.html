@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How prediction markets work · A plain-English guide — Odds Primer</title>
+<meta name="description" content="A simple guide to prediction markets, implied probability, and what Pick, Pass, or Avoid mean on Odds Primer.">
+<link rel="stylesheet" href="./colors_and_type.css">
+<style>
+  body { padding: 0; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter-page); }
+
+  .site-masthead { border-bottom: var(--hairline); background: var(--paper); }
+  .site-masthead .inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 14px var(--gutter-page) 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    border-top: var(--hairline-strong);
+  }
+  .brand-lock { display: inline-flex; flex-direction: column; gap: 4px; text-decoration: none; }
+  .brand-lock svg { display: block; }
+  .brand-lock .wm-row { display: flex; align-items: baseline; gap: 12px; }
+  .brand-lock .wm {
+    font-family: var(--font-sans); font-weight: 700; font-size: 22px;
+    color: var(--ink); letter-spacing: -0.022em; line-height: 1;
+  }
+  .brand-lock .tag {
+    font-family: var(--font-serif); font-style: italic; font-weight: 400;
+    font-size: 12px; line-height: 1.3; color: var(--graphite);
+  }
+  .brand-lock .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+  .site-nav { display: none; }
+  .site-nav ul { list-style: none; padding: 0; margin: 0; display: flex; gap: 26px; }
+  .site-nav a {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ink); text-decoration: none;
+    padding: 6px 0; border-bottom: 1.5px solid transparent;
+  }
+  .site-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
+  .site-nav a[aria-current="page"] { border-bottom-color: var(--flame); }
+  @media (min-width: 820px) { .site-nav { display: block; } }
+  .edition-strip { border-top: var(--hairline-soft); background: var(--paper); }
+  .edition-strip .inner {
+    max-width: 1180px; margin: 0 auto; padding: 8px var(--gutter-page);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .pill-nav {
+    display: flex; gap: 6px; align-items: center;
+    padding: 12px var(--gutter-page);
+    border-bottom: var(--hairline); background: var(--paper);
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .pill-nav::-webkit-scrollbar { display: none; }
+  .pill-nav a {
+    font-family: var(--font-sans); font-size: 15px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
+    padding: 10px 18px; border-radius: 999px; white-space: nowrap;
+    transition: background var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+  }
+  .pill-nav a[aria-current="page"] { background: var(--ink); color: var(--paper); }
+  .pill-nav a:not([aria-current="page"]):hover { color: var(--flame-deep); }
+  @media (min-width: 820px) { .pill-nav { display: none; } }
+  .burger { position: relative; display: inline-block; }
+  .burger-btn {
+    list-style: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    border: var(--hairline); background: var(--paper-pure);
+    color: var(--ink); border-radius: 2px;
+  }
+  .burger-btn::-webkit-details-marker { display: none; }
+  .burger-btn::marker { content: ""; }
+  .burger-btn:hover { color: var(--flame-deep); }
+  .burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
+  .burger-menu {
+    position: absolute; right: 0; top: calc(100% + 8px);
+    min-width: 220px; background: var(--paper-pure); border: var(--hairline);
+    list-style: none; margin: 0; padding: 6px 0;
+    box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08); z-index: 50;
+  }
+  .burger-menu li { padding: 0; margin: 0; list-style: none; }
+  .burger-menu a {
+    display: block; padding: 10px 18px;
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
+  }
+  .burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
+
+  article.content { padding: 40px 0 64px; display: grid; grid-template-columns: 1fr; gap: 36px; }
+  @media (min-width: 980px) {
+    article.content { grid-template-columns: minmax(0, 200px) minmax(0, 1fr); gap: 56px; }
+  }
+  .content-rail {
+    border-top: var(--hairline); padding: 14px 0 0;
+    display: flex; flex-direction: column; gap: 10px;
+    font-family: var(--font-sans); font-size: 12px;
+  }
+  .content-rail .rail-lbl {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--graphite-soft); margin-bottom: 4px;
+  }
+  .content-rail a {
+    color: var(--graphite); text-decoration: none; padding: 2px 0;
+    border-left: 2px solid transparent; padding-left: 10px; margin-left: -10px;
+  }
+  .content-rail a:hover { color: var(--flame-deep); border-left-color: var(--flame); }
+  @media (min-width: 980px) {
+    .content-rail { position: sticky; top: 96px; align-self: start; border-top: 0; }
+  }
+  .content-prose .page-eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-bottom: 14px;
+  }
+  .content-prose h1 {
+    font-family: var(--font-serif); font-weight: 600;
+    font-size: clamp(2rem, 4.4vw, 3.25rem);
+    line-height: 1.06; letter-spacing: -0.018em;
+    margin: 0; color: var(--ink); text-wrap: balance; max-width: 22ch;
+  }
+  .content-prose .standfirst {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: clamp(17px, 1.6vw, 20px); line-height: 1.5; color: var(--ink-soft);
+    margin: 18px 0 0; max-width: 60ch;
+  }
+  .content-prose .meta-line {
+    font-family: var(--font-sans); font-size: 12px; color: var(--graphite-soft);
+    margin: 14px 0 0; padding-bottom: 24px; border-bottom: var(--hairline);
+    letter-spacing: 0.04em;
+  }
+  .content-prose .in-short {
+    margin: 24px 0 0; padding: 16px 20px;
+    background: var(--paper-warm); border-left: 3px solid var(--flame);
+    font-family: var(--font-serif); font-size: 16.5px; line-height: 1.55; color: var(--ink);
+    max-width: 64ch;
+  }
+  .content-prose .in-short .lbl {
+    display: block; font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--flame-deep);
+    margin-bottom: 6px;
+  }
+  .content-prose section { padding-top: 32px; border-top: var(--hairline); margin-top: 16px; }
+  .content-prose section:first-of-type { border-top: 0; padding-top: 24px; }
+  .content-prose h2 {
+    font-family: var(--font-serif); font-size: clamp(22px, 2.6vw, 28px);
+    font-weight: 600; letter-spacing: -0.005em; color: var(--ink);
+    margin: 0 0 14px; text-wrap: balance;
+  }
+  .content-prose h3 {
+    font-family: var(--font-sans); font-size: 13.5px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--flame-deep);
+    margin: 22px 0 8px;
+  }
+  .content-prose p {
+    font-family: var(--font-serif); font-size: 17px; line-height: 1.6;
+    color: var(--ink); margin: 0 0 14px; max-width: 64ch;
+  }
+  .content-prose a {
+    color: var(--ink); text-decoration: underline;
+    text-decoration-color: var(--rule); text-underline-offset: 3px; text-decoration-thickness: 1px;
+  }
+  .content-prose a:hover { color: var(--flame-deep); text-decoration-color: var(--flame); }
+  .content-prose strong { font-weight: 600; }
+  .content-prose ul, .content-prose ol {
+    font-family: var(--font-serif); font-size: 17px; line-height: 1.6;
+    color: var(--ink); margin: 0 0 14px; padding-left: 22px; max-width: 64ch;
+  }
+  .content-prose ul li, .content-prose ol li { margin-bottom: 6px; }
+  .content-prose .callout {
+    margin: 22px 0; padding: 14px 18px;
+    background: var(--paper-warm); border-left: 3px solid var(--flame);
+    font-family: var(--font-serif); font-size: 16px; color: var(--ink); max-width: 64ch;
+  }
+  .content-prose code {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 14.5px; color: var(--ink);
+    background: var(--paper-warm); padding: 1px 6px; border-radius: 2px;
+  }
+  .content-prose .related {
+    margin-top: 10px; padding: 16px 20px;
+    border: var(--hairline); background: var(--paper-pure);
+    font-family: var(--font-sans); font-size: 13px;
+  }
+  .content-prose .related .rl-lbl {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--graphite-soft); margin-bottom: 8px;
+  }
+  .content-prose .related a { margin-right: 14px; white-space: nowrap; }
+
+  footer.site-footer { border-top: var(--hairline-strong); background: var(--paper); }
+  footer.site-footer .foot-inner { max-width: 1180px; margin: 0 auto; padding: 36px var(--gutter-page) 28px; }
+  .foot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 28px; margin-bottom: 22px; }
+  .foot-col h4 {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft); margin: 0 0 10px;
+  }
+  .foot-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .foot-col a, .foot-col button {
+    font-family: var(--font-sans); font-size: 13px; color: var(--ink); text-decoration: none;
+    background: none; border: 0; padding: 0; cursor: pointer; text-align: left;
+  }
+  .foot-col a:hover, .foot-col button:hover { color: var(--flame-deep); }
+  .foot-brand {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 11px;
+    border-top: var(--hairline); padding-top: 22px; margin-top: 4px;
+  }
+  .foot-brand .wm { font-family: var(--font-sans); font-weight: 700; font-size: 22px; color: var(--ink); letter-spacing: -0.022em; }
+  .foot-brand .pub { font-family: var(--font-serif); font-style: italic; color: var(--graphite); font-size: 13px; }
+  .foot-brand .pub .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+  .foot-discl {
+    font-family: var(--font-serif); font-size: 12.5px; color: var(--graphite);
+    line-height: 1.55; max-width: 82ch; padding-top: 18px; border-top: var(--hairline-soft);
+  }
+  .foot-discl .dag { color: var(--flame); font-style: italic; }
+  .foot-affiliate {
+    font-family: var(--font-sans); font-size: 11.5px; color: var(--graphite-soft);
+    line-height: 1.5; max-width: 82ch; margin-top: 10px;
+  }
+  .foot-meta {
+    margin-top: 16px; font-family: var(--font-sans); font-size: 11px;
+    color: var(--graphite-soft); letter-spacing: 0.04em;
+    display: flex; flex-wrap: wrap; gap: 6px 16px;
+  }
+  @media (min-width: 720px) {
+    .foot-grid { grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 36px; }
+    .foot-brand { grid-column: auto; border-top: 0; padding-top: 0; margin-top: 0;
+      flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+
+  .cookie-banner {
+    position: fixed; left: 14px; right: 14px; bottom: 14px; z-index: 60;
+    background: var(--paper-pure); border: var(--hairline);
+    box-shadow: 0 12px 32px rgba(14, 34, 64, 0.12); border-radius: 6px;
+    padding: 16px 18px; display: grid; grid-template-columns: 1fr; gap: 12px;
+    font-family: var(--font-sans); color: var(--ink); font-size: 13px;
+    max-width: 900px; margin: 0 auto;
+  }
+  .cookie-banner[hidden] { display: none; }
+  .cookie-banner .cb-msg { line-height: 1.5; color: var(--graphite); max-width: 64ch; }
+  .cookie-banner .cb-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .cookie-banner button {
+    font-family: var(--font-sans); font-size: 12.5px; font-weight: 600;
+    padding: 9px 16px; border-radius: 4px; cursor: pointer;
+    border: var(--hairline); background: var(--paper-pure); color: var(--ink);
+  }
+  .cookie-banner button:hover { background: var(--paper-warm); }
+  .cookie-banner button.cb-accept { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .cookie-banner button.cb-accept:hover { background: var(--flame-deep); border-color: var(--flame-deep); }
+  .cookie-banner .cb-prefs { display: none; padding: 14px 0 0; border-top: var(--hairline); }
+  .cookie-banner.is-managing .cb-prefs { display: grid; gap: 10px; }
+  .cookie-banner .cb-pref { display: flex; align-items: baseline; gap: 10px; font-size: 12.5px; }
+  .cookie-banner .cb-pref .cb-name { font-weight: 700; color: var(--ink); }
+  .cookie-banner .cb-pref .cb-desc { color: var(--graphite); }
+  @media (min-width: 720px) {
+    .cookie-banner { grid-template-columns: 1fr auto; gap: 18px; align-items: center; }
+    .cookie-banner .cb-actions { justify-content: flex-end; }
+    .cookie-banner .cb-prefs { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="site-masthead">
+    <div class="inner">
+      <a class="brand-lock" href="./home.html" aria-label="Odds Primer — the AI sports desk for market edge">
+        <span class="wm-row">
+          <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
+            <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+            <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+            <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+            <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+            <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+          </svg>
+          <span class="wm">Odds Primer</span>
+        </span>
+        <span class="tag">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span></span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <ul>
+          <li><a href="./home.html">Home</a></li>
+          <li><a href="./outrights.html">Outright winners</a></li>
+          <li><a href="./matches.html">Upcoming matches</a></li>
+        </ul>
+      </nav>
+      <details class="burger">
+        <summary class="burger-btn" aria-label="More links">
+          <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+            <rect y="0"  width="16" height="1.5" fill="currentColor"/>
+            <rect y="5"  width="16" height="1.5" fill="currentColor"/>
+            <rect y="10" width="16" height="1.5" fill="currentColor"/>
+          </svg>
+        </summary>
+        <ul class="burger-menu">
+                    <li><a href="./about.html">About</a></li>
+          <li><a href="./method.html">Method</a></li>
+          <li><a href="./learn.html" aria-current="page">Learn the basics</a></li>
+          <li><a href="./corrections.html">Corrections</a></li>
+        </ul>
+      </details>
+    </div>
+    <div class="edition-strip">
+      <div class="inner">
+        <span>World Cup 2026 · Matchday 2</span>
+        <span>Updated 13 May 2026</span>
+      </div>
+    </div>
+    <nav class="pill-nav" aria-label="Primary (mobile)">
+      <a href="./outrights.html">Winners</a>
+      <a href="./matches.html">Matches</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <article class="content">
+      <aside class="content-rail" aria-label="On this page">
+      <span class="rail-lbl">On this page</span>
+      <a href="#prediction-market">Prediction market</a>
+      <a href="#not-sportsbooks">Not sportsbooks</a>
+      <a href="#implied">Implied probability</a>
+      <a href="#edge">The edge</a>
+      <a href="#pick">Pick</a>
+      <a href="#pass">Pass</a>
+      <a href="#avoid">Avoid</a>
+      <a href="#view-source">View source</a>
+    </aside>
+    <div class="content-prose">
+        <div class="page-eyebrow">Learn the basics</div>
+        <h1>Prediction markets, explained simply</h1>
+        <p class="standfirst">Prediction markets price the likelihood of future events. Odds Primer helps readers understand those prices.</p>
+        <p class="meta-line">Learn · 6 min read</p>
+        <div class="in-short">
+          <span class="lbl">Before you read on</span>
+          <strong>You can read Odds Primer without using any venue.</strong>
+          We explain what prices imply and where our model disagrees with the market. Anything that happens at a third-party venue happens elsewhere, on the reader's terms.
+        </div>
+        <section id="prediction-market">
+          <h2>What is a prediction market?</h2>
+          <p>A prediction market lets people express a view on whether an event will happen.</p>
+          <p>For example:</p>
+          <div class="callout">"France to win the match"<br>If the market price is 52%, the market is roughly saying France has a 52-in-100 chance.</div>
+          <p>Venues such as Polymarket and Kalshi run prediction markets on sports and other events. Odds Primer covers their prices. We do not operate these venues and we do not endorse any venue.</p>
+        </section>
+        <section id="not-sportsbooks">
+          <h2>Prediction markets are not sportsbooks</h2>
+          <p>A sportsbook sets the odds and takes the other side of your wager. A prediction market is a venue where participants trade contracts with each other, and the price moves with supply and demand.</p>
+          <p>The practical difference for a reader: on a prediction market, the price itself is the crowd’s probability estimate. That is the number Odds Primer reads, compares with The Desk’s model, and explains.</p>
+          <p>Odds Primer is neither a sportsbook nor a prediction market. We are an editorial site that explains the prices.</p>
+        </section>
+        <section id="implied">
+          <h2>What is implied probability?</h2>
+          <p>Implied probability is the chance suggested by a market price.</p>
+          <p>A 52% price means the market currently believes the outcome is around 52% likely.</p>
+          <p>It does not mean the outcome will happen.</p>
+        </section>
+        <section id="edge">
+          <h2>What is an edge?</h2>
+          <p>An edge is the gap between the market price and an independent estimate — in our case, The Desk’s model probability.</p>
+          <p>Example:</p>
+          <ul><li>Market: 52%</li><li>Model: 56%</li><li>Edge: +4 percentage points</li></ul>
+          <p>That means the model sees the outcome as more likely than the market price suggests.</p>
+          <div class="callout"><strong>Note on risk.</strong> An edge is not a guarantee. It only means the model and market disagree. The model can be wrong, prices can move, and outcomes remain uncertain.</div>
+        </section>
+        <section id="pick">
+          <h2>What does Pick mean?</h2>
+          <p>Pick means The Desk sees the market as underpriced.</p>
+          <p>It does not mean the outcome is certain. It means the price deserves closer inspection.</p>
+        </section>
+        <section id="pass">
+          <h2>What does Pass mean?</h2>
+          <p>Pass means The Desk’s model and the market broadly agree.</p>
+          <p>There may be no meaningful pricing gap.</p>
+        </section>
+        <section id="avoid">
+          <h2>What does Avoid mean?</h2>
+          <p>Avoid means the price looks unattractive.</p>
+          <p>Sometimes the event is interesting, but the market price is not.</p>
+        </section>
+        <section id="view-source">
+          <h2>What is "View source"?</h2>
+          <p>Odds Primer does not take bets or execute trades.</p>
+          <p>View source sends readers to the third-party venue where the live market price appears. Always check the live price, rules, fees, eligibility, and local laws before making any decision elsewhere.</p>
+          <div class="related"><div class="rl-lbl">Related</div><a href="./methodology.html">Methodology</a><a href="./responsible-use.html">Responsible use</a><a href="./affiliate-disclosure.html">Affiliate disclosure</a></div>
+        </section>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="foot-inner">
+      <div class="foot-grid">
+        <div class="foot-brand">
+          <svg viewBox="0 0 38 34" width="44" height="40" aria-hidden="true">
+            <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+            <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+            <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+            <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+            <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+          </svg>
+          <span class="wm">Odds Primer</span>
+          <span class="pub">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span>.</span>
+        </div>
+        <div class="foot-col">
+          <h4>Editorial</h4>
+          <ul>
+            <li><a href="./home.html">Home</a></li>
+            <li><a href="./outrights.html">Outright winners</a></li>
+            <li><a href="./matches.html">Upcoming matches</a></li>
+            <li><a href="./learn.html">Learn the basics</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h4>About</h4>
+          <ul>
+                        <li><a href="./about.html">About Odds Primer</a></li>
+            <li><a href="./method.html">Method</a></li>
+            <li><a href="./methodology.html">Methodology (detail)</a></li>
+            <li><a href="./corrections.html">Corrections policy</a></li>
+            <li><a href="mailto:desk@oddsprimer.com">Contact the Desk</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="./privacy.html">Privacy</a></li>
+            <li><a href="./terms.html">Terms of use</a></li>
+            <li><a href="./affiliate-disclosure.html">Affiliate disclosure</a></li>
+            <li><a href="./responsible-use.html">Responsible use</a></li>
+            <li><a href="./cookies.html">Cookie policy</a></li>
+            <li><button type="button" onclick="document.getElementById('cookie-banner').hidden=false; document.getElementById('cookie-banner').classList.add('is-managing');">Cookie settings</button></li>
+          </ul>
+        </div>
+      </div>
+      <p class="foot-discl">
+        <span class="dag">†</span> Odds Primer is editorial information only. We are not a sportsbook, broker, exchange,
+        financial adviser, or betting adviser. We do not take wagers, hold funds, execute trades, or provide personalized advice.
+        Prediction-market participation involves risk and may not be available in your location.
+      </p>
+      <p class="foot-affiliate">
+        Some outbound source links may be affiliate links. Affiliate relationships do not determine our editorial verdicts.
+      </p>
+      <div class="foot-meta">
+        <span>© 2026 Odds Primer</span>
+        <span>An independent editorial website — not a registered company, broker, or sportsbook</span>
+      </div>
+    </div>
+  </footer>
+
+  <div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Cookie preferences">
+    <div class="cb-msg">
+      Odds Primer uses cookies and similar technologies to run the site, understand usage, and measure outbound links.
+      You can accept, reject, or manage non-essential cookies.
+    </div>
+    <div class="cb-actions">
+      <button type="button" onclick="document.getElementById('cookie-banner').classList.add('is-managing');">Manage</button>
+      <button type="button" onclick="document.getElementById('cookie-banner').hidden=true;">Reject</button>
+      <button class="cb-accept" type="button" onclick="document.getElementById('cookie-banner').hidden=true;">Accept</button>
+    </div>
+    <div class="cb-prefs">
+      <label class="cb-pref"><input type="checkbox" checked disabled>
+        <span><span class="cb-name">Essential cookies</span> — always on</span></label>
+      <label class="cb-pref"><input type="checkbox">
+        <span><span class="cb-name">Analytics cookies</span> — <span class="cb-desc">help us understand site usage</span></span></label>
+      <label class="cb-pref"><input type="checkbox">
+        <span><span class="cb-name">Affiliate measurement</span> — <span class="cb-desc">helps us measure outbound partner links</span></span></label>
+      <div class="cb-actions" style="margin-top: 4px;">
+        <button type="button" onclick="document.getElementById('cookie-banner').hidden=true;">Save preferences</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

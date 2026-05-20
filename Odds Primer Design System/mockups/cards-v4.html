@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cards v4 — Odds Primer card showcase</title>
+<meta name="description" content="The canonical Odds Primer card design — Layout A (compact dual-chip), six variants across Match and Outright event types.">
+<style>
+  /* ============================================================
+     CARDS v4 — showcase mockup
+     Locked: Layout A (compact dual-chip) · plain-text venue CTAs ·
+             cents primary + American odds secondary
+     Six variants: Match Pick / Pass / Avoid; Outright Pick / Avoid;
+     plus a lead-verdict scale-up of Match Pick.
+     ============================================================ */
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root {
+    /* Warm-editorial palette — same as v4 design system */
+    --paper:        #FAF7F0;
+    --paper-pure:   #FFFFFF;
+    --paper-warm:   #F0ECE2;
+    --paper-deep:   #E8E2D2;
+    --ink:          #0E2240;
+    --ink-soft:     #2A3957;
+    --graphite:     #3A3F47;
+    --graphite-soft:#6B7079;
+    --rule:         #D9D2C0;
+    --rule-soft:    #EDE7D6;
+    --flame:        #D9461C;
+    --flame-deep:   #A8341A;
+    --flame-tint:   #F7E4DA;
+
+    --font-sans:    'Inter Tight', 'Söhne', 'Inter', system-ui, sans-serif;
+    --font-serif:   'Source Serif 4', 'Charter', 'Georgia', serif;
+    --font-mono:    'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+
+    --gutter: clamp(20px, 4vw, 64px);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  body { font-family: var(--font-sans); font-size: 15px; line-height: 1.5; }
+
+  .doc {
+    max-width: 880px; margin: 0 auto;
+    padding: 56px var(--gutter) 96px;
+  }
+  .doc-head {
+    border-top: 1px solid var(--ink); padding-top: 18px;
+    margin-bottom: 56px;
+  }
+  .doc-head .eyebrow {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+    margin-bottom: 12px;
+  }
+  .doc-head h1 {
+    font-family: var(--font-serif); font-weight: 600;
+    font-size: clamp(28px, 4vw, 44px);
+    line-height: 1.06; letter-spacing: -0.015em;
+    margin: 0; color: var(--ink); text-wrap: balance; max-width: 22ch;
+  }
+  .doc-head .standfirst {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 17px; line-height: 1.5; color: var(--graphite);
+    margin: 16px 0 0; max-width: 60ch;
+  }
+  .doc-head .specs {
+    margin-top: 20px;
+    display: flex; flex-wrap: wrap; gap: 6px 16px;
+    font-family: var(--font-mono); font-size: 11.5px;
+    color: var(--graphite-soft); letter-spacing: 0.04em;
+  }
+  .doc-head .specs strong { color: var(--ink); font-weight: 700; }
+
+  /* section labels above each card */
+  .sec-label {
+    display: flex; align-items: baseline; gap: 14px;
+    margin: 48px 0 16px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+  }
+  .sec-label .n {
+    font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+    color: var(--graphite-soft); letter-spacing: 0.06em;
+  }
+  .sec-label h2 {
+    font-family: var(--font-serif); font-size: 20px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ink); margin: 0;
+  }
+  .sec-label .note {
+    margin-left: auto;
+    font-family: var(--font-sans); font-style: italic; font-size: 12px;
+    color: var(--graphite-soft);
+  }
+
+  /* ============================================================
+     THE CARD — Layout A (compact dual-chip)
+     ============================================================ */
+  .card-v4 {
+    display: grid;
+    grid-template-columns: 4px 1fr;
+    column-gap: 18px;
+    padding: 20px 22px 18px 0;
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    text-decoration: none; color: var(--ink);
+    transition: background 160ms ease;
+  }
+  .card-v4 + .card-v4 { margin-top: 14px; }
+  .card-v4:hover { background: var(--paper-warm); }
+
+  .cv-bar { grid-column: 1; background: transparent; border-radius: 4px 0 0 4px; }
+  .cv-body { grid-column: 2; min-width: 0; }
+
+  /* top row — verdict pill + meta strip */
+  .cv-head {
+    display: flex; align-items: baseline; gap: 12px;
+    margin-bottom: 4px;
+  }
+  .cv-verdict {
+    display: inline-flex; align-items: baseline; gap: 7px;
+    font-family: var(--font-sans);
+  }
+  .cv-verdict .glyph {
+    font-size: 14px; font-weight: 700; line-height: 1; width: 14px; text-align: center;
+  }
+  .cv-verdict .lab {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; line-height: 1;
+  }
+  .cv-when {
+    font-family: var(--font-sans); font-size: 11px;
+    color: var(--graphite-soft); letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* teams / outright title */
+  .cv-title {
+    font-family: var(--font-serif); font-weight: 600;
+    font-size: clamp(20px, 2.4vw, 24px);
+    line-height: 1.1; letter-spacing: -0.012em;
+    color: var(--ink); margin: 4px 0 0; text-wrap: balance;
+  }
+  .cv-title .vs {
+    color: var(--graphite-soft); font-weight: 400; font-style: italic;
+    margin: 0 8px;
+  }
+  .cv-meta {
+    font-family: var(--font-sans); font-size: 11px;
+    color: var(--graphite-soft); letter-spacing: 0.04em;
+    margin: 4px 0 0;
+  }
+
+  /* thesis */
+  .cv-thesis {
+    font-family: var(--font-serif); font-size: 15px; line-height: 1.5;
+    color: var(--graphite); margin: 12px 0 0; max-width: 64ch;
+  }
+  .cv-thesis em {
+    font-style: italic; color: var(--ink); font-weight: 600;
+  }
+
+  /* single "Model %" stat — sole reads row now, per-chip edge moves to chips */
+  .cv-model {
+    margin: 14px 0 0;
+    padding: 10px 0 0; border-top: 1px solid var(--rule-soft);
+    display: inline-flex; align-items: baseline; gap: 8px;
+    font-family: var(--font-sans);
+  }
+  .cv-model .k {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .cv-model .v {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 700; font-size: 16px; color: var(--ink);
+  }
+  .cv-model .note {
+    font-family: var(--font-serif); font-style: italic; font-size: 12.5px;
+    color: var(--graphite); margin-left: 4px;
+  }
+
+  /* venue chips — dual chip with solid CTA button (Layout A · L3 push) */
+  .cv-venues {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin: 14px 0 0;
+  }
+  @media (max-width: 520px) {
+    .cv-venues { grid-template-columns: 1fr; gap: 8px; }
+    .cv-chip { padding: 10px 12px 9px; gap: 5px; }
+    .cv-chip .cents { font-size: 19px; }
+    .cv-chip .odds { font-size: 12px; }
+    .cv-chip .name { font-size: 10px; }
+    .cv-chip .open-btn { min-height: 36px; padding: 8px 10px; font-size: 11px; }
+    .card-v4.is-lead .cv-chip .open-btn { min-height: 38px; font-size: 11.5px; padding: 9px 12px; }
+  }
+  .cv-chip {
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 12px 12px 10px;
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    text-decoration: none; color: var(--ink);
+    transition: border-color 160ms ease, background 160ms ease;
+  }
+  .cv-chip:hover { border-color: var(--ink); background: var(--paper-warm); }
+
+  .cv-chip-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .cv-chip .name {
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-soft);
+  }
+  .cv-chip .chip-edge {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 700; font-size: 12px;
+    color: var(--flame-deep);
+    border-bottom: 2px solid var(--flame); padding-bottom: 1px; line-height: 1;
+  }
+  .cv-chip .chip-edge.is-neg { color: var(--ink); border-bottom-color: var(--ink); }
+  .cv-chip .chip-edge.is-flat { color: var(--graphite-soft); border-bottom-color: var(--rule); }
+
+  .cv-chip-prices {
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .cv-chip .cents {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 700; font-size: 20px; color: var(--ink); line-height: 1;
+  }
+  .cv-chip .odds {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 500; font-size: 13px; color: var(--graphite);
+  }
+
+  /* the L3 button — solid ink, full chip width, tightened */
+  .cv-chip .open-btn {
+    margin-top: 2px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: 34px; padding: 7px 12px;
+    background: var(--ink); color: var(--paper);
+    border-radius: 4px;
+    font-family: var(--font-sans); font-size: 11.5px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    transition: background 160ms ease;
+  }
+  .cv-chip .open-btn .arr { color: var(--flame); transition: transform 160ms ease; }
+  .cv-chip:hover .open-btn { background: var(--flame-deep); }
+  .cv-chip:hover .open-btn .arr { color: var(--paper); transform: translate(2px, -2px); }
+
+  /* Avoid variant — flame strikethrough on cents */
+  .card-v4.is-avoid .cv-chip .cents {
+    text-decoration: line-through;
+    text-decoration-color: var(--flame);
+    text-decoration-thickness: 1.5px;
+  }
+
+  /* read-the-case overflow CTA */
+  .cv-foot {
+    margin-top: 14px;
+    display: flex; align-items: center; justify-content: flex-end;
+  }
+  .cv-foot .read-case {
+    font-family: var(--font-sans); font-size: 12px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ink);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .cv-foot .read-case .arr {
+    color: var(--flame);
+    transition: transform 160ms ease;
+  }
+  .card-v4:hover .cv-foot .read-case { color: var(--flame-deep); }
+  .card-v4:hover .cv-foot .read-case .arr { transform: translateX(3px); }
+
+  /* ----- Variant: Pick ----- */
+  .card-v4.is-pick { background: var(--flame-tint); border-color: var(--flame); }
+  .card-v4.is-pick .cv-bar { background: var(--flame); }
+  .card-v4.is-pick .cv-verdict .glyph { color: var(--flame); }
+  .card-v4.is-pick .cv-verdict .lab { color: var(--flame-deep); }
+  .card-v4.is-pick:hover { filter: brightness(0.985); }
+
+  /* ----- Variant: Pass ----- */
+  .card-v4.is-pass .cv-bar { background: var(--rule); }
+  .card-v4.is-pass .cv-verdict .glyph { color: var(--graphite-soft); }
+  .card-v4.is-pass .cv-verdict .lab { color: var(--graphite-soft); }
+  .card-v4.is-pass .cv-title { font-size: clamp(18px, 2.2vw, 22px); }
+  .card-v4.is-pass .cv-thesis { font-size: 14.5px; color: var(--graphite); }
+
+  /* ----- Variant: Avoid ----- */
+  .card-v4.is-avoid { background: var(--paper-pure); }
+  .card-v4.is-avoid .cv-bar { background: var(--ink); }
+  .card-v4.is-avoid .cv-verdict .glyph { color: var(--flame); font-size: 15px; }
+  .card-v4.is-avoid .cv-verdict .lab {
+    color: var(--ink); border-bottom: 1.5px solid var(--flame);
+    padding-bottom: 1px;
+  }
+
+  /* ----- Lead-verdict scale-up (used on home masthead) ----- */
+  .card-v4.is-lead {
+    grid-template-columns: 6px 1fr;
+    padding: 28px 30px 26px 0;
+    column-gap: 24px;
+  }
+  .card-v4.is-lead .cv-title {
+    font-size: clamp(28px, 3.6vw, 38px);
+    line-height: 1.05; letter-spacing: -0.018em;
+  }
+  .card-v4.is-lead .cv-thesis { font-size: 16.5px; }
+  .card-v4.is-lead .cv-chip .cents { font-size: 22px; }
+  .card-v4.is-lead .cv-chip .open-btn { min-height: 38px; font-size: 12px; padding: 9px 14px; }
+
+  /* Caption under each card */
+  .card-caption {
+    font-family: var(--font-sans); font-size: 11.5px;
+    color: var(--graphite-soft); letter-spacing: 0.02em;
+    margin: 10px 0 0; padding-left: 22px;
+    line-height: 1.5; max-width: 64ch;
+  }
+  .card-caption code {
+    font-family: var(--font-mono); font-size: 11px;
+    background: var(--paper-warm); padding: 1px 5px; border-radius: 2px;
+    color: var(--ink);
+  }
+
+  /* Decision summary box at the foot of the page */
+  .decisions {
+    margin-top: 64px; padding: 22px 24px;
+    background: var(--paper-warm); border-left: 3px solid var(--flame);
+    border-radius: 0 4px 4px 0;
+  }
+  .decisions h3 {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--flame-deep);
+    margin: 0 0 10px;
+  }
+  .decisions ul {
+    font-family: var(--font-serif); font-size: 15.5px; line-height: 1.6;
+    color: var(--ink); margin: 0; padding-left: 20px;
+  }
+  .decisions ul li + li { margin-top: 4px; }
+  .decisions strong { font-weight: 600; }
+</style>
+</head>
+<body>
+
+  <main class="doc">
+
+    <header class="doc-head">
+      <div class="eyebrow">Card design · v4 · Layout A</div>
+      <h1>The canonical Odds Primer card.</h1>
+      <p class="standfirst">
+        Compact dual-chip layout. Two venue prices side by side, each its own
+        "View source on [venue] ↗" affiliate handoff. Cents primary, American
+        odds in lighter weight after. Six variants below — three match-event
+        states, two outright-event states, plus the home masthead lead-verdict.
+      </p>
+      <div class="specs">
+        <span><strong>Layout</strong> A · compact dual-chip</span>
+        <span><strong>Venue CTA</strong> plain-text citation</span>
+        <span><strong>Price</strong> cents primary, odds secondary</span>
+      </div>
+    </header>
+
+    <!-- ============================================================
+         01 — Match event · PICK
+         ============================================================ -->
+    <div class="sec-label">
+      <span class="n">01</span>
+      <h2>Match event · Pick</h2>
+      <span class="note">Used on /matches and home lead verdict</span>
+    </div>
+
+    <a class="card-v4 is-pick" href="#">
+      <span class="cv-bar"></span>
+      <div class="cv-body">
+        <div class="cv-head">
+          <span class="cv-verdict"><span class="glyph">▲</span><span class="lab">Pick</span></span>
+          <span class="cv-when">Sat · 21:00 · Group F</span>
+        </div>
+        <h3 class="cv-title">France <span class="vs">v</span> Mexico</h3>
+        <p class="cv-meta">MEX · Estadio Azteca</p>
+
+        <p class="cv-thesis">
+          <em>France look four points underpriced.</em>
+          Polymarket is pricing France lower than our model — that gap is the edge.
+        </p>
+
+        <div class="cv-model">
+          <span class="k">Model</span><span class="v">56%</span>
+          <span class="note">The Desk's estimate, before venue prices</span>
+        </div>
+
+        <div class="cv-venues">
+          <a class="cv-chip" href="#" aria-label="Open Polymarket">
+            <div class="cv-chip-head">
+              <span class="name">Polymarket</span>
+              <span class="chip-edge">+4pp</span>
+            </div>
+            <div class="cv-chip-prices">
+              <span class="cents">52¢</span>
+              <span class="odds">−108</span>
+            </div>
+            <span class="open-btn">Open Polymarket <span class="arr">↗</span></span>
+          </a>
+          <a class="cv-chip" href="#" aria-label="Open Kalshi">
+            <div class="cv-chip-head">
+              <span class="name">Kalshi</span>
+              <span class="chip-edge">+3pp</span>
+            </div>
+            <div class="cv-chip-prices">
+              <span class="cents">53¢</span>
+              <span class="odds">−113</span>
+            </div>
+            <span class="open-btn">Open Kalshi <span class="arr">↗</span></span>
+          </a>
+        </div>
+
+        <div class="cv-foot">
+          <span class="read-case">Read the market case <span class="arr">→</span></span>
+        </div>
+      </div>
+    </a>
+    <p class="card-caption">
+      Flame-tint background + flame left bar. Both venue chips are independent affiliate links.
+      <code>Read the market case →</code> is the editorial dossier overflow CTA (internal traffic, not affiliate).
+    </p>
+
+    <!-- ============================================================
+         02 — Match event · PASS
+         ============================================================ -->
+    <div class="sec-label">
+      <span class="n">02</span>
+      <h2>Match event · Pass</h2>
+      <span class="note">Same skeleton; muted treatment, no flame</span>
+    </div>
+
+    <a class="card-v4 is-pass" href="#">
+      <span class="cv-bar"></span>
+      <div class="cv-body">
+        <div class="cv-head">
+          <span class="cv-verdict"><span class="glyph">—</span><span class="lab">Pass</span></span>
+          <span class="cv-when">Sat · 18:00 · Group F</span>
+        </div>
+        <h3 class="cv-title">Cameroon <span class="vs">v</span> Saudi Arabia</h3>
+        <p class="cv-meta">USA · MetLife Stadium</p>
+
+        <p class="cv-thesis">
+          <em>No clear edge.</em>
+          Both markets within half a point of our model. The line is doing its job.
+        </p>
+
+        <div class="cv-model">
+          <span class="k">Model</span><span class="v">42%</span>
+          <span class="note">The Desk's estimate, before venue prices</span>
+        </div>
+
+        <div class="cv-venues">
+          <a class="cv-chip" href="#" aria-label="Open Polymarket">
+            <div class="cv-chip-head">
+              <span class="name">Polymarket</span>
+              <span class="chip-edge is-flat">+0pp</span>
+            </div>
+            <div class="cv-chip-prices">
+              <span class="cents">42¢</span>
+              <span class="odds">+138</span>
+            </div>
+            <span class="open-btn">Open Polymarket <span class="arr">↗</span></span>
+          </a>
+          <a class="cv-chip" href="#" aria-label="Open Kalshi">
+            <div class="cv-chip-head">
+              <span class="name">Kalshi</span>
+              <span class="chip-edge">+1pp</span>
+            </div>
+            <div class="cv-chip-prices">
+              <span class="cents">41¢</span>
+              <span class="odds">+144</span>
+            </div>
+            <span class="open-btn">Open Kalshi <span class="arr">↗</span></span>
+          </a>
+        </div>
+
+        <div class="cv-foot">
+          <span class="read-case">Read the market case <span class="arr">→</span></span>
+        </div>
+      </div>
+    </a>
+    <p class="card-caption">
+      Default paper background, muted rule for the bar. The teams render one type-size smaller —
+      Pass shouldn't compete with Pick for the eye on a 8-row board.
+    </p>
+
+    <!-- ============================================================
+         03 — Match event · AVOID
+         ============================================================ -->
+    <div class="sec-label">
+      <span class="n">03</span>
+      <h2>Match event · Avoid</h2>
+      <span class="note">Both sides overpriced — flame strikethrough on the prices</span>
+    </div>
+
+    <a class="card-v4 is-avoid" href="#">
+      <span class="cv-bar"></span>
+      <div class="cv-body">
+        <div class="cv-head">
+          <span class="cv-verdict"><span class="glyph">✕</span><span class="lab">Avoid</span></span>
+          <span class="cv-when">Tue · 18:00 · Group F</span>
+        </div>
+        <h3 class="cv-title">Mexico <span class="vs">v</span> Saudi Arabia</h3>
+        <p class="cv-meta">MEX · Guadalajara · Estadio Akron</p>
+
+        <p class="cv-thesis">
+          Mexico priced as the home favourite at numbers our model can't justify;
+          Saudi Arabia priced as if they can't draw. Both sides cost too much.
+        </p>
+
+        <div class="cv-model">
+          <span class="k">Model</span><span class="v">62%</span>
+          <span class="note">The Desk's estimate, before venue prices</span>
+        </div>
+
+        <div class="cv-venues">
+          <a class="cv-chip" href="#" aria-label="Open Polymarket">
+            <div class="cv-chip-head">
+              <span class="name">Polymarket</span>
+              <span class="chip-edge is-neg">−9pp</span>
+            </div>
+            <div class="cv-chip-prices">
+              <span class="cents">71¢</span>
+              <span class="odds">−245</span>
+            </div>
+            <span class="open-btn">Open Polymarket <span class="arr">↗</span></span>
+          </a>
+          <a class="cv-chip" href="#" aria-label="Open Kalshi">
+            <div class="cv-chip-head">
+              <span class="name">Kalshi</span>
+              <span class="chip-edge is-neg">−8pp</span>
+            </div>
+            <div class="cv-chip-prices">
+              <span class="cents">70¢</span>
+              <span class="odds">−233</span>
+            </div>
+            <span class="open-btn">Open Kalshi <span class="arr">↗</span></span>
+          </a>
+        </div>
+
+        <div class="cv-foot">
+          <span class="read-case">Read the market case <span class="arr">→</span></span>
+        </div>
+      </div>
+    </a>
+    <p class="card-caption">
+      Ink bar (not flame). Flame strikethrough on both prices makes "don't pay this" legible at a glance.
+      Negative edge displayed in ink + ink underline (rather than flame) to keep the flame for positive signals only.
+    </p>
+
+    <!-- ============================================================
+         04 — Outright event · PICK
+         ============================================================ -->
+    <div class="sec-label">
+      <span class="n">04</span>
+      <h2>Outright winner · Pick</h2>
+      <span class="note">Used on /outrights; single team, "Resolves…" subtitle</span>
+    </div>
+
+    <a class="card-v4 is-pick" href="#">
+      <span class="cv-bar"></span>
+      <div class="cv-body">
+        <div class="cv-head">
+          <span class="cv-verdict"><span class="glyph">▲</span><span class="lab">Pick</span></span>
+          <span class="cv-when">Resolves 19 Jul 2026 · WC 2026 winner</span>
+        </div>
+        <h3 class="cv-title">France</h3>
+        <p class="cv-meta">Group D · holders of form, priced like outsiders</p>
+
+        <p class="cv-thesis">
+          <em>The market has France four spots back in the field.</em>
+          Our Monte Carlo over 10,000 rollouts puts them clear of England;
+          the market hasn't priced the run-form yet.
+        </p>
+
+        <div class="cv-model">
+          <span class="k">Model</span><span class="v">21%</span>
+          <span class="note">The Desk's estimate, before venue prices</span>
+        </div>
+
+        <div class="cv-venues">
+          <a class="cv-chip" href="#" aria-label="Open Polymarket">
+            <div class="cv-chip-head">
+              <span class="name">Polymarket</span>
+              <span class="chip-edge">+5pp</span>
+            </div>
+            <div class="cv-chip-prices">
+              <span class="cents">16¢</span>
+              <span class="odds">+525</span>
+            </div>
+            <span class="open-btn">Open Polymarket <span class="arr">↗</span></span>
+          </a>
+          <a class="cv-chip" href="#" aria-label="Open Kalshi">
+            <div class="cv-chip-head">
+              <span class="name">Kalshi</span>
+              <span class="chip-edge">+4pp</span>
+            </div>
+            <div class="cv-chip-prices">
+              <span class="cents">17¢</span>
+              <span class="odds">+488</span>
+            </div>
+            <span class="open-btn">Open Kalshi <span class="arr">↗</span></span>
+          </a>
+        </div>
+
+        <div class="cv-foot">
+          <span class="read-case">Read the outright case <span class="arr">→</span></span>
+        </div>
+      </div>
+    </a>
+    <p class="card-caption">
+      Same Pick treatment. Subtitle line changes: <code>Resolves 19 Jul 2026 · WC 2026 winner</code> replaces the
+      match time + group. Single team title (no "v"). Otherwise structurally identical to the match card.
+    </p>
+
+    <!-- ============================================================
+         05 — Outright event · AVOID
+         ============================================================ -->
+    <div class="sec-label">
+      <span class="n">05</span>
+      <h2>Outright winner · Avoid</h2>
+      <span class="note">Favourite priced thin — strikethrough prices, ink bar</span>
+    </div>
+
+    <a class="card-v4 is-avoid" href="#">
+      <span class="cv-bar"></span>
+      <div class="cv-body">
+        <div class="cv-head">
+          <span class="cv-verdict"><span class="glyph">✕</span><span class="lab">Avoid</span></span>
+          <span class="cv-when">Resolves 19 Jul 2026 · WC 2026 winner</span>
+        </div>
+        <h3 class="cv-title">Brazil</h3>
+        <p class="cv-meta">Group B · favourite by clear daylight</p>
+
+        <p class="cv-thesis">
+          Tournament favourite at 22¢ on both venues; our Monte Carlo has them
+          closer to 18%. Favourite is priced thin — better value elsewhere in the field.
+        </p>
+
+        <div class="cv-model">
+          <span class="k">Model</span><span class="v">18%</span>
+          <span class="note">The Desk's estimate, before venue prices</span>
+        </div>
+
+        <div class="cv-venues">
+          <a class="cv-chip" href="#" aria-label="Open Polymarket">
+            <div class="cv-chip-head">
+              <span class="name">Polymarket</span>
+              <span class="chip-edge is-neg">−4pp</span>
+            </div>
+            <div class="cv-chip-prices">
+              <span class="cents">22¢</span>
+              <span class="odds">+355</span>
+            </div>
+            <span class="open-btn">Open Polymarket <span class="arr">↗</span></span>
+          </a>
+          <a class="cv-chip" href="#" aria-label="Open Kalshi">
+            <div class="cv-chip-head">
+              <span class="name">Kalshi</span>
+              <span class="chip-edge is-neg">−4pp</span>
+            </div>
+            <div class="cv-chip-prices">
+              <span class="cents">22¢</span>
+              <span class="odds">+355</span>
+            </div>
+            <span class="open-btn">Open Kalshi <span class="arr">↗</span></span>
+          </a>
+        </div>
+
+        <div class="cv-foot">
+          <span class="read-case">Read the outright case <span class="arr">→</span></span>
+        </div>
+      </div>
+    </a>
+    <p class="card-caption">
+      Outright Avoid uses the same strikethrough treatment. The negative edge value is intentionally less
+      flame-loud — flame stays reserved for the "look here" Pick signal.
+    </p>
+
+    <!-- ============================================================
+         06 — Lead verdict (home masthead scale-up of Match Pick)
+         ============================================================ -->
+    <div class="sec-label">
+      <span class="n">06</span>
+      <h2>Lead verdict — home masthead</h2>
+      <span class="note">Same component, <code>.is-lead</code> modifier scales the type up</span>
+    </div>
+
+    <a class="card-v4 is-pick is-lead" href="#">
+      <span class="cv-bar"></span>
+      <div class="cv-body">
+        <div class="cv-head">
+          <span class="cv-verdict"><span class="glyph">▲</span><span class="lab">Pick</span></span>
+          <span class="cv-when">Today's headline · Sat · 21:00 · Group F</span>
+        </div>
+        <h3 class="cv-title">France <span class="vs">v</span> Mexico</h3>
+        <p class="cv-meta">MEX · Estadio Azteca</p>
+
+        <p class="cv-thesis">
+          <em>France look four points underpriced.</em>
+          Polymarket is pricing France lower than our model. Our model has France at 56% to win;
+          the market has them at 52%. That gap is the edge.
+        </p>
+
+        <div class="cv-model">
+          <span class="k">Model</span><span class="v">56%</span>
+          <span class="note">The Desk's estimate, before venue prices</span>
+        </div>
+
+        <div class="cv-venues">
+          <a class="cv-chip" href="#" aria-label="Open Polymarket">
+            <div class="cv-chip-head">
+              <span class="name">Polymarket</span>
+              <span class="chip-edge">+4pp</span>
+            </div>
+            <div class="cv-chip-prices">
+              <span class="cents">52¢</span>
+              <span class="odds">−108</span>
+            </div>
+            <span class="open-btn">Open Polymarket <span class="arr">↗</span></span>
+          </a>
+          <a class="cv-chip" href="#" aria-label="Open Kalshi">
+            <div class="cv-chip-head">
+              <span class="name">Kalshi</span>
+              <span class="chip-edge">+3pp</span>
+            </div>
+            <div class="cv-chip-prices">
+              <span class="cents">53¢</span>
+              <span class="odds">−113</span>
+            </div>
+            <span class="open-btn">Open Kalshi <span class="arr">↗</span></span>
+          </a>
+        </div>
+
+        <div class="cv-foot">
+          <span class="read-case">Read the market case <span class="arr">→</span></span>
+        </div>
+      </div>
+    </a>
+    <p class="card-caption">
+      Same skeleton as variant 01. Only changes: thicker flame bar (6px not 4px), wider padding, larger title size.
+      Component is one CSS class; <code>.is-lead</code> turns it into the home masthead block.
+    </p>
+
+    <!-- ============================================================
+         decisions summary
+         ============================================================ -->
+    <div class="decisions">
+      <h3>Locked design decisions</h3>
+      <ul>
+        <li><strong>Layout A — compact dual-chip.</strong> Two venue chips per card, side by side.
+            Same skeleton across all six variants; mobile stacks the chips.</li>
+        <li><strong>No unified "Market" line.</strong> Each venue chip carries its own implied probability —
+            the price IS the venue's implied probability (52¢ on a binary contract = 52%). Model probability
+            stays as one number above the chips ("Model 56% — The Desk's estimate, before venue prices").
+            Per-chip edge is shown on each chip ("+4pp on Polymarket, +3pp on Kalshi"), making the venue
+            spread legible at a glance.</li>
+        <li><strong>Venue CTA is a solid ink button</strong> — "Open Polymarket ↗" / "Open Kalshi ↗".
+            44px tap target on mobile, full chip width, flame arrow. Words stay editorial; visual weight
+            does the conversion push (L3 treatment). No anti-tipster rule breakage.</li>
+        <li><strong>Price format = cents primary, American odds secondary</strong> — "52¢" on the top line,
+            "−108" on the line below. Cents read directly as probability — reinforces the Learn page's
+            "price = probability" framing for prediction-market natives, while American odds serve
+            sportsbook-trained readers.</li>
+        <li><strong>Numbers compute.</strong> Cents and American odds on every chip are internally consistent
+            (52¢ ↔ −108, 16¢ ↔ +525, etc.). Edge = Model% − Cents per venue. Edge is per-chip, so the
+            different prices give different edges visibly.</li>
+        <li><strong>Match vs Outright shares the same component.</strong> The two deltas are the
+            <code>cv-when</code> subtitle (kickoff time vs resolution date) and the
+            <code>cv-title</code> (paired teams vs single team).</li>
+        <li><strong>Flame is reserved for Pick signals.</strong> Pass uses graphite-soft; Avoid uses ink-bar +
+            flame strikethrough on cents. Negative edges render in ink, not flame.</li>
+        <li><strong>"Read the market case →" stays as the editorial overflow CTA.</strong> Internal traffic
+            (the dossier). The two Open-venue buttons are the affiliate path. Two surfaces per card.</li>
+      </ul>
+    </div>
+
+    <!-- contract note -->
+    <div class="decisions" style="margin-top: 24px; background: var(--paper-pure); border-left-color: var(--ink);">
+      <h3 style="color: var(--ink);">Contract implication</h3>
+      <ul>
+        <li>Each card now needs <strong>two venue price points</strong>, not one. Current contract surfaces a
+            single <code>verdict.market_venue</code> + <code>verdict.price</code> ("best" venue).</li>
+        <li>For the dual-chip card, The Desk needs to publish
+            <code>market_prices: { polymarket: {price, implied_p, source_url}, kalshi: {price, implied_p, source_url} }</code>
+            per market — both venues, always.</li>
+        <li>This is a <strong>new contract gap</strong> on top of the 14 already in
+            <code>desk-content-slot-audit-v4.xlsx</code>. Adding row "market_prices.{venue}" to the
+            Contract gaps sheet.</li>
+      </ul>
+    </div>
+
+  </main>
+
+</body>
+</html>
