@@ -1,6 +1,229 @@
 # Session Log — Prophet
 
 ---
+## [2026-05-18 · Card design v4 — dual-chip Layout A locked, slot-audit xlsx, Faktor round-2 spec sync] — Cowork
+
+**Summary:** Continuation of the v4 launch thread. Three big workstreams landed in one long session. **(1) Card design.** Adi asked to redesign the canonical card so both Polymarket and Kalshi prices appear on every match/outright card, with a clear CTA pushing to the venue. Walked through three layouts (A compact dual-chip, B side-by-side panels, C venue ladder) and four CTA push levels (L1 plain text → L4 action language). Adi locked Layout A + L3 button-styled CTA + cents-primary/American-odds-secondary. Built `cards-v4.html` showcase — six variants (Match Pick / Pass / Avoid; Outright Pick / Avoid; lead-verdict scale-up). Caught the −180 vs 52¢ probability-conversion bug (52% implied = −108, not −180); fixed every chip across the showcase so the numbers actually compute. After Adi flagged "CTAs too soft", dropped the unified "Market" reads slot (each venue chip now carries its own implied probability + per-chip edge), promoted venue CTAs to solid ink buttons reading "Open Polymarket ↗" / "Open Kalshi ↗" with flame arrows. Propagated the new card into `handover-v4/home.html` lead verdict, replacing the old `lv-card` single-venue block. Mobile-tightened buttons (34→36px height) and chip padding (12/12/10) so two stacked chips don't dominate the mobile fold. **(2) Slot audit.** Built `desk-content-slot-audit-v4.xlsx` — 99 slots across home/outrights/matches, sourced into six tags (DESK / DESK-NEW / DESK-DERIVED / COMPOSED / EDITORIAL / STATIC). Sheet 2 is a 15-row "Contract gaps" list — the engineer's TODO of fields The Desk needs to surface, sorted by priority. Critical gap is `market_prices.{polymarket, kalshi}` — the dual-chip card needs both venue prices on every output, not just the "chosen" one. **(3) Faktor round-2 spec sync.** Faktor's review flagged that the v0.2/v0.5 spec edits Adi promised never made it to `docs/desk-handoff-specs @ 18a3d41`. Diagnosed the drift: edits existed in `prophet/` (Cowork's spec workspace), never copied into `market_tips_ai-1`. Patched a Stage 5 / PR 1 acceptance internal inconsistency in the waist spec while in there. Bundled three specs into `outputs/desk-spec-sync-2026-05-18/` with SYNC.md commands + reply draft. Adi pushed `15d4370` to `docs/desk-handoff-specs` — diff confirms waist v0.2 + data-layer v0.5 landed cleanly (137 + 30 lines updated across the two files). Faktor unblocked for PR1 + Phase 1a.
+
+**Decisions (locked 2026-05-18, this session):**
+
+- **Card design is `card-v4` Layout A** — compact dual-chip across all match + outright surfaces. Same skeleton, two metadata deltas between Match and Outright (kickoff vs resolution date; paired teams vs single team). One component family with `.is-pick / .is-pass / .is-avoid / .is-lead` modifiers.
+- **No unified "Market" reads slot.** Each venue chip carries its own cents (= implied probability) + American odds. The single "Model 56% — The Desk's estimate, before venue prices" stat sits above the chips. Per-chip edge ("+4pp on Polymarket, +3pp on Kalshi") makes the venue spread legible without writing it in prose.
+- **Venue CTA = solid ink button, neutral verb "Open [venue] ↗".** L3 push level — visual weight, not action language. No banned-word rule violation. The "Read the market case →" overflow link remains as the editorial-dossier path (internal traffic, not affiliate).
+- **Price format is cents primary + American odds secondary**, internally consistent. 52¢ ↔ −108 (not −180). Every chip on every variant rechecked against the conversion formulas. American odds for negative (favourite) = `−(p / (1−p)) × 100`; positive (underdog) = `+((1−p)/p) × 100`.
+- **Mobile button minimums**: standard 36px height / 11px font / 8×10 padding; lead variant 38px / 11.5px / 9×12. Chip internal padding `10px 12px 9px` on mobile. Within WCAG AA tap-target guidance (24×24 minimum), under HIG 44×44, but justified for editorial card density.
+
+**Files shipped:**
+
+- `Odds Primer Design System/mockups/cards-v4.html` — canonical card showcase, 6 variants, ~32KB self-contained. Inline CSS, brand tokens, internally consistent prices.
+- `handover-v4/home.html` — lead verdict swapped from old `lv-card` single-venue block to new `card-v4 is-pick is-lead` dual-chip. Cards-v4 CSS injected. American odds bug fixed (52¢ / −108).
+- `desk-content-slot-audit-v4.xlsx` — 99-row slot inventory + 15-row Contract gaps + 6-tag legend. Generated via openpyxl with formatted source-tag fills (flame for DESK-NEW, soft green for DESK, pale gold for DESK-DERIVED, etc.).
+- `outputs/desk-spec-sync-2026-05-18/SYNC.md` — Faktor round-2 sync bundle with commit commands, reply draft, and the three updated specs.
+- `THE_DESK_POSITION_WAIST_SPEC.md` — patched Stage 5 / PR 1 acceptance internal inconsistency (both sections now name `Side / MarketSnapshot / VenuePrice`, no stale `ModelOutput`).
+
+**Project Updates:**
+
+- **`docs/desk-handoff-specs` HEAD is `15d4370`** (was `18a3d41`). Waist v0.2 + data-layer v0.5 + outrights v0.2 all on the branch. Faktor's PR1 + Phase 1a unblocked.
+- **Contract gap inventory exists.** 15 fields The Desk needs to surface for the v4 site, in priority order: `market_prices.{venue}` (Critical, blocks all dual-chip cards) → `model_p` / `market_p` surfacing → `today.headline_verdict` + aggregate counts → group_summary → kickoff_local + venue.tz → match.market_url → full `OutrightOutput` contract. Captured in the xlsx.
+
+**Action Items:**
+
+- [ ] **Adi: reply to Faktor** with the confirmation message — branch tip `15d4370`, headers read v0.2/v0.5/v0.2, plus the waist Stage-5 inconsistency fix. Draft is in SYNC.md and was pasted in chat.
+- [ ] **Adi: pick a canonical clone of market_tips_ai.** Currently has `~/Code/market_tips_ai` (where the spec pushes went) AND `~/Code/market_tips_ai-1` (where the SYNC.md re-run failed). Two clones of the same repo will cause confusion again. Rename one to `_archive` once the other is confirmed canonical.
+- [ ] **Adi: review the slot audit xlsx** before next session — sets the agenda for what The Desk needs to publish to drive the site. The "Contract gaps" sheet is the engineer's TODO.
+
+**Open Threads (carry to next session — Adi flagged he wants to keep working on these):**
+
+- **Propagate `card-v4` to `/matches` and `/outrights`.** The home lead verdict is on the new design; the matches board (8 fixture rows) and outrights page (3 picks + field-stands chart) still use the old single-venue patterns (`.fx` row family on matches, `.opick` on outrights). Sweep is ~45 minutes: build a compact "single-line per chip" variant for the board rows (so 8 stacked dual-chips don't dominate vertical space), keep the full vertical dual-chip for outright picks (only 3 rows, fits).
+- **Optional card refinements** (Adi hasn't decided):
+  - "BEST" annotation on the chip with the higher edge — currently the flame underline on +4pp vs the rule underline on +3pp implicitly marks the better-for-Pick venue; an explicit "BEST FOR PICK" badge would make it loud. Adi's call.
+  - Hide American odds on mobile to compress chips further (`52¢ +4pp · Open ↗` only, no `−108`). Mentioned as a future lever; not decided.
+  - Single-line per chip on mobile for the board view specifically (vs the current stacked vertical).
+- **Slot audit follow-through.** The xlsx is a reference, not yet acted on. Once Adi reviews, next moves are: (a) hand the Contract gaps sheet to Faktor / The Desk team as the engineering scope, (b) refine specific rows where "DESK-NEW" vs "DESK-DERIVED" is fuzzy, (c) decide whether Featured columns is engine-generated or stays EDITORIAL for v1.
+- **Process gap: prophet/ → market_tips_ai-1 sync is manual.** SYNC.md proposed a tiny `~/bin/sync-desk-specs.sh` (3-line copy script). Adi to set up when he has a quiet evening. Until then, every spec edit in Cowork needs a manual `cp` step before the reply to Faktor.
+- **Process gap: SYNC.md path bug.** I gave Adi `cp ~/outputs/desk-spec-sync-2026-05-18/...` as the source path. That's the Cowork sandbox path, not a Mac path. The correct source is always `~/Documents/Claude/Projects/prophet/`. Fixed conceptually but if I generate another sync bundle the SYNC.md should use the prophet path, not the outputs path.
+
+**Handoff for next session:**
+
+Card design is locked at `card-v4` Layout A · L3 buttons · per-chip data. The canonical showcase lives at `Odds Primer Design System/mockups/cards-v4.html` (6 variants, internally consistent prices). The home's lead verdict at `handover-v4/home.html` already runs this design. Next move on the card front is to **propagate to `/matches` (8 fixture rows) and `/outrights` (3 picks + field chart)** — design a compact "single-line per chip" variant for the matches board so 8 stacked cards don't kill the mobile fold; keep the full vertical chip for the 3 outright picks. The slot audit at `desk-content-slot-audit-v4.xlsx` is the reference doc for what content fields The Desk needs to feed each card — Sheet 1 is the inventory, Sheet 2 is the engineer's TODO of contract gaps (15 rows, Critical at the top). On the Faktor side, `docs/desk-handoff-specs` is at `15d4370` with waist v0.2 + data-layer v0.5 + outrights v0.2 — nothing more to do until Faktor pings back. No code state to restore; everything is files-on-disk and a clean git tree.
+
+---
+## [2026-05-18 · v4 launch build — verdict-teaching merge, ChatGPT mobile-fixes, full trust-page suite, handover to Faktor] — Cowork
+
+**Summary:** Long continuation of the home-v3 thread, ending with a packaged handover for Faktor. Two rounds of ChatGPT review iterated the canonical home: round 1 produced the verdict-teaching merge (Option A standfirst + Option C lead verdict + Option B verdict-key, in that order — show first, teach second), with five copy fixes ("Read the market case" CTA, AI model named in the hero, no action language anywhere, 3-step path explainer below the lead, verdict-key relocated below the lead). Round 2 delivered eight mobile-conversion fixes (shorter hero, lead-verdict CTA as a full-width 44px mobile button, sticky bar "Learn → See reads" + "top edge +5pp", drop "Home" from the pill nav so it's Winners/Matches only, rewrote the "Polymarket is the slower" thesis line, plus tighter hero / lead-verdict / path-explainer padding under 720px, plus Pick/Pass verdict-key tightening). Then stood up a clean `/v4/` directory with all 14 pages: home + outrights + matches + about + methodology + learn + privacy + terms + affiliate-disclosure + responsible-use + cookies + corrections + 404 + colors_and_type.css. Ran a second launch-content pass per a long content spec: The Desk terminology standardised, new sitewide footer disclaimer + affiliate line, hello@ retired in favour of desk@, About copy edits (mispriced wording, independence sentence, role-based emails, body links), Learn restructured (new H1 *"Prediction markets, explained simply"*, "Not sportsbooks" section, risk note under Edge, Polymarket/Kalshi examples without endorsement, expanded "View source"), Methodology gained an "In short" callout + baseline-threshold language + two new disclosure sentences + last-updated-timestamp expectation, Privacy fully restructured into 13 sections with explicit Legal basis / International transfers / Children sections and zero newsletter references, Terms added four new sentences without inventing governing law. Built /404. Softened the home "How we work" copy so even quoted gambling-promo words are gone. Packaged everything into `handover-v4/` + `oddsprimer-v4-handover.zip` (101KB) with a README.md that covers route map, brand spec, terminology, no-go list, mocked-content list, what's TBD on Faktor's side, and the don't-change-without-checking list. Wrote a paste-ready Slack/email for Adi.
+
+**Decisions (locked 2026-05-18, this session):**
+
+- **Canonical home page order is fixed.** Hero → lead verdict → path explainer → verdict-key → article previews → How we work → Featured columns → Newsletter → Footer. Demo first, teach second. Locking this retires Options A/B/C; canonical = A+C+B.
+- **AI model is named in the hero standfirst.** *"Our AI model compares Polymarket and Kalshi prices with its own read of each World Cup market. Every market gets one verdict: Pick, Pass, or Avoid. We show the price, the edge, and the reasoning. We don't tip."*
+- **CTA copy locked.** Lead verdict says **"Read the market case ↗"**. Sticky mobile bar swaps "Learn → See reads"; both halves point to /matches. Pill nav is Winners + Matches only — Home dropped (brand-lock handles "go home").
+- **No action language anywhere.** "Back it" / "sit it out" / "lock-of-the-day" stripped from every verdict-key and legend. The home "How we work" copy that previously *quoted* gambling words to disavow them was softened to *"No hype, no tip-of-the-day, no instructions"* — the anti-tipster point survives without printing the literal banned phrases.
+- **Terminology lock.** *Odds Primer* = the publication. *The Desk* = the AI verdict engine. *Pick / Pass / Avoid* = the three editorial verdicts. *Model probability* = the estimate The Desk produces. *Edge* = market vs model gap. **"View source on [venue] ↗"** is the only outbound link pattern — never "bet now / trade now / back it / lock".
+- **No founder names, no legal entity claim.** Public-facing operator is "Odds Primer" or "Odds Primer Editorial Desk". Footer copyright is just `© 2026 Odds Primer · An independent editorial website — not a registered company, broker, or sportsbook.`
+- **Role-based emails only. `hello@` is retired.** Final set: `desk@` (general), `corrections@`, `privacy@`, `legal@`.
+- **Privacy has no newsletter section.** Newsletter is not live for launch. If/when one ships, the Privacy page needs a new section for it.
+- **Sitewide footer disclaimer wording is load-bearing.** *"Odds Primer is editorial information only. We are not a sportsbook, broker, exchange, financial adviser, or betting adviser. We do not take wagers, hold funds, execute trades, or provide personalized advice. Prediction-market participation involves risk and may not be available in your location."* Don't paraphrase — the wording is the regulatory-positioning surface. Paired with the affiliate line directly below.
+
+**Files shipped:**
+
+- `frontend/public/v4/` — clean directory, 14 files + stylesheet (~475KB):
+  - `home.html` — article-style canonical with locked A+C+B structure
+  - `outrights.html`, `matches.html` — content pages
+  - `about.html`, `methodology.html`, `learn.html` — editorial/about pages
+  - `privacy.html` (13 sections), `terms.html` (9 sections), `affiliate-disclosure.html`, `responsible-use.html`, `cookies.html`, `corrections.html` — full trust-page suite
+  - `404.html` — pill links back to Home / Outrights / Matches / Learn / Methodology
+  - `colors_and_type.css` — design tokens
+- `frontend/public/v2/home-v3.html` — canonical mockup kept for v3 comparison; `home-v3-option-{a,b,c}.html` are historical comparison artifacts after merge.
+- `handover-v4/` + `oddsprimer-v4-handover.zip` (101KB) — packaged for Faktor. Includes README.md with route map, fastest-path-to-live, brand spec, terminology, no-go list, mocked-content list, TBD list, don't-change list.
+- `handover-v4/assets/{glyph-bars.svg, wordmark.svg, wordmark-tagline.svg}` — freshly generated standalone SVGs matching v4 inline lockup. The design system's `branding/locked/` folder still holds the May 8 Source Serif version (Adi's Claude.ai sync brought it back during the session) — don't import from there.
+
+**Project Updates:**
+
+- **Cookie banner pattern.** Fixed-bottom on every v4 page with Accept / Reject / Manage. No JS framework — vanilla `<details>` + inline `onclick`. Persistence intentionally NOT implemented; production needs `localStorage.setItem('op_cookie_consent', …)`.
+- **Outbound CTA disclosure pattern.** `<p class="affiliate-note">Odds Primer may earn a referral fee if you use a partner venue. Verdicts are editorial and independent.</p>` appears below the home lead-verdict CTA, each outright pick row, and each fixture-board group on matches.
+- **Mocked content inventory (all hardcoded).** Home lead verdict (France v Mexico, model 56% / market 52% / +4pp / Polymarket −180); home article-preview stats; sticky bar counts; outright picks (France/Argentina Pick, Brazil Avoid); field-stands chart (Brazil 22 / Argentina 18 / France 16 / England 12 / Spain 11 / Field 21); matches board (8 fixtures across F/A/B); "Updated 13 May 2026" stamps everywhere. Replace when wired to real engine output.
+
+**Action Items:**
+
+- [ ] **Adi: send the handover to Faktor.** Three paths offered: zip via email/Slack (101KB), folder via Drive/Dropbox (Drive preview), or private GitHub repo `oddsprimer-launch` for version history. Paste-ready message provided in chat.
+- [ ] **Adi: sanity-check `handover-v4/home.html` on Mac before sending.**
+- [ ] **Faktor: wire cookie banner to `localStorage`** so it doesn't appear on every page load.
+- [ ] **Faktor: pick newsletter provider** (Buttondown recommended for editorial register) or hide the form. Privacy currently has zero newsletter references — adding one means adding a Privacy section.
+- [ ] **Faktor: plug real Polymarket/Kalshi referral codes** into `href="#"` outbound links.
+- [ ] **Faktor: 404 routing.** Wire `404.html` as host's 404 handler (Vercel / Netlify / Nginx config).
+- [ ] **Eventually: self-host fonts.** Currently loaded from Google Fonts CDN via `@import` in `colors_and_type.css`. Self-hosting removes the runtime dependency.
+- [ ] **Adi: confirm domain.** All internal links assume single-domain relative paths; `oddsprimer.com` not yet confirmed. OG meta tags need a real canonical.
+
+**Open Threads (carry to next session):**
+
+- **Conflict with the parallel 2026-05-18 Outright Winner mockup work** (sibling session, also today). That session built `Odds Primer Design System/mockups/wc-outright.html` with a tabbed `/desk` home (Outright | Matches), Monte Carlo simulator brief pending, default-flip via `DESK_DEFAULT_VIEW`. My v4 work assumes the article-style home with `/outrights` and `/matches` as separate pages from `/`. **These two designs diverge.** Open question for next session: do we go (a) tabbed `/desk` per the wc-outright mockup, (b) article-style `/` with separate routes per v4, or (c) both — `/` is article-style for the public, `/desk` is a tabbed product view? The wc-outright mockup is mobile-first which v4 also is, so visual continuity is feasible; the IA question is the real call.
+- **Claude Code brief at `CLAUDE_CODE_PROMPT_home_about_learn.md` is stale.** Doesn't reflect v4 IA, separate /outrights /matches pages, burger nav, no-founder-names rule, or the wc-outright tabbed `/desk` track. Needs an update pass before any code agent touches it.
+- **Production code lives in `/Users/adi/Documents/Claude/Projects/market_tips_ai-1`** per the workflow lock from this morning's sibling session. v4 handover is a spec output — Faktor (or Claude Code) ports it into that repo. Cowork stays in `prophet/` for specs.
+- **`branding/locked/wordmark.svg`** still contradicts v4 — Adi's Claude.ai sync brought back the May 8 Source Serif lockup. Doesn't affect v4 (lockup is inlined) but contradicts `handover-v4/assets/`. Resolve before next brand iteration.
+- **Market Tips AI dark-terminal alt-brand mockup** at `frontend/public/v2/home-markettipsai.html` — strategic question still open: real alt to evaluate, or pure exploration? "Tips" voice and Odds Primer voice rules are not co-existing brands.
+- **The three home-v3-option-{a,b,c}.html mockups** in v2/ still hold pre-canonical phrasing ("Back it", "sit it out"). Frozen historical artifacts. Leave or move to `_archive/`.
+- **`Odds Primer Design System/_nested_to_delete/`** still needs Finder drag-to-Trash (sandbox can't rm).
+
+**Handoff for next session:**
+
+If next session is brand/voice work — read the terminology lock above and `feedback_verdict_is_the_product.md`. Don't introduce gambling-promo words even in quoted negations. If next session is implementation — production code is in `market_tips_ai-1`, the v4 handover is the spec input; the stale Claude Code brief needs updating first. If next session is the Outright Winner / Match-tabs reconciliation — the wc-outright design at `Odds Primer Design System/mockups/wc-outright.html` and the v4 home at `frontend/public/v4/home.html` need to be reconciled into one canonical IA. If next session is a Faktor follow-up — handover went out as `oddsprimer-v4-handover.zip` + `handover-v4/README.md`; expect ping-backs on real domain, cookie banner persistence, newsletter provider pick, outright model timing.
+
+---
+## [2026-05-18 · Outright winner — design lock + mobile-first mockup] — Cowork
+
+**Summary:** Adi asked to add an Outright Winner view alongside Matches, with Outright as the default until WC 2026 kicks off. I scraped Polymarket's `2026-fifa-world-cup-winner-595` event (43 nations, Spain 15.3% top, $271.4M vol, resolves Jul 20 2026), proposed a tab-based home (Outright | Matches) layered over the existing `/desk` shell, and surfaced three open calls via AskUserQuestion. All three locked on the maximal path. Built a desktop-leaning HTML mockup at `Odds Primer Design System/mockups/wc-outright.html`. Adi pushed back: not mobile-optimized. Rebuilt the file mobile-first — same DOM, three breakpoints (base / 600px / 900px), sticky tabs, horizontal-snap Picks carousel, stacked row-card ladder that swaps to a real `<table>` only at ≥900px.
+
+**Decisions (locked 2026-05-18):**
+- **Build the outright simulator before shipping the page.** Engine PR adds a Monte Carlo on top of the existing Elo model — 10,000 tournament rollouts → `outright_p` per team. Without this the Outright tab is a Polymarket mirror with no edge, which contradicts the verdict-is-the-product rule. Chosen over the "stub model, ship tracker" path.
+- **Hero treatment = top 3 Picks by `edge_pp`.** Not the top 4 favourites. The page's reason to exist is the model's disagreement with the market, not a restatement of market consensus.
+- **Default-flip mechanism = date-based env flag.** `DESK_DEFAULT_VIEW` derived from `WC2026_START_UTC`; server returns "outright" until 2026-06-11 kickoff, "matches" afterward. One env knob, no client date math, no deploy on launch day.
+- **One home, two tabs.** URL `/desk` honours the default; `/desk/matches` forces the matches view. No separate top-level routes; the segmented tab strip sits below the masthead.
+- **Outright is NOT a `MatchOutput`.** New `OutrightOutput` contract — N-way market, single resolution, one entry per team, lives at `data/output/football/outright/wc26-winner.json`. Needs its own ADR + schema entry before any code.
+
+**Files shipped:**
+- `Odds Primer Design System/mockups/wc-outright.html` — mobile-first standalone mockup. Masthead (compact bars+wordmark, UTC time right), edition strip ("31 days to opening match"), sticky tab strip (Outright 43 / Matches 12), event hero ("Who wins the World Cup?" + standfirst that names the 10k Monte Carlo), 3-up Pick slab (Brazil +3.5pp, Argentina +3.2pp, Germany +2.8pp — Germany's edge sits below the 3.0pp Pick floor and the card admits it), 43-row ladder of all PMK teams. Mobile = scroll-snap carousel + stacked row-cards with flame-tint fade on Picks. Desktop = 3-up grid + real table. ~1000 lines, no JS. Real Polymarket implied % numbers; Model % invented to make the disagreement story.
+
+**Engine work this implies (not yet built):**
+1. ADR + `OutrightOutput` schema in `desk/publish/contract.py`.
+2. `desk/sports/football/outright.py` — bracket Monte Carlo. Open question for its brief: how to handle teams still in CONMEBOL/AFC qualification playoffs as of May 2026 (weight by qual probability vs. freeze field at draw date).
+3. Verdict step reuses `desk/verdict/decide.py` thresholds (3.0 / 1.0 / -2.0 pp) unchanged — `model_p − market_p` math works on N-way too. Phase A.4 Avoid caveat applies less here because outright isn't zero-sum across visible sides (Yes/No each, sums <1).
+4. Outright explainer reuses `voice.py` rules — templated copy in the same pattern as the match Pick stub.
+5. Frontend: `DeskTabs.jsx`, `DeskOutright.jsx`, `OutrightLadder.jsx`. `DeskApp.jsx` reads `?view=` and a server-injected default; same path-routing pattern already in use (no router lib).
+6. `DESK_DEFAULT_VIEW` flag in `desk/config.py` + a tiny `/api/desk/config` (or SPA bootstrap payload).
+
+**Action Items:**
+- [ ] **Adi: green-light the outright simulator brief** — once approved I'll draft `THE_DESK_OUTRIGHTS_SIM_BRIEF.md` (inputs, qualification handling, sim count, validation against closing-market baseline) before any code goes in. Same shape as `THE_DESK_PR_BACKTEST_BRIEF.md`.
+- [ ] **Adi: review the mockup on phone.** Mobile-first rebuild needs validation at 375px before this design is handed off.
+- [ ] **Adi: decide on the Avoid column for Outright.** With normalised market % across 43 sides, Avoid almost never fires (the Phase A.4 single-venue problem applies). Keep the column for parity with match page, or drop it.
+- [ ] **Adi: decide on the "two Picks + one watch" vs "three Picks" hero treatment.** Mockup stretches the 3.0pp threshold to show three Pick cards; in a real run Germany would be a near-miss, not a Pick.
+
+**Open Threads (carry to next session):**
+- This is design-only. No engine work started, no React port started. The mockup is a standalone HTML in the design system folder, not in `frontend/public/v2/`. When the simulator lands, the React port follows the same path-routing pattern used today by `DeskApp.jsx`.
+- Outright tab co-exists with the article-style home from 2026-05-13. Open question: does `/desk` become a tabbed view (Outright | Matches), or does the home stay article-style with `/outrights` and `/matches` as separate pages it links to? Today's design lands the tabs under `/desk` specifically, leaving the article-style `/` home untouched. Possible alignment work later.
+- Carry-overs from previous sessions still open: verdict-teaching variant A/A+C/A+B+C, Market Tips AI direction, stale Claude Code brief refresh, delete `_nested_to_delete/`, self-host brand fonts.
+
+**Handoff for next session:**
+The Outright design is locked. The natural next step is the simulator brief — that gates the `OutrightOutput` contract, which gates everything else. Mockup at `Odds Primer Design System/mockups/wc-outright.html` is the visual reference. New feedback rule in Cowork auto-memory: mobile-first is non-negotiable for all UI work going forward. No code state to restore.
+
+---
+## [2026-05-18 · Cowork ↔ Claude Code workflow lock — spec here, code there; market_tips_ai-1 read-only] — Cowork
+
+**Summary:** Short session, no build work. Adi clarified that the working code lives in `/Users/adi/Documents/Claude/Projects/market_tips_ai-1` and asked me to remember never to delete or change anything in that folder. I saved the rule to auto-memory, verified I have full read access to the repo (7,760 files outside `node_modules`/`.git`: Next.js app, `desk/` engine, `lib/`, `components/`, `supabase/migrations/`, `docs/`, `tasks/`, both CLAUDE.md files), and confirmed the intended workflow: spec/think in Cowork against the real repo state, hand off to Claude Code for implementation.
+
+**Decisions (locked 2026-05-18):**
+- **`market_tips_ai-1` is read-only from Cowork.** I read it freely to ground specs in real file paths and existing patterns, but I do not edit/move/delete anything there unless Adi explicitly points at a file.
+- **Workflow split.** Cowork = specs, briefs, ADRs, sprint plans, research, design work. Claude Code = implementation against those specs (branch, code, run gates, open PR). Spec outputs land in `prophet/` (or wherever fits), not inside `market_tips_ai-1/`.
+
+**Files shipped:**
+- Auto-memory: `spaces/.../memory/feedback_market_tips_ai_folder.md` — feedback entry capturing the read-only rule with Why / How to apply. Indexed in `MEMORY.md`.
+
+**Project Updates:**
+- None to repo code or docs. The session's only persistent output is the memory entry above; everything else was confirmation of state.
+
+**Action Items:**
+- None outstanding from this session.
+
+**Open Threads (carry to next session):**
+- Carry-overs from 2026-05-13 still open: pick verdict-teaching option (A / A+C / A+B+C); Market Tips AI direction (thought experiment vs real alt brand); stale Claude Code brief at `CLAUDE_CODE_PROMPT_home_about_learn.md` needs an update pass for article-style IA + /outrights /matches routes + burger nav + no-founder-names rule; delete `Odds Primer Design System/_nested_to_delete/` in Finder; self-host brand fonts; outright-engine scope decision for Faktor build.
+
+**Handoff for next session:**
+The workflow is now wired: spec here, code in Claude Code, never touch `market_tips_ai-1` from Cowork. When Adi opens the next session, the natural first move is one of (a) draft a spec for one of the open carry-overs above — most leverage is on the stale Claude Code brief refresh, since that unblocks the React port of the v2 mockups — or (b) pick one of the May-13 decisions still pending (verdict-teaching variant, Market Tips AI brand direction). No code state to restore; the repo is unchanged.
+
+---
+## [2026-05-13 · Home-v3 mockup pass — article-style IA, brand sync, verdict-teaching options, alt-brand mockup] — Cowork
+
+**Summary:** Long session, lots of iteration. Started by building the v2-plan homepage (home-v3) from the homepageplanv2 brief — Outright Winners + Today's Board + How we work + Featured columns + Newsletter + Footer + sticky mobile bar. Then About page (anonymous role cards — no founder names) and Learn index + 3 primer articles. Brand-synced the May 12 wordmark update (Source Serif 4 800 → Inter Tight 700 + tagline "The AI sports desk for market edge"); archived the old May 8 lock files; cleaned up a partial Claude.ai → Cowork export that included divergent versions of mockups. Iterated mobile UX (burger → pill nav → both with different scopes). After Faktor call, pivoted home to article-style: removed the full Outright Picks + Today's Board sections from home and replaced with two article preview cards linking to NEW /outrights.html and /matches.html pages; moved About + Learn into a burger menu (top-right of masthead, `<details>` no-JS). Built three verdict-teaching mockup options (A/B/C) with a floating A/B/C switcher so Faktor can compare. Built a Market Tips AI alt-brand mockup (dark terminal × fintech, electric green/AI-purple, "tips" voice, AI confidence scores) as a max-contrast brand comparison.
+
+**Decisions (locked 2026-05-13):**
+- **Home IA is article-style.** Two article preview cards (Outright winners + Upcoming matches) replace the full sections on home. Full content lives on /outrights.html and /matches.html. Followed Faktor's call ask.
+- **No founder names on the public site.** About's "Who runs this" section uses anonymous role cards — "The engineer" / "The editor". Footer copyright is `© 2026 Odds Primer.` (not "Adi Dagan trading as…"). Memory updated: legal_status memory still says sole-trader is the legal framing, but the public-facing site never names the operator.
+- **Canonical lockup on every page masthead.** Earlier iteration had wordmark-only on About/Learn and canonical (with tagline) on home only — caused screen-jump on nav. Lockup is now identical across all 8 pages so masthead height is stable on navigation. Mobile tagline visibility restored (removed the under-520px display:none rule).
+- **Tagline stretches from glyph left edge.** The design-system spec has `padding-left: 50px` so tagline aligns under wordmark text only — that proportion only works at 38px display size. At the 22px masthead size, padding-left: 0 lets the tagline span the full lockup width naturally. Document-system spec is unchanged; masthead implementation overrides for the smaller size.
+- **Burger holds About + Learn only.** Primary nav (visible inline + pill on mobile) carries Home / Outright winners / Upcoming matches. Burger button sits top-right of masthead, all viewports. `<details>/<summary>` pattern — no JS.
+- **Outright picks are mocked, model is v0.1.** The Desk doesn't currently model outright probabilities (per `THE_DESK_SPEC.md` §6). The home/outrights pages show three hardcoded picks (France/Argentina/Brazil) with a footnote dagger explicitly flagging the engine is v0.1, in production for v1.2.
+- **Brand v3 wordmark + tagline lock-in confirmed.** Inter Tight 700 wordmark, letter-spacing −0.022em at 22px masthead, −0.025em at 38px display; tagline "The AI sports desk for market edge" in Source Serif 4 italic with flame on "AI" and "market edge". May 8 wordmark (Source Serif 4 800) archived to `branding/exploration/_archive_2026-05-08-wordmark/`.
+
+**Files shipped:**
+- `frontend/public/v2/home-v3.html` — rebuilt three times this session, final state = article-style home with two preview cards, canonical lockup, pill+burger nav, sticky mobile bar linking to /matches.
+- `frontend/public/v2/about.html` — anonymous role cards, sticky side-rail TOC, five anchored sections.
+- `frontend/public/v2/learn.html` — three numbered primer cards index.
+- `frontend/public/v2/learn-what-is-a-prediction-market.html` — 3-min primer, pullbox.
+- `frontend/public/v2/learn-how-prices-are-set.html` — 5-min primer with American-odds → cents conversion table + worked Brazil-22¢/25¢ example.
+- `frontend/public/v2/learn-is-it-legal.html` — 4-min primer with venue × regulator × legal-frame table + "we're not lawyers" notice box.
+- `frontend/public/v2/outrights.html` — NEW page. Outright picks (France/Argentina/Brazil) + "Where the field stands" market-consensus bar/cards.
+- `frontend/public/v2/matches.html` — NEW page. Fixture board (Groups F/A/B, 8 matches) + verdict-key legend + summary strip.
+- `frontend/public/v2/home-v3-option-a.html` — verdict-led standfirst (cheapest).
+- `frontend/public/v2/home-v3-option-b.html` — verdict-key strip under hero (medium).
+- `frontend/public/v2/home-v3-option-c.html` — lead-verdict block above article cards (substantive). All three carry a floating A/B/C switcher (bottom-right) and have `colors_and_type.css` inlined so each is shareable as a standalone file.
+- `frontend/public/v2/home-markettipsai.html` — alt-brand mockup. Dark `#0B0E13` background, Inter-only typography, electric green (`#00E676`) + AI-purple (`#7C5CFF`) accents, "tips" voice, AI confidence scores, hit-rate band, "Trade now on Polymarket ↗" CTAs.
+- `CLAUDE_CODE_PROMPT_home_about_learn.md` — brief for porting the v2 mockups into the React app. Hard frontend-only constraints; custom-pathname routing pattern; no new npm deps; `package.json` unchanged; `git diff --stat origin/staging…HEAD` must show only `frontend/` changes. **Stale vs current state** — still describes all-on-home IA, not article-style + separate /outrights /matches pages, and doesn't reflect burger menu or A/B/C verdict-teaching choice.
+- `Odds Primer Design System/branding/exploration/_archive_2026-05-08-wordmark/` — archived old wordmark.svg, glyph-bars.svg, bars-locked-v2.html, odds_primer_logo.png + README explaining supersession.
+
+**Project Updates:**
+- New auto-memory `feedback_verdict_is_the_product.md` (Cowork space): Pick/Pass/Avoid is the wedge; homepage must lead with it explicitly; "we compare prices and explain" framing is incomplete without naming the verdict.
+- Brand sync from Claude.ai → repo: nested duplicate folder reconciliation. Promoted `assets/wordmark-tagline.svg` and `mockups/logo-tagline.html` to top level. Replaced top-level wordmark.svg + 3 mockups with the May-12 versions. Kept top-level `mockups/verdict-explore/notes.md` (it had a 2026-05-05 "View source on" update that the Claude.ai export had reverted to "Open on"). Nested duplicate folder renamed to `_nested_to_delete/` — bash sandbox can't `rm` it (macOS quarantine attrs); Adi to drag-to-Trash in Finder.
+
+**Action Items:**
+- [ ] **Adi: pick verdict-teaching option** (A / A+C recommended / A+B+C canonical) from the three option mockups → merge into canonical `home-v3.html`.
+- [ ] **Adi: decide Market Tips AI direction.** Dark-mode alt-brand shipped; is it a thought experiment or a real alt to evaluate? If real, also build a light "Robinhood-on-cream" variant for a 3-way comparison. Strategic flag: the "tips" word in MarketTipsAI naming directly contradicts Odds Primer's anti-tipster voice rules — these are not compatible co-existing brands, they're a choice.
+- [ ] **Adi: update Claude Code brief** to match current state — article-style home, separate /outrights + /matches React routes, burger nav pattern, no founder names rule. Currently the brief still describes the pre-Faktor-call IA.
+- [ ] **Adi: delete `Odds Primer Design System/_nested_to_delete/`** in Finder (sandbox can't rm — macOS quarantine attrs).
+- [ ] **Adi: self-host brand fonts** (Inter Tight, Source Serif 4, JetBrains Mono `.woff2`) under `Odds Primer Design System/branding/fonts/` and `@font-face` them from `colors_and_type.css`. The Claude.ai design-system preview shows "Missing brand fonts" warning; the repo has the same gap — falling back to Google Fonts CDN at runtime. Self-hosting would (a) match the Claude.ai preview exactly, (b) remove the third-party runtime dependency.
+- [ ] **Adi: optionally inline CSS across all `v2/` mockups** (not just the option-A/B/C/markettipsai files) so any single file is shareable standalone, like Faktor's Option C breakage today. Or commit to always sharing the whole folder.
+- [ ] **Adi: respond on whether outright-engine work is in scope** for the Faktor build. Mockup currently shows v0.1-flagged picks. Spec'd in `THE_DESK_OUTRIGHTS_SPEC.md` but parked.
+
+**Open Threads (carry to next session):**
+- Verdict-teaching option not yet picked. My recommendation stands: **A+C** — standfirst rewrite that names Pick/Pass/Avoid, plus a lead-verdict block above the article cards demonstrating one in action. A+B+C is canonical magazine teaching but adds visual weight that may compete with the article previews.
+- Market Tips AI exists in two states: (a) the May-8 internal MVP deck framing — "DraftKings of soccer prediction markets," CPA-affiliate, screenshot factory; (b) today's dark-terminal mockup — AI-led, confidence scores, hit-rate band. If MarketTipsAI is real, "67% hit rate" and per-pick AI-confidence scores are load-bearing claims that don't yet exist in The Desk's contract — they're feature work.
+- Claude Code brief is stale on three dimensions: IA (article-style), routes (/outrights + /matches), nav (burger). Don't hand to Claude Code without an update pass — it would produce something divergent from the current mockups.
+- Article preview cards on home currently DON'T teach the verdict. A newcomer sees "3 picks · 1 avoid" without knowing what those words mean. Verdict-teaching option (above) closes this gap.
+- Outright engine is v0.1 — `THE_DESK_OUTRIGHTS_SPEC.md` and the v2 plan §3.2 both flag this. Mockups carry a † footnote acknowledging it; production needs the engine work before any "outright pick" rendering is honest.
+- Tagline indentation: design-system preview shows `padding-left: 50px` (under wordmark text) at 38px display size; masthead uses `padding-left: 0` at 22px size so the tagline stretches across the full lockup. Both look right at their respective scales but it's an implicit override worth documenting in the design system if the spec page ever ships in a different size.
+
+**Handoff for next session:**
+The mockups are at `frontend/public/v2/`. Eight Odds Primer pages share canonical chrome (masthead with bars glyph + Inter Tight wordmark + flame tagline, edition strip, pill+desktop+burger nav, footer): `home-v3.html` (article-style home with two preview cards), `outrights.html` and `matches.html` (the full content pages those cards link to), `about.html` (anonymous), `learn.html` + three primers. Three verdict-teaching variants of the home live at `home-v3-option-{a,b,c}.html` with a built-in switcher — Adi to pick one and merge to canonical. One alt-brand mockup at `home-markettipsai.html` — dark terminal × fintech, max visual contrast to Odds Primer. Claude Code brief at repo root `CLAUDE_CODE_PROMPT_home_about_learn.md` is stale; needs an update pass before the React port. The big strategic question still open: does Odds Primer's editorial verdict register beat Market Tips AI's AI-tipster register for conversion in the Faktor / Adi judgment? The mockups make the contrast visible — answer is a brand decision, not a build one.
+
+---
 ## [2026-05-07 · B2C legal pages — Privacy + T&Cs (sole-trader framing)] — Cowork
 
 **Summary:** Adi shared a screenshot of his B2C task list (Privacy Policy, T&Cs, 404, Event details, Site sweep) and asked for help completing them. Scoped the work via AskUserQuestion: Privacy + T&Cs first; copy (md) + design-system HTML mockup; generic placeholder jurisdiction. Built v1 with `[LEGAL ENTITY NAME]` brackets. Adi flagged "we don't have a legal entity setup yet" — pivoted to **sole-trader framing**.
