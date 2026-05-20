@@ -35,9 +35,11 @@
     line-height: 1.5;
   }
 
-  body { padding: 32px 24px 80px; }
+  body { padding: 32px 24px 80px; overflow-x: hidden; }
 
-  .container { max-width: 1180px; margin: 0 auto; }
+  .container { max-width: 1180px; margin: 0 auto; width: 100%; }
+
+  .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
   /* ===== Masthead ===== */
   .masthead {
@@ -338,6 +340,18 @@
     .two-col { grid-template-columns: 1fr; }
     .masthead { flex-direction: column; align-items: flex-start; }
   }
+
+  @media (max-width: 520px) {
+    body { padding: 16px 12px 64px; }
+    .kpis { grid-template-columns: 1fr; }
+    .kpi { border-right: none; border-bottom: 1px solid var(--line-soft); }
+    .kpi:last-child { border-bottom: none; }
+    .chart-wrap { height: 280px; }
+    .verdict-mix .row { grid-template-columns: 60px 1fr 32px; gap: 8px; }
+    .section-title { font-size: 11px; }
+    table { font-size: 12px; min-width: 560px; }
+    thead th, tbody td { padding: 8px 10px; }
+  }
 </style>
 </head>
 <body>
@@ -468,6 +482,7 @@
   <!-- Match-by-match -->
   <div class="section">
     <div class="section-title">Match-by-match</div>
+    <div class="table-wrap">
     <table>
       <thead>
         <tr>
@@ -1126,6 +1141,7 @@
 <!-- BACKTEST_DATA_END:match_table -->
       </tbody>
     </table>
+    </div>
   </div>
 
   <!-- Methodology footer -->

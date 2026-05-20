@@ -19,7 +19,7 @@ const SUBSCRIBED_DAYS   = 365;
 const SUPPRESS_PATHS    = ["/learn"];
 const HIGH_INTENT_PATHS = ["/matches", "/match", "/outrights"];
 const STORAGE_KEY       = "op_newsletter_popup";
-const HONEYPOT_NAME     = import.meta.env.VITE_MAILCHIMP_HONEYPOT_NAME || "";
+const HONEYPOT_NAME     = import.meta.env.VITE_MAILCHIMP_HONEYPOT_NAME || "b_5639b505d384d746edb6af404_51ee011415";
 const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
 function startsWithAny(path, list) {

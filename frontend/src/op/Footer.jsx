@@ -14,7 +14,7 @@ const FOOT_LINKS = {
   ],
   about: [
     { label: "Our method",          href: "/methodology",                kind: "external" },
-    { label: "How to read a price", href: "/learn/read-a-price",         kind: "internal" },
+    { label: "How to read a price", href: "/learn/how-prices-are-set",   kind: "internal" },
     { label: "Contact",             href: "mailto:hello@oddsprimer.com", kind: "external" },
   ],
 };

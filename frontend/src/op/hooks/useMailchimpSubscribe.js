@@ -9,8 +9,12 @@
 
 import { useCallback, useState } from "react";
 
-const FORM_ACTION   = import.meta.env.VITE_MAILCHIMP_FORM_ACTION || "";
-const HONEYPOT_NAME = import.meta.env.VITE_MAILCHIMP_HONEYPOT_NAME || "";
+// Public, non-secret Mailchimp embed identifiers (audience "Oddsprimer", dc us2).
+// Env vars override the baked defaults so prod works without per-host config.
+const FORM_ACTION   = import.meta.env.VITE_MAILCHIMP_FORM_ACTION
+  || "https://oddsprimer.us2.list-manage.com/subscribe/post?u=5639b505d384d746edb6af404&id=51ee011415";
+const HONEYPOT_NAME = import.meta.env.VITE_MAILCHIMP_HONEYPOT_NAME
+  || "b_5639b505d384d746edb6af404_51ee011415";
 
 const STORAGE_KEY      = "op_newsletter_popup";
 const SUBSCRIBED_DAYS  = 365;

@@ -321,9 +321,10 @@ async def backtest_workbook():
 
 # ── Odds Primer static site ───────────────────────────────────────────
 # The Desk's per-match JSON output is rendered to a static HTML site by
-# site/generate.py. When site/public/index.html exists, those routes win
-# over the v4 mockups and the React SPA fallback (declaration order
-# matters in FastAPI — first match wins).
+# site/generate.py. The static site is the canonical surface for every
+# editorial route (`/`, `/matches`, `/m/{id}`, `/outrights`, `/o/{id}`,
+# `/about`, `/learn`, the trust pages). The React SPA only handles its
+# own sub-products (`/ledger`, `/desk`, `/dashboard`).
 # Daily workflow:
 #     python -m desk run --once       # refresh JSONs
 #     python site/generate.py         # rebuild static HTML
@@ -331,13 +332,25 @@ async def backtest_workbook():
 
 SITE_PUBLIC = Path(__file__).parent / "site" / "public"
 
+
+def _site_not_found():
+    """Return the on-brand 404 page when a static-site path is missing.
+    Falls back to a minimal JSON 404 if the 404.html file isn't present."""
+    p404 = SITE_PUBLIC / "404.html"
+    if p404.is_file():
+        return FileResponse(p404, media_type="text/html", status_code=404)
+    return FileResponse(SITE_PUBLIC / "index.html", media_type="text/html", status_code=404) \
+        if (SITE_PUBLIC / "index.html").is_file() else \
+        {"error": "not found"}
+
+
 if (SITE_PUBLIC / "index.html").exists():
 
     def _serve_site(rel_path: str):
         p = SITE_PUBLIC / rel_path
         if p.is_file():
             return FileResponse(p, media_type="text/html")
-        return FileResponse(SITE_PUBLIC / "index.html", media_type="text/html", status_code=404)
+        return _site_not_found()
 
     @app.get("/", include_in_schema=False)
     async def site_home():
@@ -413,19 +426,21 @@ if (SITE_PUBLIC / "index.html").exists():
 
 
 # ── Static frontend ───────────────────────────────────────────────────
+# The React SPA owns the sub-products only: /ledger, /desk, /dashboard
+# (plus their sub-paths). Everything else either matches an explicit
+# static-site / API / backtest route above, or it's a real 404.
+# The frontend/public/v4/ mockups are retired (was the source of stale
+# "PredictionEdge" branding leaking into shared URLs); they are no
+# longer served from any route.
 
 FRONTEND_DIST = Path(__file__).parent / "frontend" / "dist"
-V4_DIR = Path(__file__).parent / "frontend" / "public" / "v4"
+
+SPA_PREFIXES = ("/ledger", "/desk", "/dashboard")
 
 
-@app.get("/", include_in_schema=False)
-async def root():
-    home = V4_DIR / "home.html"
-    if home.is_file():
-        return FileResponse(home, media_type="text/html")
-    if FRONTEND_DIST.exists():
-        return FileResponse(FRONTEND_DIST / "index.html")
-    return {"error": "no frontend deployed"}
+def _is_spa_path(path: str) -> bool:
+    p = "/" + path.lstrip("/")
+    return any(p == prefix or p.startswith(prefix + "/") for prefix in SPA_PREFIXES)
 
 
 if FRONTEND_DIST.exists():
@@ -434,17 +449,17 @@ if FRONTEND_DIST.exists():
     if assets_dir.exists():
         app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
 
-    # SPA fallback: every non-API GET serves index.html so client-side
-    # routes like /ledger and /ledger/0x… resolve to the React app.
-    # v4 mockup files win over the SPA so the static site's relative
-    # links (./matches.html, ./colors_and_type.css, etc.) resolve.
+    # SPA fallback: serves the React app for /ledger, /desk, /dashboard
+    # (and their sub-paths). Everything else — paths not matched by the
+    # static-site, API, or backtest routes above — returns the on-brand
+    # 404 page with a real 404 status (so /asdf doesn't silently render
+    # the home with a 200).
     @app.get("/{full_path:path}")
     async def spa_fallback(full_path: str):
         if full_path:
-            v4_candidate = V4_DIR / full_path
-            if v4_candidate.is_file():
-                return FileResponse(v4_candidate)
             candidate = FRONTEND_DIST / full_path
             if candidate.is_file():
                 return FileResponse(candidate)
-        return FileResponse(FRONTEND_DIST / "index.html")
+        if _is_spa_path(full_path):
+            return FileResponse(FRONTEND_DIST / "index.html")
+        return _site_not_found()

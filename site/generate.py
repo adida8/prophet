@@ -42,18 +42,21 @@ OUTRIGHTS_DIR = DESK_OUT / "outrights"
 SITE_OUT = ROOT / "site" / "public"
 
 # Mailchimp embedded-form values for the newsletter pop-up + footer signup.
-# Public anti-bot identifiers (not secrets) — Railway sets them as env vars
-# so we don't bake the audience IDs into the repo. Same names the React
-# side reads (VITE_-prefixed) work because Railway puts them in the build
-# process env for both. Falls back to bare names so local-only dev sessions
-# can use either spelling.
+# Public anti-bot identifiers (not secrets) — env vars override the baked
+# defaults so we can swap audiences without a redeploy. Same names the
+# React side reads (VITE_-prefixed) work because Railway puts them in
+# the build process env for both. Bare-name vars are honored too.
+_MAILCHIMP_DEFAULT_ACTION   = "https://oddsprimer.us2.list-manage.com/subscribe/post?u=5639b505d384d746edb6af404&id=51ee011415"
+_MAILCHIMP_DEFAULT_HONEYPOT = "b_5639b505d384d746edb6af404_51ee011415"
 MAILCHIMP_FORM_ACTION = (
     os.environ.get("MAILCHIMP_FORM_ACTION")
-    or os.environ.get("VITE_MAILCHIMP_FORM_ACTION", "")
+    or os.environ.get("VITE_MAILCHIMP_FORM_ACTION")
+    or _MAILCHIMP_DEFAULT_ACTION
 ).strip()
 MAILCHIMP_HONEYPOT_NAME = (
     os.environ.get("MAILCHIMP_HONEYPOT_NAME")
-    or os.environ.get("VITE_MAILCHIMP_HONEYPOT_NAME", "")
+    or os.environ.get("VITE_MAILCHIMP_HONEYPOT_NAME")
+    or _MAILCHIMP_DEFAULT_HONEYPOT
 ).strip()
 NEWSLETTER_CONFIGURED = bool(MAILCHIMP_FORM_ACTION and MAILCHIMP_HONEYPOT_NAME)
 
@@ -95,8 +98,9 @@ CSS = """\
 
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; background: var(--paper); color: var(--ink); -webkit-font-smoothing: antialiased; }
+html, body { overflow-x: hidden; }
 body { font-family: var(--font-sans); font-size: 15px; line-height: 1.5; }
-.page { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter); }
+.page { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter); width: 100%; }
 a { color: inherit; }
 
 /* MASTHEAD */
@@ -142,7 +146,7 @@ a { color: inherit; }
 .burger-btn {
   list-style: none; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px;
+  width: 44px; height: 44px;
   border: var(--hairline); background: var(--paper-pure);
   color: var(--ink); border-radius: 2px;
 }
@@ -151,19 +155,20 @@ a { color: inherit; }
 .burger-btn:hover { color: var(--flame-deep); }
 .burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
 .burger-menu {
-  position: absolute; right: 0; top: calc(100% + 8px);
-  min-width: 240px; background: var(--paper-pure); border: var(--hairline);
+  position: fixed; right: 0; top: calc(env(safe-area-inset-top, 0px) + 60px);
+  width: min(280px, 100vw); max-width: 100vw;
+  background: var(--paper-pure); border: var(--hairline);
   list-style: none; margin: 0; padding: 6px 0;
   box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08); z-index: 50;
 }
 .burger-menu li { padding: 0; margin: 0; list-style: none; }
 .burger-menu a {
-  display: block; padding: 10px 18px;
-  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  display: block; padding: 14px 20px; min-height: 44px;
+  font-family: var(--font-sans); font-size: 14px; font-weight: 600;
   letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
 }
 .burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
-.burger-menu a[aria-current="page"] { color: var(--flame-deep); border-left: 3px solid var(--flame); padding-left: 15px; }
+.burger-menu a[aria-current="page"] { color: var(--flame-deep); border-left: 3px solid var(--flame); padding-left: 17px; }
 @media (min-width: 820px) { .burger { display: none; } }
 
 /* Mobile pill-nav — visible primary links beneath the masthead on small
@@ -178,7 +183,9 @@ a { color: inherit; }
 .pill-nav a {
   font-family: var(--font-sans); font-size: 13px; font-weight: 600;
   letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
-  padding: 8px 14px; border-radius: 999px; white-space: nowrap;
+  padding: 11px 16px; min-height: 44px;
+  display: inline-flex; align-items: center;
+  border-radius: 999px; white-space: nowrap;
   border: var(--hairline);
   transition: background var(--dur-fast) var(--ease-standard),
               color var(--dur-fast) var(--ease-standard);
@@ -291,6 +298,8 @@ a { color: inherit; }
   letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--ink); text-decoration: none;
   display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 4px; min-height: 44px;
+  margin: -12px -4px;
 }
 .section-label .see-all .arr { color: var(--flame); }
 .section-label .see-all:hover { color: var(--flame-deep); }
@@ -306,7 +315,7 @@ a { color: inherit; }
 /* LV-CARD — canonical card. Same skeleton drives match / outright / headline. */
 .lv-card {
   position: relative; display: grid;
-  grid-template-columns: 6px 1fr;
+  grid-template-columns: 6px minmax(0, 1fr);
   grid-template-rows: auto auto auto auto auto;
   column-gap: 22px; row-gap: 6px;
   padding: 22px 26px 22px 0;
@@ -314,7 +323,10 @@ a { color: inherit; }
   border: var(--hairline);
   text-decoration: none; color: var(--ink);
   transition: background var(--dur-fast) var(--ease-standard);
+  width: 100%; max-width: 100%; overflow: hidden;
 }
+.lv-card > * { min-width: 0; }
+.lv-card .lv-teams, .lv-card .lv-thesis, .lv-card .lv-venue-meta { overflow-wrap: anywhere; }
 .lv-card + .lv-card { margin-top: 14px; }
 .lv-card:hover { background: var(--paper-warm); }
 .lv-card .lv-bar { grid-column: 1; grid-row: 1 / -1; background: var(--rule); }
@@ -471,7 +483,7 @@ a { color: inherit; }
   font-family: var(--font-sans); font-size: 11px; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--ink); text-decoration: none;
-  padding: 7px 6px 6px;
+  padding: 14px 8px; min-height: 44px;
   border-bottom: 1.5px solid transparent;
   pointer-events: auto;
   position: relative; z-index: 3;
@@ -645,18 +657,28 @@ a { color: inherit; }
 }
 .site-foot .left { color: var(--ink); }
 .site-foot .foot-nav {
-  display: flex; flex-wrap: wrap; gap: 8px 22px;
-  padding-top: 12px; border-top: var(--hairline-soft);
+  display: flex; flex-wrap: wrap; gap: 0 18px;
+  padding-top: 8px; border-top: var(--hairline-soft);
 }
 .site-foot .foot-nav a {
   color: var(--graphite-soft); text-decoration: none;
-  font-size: 10.5px; letter-spacing: 0.12em;
+  font-size: 11px; letter-spacing: 0.12em;
   border-bottom: 1px solid transparent;
-  padding-bottom: 1px;
+  padding: 14px 0;
+  min-height: 44px; display: inline-flex; align-items: center;
   transition: color var(--dur-fast) var(--ease-standard),
               border-color var(--dur-fast) var(--ease-standard);
 }
 .site-foot .foot-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
+.site-foot .foot-operator {
+  margin: 6px 0 0; padding-top: 10px;
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 12px; letter-spacing: 0; text-transform: none;
+  color: var(--graphite); font-weight: 400;
+  border-top: var(--hairline-soft);
+}
+.site-foot .foot-operator a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+.site-foot .foot-operator a:hover { color: var(--flame-deep); }
 
 /* ─── NEWSLETTER FOOTER SIGNUP ─────────────────────────────────────
    Sits above .site-foot. Dark navy block, on-ink text, single email
@@ -893,9 +915,16 @@ GA_SNIPPET = """<!-- Google Analytics (gtag.js) — only loads on oddsprimer.com
 </script>"""
 
 
-def chrome_head(title: str, description: str = "") -> str:
-    """Return the <head> section for any page."""
+def chrome_head(title: str, description: str = "", *, path: str = "/") -> str:
+    """Return the <head> section for any page.
+
+    `path` is the absolute URL path of the page being rendered (used for the
+    canonical / og:url tag). Defaults to "/" — render_match_page etc. should
+    pass their own path so shared links unfurl with the right URL."""
     desc = description or "Educational verdicts on Polymarket and Kalshi prices. Pick · Pass · Avoid."
+    base = "https://oddsprimer.com"
+    url = base + path
+    og_image = f"{base}/favicon-192.png"
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -903,6 +932,17 @@ def chrome_head(title: str, description: str = "") -> str:
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{escape(title)}</title>
 <meta name="description" content="{escape(desc)}">
+<link rel="canonical" href="{escape(url)}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Odds Primer">
+<meta property="og:title" content="{escape(title)}">
+<meta property="og:description" content="{escape(desc)}">
+<meta property="og:url" content="{escape(url)}">
+<meta property="og:image" content="{escape(og_image)}">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{escape(title)}">
+<meta name="twitter:description" content="{escape(desc)}">
+<meta name="twitter:image" content="{escape(og_image)}">
 {FAVICON_LINKS}
 {GA_SNIPPET}
 <style>{CSS}</style>
@@ -1379,6 +1419,7 @@ def chrome_footer() -> str:
     <a href="/privacy">Privacy</a>
     <a href="/cookies">Cookies</a>
   </nav>
+  <p class="foot-operator">Operated by Adi Dagan t/a Odds Primer &middot; <a href="mailto:hello@oddsprimer.com">hello@oddsprimer.com</a></p>
 </footer>
 {newsletter_popup_block()}{newsletter_footer_form_js()}</body>
 </html>
@@ -1901,24 +1942,18 @@ def render_home(matches: list[dict], outrights: list[dict]) -> str:
             '</div>'
         )
 
-    return (
-        chrome_head("Odds Primer · The 2026 World Cup, priced.")
-        + chrome_masthead("home")
-        + '<main class="page">'
-        + '<section class="hero">'
-          '<h1>The 2026 World Cup, priced.</h1>'
-          '<p class="standfirst">Our AI model compares Polymarket and Kalshi prices against its own '
-          'read of every match. Every market gets one verdict: '
-          '<em class="vlead">Pick</em>, <em class="vlead">Pass</em>, or <em class="vlead">Avoid</em>. '
-          'We show the price, the edge, and the reasoning. We don\'t tip.</p>'
-          '</section>'
-        + '<section class="verdict-key" aria-label="Verdict key">'
+    # Verdict-led home: headline verdict comes directly under the
+    # masthead/edition strip. The verdict key sits *below* the first
+    # card so the value (Pick / Pass / Avoid call) is what a phone
+    # visitor sees first, not the explanatory legend.
+    verdict_key_html = (
+        '<section class="verdict-key" aria-label="Verdict key">'
             '<span class="vk-label">Verdict key</span>'
             '<div class="vk-item">'
               '<span class="vk-icon is-pick" aria-hidden="true">&#9650;</span>'
               '<span class="vk-text">'
                 '<span class="vk-name is-pick">Pick</span>'
-                '<span class="vk-desc">the line is underpriced &mdash; back it</span>'
+                '<span class="vk-desc">the line appears underpriced</span>'
               '</span>'
             '</div>'
             '<div class="vk-item">'
@@ -1939,7 +1974,31 @@ def render_home(matches: list[dict], outrights: list[dict]) -> str:
               'Colour, glyph, and label all carry the same meaning, so a card\'s call is readable at a glance.'
             '</p>'
           '</section>'
+    )
+
+    hero_html = (
+        '<section class="hero">'
+        '<h1>The 2026 World Cup, priced.</h1>'
+        '<p class="standfirst">Our model reads every World Cup price on Polymarket and Kalshi and '
+        'calls it: <em class="vlead">Pick</em>, <em class="vlead">Pass</em>, or '
+        '<em class="vlead">Avoid</em>. Today&rsquo;s headline verdict is below.</p>'
+        '</section>'
+    )
+
+    return (
+        chrome_head(
+            "Odds Primer · The 2026 World Cup, priced.",
+            description=(
+                "Verdicts on every World Cup price across Polymarket and Kalshi — "
+                "Pick, Pass, or Avoid, with the model's reasoning. We don't tip."
+            ),
+            path="/",
+        )
+        + chrome_masthead("home")
+        + '<main class="page">'
+        + hero_html
         + headline_html
+        + verdict_key_html
         + other_picks_html
         + outrights_html
         + '</main>'
@@ -1971,7 +2030,14 @@ def render_matches_index(matches: list[dict]) -> str:
     avoid_count = sum(1 for m in matches if m["verdict"]["state"] == "avoid")
 
     return (
-        chrome_head("Upcoming matches · Odds Primer")
+        chrome_head(
+            "Upcoming matches · Odds Primer",
+            description=(
+                f"{len(matches)} priced World Cup fixtures with a Pick, Pass, or Avoid "
+                "verdict on each — Polymarket and Kalshi side-by-side."
+            ),
+            path="/matches/",
+        )
         + chrome_masthead("matches")
         + '<main class="page">'
         + '<section class="page-header">'
@@ -2019,7 +2085,11 @@ def render_match_page(match: dict) -> str:
         )
 
     return (
-        chrome_head(f"{title} · Odds Primer")
+        chrome_head(
+            f"{title} · Odds Primer",
+            description=summary or f"Verdict, model probability, market probability, and the read on {title}.",
+            path=f"/m/{match['match_id']}",
+        )
         + chrome_masthead("matches")
         + '<main class="page">'
         + '<section class="page-header">'
@@ -2122,7 +2192,11 @@ def render_outright_card(outright: dict) -> str:
 def render_outrights_index(outrights: list[dict]) -> str:
     if not outrights:
         return (
-            chrome_head("Outright winners · Odds Primer")
+            chrome_head(
+                "Outright winners · Odds Primer",
+                description="Outright (tournament-winner) verdicts — Polymarket and Kalshi side-by-side.",
+                path="/outrights/",
+            )
             + chrome_masthead("outrights")
             + '<main class="page">'
               '<section class="page-header">'
@@ -2181,7 +2255,11 @@ def render_outright_page(outright: dict) -> str:
         )
 
     return (
-        chrome_head(f"{title} · Odds Primer")
+        chrome_head(
+            f"{title} · Odds Primer",
+            description=summary or f"Verdict and per-team ladder for the {title} market.",
+            path=f"/o/{outright.get('outright_id', '')}",
+        )
         + chrome_masthead("outrights")
         + '<main class="page">'
         + '<section class="page-header">'

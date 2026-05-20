@@ -8,7 +8,7 @@ import { useState } from "react";
 
 import useMailchimpSubscribe from "./hooks/useMailchimpSubscribe";
 
-const HONEYPOT_NAME = import.meta.env.VITE_MAILCHIMP_HONEYPOT_NAME || "";
+const HONEYPOT_NAME = import.meta.env.VITE_MAILCHIMP_HONEYPOT_NAME || "b_5639b505d384d746edb6af404_51ee011415";
 
 export default function FooterSignup({ navigate }) {
   const [email, setEmail] = useState("");
@@ -28,7 +28,7 @@ export default function FooterSignup({ navigate }) {
   const onPrimerLink = (e) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
     e.preventDefault();
-    if (navigate) navigate("/learn/read-a-price");
+    if (navigate) navigate("/learn/how-prices-are-set");
   };
 
   const submitting = status === "submitting";
@@ -92,7 +92,7 @@ export default function FooterSignup({ navigate }) {
 
         <p className="foot-signup__alt">
           Prefer to just read? Start here:{" "}
-          <a href="/learn/read-a-price" onClick={onPrimerLink}>
+          <a href="/learn/how-prices-are-set" onClick={onPrimerLink}>
             How to read a price
           </a>
         </p>
