@@ -6,8 +6,11 @@
   - Mobile-first; columns sit single-file on mobile and split on >=600px.
   - The <form> posts the single email field to the same Mailchimp
     embedded-form action URL as the pop-up. Keep the honeypot field.
-  - Disclaimer + physical address + unsubscribe context included to
-    satisfy CAN-SPAM / Mailchimp footer requirements on the site side.
+  - Public footer carries the publication name only (no personal name).
+    The legal mailing identity + address live in the EMAIL footer
+    (CAN-SPAM) and on the linked Terms/Legal page.
+  - Add social links only once real handles exist (placeholder dead
+    links removed — they erode trust).
   Tokens mirror frontend/src/ledger/op-tokens.css.
 -->
 <html lang="en">
@@ -29,6 +32,8 @@
   }
   *,*::before,*::after{box-sizing:border-box;}
   body{margin:0;background:var(--paper);font-family:var(--font-sans);color:var(--ink);}
+  .visually-hidden{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;clip:rect(0 0 0 0);overflow:hidden;white-space:nowrap;}
+
   .page-tail{max-width:760px;margin:0 auto;padding:24px clamp(16px,5vw,40px) 8px;}
   .page-tail__rule{height:1px;background:var(--rule);}
   .page-tail__hint{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#6B7079;margin-bottom:8px;}
@@ -51,6 +56,9 @@
   .op-btn{margin-top:10px;width:100%;height:48px;border:none;border-radius:4px;background:var(--flame);color:#fff;font-family:var(--font-sans);font-weight:600;font-size:15px;cursor:pointer;}
   .op-btn:hover{background:var(--flame-deep);}
   .op-signup__micro{margin-top:10px;font-size:11px;color:var(--on-ink-mute);}
+  .op-starthere{margin-top:16px;font-size:13px;color:var(--on-ink-soft);}
+  .op-starthere a{color:var(--on-ink);font-weight:500;text-decoration:underline;text-underline-offset:2px;}
+  .op-starthere a:hover{color:var(--flame);}
 
   .op-cols{display:flex;flex-wrap:wrap;gap:36px;}
   .op-col__links{margin-top:10px;font-size:14px;line-height:2;color:#E4E8F0;}
@@ -60,9 +68,14 @@
   .op-legal{font-family:var(--font-serif);font-style:italic;font-size:11px;line-height:1.55;color:var(--on-ink-mute);}
   .op-baseline{margin-top:14px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;}
   .op-copyright{font-size:11px;color:var(--on-ink-faint);}
-  .op-social{display:flex;gap:16px;}
-  .op-social a{color:var(--on-ink-mute);text-decoration:none;font-size:13px;}
-  .op-social a:hover{color:var(--flame);}
+  .op-contact{font-size:13px;}
+  .op-contact a{color:var(--on-ink-mute);text-decoration:none;}
+  .op-contact a:hover{color:var(--flame);}
+
+  .op-btn:focus-visible,
+  .op-col__links a:focus-visible,
+  .op-contact a:focus-visible,
+  .op-starthere a:focus-visible{outline:2px solid var(--flame);outline-offset:3px;}
 
   @media (min-width:600px){
     .op-signup__form{display:flex;gap:10px;max-width:480px;}
@@ -85,19 +98,21 @@
 
       <hr class="op-hr" />
 
-      <p class="op-eyebrow op-eyebrow--flame">The newsletter</p>
-      <h2 class="op-signup__title">Learn the odds, one email a week.</h2>
-      <p class="op-signup__lede">Plain-English primers on prediction markets and the World Cup. No tips, no hype.</p>
+      <p class="op-eyebrow op-eyebrow--flame">New to prediction markets?</p>
+      <h2 class="op-signup__title">Start with the weekly primer.</h2>
+      <p class="op-signup__lede">Plain-English notes on prediction markets, sportsbooks, and World Cup prices before you read the verdicts.</p>
 
       <!-- Replace action with your Mailchimp embedded-form URL -->
       <form class="op-signup__form" action="https://YOUR-DC.list-manage.com/subscribe/post?u=USER_ID&amp;id=LIST_ID" method="post" target="_blank" novalidate>
-        <label class="visually-hidden" for="footEmail" style="position:absolute;left:-9999px;">Email address</label>
+        <label class="visually-hidden" for="footEmail">Email address</label>
         <input class="op-input" type="email" name="EMAIL" id="footEmail" placeholder="you@email.com" required />
         <!-- Mailchimp anti-bot honeypot: keep off-screen, do not remove -->
-        <div aria-hidden="true" style="position:absolute;left:-9999px;"><input type="text" name="b_USER_ID_LIST_ID" tabindex="-1" value="" /></div>
-        <button class="op-btn" type="submit">Subscribe</button>
+        <div class="visually-hidden" aria-hidden="true"><input type="text" name="b_USER_ID_LIST_ID" tabindex="-1" value="" /></div>
+        <button class="op-btn" type="submit">Get the primer</button>
       </form>
-      <p class="op-signup__micro">Free. Unsubscribe anytime.</p>
+      <p class="op-signup__micro">Free. Weekly. Educational only. Unsubscribe anytime.</p>
+
+      <p class="op-starthere">Prefer to just read? Start here: <a href="/learn/read-a-price">How to read a price</a></p>
 
       <hr class="op-hr" />
 
@@ -125,12 +140,9 @@
       <p class="op-legal">Odds Primer is an educational publication. It compares prices and explains them — it does not offer betting advice or take wagers. 18+. Please gamble responsibly.</p>
 
       <div class="op-baseline">
-        <span class="op-copyright">© 2026 Adi Dagan t/a Odds Primer</span>
-        <div class="op-social">
-          <a href="#" aria-label="X">X</a>
-          <a href="#" aria-label="Instagram">Instagram</a>
-          <a href="mailto:hello@oddsprimer.com" aria-label="Email">Email</a>
-        </div>
+        <span class="op-copyright">© 2026 Odds Primer · <a href="/terms" style="color:inherit;">Terms &amp; legal</a></span>
+        <!-- Add social links here once real handles exist. Do not ship dead links. -->
+        <span class="op-contact"><a href="mailto:hello@oddsprimer.com">hello@oddsprimer.com</a></span>
       </div>
     </div>
   </footer>

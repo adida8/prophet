@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <!--
-  Odds Primer — Newsletter pop-up (timed delay)
+  Odds Primer — Newsletter pop-up (engagement-triggered)
   ------------------------------------------------------------
   Design reference for the Mailchimp newsletter pop-up.
-  - Mobile-first; modal centres at all widths.
-  - Fires after POPUP_DELAY_MS (default 18s), once per session,
-    suppressed for visitors who already subscribed/dismissed.
-  - The <form> posts the single email field to your Mailchimp
-    embedded-form action URL. Keep Mailchimp's hidden honeypot
-    field (the off-screen text input named b_xxxx_xxxx).
+  - Mobile-first; modal centres at all widths; scrolls internally on short screens.
+  - Trigger: fires after POPUP_DELAY_MS (default 50s) OR at SCROLL_TRIGGER
+    depth (default 50%), whichever comes first. Suppressed on SUPPRESS_PATHS
+    (e.g. /learn) and brought forward on HIGH_INTENT_PATHS (e.g. /matches).
+  - Dismissals remembered in localStorage for DISMISS_DAYS (default 10);
+    subscribers remembered for SUBSCRIBED_DAYS (default 365).
+  - Focus is trapped inside the modal, background scroll is locked while open,
+    and focus returns to the prior element on close.
+  - The <form> posts the single email field to your Mailchimp embedded-form
+    action URL. Keep Mailchimp's hidden honeypot field (named b_xxxx_xxxx).
   Tokens mirror frontend/src/ledger/op-tokens.css.
 -->
 <html lang="en">
@@ -30,33 +34,35 @@
   }
   *,*::before,*::after{box-sizing:border-box;}
   body{margin:0;background:var(--paper);font-family:var(--font-sans);color:var(--ink);min-height:100vh;}
+  body.op-noscroll{overflow:hidden;}
+  .visually-hidden{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;clip:rect(0 0 0 0);overflow:hidden;white-space:nowrap;}
 
   /* --- faint page behind, for the demo only --- */
   .demo-page{padding:20px clamp(16px,5vw,40px);max-width:760px;margin:0 auto;}
   .demo-wordmark{font-weight:700;font-size:20px;letter-spacing:-0.01em;}
   .demo-eyebrow{margin-top:3px;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--graphite-soft);}
   .demo-headline{margin-top:24px;font-family:var(--font-serif);font-weight:600;font-size:clamp(26px,5vw,38px);line-height:1.1;}
-  .demo-block{margin-top:16px;height:96px;background:var(--paper-pure);border:1px solid var(--rule);border-radius:6px;}
+  .demo-block{margin-top:16px;height:240px;background:var(--paper-pure);border:1px solid var(--rule);border-radius:6px;}
 
   /* --- overlay + modal (the reusable component) --- */
   .op-popup-overlay{position:fixed;inset:0;background:rgba(14,34,64,0.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:1000;}
-  .op-popup{position:relative;width:100%;max-width:420px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;box-shadow:0 18px 48px rgba(14,34,64,0.28);overflow:hidden;}
-  .op-popup__accent{height:5px;background:var(--flame);}
+  .op-popup{position:relative;width:100%;max-width:420px;max-height:calc(100vh - 32px);overflow:auto;background:var(--paper);border:1px solid var(--rule);border-radius:8px;box-shadow:0 18px 48px rgba(14,34,64,0.28);}
+  .op-popup__accent{height:3px;background:var(--flame);}
   .op-popup__body{padding:26px 24px 24px;}
   .op-popup__close{position:absolute;top:14px;right:12px;width:30px;height:30px;border:none;background:transparent;color:var(--graphite-soft);font-size:20px;line-height:1;cursor:pointer;border-radius:4px;}
   .op-popup__close:hover{color:var(--ink);background:var(--rule-soft);}
   .op-eyebrow{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--graphite-soft);}
-  .op-popup__title{margin:10px 0 0;font-family:var(--font-serif);font-weight:600;font-size:27px;line-height:1.12;letter-spacing:-0.01em;}
+  .op-popup__title{margin:10px 0 0;font-family:var(--font-serif);font-weight:600;font-size:26px;line-height:1.14;letter-spacing:-0.01em;}
   .op-popup__lede{margin:12px 0 0;font-family:var(--font-serif);font-size:16px;line-height:1.5;color:var(--ink-soft);}
   .op-field-label{display:block;margin:20px 0 6px;font-size:12px;font-weight:500;}
   .op-input{width:100%;height:48px;border:1px solid var(--rule);border-radius:4px;background:var(--paper-pure);padding:0 14px;font-family:var(--font-sans);font-size:15px;color:var(--ink);outline:none;}
   .op-input:focus{border-color:var(--flame);box-shadow:0 0 0 2px rgba(217,70,28,0.18);}
   .op-btn{margin-top:12px;width:100%;height:50px;border:none;border-radius:4px;background:var(--flame);color:#fff;font-family:var(--font-sans);font-weight:600;font-size:15px;cursor:pointer;}
   .op-btn:hover{background:var(--flame-deep);}
-  .op-microcopy{margin-top:12px;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--graphite-soft);}
+  .op-microcopy{margin-top:12px;font-size:12px;color:var(--graphite-soft);}
   .op-decline{margin-top:14px;width:100%;border:none;background:transparent;font-family:var(--font-sans);font-size:13px;color:var(--graphite-soft);text-decoration:underline;text-underline-offset:2px;cursor:pointer;}
+  .op-btn:focus-visible,.op-popup__close:focus-visible,.op-decline:focus-visible{outline:2px solid var(--flame);outline-offset:3px;}
   [hidden]{display:none !important;}
-  .visually-hidden{position:absolute;left:-9999px;}
 </style>
 </head>
 <body>
@@ -75,8 +81,8 @@
       <div class="op-popup__body">
         <button class="op-popup__close" id="opPopupClose" aria-label="Close">&times;</button>
         <p class="op-eyebrow">The newsletter</p>
-        <h2 class="op-popup__title" id="opPopupTitle">Learn to read the odds.</h2>
-        <p class="op-popup__lede">A short weekly primer on prediction markets and the World Cup. Plain English, no tips, no hype — just how to think about a price.</p>
+        <h2 class="op-popup__title" id="opPopupTitle">Read World Cup odds before the verdicts arrive.</h2>
+        <p class="op-popup__lede">One weekly primer on prediction markets, sportsbooks, and how to understand a price. No betting advice. No hype.</p>
 
         <!-- Replace action with your Mailchimp embedded-form URL -->
         <form action="https://YOUR-DC.list-manage.com/subscribe/post?u=USER_ID&amp;id=LIST_ID" method="post" target="_blank" novalidate>
@@ -84,35 +90,90 @@
           <input class="op-input" type="email" name="EMAIL" id="opEmail" placeholder="you@email.com" required />
           <!-- Mailchimp anti-bot honeypot: keep this off-screen, do not remove -->
           <div class="visually-hidden" aria-hidden="true"><input type="text" name="b_USER_ID_LIST_ID" tabindex="-1" value="" /></div>
-          <button class="op-btn" type="submit">Sign me up</button>
+          <button class="op-btn" type="submit">Get the weekly primer</button>
         </form>
 
-        <p class="op-microcopy"><span aria-hidden="true">&#128274;</span> Free. One email a week. Unsubscribe anytime.</p>
-        <button class="op-decline" id="opPopupDecline">No thanks, maybe later</button>
+        <p class="op-microcopy">Free. One email a week. Unsubscribe anytime.</p>
+        <button class="op-decline" id="opPopupDecline">Continue reading</button>
       </div>
     </section>
   </div>
 
 <script>
   (function () {
-    var POPUP_DELAY_MS = 18000;          // timed delay
-    var STORAGE_KEY = 'op_newsletter_popup'; // 'subscribed' | 'dismissed'
+    var POPUP_DELAY_MS    = 50000;   // time trigger
+    var HIGH_INTENT_MS    = 15000;   // faster on match/verdict pages
+    var SCROLL_TRIGGER    = 0.5;     // 50% scroll depth
+    var DISMISS_DAYS      = 10;
+    var SUBSCRIBED_DAYS   = 365;
+    var SUPPRESS_PATHS    = ['/learn'];      // never interrupt a primer read
+    var HIGH_INTENT_PATHS = ['/matches', '/match', '/outrights'];
+    var STORAGE_KEY       = 'op_newsletter_popup'; // {status, exp}
+
     var popup = document.getElementById('opPopup');
+    var path = location.pathname;
+    var lastFocus = null, fired = false;
 
-    function seen() { try { return sessionStorage.getItem(STORAGE_KEY); } catch (e) { return null; } }
-    function mark(v) { try { sessionStorage.setItem(STORAGE_KEY, v); } catch (e) {} }
-    function open() { if (!seen()) popup.hidden = false; }
-    function close(reason) { popup.hidden = true; mark(reason || 'dismissed'); }
+    function startsWith(list){ for (var i=0;i<list.length;i++){ if (path.indexOf(list[i])===0) return true; } return false; }
+    function suppressed(){ return startsWith(SUPPRESS_PATHS); }
+    function delay(){ return startsWith(HIGH_INTENT_PATHS) ? HIGH_INTENT_MS : POPUP_DELAY_MS; }
 
-    if (!seen()) setTimeout(open, POPUP_DELAY_MS);
+    function seen(){
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        var v = JSON.parse(raw);
+        if (v && v.exp && Date.now() > v.exp){ localStorage.removeItem(STORAGE_KEY); return null; }
+        return v ? v.status : null;
+      } catch (e) { return null; }
+    }
+    function mark(status, days){
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ status: status, exp: Date.now() + days*864e5 })); } catch (e) {}
+    }
 
-    document.getElementById('opPopupClose').addEventListener('click', function(){ close('dismissed'); });
-    document.getElementById('opPopupDecline').addEventListener('click', function(){ close('dismissed'); });
-    popup.addEventListener('click', function (e) { if (e.target === popup) close('dismissed'); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !popup.hidden) close('dismissed'); });
-    // On a real submit, mark 'subscribed' so it never re-shows this session.
+    var focusables = 'a[href],button:not([disabled]),input:not([disabled]),[tabindex]:not([tabindex="-1"])';
+    function trap(e){
+      if (e.key !== 'Tab') return;
+      var nodes = popup.querySelectorAll(focusables);
+      if (!nodes.length) return;
+      var first = nodes[0], last = nodes[nodes.length-1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+
+    function open(){
+      if (fired || seen() || suppressed()) return;
+      fired = true;
+      lastFocus = document.activeElement;
+      popup.hidden = false;
+      document.body.classList.add('op-noscroll');
+      document.addEventListener('keydown', trap);
+      var input = document.getElementById('opEmail');
+      if (input) input.focus();
+    }
+    function close(status, days){
+      popup.hidden = true;
+      document.body.classList.remove('op-noscroll');
+      document.removeEventListener('keydown', trap);
+      mark(status || 'dismissed', days || DISMISS_DAYS);
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+
+    if (!seen() && !suppressed()){
+      setTimeout(open, delay());
+      window.addEventListener('scroll', function onScroll(){
+        var h = document.documentElement;
+        var depth = (h.scrollTop || document.body.scrollTop) / ((h.scrollHeight - h.clientHeight) || 1);
+        if (depth >= SCROLL_TRIGGER){ window.removeEventListener('scroll', onScroll); open(); }
+      }, { passive: true });
+    }
+
+    document.getElementById('opPopupClose').addEventListener('click', function(){ close('dismissed', DISMISS_DAYS); });
+    document.getElementById('opPopupDecline').addEventListener('click', function(){ close('dismissed', DISMISS_DAYS); });
+    popup.addEventListener('click', function(e){ if (e.target === popup) close('dismissed', DISMISS_DAYS); });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !popup.hidden) close('dismissed', DISMISS_DAYS); });
     var form = popup.querySelector('form');
-    if (form) form.addEventListener('submit', function(){ mark('subscribed'); });
+    if (form) form.addEventListener('submit', function(){ mark('subscribed', SUBSCRIBED_DAYS); });
   })();
 </script>
 </body>

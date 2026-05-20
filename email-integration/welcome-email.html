@@ -3,15 +3,28 @@
   Odds Primer — "Welcome to Odds Primer" email
   ------------------------------------------------------------
   Email-safe build for a Mailchimp automation triggered on
-  "subscribes to audience". Table layout + inline styles for
-  client compatibility. Webfonts load where supported and fall
-  back to Georgia (serif) / Helvetica (sans) elsewhere.
+  "subscribes to audience". Send IMMEDIATELY on signup.
+  (Suggested follow-up automation 24-36h later: "How to compare
+   two prices" -> primer 02.)
+
+  Subject-line options (pick one in Mailchimp):
+    1. Welcome to Odds Primer
+    2. Start here: how to read a price
+    3. Your first Odds Primer
+    4. Before the World Cup prices move
+    5. Three primers before the verdicts
+  Preheader is set in the hidden div below.
 
   Before sending, set in Mailchimp:
-    *|UNSUB|*            — required unsubscribe link (kept below)
-    *|UPDATE_PROFILE|*   — preferences link (kept below)
-    *|HTML:LIST_ADDRESS|*— or hardcode your physical mailing address
-    *|FNAME|*            — optional first-name personalisation
+    *|UNSUB|*             — required unsubscribe link (kept below)
+    *|UPDATE_PROFILE|*    — preferences link (kept below)
+    *|HTML:LIST_ADDRESS|* — physical mailing address (must RESOLVE,
+                            never send with the raw merge tag visible).
+                            Identity is the publication only: "Odds Primer".
+    *|FNAME|*             — optional first-name personalisation
+
+  Table layout + inline styles for client compatibility. Webfonts load
+  where supported and fall back to Georgia (serif) / Helvetica (sans).
   Replace https://oddsprimer.com/... links with live URLs.
 -->
 <html lang="en">
@@ -32,12 +45,13 @@
   @media (max-width:600px){
     .container{width:100% !important;}
     .px{padding-left:22px !important;padding-right:22px !important;}
+    .hero-title{font-size:26px !important;}
   }
 </style>
 </head>
 <body style="margin:0;padding:0;background:#E8E2D2;">
   <!-- preheader: shows in inbox preview, hidden in body -->
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">You’re in. Start with three short primers on how the odds work.</div>
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Start with how prices work before reading Pick, Pass, and Avoid verdicts.</div>
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#E8E2D2;">
     <tr>
@@ -56,35 +70,30 @@
           <tr>
             <td class="px" style="padding:30px 32px 6px;">
               <div class="sans" style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#D9461C;">Welcome</div>
-              <div class="serif" style="margin-top:12px;font-weight:600;font-size:30px;line-height:1.1;letter-spacing:-0.01em;color:#0E2240;">Welcome to Odds Primer.</div>
-              <p class="serif" style="margin:16px 0 0;font-size:17px;line-height:1.55;color:#2A3957;">You’re in. Once a week we send a short, plain-English read on prediction markets and the World Cup — how the prices work, and how to think about them. No tips, no hype.</p>
-              <p class="serif" style="margin:14px 0 0;font-size:17px;line-height:1.55;color:#2A3957;">If you’re new to all this, start with the three primers below. They’re the foundation everything else builds on.</p>
+              <div class="serif hero-title" style="margin-top:12px;font-weight:600;font-size:30px;line-height:1.1;letter-spacing:-0.01em;color:#0E2240;">Start with the price.</div>
+              <p class="serif" style="margin:16px 0 0;font-size:17px;line-height:1.55;color:#2A3957;">You’re in. Odds Primer is a weekly editorial guide to prediction markets, sportsbooks, and World Cup prices. We explain what the numbers mean before you reach the verdicts.</p>
+              <p class="serif" style="margin:14px 0 0;font-size:17px;line-height:1.55;color:#2A3957;">The best place to begin is the first primer: how to read a price.</p>
+            </td>
+          </tr>
+
+          <!-- primary CTA -->
+          <tr>
+            <td class="px" style="padding:20px 32px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+                <td align="center" bgcolor="#D9461C" style="border-radius:4px;">
+                  <a href="https://oddsprimer.com/learn/read-a-price" class="sans" style="display:block;padding:15px 24px;font-weight:600;font-size:15px;color:#FFFFFF;text-decoration:none;">Read: How to read a price</a>
+                </td>
+              </tr></table>
             </td>
           </tr>
 
           <!-- divider -->
-          <tr><td class="px" style="padding:22px 32px 0;"><div style="height:1px;background:#D9D2C0;line-height:1px;font-size:0;">&nbsp;</div></td></tr>
+          <tr><td class="px" style="padding:26px 32px 0;"><div style="height:1px;background:#D9D2C0;line-height:1px;font-size:0;">&nbsp;</div></td></tr>
 
-          <!-- primers -->
+          <!-- the other two primers -->
           <tr>
             <td class="px" style="padding:20px 32px 0;">
-              <div class="sans" style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6B7079;">Start with the basics</div>
-            </td>
-          </tr>
-
-          <!-- primer 01 -->
-          <tr>
-            <td class="px" style="padding:16px 32px 0;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-                <td valign="top" width="34" class="mono" style="font-weight:600;font-size:15px;color:#D9461C;padding-top:2px;">01</td>
-                <td valign="top">
-                  <a href="https://oddsprimer.com/learn/read-a-price" style="text-decoration:none;">
-                    <div class="serif" style="font-weight:600;font-size:17px;color:#0E2240;">How to read a price</div>
-                    <div class="sans" style="margin-top:3px;font-size:13px;line-height:1.45;color:#6B7079;">What “Brazil 22%” actually means, and what it doesn’t.</div>
-                  </a>
-                </td>
-              </tr></table>
-              <div style="height:1px;background:#EDE7D6;margin-top:16px;line-height:1px;font-size:0;">&nbsp;</div>
+              <div class="sans" style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6B7079;">Then keep going</div>
             </td>
           </tr>
 
@@ -96,7 +105,7 @@
                 <td valign="top">
                   <a href="https://oddsprimer.com/learn/prediction-markets" style="text-decoration:none;">
                     <div class="serif" style="font-weight:600;font-size:17px;color:#0E2240;">What a prediction market is</div>
-                    <div class="sans" style="margin-top:3px;font-size:13px;line-height:1.45;color:#6B7079;">Why a crowd of bets can behave like a forecast.</div>
+                    <div class="sans" style="margin-top:3px;font-size:13px;line-height:1.45;color:#6B7079;">Why market prices can behave like a forecast.</div>
                   </a>
                 </td>
               </tr></table>
@@ -119,17 +128,6 @@
             </td>
           </tr>
 
-          <!-- CTA -->
-          <tr>
-            <td class="px" style="padding:22px 32px 0;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-                <td align="center" bgcolor="#D9461C" style="border-radius:4px;">
-                  <a href="https://oddsprimer.com/learn" class="sans" style="display:block;padding:15px 24px;font-weight:600;font-size:15px;color:#FFFFFF;text-decoration:none;">Read the primers</a>
-                </td>
-              </tr></table>
-            </td>
-          </tr>
-
           <!-- secondary: the verdict -->
           <tr>
             <td class="px" style="padding:24px 32px 0;">
@@ -137,7 +135,7 @@
                 <td style="padding:16px 18px;">
                   <div class="sans" style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6B7079;">Once you’ve got the basics</div>
                   <p class="serif" style="margin:7px 0 0;font-size:15px;line-height:1.5;color:#2A3957;">Every priced match gets a verdict — <strong style="color:#0E2240;">Pick</strong>, <strong style="color:#0E2240;">Pass</strong>, or <strong style="color:#0E2240;">Avoid</strong> — with the reasoning shown. Have a look when you’re ready.</p>
-                  <a href="https://oddsprimer.com/matches" class="sans" style="display:inline-block;margin-top:9px;font-size:13px;font-weight:600;color:#A8341A;">See this week’s verdicts &rarr;</a>
+                  <a href="https://oddsprimer.com/matches" class="sans" style="display:inline-block;margin-top:9px;font-size:13px;font-weight:600;color:#A8341A;">View the match verdicts</a>
                 </td>
               </tr></table>
             </td>
@@ -150,11 +148,11 @@
           <tr>
             <td class="px" style="padding:16px 32px 28px;">
               <p class="serif" style="margin:0;font-style:italic;font-size:11px;line-height:1.55;color:#6B7079;">Odds Primer is an educational publication. It compares prices and explains them — it does not offer betting advice or take wagers. 18+. Please gamble responsibly.</p>
-              <p class="sans" style="margin:12px 0 0;font-size:11px;line-height:1.6;color:#9AA6BD;">
+              <p class="sans" style="margin:12px 0 0;font-size:11px;line-height:1.6;color:#6B7079;">
                 You’re receiving this because you signed up at oddsprimer.com.<br />
-                <a href="*|UNSUB|*" style="color:#9AA6BD;text-decoration:underline;">Unsubscribe</a> &middot;
-                <a href="*|UPDATE_PROFILE|*" style="color:#9AA6BD;text-decoration:underline;">Update preferences</a><br />
-                Adi Dagan t/a Odds Primer &middot; *|HTML:LIST_ADDRESS|*
+                <a href="*|UNSUB|*" style="color:#6B7079;text-decoration:underline;">Unsubscribe</a> &middot;
+                <a href="*|UPDATE_PROFILE|*" style="color:#6B7079;text-decoration:underline;">Update preferences</a><br />
+                Odds Primer &middot; *|HTML:LIST_ADDRESS|*
               </p>
             </td>
           </tr>
