@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import "../ledger/op-tokens.css";
 import "./op.css";
 
+import NewsletterPopup from "./NewsletterPopup";
 import About from "./pages/About";
 import HomeV3 from "./pages/HomeV3";
 import LearnIndex from "./pages/LearnIndex";
@@ -60,11 +61,25 @@ export default function OpApp() {
 
   const currentPath = typeof window !== "undefined" ? window.location.pathname : "/";
 
-  if (state.route === "about") return <About navigate={navigate} currentPath={currentPath} />;
-  if (state.route === "learn-index") return <LearnIndex navigate={navigate} currentPath={currentPath} />;
-  if (state.route === "learn-article") {
+  let page;
+  if (state.route === "about") {
+    page = <About navigate={navigate} currentPath={currentPath} />;
+  } else if (state.route === "learn-index") {
+    page = <LearnIndex navigate={navigate} currentPath={currentPath} />;
+  } else if (state.route === "learn-article") {
     const Article = ARTICLE_BY_SLUG[state.articleSlug];
-    return <Article navigate={navigate} currentPath={currentPath} slug={state.articleSlug} />;
+    page = <Article navigate={navigate} currentPath={currentPath} slug={state.articleSlug} />;
+  } else {
+    page = <HomeV3 navigate={navigate} currentPath={currentPath} />;
   }
-  return <HomeV3 navigate={navigate} currentPath={currentPath} />;
+
+  // NewsletterPopup mounts once at the app root so its trigger logic
+  // (timer + scroll + suppression) lives outside any one page; the
+  // component returns null until it decides to show itself.
+  return (
+    <>
+      {page}
+      <NewsletterPopup />
+    </>
+  );
 }
