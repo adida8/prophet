@@ -1788,8 +1788,13 @@ GLYPHS = {"pick": "▲", "pass": "—", "avoid": "✕"}
 LABELS = {"pick": "Pick", "pass": "Pass", "avoid": "Avoid"}
 
 
-def render_card(match: dict, *, is_lead: bool = False) -> str:
-    """Render one lv-card from a match JSON. Works for both Pick and Pass."""
+def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = True) -> str:
+    """Render one lv-card from a match JSON. Works for both Pick and Pass.
+
+    `show_read_case=False` drops the "Read the case" tertiary link AND the
+    whole-card overlay link — used when the card is already on its own
+    detail page so the reader doesn't have a redundant self-link.
+    """
     v = match["verdict"]
     state = v["state"]
     state_class = f"is-{state}" + (" is-lead" if is_lead else "")
@@ -1814,7 +1819,7 @@ def render_card(match: dict, *, is_lead: bool = False) -> str:
 
     cta_kwargs = dict(
         search_key=search_key,
-        detail_href=href,
+        detail_href=href if show_read_case else None,
         match_id=match.get("match_id"),
         team_a=match.get("team_a"),
         team_b=match.get("team_b"),
@@ -1858,9 +1863,13 @@ def render_card(match: dict, *, is_lead: bool = False) -> str:
     # whole card is still clickable via an absolute-positioned overlay
     # link that goes to the match detail page; the venue CTA sits above
     # it (z-index) so a click on the pill opens the market instead.
+    overlay_link = (
+        f'<a class="lv-card-link" href="{href}" aria-label="Read the case"></a>'
+        if show_read_case else ""
+    )
     return (
         f'<div class="lv-card {state_class}">'
-        f'<a class="lv-card-link" href="{href}" aria-label="Read the case"></a>'
+        f'{overlay_link}'
         '<span class="lv-bar" aria-hidden="true"></span>'
         f'<div class="lv-head">{head}</div>'
         f'<h3 class="lv-teams">{title}</h3>'
@@ -2088,7 +2097,7 @@ def render_match_page(match: dict) -> str:
           '<a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a>'
           f'<h1>{escape(title)}</h1>'
           '</section>'
-        + render_card(match, is_lead=True)
+        + render_card(match, is_lead=True, show_read_case=False)
         + (f'<div class="blurb">{blurb_paras}</div>' if blurb_paras else "")
         + cta_row
         + drivers_html
