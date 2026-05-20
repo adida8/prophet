@@ -1923,25 +1923,12 @@ def render_home(matches: list[dict], outrights: list[dict]) -> str:
             f'{cards}'
         )
 
-    # Outrights teaser
-    if outrights:
-        outright_cards = "\n".join(render_outright_card(o) for o in outrights[:3])
-        outrights_html = (
-            '<div class="section-label">'
-            '<span>Outright winners</span>'
-            '<a class="see-all" href="/outrights/">See all outrights <span class="arr">→</span></a>'
-            '</div>'
-            f'{outright_cards}'
-        )
-    else:
-        outrights_html = (
-            '<div class="section-label"><span>Outright winners</span></div>'
-            '<div class="empty-state">'
-            '<h2>Outright verdicts — coming with the next engine update.</h2>'
-            '<p>The Desk publishes per-match verdicts today. Tournament-winner outrights '
-            '(World Cup 2026 champion) are queued for the next engine release.</p>'
-            '</div>'
-        )
+    # Outrights teaser is intentionally suppressed from the home —
+    # the only live outright (WC26 winner) is a Pass and there's no
+    # editorial value in surfacing "the model agrees with the market"
+    # to a phone visitor. The /outrights page itself still ships and
+    # is reachable from the masthead + footer; revisit this when a
+    # tournament-winner market produces an actual Pick.
 
     # Verdict-led home: headline verdict comes directly under the
     # masthead/edition strip. The verdict key sits *below* the first
@@ -2001,7 +1988,6 @@ def render_home(matches: list[dict], outrights: list[dict]) -> str:
         + headline_html
         + verdict_key_html
         + other_picks_html
-        + outrights_html
         + '</main>'
         + chrome_footer()
     )
