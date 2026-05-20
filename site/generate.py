@@ -894,52 +894,47 @@ def _fixture_key_from_match_id(match_id: str) -> tuple | None:
     return (kickoff, frozenset({parts[-3].lower(), parts[-2].lower()}))
 
 
-def _kalshi_market_ticker_for_side(
-    event_ticker: str,
-    *,
-    pick_side_iso3: str | None,
-) -> str:
-    """Build the Kalshi market ticker that backs the picked side.
+def _kalshi_event_slug(event_ticker: str) -> tuple[str, str] | None:
+    """Split `KXWCGAME-26JUN11MEXRSA` → ("kxwcgame", "26jun11mexrsa").
 
-    `pick_side_iso3` is either an ISO3 (lowercase, the team's match-id
-    code) or "draw". When None (Pass/Avoid verdicts) we default to the
-    first team in the event ticker — the URL still deep-links to the
-    event detail page, just preselects one of the three markets.
+    Kalshi's canonical per-event UI URL is
+    `https://kalshi.com/markets/{series_lower}/{event_suffix_lower}` —
+    the event_ticker IS the slug, just lowercased and split on the first
+    hyphen.
     """
-    body = event_ticker.removeprefix("KXWCGAME-")
-    iso3_a = body[7:10].upper()
-    iso3_b = body[10:13].upper()
-
-    if pick_side_iso3 == "draw":
-        return f"{event_ticker}-TIE"
-    if pick_side_iso3 and pick_side_iso3.upper() == iso3_a:
-        return f"{event_ticker}-{iso3_a}"
-    if pick_side_iso3 and pick_side_iso3.upper() == iso3_b:
-        return f"{event_ticker}-{iso3_b}"
-    return f"{event_ticker}-{iso3_a}"
+    if "-" not in event_ticker:
+        return None
+    series, suffix = event_ticker.split("-", 1)
+    if not series or not suffix:
+        return None
+    return series.lower(), suffix.lower()
 
 
 def _kalshi_url_for(
     match_id: str | None = None,
     *,
-    pick_side_iso3: str | None = None,
+    pick_side_iso3: str | None = None,  # kept for API symmetry; the event
+                                         # page itself shows all three markets,
+                                         # so we don't append a side to the URL.
 ) -> tuple[str, bool]:
-    """Return (url, is_live). is_live=True when we resolved a real Kalshi
-    event for this fixture; False when we degraded to the WC landing
-    page."""
+    """Return (url, is_live).
+
+    `is_live=True` when we resolved a real Kalshi event for this fixture
+    and deep-link to its event page; `False` when we degraded to the
+    WC landing page.
+    """
+    del pick_side_iso3  # event-page URL covers every side
     if match_id and KALSHI_EVENT_INDEX:
         key = _fixture_key_from_match_id(match_id)
         event_ticker = KALSHI_EVENT_INDEX.get(key) if key else None
         if event_ticker:
-            market_ticker = _kalshi_market_ticker_for_side(
-                event_ticker, pick_side_iso3=pick_side_iso3,
-            )
-            from urllib.parse import quote
-            return (
-                f"{KALSHI_WC_LANDING}?op_market_ticker={quote(market_ticker)}"
-                f"&op_side=BUY&op_order_side=yes&op_order_type=dollars",
-                True,
-            )
+            parts = _kalshi_event_slug(event_ticker)
+            if parts:
+                series_lower, suffix_lower = parts
+                return (
+                    f"https://kalshi.com/markets/{series_lower}/{suffix_lower}",
+                    True,
+                )
     return (KALSHI_WC_LANDING, False)
 
 
