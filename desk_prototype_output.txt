@@ -1,0 +1,73 @@
+==============================================================================
+DESK PROTOTYPE — 10,000 simulations, seed=42
+Static-Elo + pairwise model, no live data, no bonuses, no bands.
+==============================================================================
+
+[1/3] Running WC 2026 outright Monte Carlo...
+[2/3] Fetching Polymarket WC winner market...
+  market YES prices sum = 1.037 (overround = +3.7%)
+
+OUTRIGHT WINNERS — WC 2026
+------------------------------------------------------------------------------
+Team                        Model   Market     Edge  Verdict     Elo src           
+Argentina                   20.9%      8.6%   +12.3pp  PICK       2070 seed          
+France                      17.0%     17.3%    -0.3pp  pass       2050 seed          
+Spain                       13.4%     16.6%    -3.1pp  AVOID      2030 seed          
+Brazil                       8.7%      9.2%    -0.5pp  pass       2000 seed          
+England                      8.2%     11.3%    -3.1pp  AVOID      1990 seed          
+Germany                      6.3%      5.1%    +1.2pp  —          1970 seed          
+Portugal                     5.1%      8.2%    -3.0pp  AVOID      1950 seed          
+Netherlands                  4.2%      3.4%    +0.9pp  pass       1940 seed          
+Croatia                      2.5%      1.1%    +1.4pp  —          1900 seed          
+Belgium                      1.9%      1.8%    +0.1pp  pass       1880 seed          
+Uruguay                      1.7%      1.1%    +0.7pp  pass       1880 seed          
+Colombia                     1.4%      1.7%    -0.3pp  pass       1870 seed          
+Switzerland                  1.0%      1.1%    -0.2pp  pass       1840 seed          
+Norway                       0.8%      2.2%    -1.4pp  —          1840 public-approx 
+Czech Republic               0.8%         -         -             1830 seed          
+Mexico                       0.7%      1.1%    -0.3pp  pass       1830 seed          
+Turkey                       0.7%         -         -             1830 public-approx 
+Morocco                      0.6%      1.6%    -0.9pp  pass       1830 seed          
+Austria                      0.5%      0.5%    +0.0pp  pass       1820 public-approx 
+Ecuador                      0.5%      0.8%    -0.2pp  pass       1810 seed          
+United States                0.5%         -         -             1820 seed          
+Japan                        0.5%      2.1%    -1.6pp  AVOID      1810 seed          
+South Korea                  0.4%      0.4%    +0.1pp  pass       1790 seed          
+Sweden                       0.4%      0.5%    -0.2pp  pass       1790 public-approx 
+Senegal                      0.2%      0.8%    -0.5pp  pass       1800 seed          
+Scotland                     0.2%      0.4%    -0.1pp  pass       1760 public-approx 
+Australia                    0.2%      0.2%    -0.1pp  pass       1760 seed          
+Iran                         0.2%      0.1%    +0.0pp  pass       1750 seed          
+Egypt                        0.1%      0.4%    -0.3pp  pass       1730 seed          
+Ivory Coast                  0.1%      0.4%    -0.3pp  pass       1740 seed          
+Qatar                        0.1%      0.1%    -0.1pp  pass       1720 seed          
+Paraguay                     0.1%      0.4%    -0.3pp  pass       1700 seed          
+Canada                       0.1%      0.4%    -0.4pp  pass       1720 seed          
+Bosnia and Herzegovina       0.1%         -         -             1700 seed          
+Algeria                      0.0%      0.2%    -0.2pp  pass       1740 seed          
+Ghana                        0.0%      0.2%    -0.2pp  pass       1660 seed          
+DR Congo                     0.0%         -         -             1670 public-approx 
+South Africa                 0.0%      0.1%    -0.1pp  pass       1620 seed          
+Jordan                       0.0%      0.1%    -0.1pp  pass       1640 public-approx 
+Iraq                         0.0%      0.1%    -0.1pp  pass       1650 public-approx 
+Panama                       0.0%      0.1%    -0.1pp  pass       1640 public-approx 
+New Zealand                  0.0%      0.1%    -0.1pp  pass       1530 public-approx 
+Cape Verde                   0.0%      0.1%    -0.1pp  pass       1620 public-approx 
+Saudi Arabia                 0.0%      0.1%    -0.1pp  pass       1640 seed          
+Tunisia                      0.0%      0.2%    -0.2pp  pass       1670 seed          
+Haiti                        0.0%      0.1%    -0.1pp  pass       1520 public-approx 
+Curaçao                      0.0%      0.1%    -0.1pp  pass       1540 public-approx 
+Uzbekistan                   0.0%      0.1%    -0.1pp  pass       1640 seed          
+
+[3/3] Fetching Polymarket priced football matches...
+  analyzed 0 matches (skipped: 26 unmapped, 0 stub-Elo / missing prices)
+
+MATCHES — currently-priced football, model vs Polymarket
+------------------------------------------------------------------------------
+Match                               Side      Mdl   Mkt     Edge  Verdict
+
+==============================================================================
+End of prototype run.
+Reminder: thin model, static Elo, no bands/liquidity/bonuses.
+This is a sanity check, not the desk engine.
+==============================================================================
