@@ -396,6 +396,21 @@ if (SITE_PUBLIC / "index.html").exists():
     async def site_colors_css():
         return FileResponse(SITE_PUBLIC / "colors_and_type.css", media_type="text/css")
 
+    @app.get("/favicon.svg", include_in_schema=False)
+    async def site_favicon_svg():
+        return FileResponse(SITE_PUBLIC / "favicon.svg", media_type="image/svg+xml")
+
+    @app.get("/favicon-{size}.png", include_in_schema=False)
+    async def site_favicon_png(size: str):
+        p = SITE_PUBLIC / f"favicon-{size}.png"
+        if not p.is_file():
+            return FileResponse(SITE_PUBLIC / "favicon-32.png", media_type="image/png", status_code=404)
+        return FileResponse(p, media_type="image/png")
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    async def site_favicon_ico():
+        return FileResponse(SITE_PUBLIC / "favicon-32.png", media_type="image/png")
+
 
 # ── Static frontend ───────────────────────────────────────────────────
 

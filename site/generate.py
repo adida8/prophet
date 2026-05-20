@@ -644,6 +644,12 @@ a { color: inherit; }
 
 # ─── Page chrome (shared across all pages) ───
 
+FAVICON_LINKS = """<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" sizes="192x192" href="/favicon-192.png">"""
+
+
 GA_SNIPPET = """<!-- Google Analytics (gtag.js) — only loads on oddsprimer.com -->
 <script>
 (function(){
@@ -671,6 +677,7 @@ def chrome_head(title: str, description: str = "") -> str:
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{escape(title)}</title>
 <meta name="description" content="{escape(desc)}">
+{FAVICON_LINKS}
 {GA_SNIPPET}
 <style>{CSS}</style>
 </head>
