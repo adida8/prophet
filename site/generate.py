@@ -894,47 +894,80 @@ def _fixture_key_from_match_id(match_id: str) -> tuple | None:
     return (kickoff, frozenset({parts[-3].lower(), parts[-2].lower()}))
 
 
-def _kalshi_event_slug(event_ticker: str) -> tuple[str, str] | None:
-    """Split `KXWCGAME-26JUN11MEXRSA` → ("kxwcgame", "26jun11mexrsa").
+# Kalshi UI URL pattern (confirmed via address-bar inspection on a
+# real WC 2026 event page):
+#
+#   https://kalshi.com/markets/{series_lower}/{series_slug}/{event_ticker_lower}
+#       ?op_market_ticker={MARKET_TICKER_UPPER}
+#       &op_side=BUY&op_order_side=yes&op_order_type=dollars
+#
+# `series_slug` is a separate hyphenated slug for the series (NOT the
+# series ticker). For KXWCGAME it's "world-cup-game", derived from the
+# series title ("World Cup Game" → "world-cup-game"). Hardcoded today;
+# if/when we add more Kalshi series we'll pull it from the series API.
+KALSHI_SERIES_SLUGS: dict[str, str] = {
+    "KXWCGAME": "world-cup-game",
+}
 
-    Kalshi's canonical per-event UI URL is
-    `https://kalshi.com/markets/{series_lower}/{event_suffix_lower}` —
-    the event_ticker IS the slug, just lowercased and split on the first
-    hyphen.
-    """
-    if "-" not in event_ticker:
+
+def _kalshi_market_ticker_for_side(
+    event_ticker: str,
+    *,
+    pick_side_iso3: str | None,
+) -> str | None:
+    """Return the Kalshi market ticker for the picked side, or None when
+    no side was picked (Pass/Avoid → land on the event page with no
+    side preselected)."""
+    body = event_ticker.removeprefix("KXWCGAME-")
+    iso3_a = body[7:10].upper()
+    iso3_b = body[10:13].upper()
+    if pick_side_iso3 is None:
         return None
-    series, suffix = event_ticker.split("-", 1)
-    if not series or not suffix:
-        return None
-    return series.lower(), suffix.lower()
+    if pick_side_iso3 == "draw":
+        return f"{event_ticker}-TIE"
+    if pick_side_iso3.upper() == iso3_a:
+        return f"{event_ticker}-{iso3_a}"
+    if pick_side_iso3.upper() == iso3_b:
+        return f"{event_ticker}-{iso3_b}"
+    return None
 
 
 def _kalshi_url_for(
     match_id: str | None = None,
     *,
-    pick_side_iso3: str | None = None,  # kept for API symmetry; the event
-                                         # page itself shows all three markets,
-                                         # so we don't append a side to the URL.
+    pick_side_iso3: str | None = None,
 ) -> tuple[str, bool]:
     """Return (url, is_live).
 
-    `is_live=True` when we resolved a real Kalshi event for this fixture
-    and deep-link to its event page; `False` when we degraded to the
-    WC landing page.
+    is_live=True  → real Kalshi event URL. The picked side is preselected
+                    via `op_market_ticker=` when a side is known; for
+                    Pass/Avoid we just land on the event page.
+    is_live=False → WC landing page fallback (Kalshi has no event for
+                    this fixture, or series slug not yet mapped).
     """
-    del pick_side_iso3  # event-page URL covers every side
     if match_id and KALSHI_EVENT_INDEX:
         key = _fixture_key_from_match_id(match_id)
         event_ticker = KALSHI_EVENT_INDEX.get(key) if key else None
-        if event_ticker:
-            parts = _kalshi_event_slug(event_ticker)
-            if parts:
-                series_lower, suffix_lower = parts
+        if event_ticker and "-" in event_ticker:
+            series_upper = event_ticker.split("-", 1)[0]
+            series_slug = KALSHI_SERIES_SLUGS.get(series_upper)
+            if not series_slug:
+                return (KALSHI_WC_LANDING, False)
+            base = (
+                f"https://kalshi.com/markets/{series_upper.lower()}/"
+                f"{series_slug}/{event_ticker.lower()}"
+            )
+            market_ticker = _kalshi_market_ticker_for_side(
+                event_ticker, pick_side_iso3=pick_side_iso3,
+            )
+            if market_ticker:
+                from urllib.parse import quote
                 return (
-                    f"https://kalshi.com/markets/{series_lower}/{suffix_lower}",
+                    f"{base}?op_market_ticker={quote(market_ticker)}"
+                    f"&op_side=BUY&op_order_side=yes&op_order_type=dollars",
                     True,
                 )
+            return (base, True)
     return (KALSHI_WC_LANDING, False)
 
 
