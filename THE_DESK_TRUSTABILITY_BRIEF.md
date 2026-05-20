@@ -1,8 +1,8 @@
 # The Desk — Trustability Brief
 
 **Status:** strategic brief, 2026-05-09.
-**Target consumer:** Claude Code (implementation), Adi (decisions).
-**Owner:** Adi.
+**Target consumer:** Claude Code (implementation), the operator (decisions).
+**Owner:** the operator.
 **Sequence:** drives the v1.1 release. Sits on top of PR 4.5 (sanity layer) + PR 5 (explainer) + PR 6 (scheduler). Adds new work where those don't already cover it.
 **References:** `THE_DESK_SPEC.md` (architecture), `THE_DESK_PR_4_5_BRIEF.md` (sanity layer), `THE_DESK_PR_BACKTEST_BRIEF.md` (calibration harness, shipped), `RECOMMENDATION_ENGINE_DESIGN.md` (methodology), `feedback_late_binding_features.md` (memory).
 
@@ -21,7 +21,7 @@ A flagship product can't ship in this state. Calibration earns the right to publ
 
 ### What "trustable" means here
 
-A user — Adi, Faktor (Adi's partner), an end-reader — must be able to pick up a Pick verdict and:
+A user — the operator, Faktor (the operator's partner), an end-reader — must be able to pick up a Pick verdict and:
 
 1. **See why it's a Pick** — drivers attributed to specific factors, not opaque "the model says".
 2. **See the model's calibration history** — how often previous Picks at the same probability landed; track-record updates live.
@@ -167,7 +167,7 @@ When all five hold, The Desk is trustable. Until then, internal-only.
 
 ---
 
-## 6. Open questions for Adi (block these before A.3 ships)
+## 6. Open questions for the operator (block these before A.3 ships)
 
 - **Confidence-interval breadth.** Spec proposes ±50 Elo jackknife. Is that aggressive enough to catch the v1 model's blind spots, or do we want a tighter band?
 - **Friendlies in form features.** Include / downweight / exclude? (Same question as in `THE_DESK_SPEC.md` §10.) Need answer before B.1 ships.

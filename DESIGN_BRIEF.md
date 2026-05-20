@@ -70,7 +70,7 @@ The previous prototype used dark mode with JetBrains Mono + DM Sans and green/am
 
 ### 5.5 About + trust
 **Purpose:** Credibility. Who we are, how we source data, what we claim and don't claim.
-**Must include:** founder bios (Adi + Faktor) with real photos, methodology summary, data refresh cadence, affiliate disclosure (we earn from clickouts — say so cleanly), full legal footer.
+**Must include:** founder bios (the operator + Faktor) with real photos, methodology summary, data refresh cadence, affiliate disclosure (we earn from clickouts — say so cleanly), full legal footer.
 
 ## 6. Cross-cutting design requirements
 

@@ -11,7 +11,7 @@ This document is a generic placeholder. Replace bracketed values, confirm the le
 
 ## 1. Who we are
 
-Odds Primer is an editorial project published by **Adi Dagan**, an individual operating under the trading name "Odds Primer" from [CITY, COUNTRY]. There is no separate legal entity behind the Service; Adi Dagan is the publisher, operator, and data controller for the purposes of applicable data-protection law.
+Odds Primer is an editorial project published by **the operator (Odds Primer)**, an individual operating under the trading name "Odds Primer" from [CITY, COUNTRY]. There is no separate legal entity behind the Service; the operator (Odds Primer) is the publisher, operator, and data controller for the purposes of applicable data-protection law.
 
 Correspondence: [SERVICE ADDRESS]. Questions about this policy: privacy@oddsprimer.example.
 
@@ -84,6 +84,6 @@ We will update this policy when our practices change. We will post the revised v
 
 ## 13. Contact
 
-Adi Dagan, trading as "Odds Primer"
+Odds Primer (sole-trader trading name)
 [SERVICE ADDRESS], [CITY, COUNTRY]
 privacy@oddsprimer.example

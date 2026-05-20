@@ -2,7 +2,7 @@
 
 **Status:** v0.2 build spec, 2026-05-18. Supersedes v0.1 (prophet folder, 2026-05-11) and TASK-311 (the market-anchored draft in the integration repo). Both predecessors got *half* of the problem right: v0.1 had the right model approach (Monte Carlo tournament simulation, independent), TASK-311 had the right plumbing (event_id identity, reuse the wire). This spec is the consolidation — and adds the position-list framing the waist refactor unlocks.
 **Target consumer:** Claude Code (agentic CLI), Faktor (engineering).
-**Owner:** Adi (product).
+**Owner:** the operator (product).
 **Sits on top of:** `THE_DESK_POSITION_WAIST_SPEC.md` v0.2 (refactor must land first) and `THE_DESK_DATA_LAYER_SPEC.md` v0.5 Phase 1b (live Elo — credibility-load-bearing).
 **Launch market:** the FIFA World Cup 2026 winner market on Polymarket.
 

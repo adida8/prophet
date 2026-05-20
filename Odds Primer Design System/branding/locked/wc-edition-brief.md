@@ -106,4 +106,4 @@ A serious football issue about **price disagreement**. Not a World Cup fan site.
 
 ---
 
-**Provenance:** strategic frame and treatment specs from ChatGPT review (2026-05-06), accepted by Adi as the locked direction. Original prompt at `chatgpt-wc-edition-prompt.md`. Logo reference at `odds_primer_logo.png`.
+**Provenance:** strategic frame and treatment specs from ChatGPT review (2026-05-06), accepted by the operator as the locked direction. Original prompt at `chatgpt-wc-edition-prompt.md`. Logo reference at `odds_primer_logo.png`.

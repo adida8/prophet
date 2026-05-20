@@ -2,7 +2,7 @@
 
 **Status:** v0.2 build spec, 2026-05-18. Incorporates Faktor's engineering review — event-context fields added to `PositionSet`; PR 1 acceptance wording corrected.
 **Target consumer:** Claude Code (agentic CLI).
-**Owner:** Adi (desk dev).
+**Owner:** the operator (desk dev).
 **Scope:** internal refactor only — no behaviour change, no new market shapes.
 **Predecessor doc:** `docs/how-the-desk-model-works.md` (the 7-stage pipeline this refactors).
 

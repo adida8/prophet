@@ -1,7 +1,7 @@
 # The Desk — Engineering Hand-Off
 
 **For:** Faktor (engineering)
-**From:** Adi (product)
+**From:** the operator (product)
 **Date:** 2026-05-15
 **Status:** ready to code.
 
@@ -48,7 +48,7 @@ by the new specs:**
 ## What's NOT in this package
 
 - **Outright / winner-market support.** Sits on top of the position-waist;
-  needs its own spec, which Adi is writing next. Don't pre-empt it from the
+  needs its own spec, which the operator is writing next. Don't pre-empt it from the
   prototype (see below).
 - **The model-hook designs** that consume each new data type (form/rank
   residual on top of Elo, weather adjustment, injury → Elo penalty). Named
@@ -56,7 +56,7 @@ by the new specs:**
   separate model document. The data layer requires the hooks *land coupled*
   with their phase, but their internals are out of scope here.
 - **Published JSON contract changes.** Any new contract field needs an ADR
-  + Adi sign-off (data layer §7). The data layer ships with provenance and
+  + the operator sign-off (data layer §7). The data layer ships with provenance and
   freshness *desk-internal* by default; surfacing them on the website is a
   separate decision.
 
@@ -70,7 +70,7 @@ by the new specs:**
 4. **Vendor terms** (API-Football, OpenWeather, Railway) are **verified against
    current vendor docs before any code is written.** §8 of the data-layer spec
    names the specific verifications.
-5. **No published JSON contract changes without an ADR + Adi sign-off.**
+5. **No published JSON contract changes without an ADR + the operator sign-off.**
 
 Plus the waist's regression gate: **matches stay byte-identical** through the
 refactor; the WC-2022 backtest output must diff-clean.
@@ -97,17 +97,17 @@ It is **not a build target.** Specifically:
 
 Use it to sanity-check your work, **never** to implement against.
 
-## Open threads (Adi owns these)
+## Open threads (the operator owns these)
 
-- **Outright / winner-model spec** — Adi writing next. Don't start outright
+- **Outright / winner-model spec** — the operator writing next. Don't start outright
   work until it lands.
 - **Output-contract ADRs** — citation visibility, outright JSON shape.
-  Adi drafts, Faktor reviews, both sign off.
+  the operator drafts, Faktor reviews, both sign off.
 - **Vendor verification (guardrail 4)** — API-Football coverage / cap;
   Railway persistent volume availability; OpenWeather One Call 3.0 endpoint
-  + pricing. Adi sourcing before Faktor starts Phase 2.
-- **Phase 5 legal / attribution review** — Adi to schedule; required before
+  + pricing. the operator sourcing before Faktor starts Phase 2.
+- **Phase 5 legal / attribution review** — the operator to schedule; required before
   Phase 5 goes Live.
 
-When you start coding, ping Adi on the guardrail-4 verifications so nothing
+When you start coding, ping the operator on the guardrail-4 verifications so nothing
 gets built on stale vendor assumptions.

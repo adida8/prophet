@@ -1,7 +1,7 @@
 # The Desk — SEO Copy Method (Brief)
 
 **Status:** v0.1 brief, 2026-05-10. For Claude Code.
-**Owner:** Adi.
+**Owner:** the operator.
 **Pre-req:** PR 5 (Haiku explainer) — this brief extends PR 5 from a single
 prose mode into a multi-mode SEO-aware generator.
 **Renderer:** TBD. This brief is renderer-agnostic — it specifies the

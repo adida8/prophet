@@ -1,6 +1,6 @@
 # MarketTipsAI — Beta Launch Brief
 
-*Last updated: 2026-05-02 · Owners: Adi + Faktor*
+*Last updated: 2026-05-02 · Owners: the operator + Faktor*
 
 ## MVP scope
 
@@ -51,7 +51,7 @@
 - [ ] Learn page — "What 'edge' means"
 - [ ] Learn page — "Is this gambling?" (responsible-use framing)
 - [ ] Learn page — glossary
-- [ ] About page — bios for Adi + Faktor
+- [ ] About page — bios for the operator + Faktor
 - [ ] About page — methodology + data refresh cadence
 - [ ] Beta welcome / onboarding copy + feedback prompt
 - [ ] Legal — Terms of Service

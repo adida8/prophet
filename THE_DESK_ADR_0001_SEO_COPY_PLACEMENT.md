@@ -1,7 +1,7 @@
 # ADR 0001 — Where `SeoCopy` lives on the contract
 
 **Status:** Accepted, 2026-05-10.
-**Owner:** Adi.
+**Owner:** the operator.
 **Implements:** schema decision for SEO-1 in `THE_DESK_SEO_BRIEF.md`.
 **Supersedes:** none. **Superseded by:** none.
 

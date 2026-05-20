@@ -1,7 +1,7 @@
 """Sport registry.
 
 v1 ships football only. v2's admin backend introspects this registry to
-let Adi enable additional sports without code changes.
+let the operator enable additional sports without code changes.
 """
 
 from __future__ import annotations

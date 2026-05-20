@@ -1,7 +1,7 @@
 # Brand Decision Memo — Prophet (consumer football site)
 
 **Prepared:** 2026-05-02
-**For:** Adi (founder), Faktor (co-founder)
+**For:** the operator (founder), Faktor (co-founder)
 **Decision needed:** Which name to commit to for the football-first consumer brand, with WC 2026 as the launch moment.
 
 ---

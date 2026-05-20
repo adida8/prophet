@@ -2,7 +2,7 @@
 
 **Purpose.** Refresh The Desk's match verdicts, regenerate the static Odds Primer site, commit, push. Whole thing is one Claude Code session, ≤2 minutes of work. Built as a manual bridge while the Faktor↔Desk integration is unblocked.
 
-**Owner.** Adi.
+**Owner.** the operator.
 **First version:** 2026-05-19. Authored in Cowork; everything from here lives in Claude Code.
 
 ---
@@ -86,7 +86,7 @@ Wrote          : outrights/index.html
 ### Deploy
 
 - **On `init/project-setup`:** push → Railway auto-deploys → live at https://web-production-9e0f9.up.railway.app/ within ~90s.
-- **On a feature branch:** `gh pr create --base init/project-setup --title "site: refresh $(date -u +%Y-%m-%d)" --body "Daily verdict refresh."` Operator (Adi) merges. Railway deploys on merge.
+- **On a feature branch:** `gh pr create --base init/project-setup --title "site: refresh $(date -u +%Y-%m-%d)" --body "Daily verdict refresh."` Operator (the operator) merges. Railway deploys on merge.
 
 ---
 

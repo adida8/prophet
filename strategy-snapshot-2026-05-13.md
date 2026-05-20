@@ -1,6 +1,6 @@
 # Strategy Snapshot — 13 May 2026
 
-**Participants:** Adi · Claude
+**Participants:** the operator · Claude
 **Context:** Pre-launch strategic review of Odds Primer's affiliate-led launch. Started as deep-dive on affiliate economics; evolved into commercial-model architecture and brand-portfolio question.
 
 ---
@@ -17,7 +17,7 @@
 
 ### 2. Editorial brand global, venue basket regional
 
-Earlier framings narrowed to US-only; Adi corrected. The structure that survived:
+Earlier framings narrowed to US-only; the operator corrected. The structure that survived:
 
 | Region | Venues in basket | Per-user value |
 |---|---|---|
@@ -49,7 +49,7 @@ Engineering cost: Phase 2 adds ~6 weeks of work, Phase 3 another ~4 weeks. The m
 
 ### 5. Multi-sport, multi-vertical roadmap
 
-Adi's ambition for Odds Primer is "verdict layer for every priced market on earth — football is just where we start." The architecture supports it (sport plugin system already built).
+the operator's ambition for Odds Primer is "verdict layer for every priced market on earth — football is just where we start." The architecture supports it (sport plugin system already built).
 
 | Year | Verticals |
 |---|---|
@@ -99,7 +99,7 @@ Three resolution patterns:
 
 Rough probability stack:
 
-| Outcome | Probability | Adi's share post-tax (50/50 split) | Millionaire? |
+| Outcome | Probability | the operator's share post-tax (50/50 split) | Millionaire? |
 |---|---|---|---|
 | Complete failure | ~35% | Loss of 12–24 months | No |
 | Lifestyle side-hustle | ~28% | £30–80K/yr while it runs | No, from this alone |

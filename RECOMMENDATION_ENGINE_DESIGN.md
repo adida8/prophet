@@ -2,7 +2,7 @@
 
 **Status:** updated 2026-05-08. Supersedes v0.1.
 **Internal name:** The Desk. Use this in conversation; never surface in user-facing copy.
-**Owner:** Adi + Faktor.
+**Owner:** the operator + Faktor.
 **Surface:** retail B2C inside Odds Primer, World Cup beta (~2026-05-09).
 
 ## What it is

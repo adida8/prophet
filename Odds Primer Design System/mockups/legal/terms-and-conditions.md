@@ -5,7 +5,7 @@
 _Effective date: [DATE]_
 _Last updated: [DATE]_
 
-These Terms and Conditions ("Terms") govern your access to and use of the Odds Primer website and related services (the "Service"), published by **Adi Dagan**, an individual trading under the name "Odds Primer" ("we", "us"). There is no separate legal entity behind the Service. By using the Service, you agree to these Terms. If you do not agree, do not use the Service.
+These Terms and Conditions ("Terms") govern your access to and use of the Odds Primer website and related services (the "Service"), published by **the operator (Odds Primer)**, an individual trading under the name "Odds Primer" ("we", "us"). There is no separate legal entity behind the Service. By using the Service, you agree to these Terms. If you do not agree, do not use the Service.
 
 This document is a generic placeholder. Replace bracketed values, confirm the governing-law and dispute-resolution sections with counsel, and reconcile with your final commercial setup before publishing.
 
@@ -86,6 +86,6 @@ These Terms are the entire agreement between you and us regarding the Service. I
 
 ## 15. Contact
 
-Adi Dagan, trading as "Odds Primer"
+Odds Primer (sole-trader trading name)
 [SERVICE ADDRESS], [CITY, COUNTRY]
 hello@oddsprimer.example

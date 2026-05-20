@@ -76,7 +76,7 @@ The original CPA-first thesis is retired. Affiliate becomes a bonus stream on to
 
 ## Brand / naming
 
-"PredictionEdge" is effectively taken (yourpredictionedge.com ships a direct competitor product). Rebrand required before any public launch. Default direction: revisit the original Prophet name; audit domain + trademark availability. Decision owner: Adi, before Phase 1 public launch.
+"PredictionEdge" is effectively taken (yourpredictionedge.com ships a direct competitor product). Rebrand required before any public launch. Default direction: revisit the original Prophet name; audit domain + trademark availability. Decision owner: the operator, before Phase 1 public launch.
 
 ## Regulatory posture
 

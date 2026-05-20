@@ -1,7 +1,7 @@
 # Phase 5 — Legal / Attribution Review Brief
 
 **Status:** prep document for a media / IP / copyright counsel review.
-**Owner:** Adi.
+**Owner:** the operator.
 **Required before:** Phase 5 of the data layer goes **Live** (per
 `THE_DESK_DATA_LAYER_SPEC.md` §5 Phase 5 + §8 open questions). Phases 1–4
 ship independently of this; review timing is "before Live", not "before
@@ -65,7 +65,7 @@ Hard rules:
 
 ## 3. Curated source list (representative — not final)
 
-Per-competition, the operator (Adi) curates a list of `(publication-or-pundit,
+Per-competition, the operator (the operator) curates a list of `(publication-or-pundit,
 access_kind)` registered as a `Source(data_type=EXPERT)`. Starting set for the
 WC 2026 launch:
 
@@ -104,7 +104,7 @@ relies on.
 - **Mitigation in design.** Extraction is *fact-focused*, not text-copying.
   Haiku is prompted to *report* what the source *says*, with attribution —
   not to reproduce passages.
-- **Jurisdictions of concern.** UK (Adi t/a sole trader; market_tips_ai
+- **Jurisdictions of concern.** UK (the operator t/a sole trader; market_tips_ai
   is UK-based per memory; pre-incorporation status). US (where many users
   will read). EU (GDPR-adjacent — though this is content-rights, not
   personal-data). Brazil + Spain + France + Germany for the per-country
@@ -161,7 +161,7 @@ relies on.
 ### 4.7 Operating entity status
 
 - **Note for counsel.** Per memory, the desk operates pre-incorporation as
-  Adi Dagan trading as Odds Primer (UK sole trader). Phase 5 review should
+  the operator (Odds Primer, sole-trader trading name) (UK sole trader). Phase 5 review should
   factor this status — small-trader scale may shift the practical risk
   posture vs a corporate one, and any required incorporation step before
   Phase 5 Live should be flagged.

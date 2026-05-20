@@ -72,7 +72,7 @@ verifications; I'll have those done before you get there.
 
 Ping me when you've read through. Happy to walk through anything.
 
-Adi
+the operator
 
 ---
 

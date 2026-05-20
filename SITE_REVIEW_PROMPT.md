@@ -81,7 +81,7 @@ and the two systems aren't double-rendering or leaking each other's layout.
    email? Does it validate (try empty, malformed, and valid)? Are there clear
    success and error states on a small screen? Does the submit actually succeed —
    or could it silently drop a signup? Is there a lightweight privacy/consent line
-   (operating entity is "Adi Dagan t/a Odds Primer," a free service,
+   (operating entity is "Odds Primer," a free service,
    pre-incorporation — honest and minimal, no overclaiming)?
 
 6. **Performance & stability on mobile** — slow first paint, layout shift as

@@ -69,7 +69,7 @@
 
 - **eloratings.net needs headless render** or a switch to Wikipedia's data module. Add ~half a day to the ingest layer.
 - **Polymarket slug lookup is unreliable.** We need to use the Gamma `markets?question=...` search endpoint, or pull the full WC event tree once and cache the slug map.
-- **Injury data is the hardest piece** — none of the free APIs cover this well 38 days out. Likely a manual ops job for the WC beta: a daily Faktor + Adi 5-minute pass over Sky/ESPN team-news pages.
+- **Injury data is the hardest piece** — none of the free APIs cover this well 38 days out. Likely a manual ops job for the WC beta: a daily Faktor + the operator 5-minute pass over Sky/ESPN team-news pages.
 - **Weather is out of forecast range** until ~5 days before kickoff. The pipeline should treat weather as a late-binding feature, not a launch-day input.
 
 ## Open questions before building

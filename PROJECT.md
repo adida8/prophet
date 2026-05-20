@@ -125,7 +125,7 @@ Trimmed 7-day sprint to a private-beta URL, invite-only, shared-password gated. 
 
 ## Brand
 
-"PredictionEdge" is effectively taken — [yourpredictionedge.com](https://yourpredictionedge.com) is an active direct competitor. Current deploy still renders "PredictionEdge"; acceptable for a private, invite-only beta, not for any public surface. Rebrand owner: Adi, before Phase 1 public launch. Default: revisit original "Prophet"; audit domain + trademark.
+"PredictionEdge" is effectively taken — [yourpredictionedge.com](https://yourpredictionedge.com) is an active direct competitor. Current deploy still renders "PredictionEdge"; acceptable for a private, invite-only beta, not for any public surface. Rebrand owner: the operator, before Phase 1 public launch. Default: revisit original "Prophet"; audit domain + trademark.
 
 ---
 

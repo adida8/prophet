@@ -2,7 +2,7 @@
 
 **Status:** v0.5 build spec, 2026-05-18. Incorporates Faktor's engineering review on top of v0.4: Phase 1 split into 1a (foundation skeleton + forward-validation harness) and 1b (Elo wired through 1a); §3.3 made explicit on inbound slug→canonical resolution; `Source.fetch` signature corrected to async; env-var name aligned with the live repo.
 **Target consumer:** Claude Code (agentic CLI).
-**Owner:** Adi (desk dev).
+**Owner:** the operator (desk dev).
 **Scope:** football only; source-ingest architecture + a phased rollout. Budget ceiling ~$20/month.
 **Predecessor docs:** `docs/how-the-desk-model-works.md` (what the model is starved of), `THE_DESK_SPEC.md` §3 + §7 (the original ingest + late-binding design this builds out).
 

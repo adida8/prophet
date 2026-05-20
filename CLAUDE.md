@@ -28,10 +28,10 @@ Build specs live alongside the code:
 
 Two deploy branches, both watched by Railway:
 
-- **`staging`** — pre-prod copy of the site. Work lands here first. Adi clicks around the staging URL to confirm things look right before promoting. (Staging URL: TODO — fill in.)
+- **`staging`** — pre-prod copy of the site. Work lands here first. the operator clicks around the staging URL to confirm things look right before promoting. (Staging URL: TODO — fill in.)
 - **`init/project-setup`** — production. Live URL: `https://oddsprimer.com` (Railway-deployed; the older `web-production-9e0f9.up.railway.app` host still resolves to the same service). Only receives merges *from* `staging` once changes look good.
 
-Default workflow: commit on `staging` → push → eyeball the staging URL → when happy, merge `staging` → `init/project-setup` to ship. Feature branches are optional; Adi typically works directly on `staging` since it's a solo build.
+Default workflow: commit on `staging` → push → eyeball the staging URL → when happy, merge `staging` → `init/project-setup` to ship. Feature branches are optional; the operator typically works directly on `staging` since it's a solo build.
 
 Build pipeline (same on both branches): `railpack.json` runs `npm install` + `vite build` for the frontend, then `python main.py --dashboard --port $PORT` as the start command.
 
@@ -124,7 +124,7 @@ See `ledger/README.md` for the full data flow + the path to add Kalshi in Phase 
 
 ## The Desk — verdict engine
 
-Engine that evaluates **every priced football match** (not just WC 2026). For each match it produces a `verdict.json` (Pick / Pass / Avoid) + three rendered editorial strings (title / summary / blurb). The website (built by Faktor — Adi's partner on this) is the only consumer; it reads only the CDN-fronted JSON contract.
+Engine that evaluates **every priced football match** (not just WC 2026). For each match it produces a `verdict.json` (Pick / Pass / Avoid) + three rendered editorial strings (title / summary / blurb). The website (built by Faktor — the operator's partner on this) is the only consumer; it reads only the CDN-fronted JSON contract.
 
 Six-step pipeline, each independently replaceable:
 **Ingest → Features → Model → Verdict → Explainer → Publish.**

@@ -63,7 +63,7 @@ Highest-value cluster:
   `#0E2240`, not violet), clean `.html` URLs, fix the stale "13 May 2026" date, fix the cookie banner
   (`position:fixed`), fix the `/method.html` PICK|PASS|AVOID tab overflow. Many of these evaporate if the
   static site is retired in step 1.
-- **Voice/content** — "back it" → "the line appears underpriced"; add the "Adi Dagan t/a Odds Primer"
+- **Voice/content** — "back it" → "the line appears underpriced"; add the "Odds Primer"
   operator line to Privacy/Terms/signup; explain the outright "+6.5pp but doesn't clear the +3pp gate" line.
 
 Brand reference for all of the above: body **Source Serif 4**, wordmark/chrome **Inter Tight 700**,

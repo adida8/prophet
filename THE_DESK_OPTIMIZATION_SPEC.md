@@ -1,8 +1,8 @@
 # The Desk — Optimization Spec (v1.1 + v1.2 trustability roadmap)
 
 **Status:** v0.1 consolidation, 2026-05-18. Supersedes `THE_DESK_TRUSTABILITY_BRIEF.md` (2026-05-09) as the active roadmap. Reflects Phase A as-built (per `STATUS.md` 2026-05-09) plus a re-scoped Phase B aligned with `THE_DESK_DATA_LAYER_SPEC.md` v0.4.
-**Target consumer:** Claude Code (implementation), Adi (decisions), Faktor (Phase B model-hook owner).
-**Owner:** Adi.
+**Target consumer:** Claude Code (implementation), the operator (decisions), Faktor (Phase B model-hook owner).
+**Owner:** the operator.
 **Relationship to other specs:**
 - `THE_DESK_TRUSTABILITY_BRIEF.md` — *predecessor*; this spec consolidates and updates it.
 - `THE_DESK_SPEC.md` — *parent architecture*; unchanged.

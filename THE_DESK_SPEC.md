@@ -2,7 +2,7 @@
 
 **Status:** v0.2 build spec, 2026-05-09. Derived from `RECOMMENDATION_ENGINE_DESIGN.md` v0.2.
 **Target consumer:** Claude Code (agentic CLI).
-**Owner:** Adi.
+**Owner:** the operator.
 **Launch wedge:** WC 2026 (~2026-05-09 beta → 2026-06-13 kickoff). Engine is **not** WC-specific.
 
 ---
@@ -11,7 +11,7 @@
 
 Build **The Desk** — the core engine that evaluates **every priced football match**, not just the World Cup. WC 2026 is the launch wedge; the architecture must comfortably handle club football (EPL, La Liga, UCL, MLS, etc.) the day after the tournament ends, with no rewrite. Football is the first sport. The engine must be designed so other sports (basketball, tennis, NFL) can plug in as separate modules in a later version without disturbing the football pipeline.
 
-For each match, The Desk produces a `verdict.json` (Pick / Pass / Avoid) plus three rendered editorial strings. The website (built by Faktor — Adi's partner on this) is the only consumer and reads only a CDN-fronted JSON contract. Internals are private.
+For each match, The Desk produces a `verdict.json` (Pick / Pass / Avoid) plus three rendered editorial strings. The website (built by Faktor — the operator's partner on this) is the only consumer and reads only a CDN-fronted JSON contract. Internals are private.
 
 The engine's six steps (Ingest → Features → Model → Verdict → Explainer → Publish) must each be replaceable independently. v1 is deliberately small: Elo prior, host/home adjustment, altitude bonus, Haiku explainer. Engineering effort goes into data plumbing, not the maths.
 
@@ -139,7 +139,7 @@ Pull **every priced football match** from Kalshi + Polymarket — not WC-only. I
 - Premier League: `fb-epl-mun-liv-20260815` (canonical club slugs)
 - UCL knockout: `fb-ucl-rma-bay-20260311`
 
-The `competition` segment encodes both league and stage where relevant. The team-ID system (clubs + national sides in one namespace) is parked at §10 — flag any ambiguity to Adi rather than guessing.
+The `competition` segment encodes both league and stage where relevant. The team-ID system (clubs + national sides in one namespace) is parked at §10 — flag any ambiguity to the operator rather than guessing.
 
 **Acceptance.** `desk run --once` writes one stub `MatchOutput` JSON per priced football fixture (covering the WC 2026 set + whatever club football is currently priced) with `verdict.state="pass"`, empty `copy.*`. `desk sports` lists `football` as the only active sport. `data/output/football/index.json` lists everything; sport partition exists on disk.
 
@@ -252,7 +252,7 @@ Outside its window, a feature is **absent from the feature row**, not zero-fille
 - **Failure modes.** A source going down must not block a publish. Publish whatever's available; mark missing fields explicitly. The verdict step can run with stale market data up to 5 minutes; older than that → state defaults to `pass` and the blurb says so.
 - **Observability.** `GET /healthz` returns last-publish timestamps for model / verdict / explainer jobs. That's the dashboard for v1.
 
-## 10. Open questions for Adi (block these before merge)
+## 10. Open questions for the operator (block these before merge)
 
 - **Pick threshold pp.** Spec locks 3.0 / 1.0 / −2.0 as defaults. Confirm or override before PR 4.
 - **Friendlies in form features.** Include / downweight / exclude? Need answer before PR 3 ships v1.1 with form.
@@ -265,7 +265,7 @@ Outside its window, a feature is **absent from the feature row**, not zero-fille
 
 Out of scope for v1, scoped here so PR layout doesn't paint us into a corner.
 
-**What it does.** Lets Adi (and only Adi) toggle data sources on/off, adjust their tier weight in the news fact-extractor, override per-source refresh cadences, and override per-sport thresholds — without code changes or redeploys. Same surface used to enable a new sport package.
+**What it does.** Lets the operator (and only the operator) toggle data sources on/off, adjust their tier weight in the news fact-extractor, override per-source refresh cadences, and override per-sport thresholds — without code changes or redeploys. Same surface used to enable a new sport package.
 
 **Surface.**
 

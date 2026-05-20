@@ -49,6 +49,6 @@ The orange is the flare, not the field — sparingly used for one CTA, the retic
 ## Notes for next iteration
 
 - If the navy reads too "broadcast TV" once on a real masthead, swap to `#112038` (deeper, almost obsidian) or `#14264A` (slightly bluer). Both stay clear of Sky Sports / Pinnacle territory.
-- Direction was reached after rejecting three earlier directions: Floodlight (dark mode + sodium amber — recommended in landscape.pdf but dialed back at Adi's preference for clean white + bold orange after seeing Coaches' Voice as a reference); Broadsheet (cream + ink + oxblood); Pitch (cream + moss + signal-orange).
+- Direction was reached after rejecting three earlier directions: Floodlight (dark mode + sodium amber — recommended in landscape.pdf but dialed back at the operator's preference for clean white + bold orange after seeing Coaches' Voice as a reference); Broadsheet (cream + ink + oxblood); Pitch (cream + moss + signal-orange).
 - The flame-orange is the single non-negotiable. The navy is the support pick that lets the orange punch without leaning gambling-promo (saturated yellow) or broadcast-TV (Sky red).
 - Cluster-map context: this lands in the "publication, slightly bold" quadrant — only Coaches' Voice currently sits there, and it's pitched at coaches not fans, so it's a viable claim for Prophet.

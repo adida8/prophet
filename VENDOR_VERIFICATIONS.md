@@ -5,7 +5,7 @@ guardrail 4: "Vendor terms verified against current vendor docs before any code
 is written." This doc closes that guardrail for the three vendors the data
 layer commits to.
 
-**Owner:** Adi.
+**Owner:** the operator.
 **Re-verify cadence:** before each major data-layer phase ships (1b, 2, 3, 4).
 
 ---

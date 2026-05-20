@@ -115,4 +115,4 @@ the verification doc; that timing holds well before 1a completes.
 Ping me when you've read v0.5 / v0.2 + the optimization spec. Happy to sync
 if anything else surfaces.
 
-Adi
+the operator
