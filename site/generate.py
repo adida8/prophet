@@ -1371,7 +1371,13 @@ def patch_editorial_pages(log=print) -> None:
     popup_block = newsletter_popup_block() + newsletter_footer_form_js()
 
     def strip_between(html: str, a: str, b: str) -> str:
-        return re.sub(re.escape(a) + r".*?" + re.escape(b), "", html, flags=re.DOTALL)
+        # Also consume newlines adjacent to the markers — the inject
+        # always prefixes/suffixes its own `\n`, so without this each
+        # re-run accumulated one blank line per injection point.
+        return re.sub(
+            r"\n*" + re.escape(a) + r".*?" + re.escape(b) + r"\n*",
+            "", html, flags=re.DOTALL,
+        )
 
     n_patched = 0
     for name in EDITORIAL_PAGES:
