@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -39,6 +40,22 @@ DESK_OUT = ROOT / "desk" / "data" / "output"
 FOOTBALL_DIR = DESK_OUT / "football"
 OUTRIGHTS_DIR = DESK_OUT / "outrights"
 SITE_OUT = ROOT / "site" / "public"
+
+# Mailchimp embedded-form values for the newsletter pop-up + footer signup.
+# Public anti-bot identifiers (not secrets) — Railway sets them as env vars
+# so we don't bake the audience IDs into the repo. Same names the React
+# side reads (VITE_-prefixed) work because Railway puts them in the build
+# process env for both. Falls back to bare names so local-only dev sessions
+# can use either spelling.
+MAILCHIMP_FORM_ACTION = (
+    os.environ.get("MAILCHIMP_FORM_ACTION")
+    or os.environ.get("VITE_MAILCHIMP_FORM_ACTION", "")
+).strip()
+MAILCHIMP_HONEYPOT_NAME = (
+    os.environ.get("MAILCHIMP_HONEYPOT_NAME")
+    or os.environ.get("VITE_MAILCHIMP_HONEYPOT_NAME", "")
+).strip()
+NEWSLETTER_CONFIGURED = bool(MAILCHIMP_FORM_ACTION and MAILCHIMP_HONEYPOT_NAME)
 
 # Populated at the start of main() — see `_load_kalshi_event_index`.
 # Maps (kickoff_date, frozenset({iso3_a, iso3_b})) → event_ticker (str).
@@ -640,7 +657,216 @@ a { color: inherit; }
               border-color var(--dur-fast) var(--ease-standard);
 }
 .site-foot .foot-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
+
+/* ─── NEWSLETTER FOOTER SIGNUP ─────────────────────────────────────
+   Sits above .site-foot. Dark navy block, on-ink text, single email
+   field, stacks on mobile and goes inline at ≥600px. */
+.op-news {
+  background: var(--ink);
+  color: var(--paper);
+  border-top: var(--hairline-strong);
+}
+.op-news .op-news__inner {
+  max-width: 1180px; margin: 0 auto;
+  padding: 30px var(--gutter) 28px;
+}
+.op-news__eyebrow {
+  margin: 0 0 6px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--flame);
+}
+.op-news__title {
+  margin: 0 0 10px;
+  font-family: var(--font-serif); font-weight: 600;
+  font-size: clamp(22px, 3.2vw, 28px); line-height: 1.18;
+  letter-spacing: -0.01em;
+}
+.op-news__lede {
+  margin: 0 0 16px;
+  font-family: var(--font-serif); font-size: 15px; line-height: 1.5;
+  color: rgba(250, 247, 240, 0.82);
+  max-width: 60ch;
+}
+.op-news__form {
+  display: flex; flex-direction: column; gap: 10px;
+  max-width: 520px;
+}
+.op-news__form input[type="email"] {
+  height: 46px; padding: 0 14px;
+  border: 1px solid rgba(217, 210, 192, 0.32);
+  border-radius: 4px;
+  background: rgba(250, 247, 240, 0.06);
+  color: var(--paper);
+  font-family: var(--font-sans); font-size: 15px;
+  outline: none;
+}
+.op-news__form input[type="email"]::placeholder { color: rgba(250, 247, 240, 0.48); }
+.op-news__form input[type="email"]:focus-visible {
+  border-color: var(--flame);
+  box-shadow: 0 0 0 2px rgba(217, 70, 28, 0.32);
+}
+.op-news__form button {
+  height: 46px; padding: 0 18px;
+  border: 0; border-radius: 4px;
+  background: var(--flame); color: #fff;
+  font-family: var(--font-sans); font-size: 14px; font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+.op-news__form button:hover { background: var(--flame-deep); }
+.op-news__form button:disabled { opacity: 0.6; cursor: progress; }
+.op-news__hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.op-news__success {
+  margin: 6px 0 0;
+  font-family: var(--font-serif); font-size: 15px;
+  color: var(--paper);
+}
+.op-news__error {
+  margin: 4px 0 0;
+  font-family: var(--font-sans); font-size: 13px;
+  color: #F7C8B8;
+}
+.op-news__micro {
+  margin: 10px 0 0;
+  font-family: var(--font-sans); font-size: 12px;
+  color: rgba(250, 247, 240, 0.62);
+}
+.op-news__alt {
+  margin: 18px 0 0;
+  font-family: var(--font-serif); font-size: 14px;
+  color: rgba(250, 247, 240, 0.84);
+}
+.op-news__alt a {
+  color: var(--paper);
+  text-decoration: underline; text-decoration-color: var(--flame);
+  text-underline-offset: 2px;
+}
+.op-news__alt a:hover { color: var(--flame); text-decoration-color: var(--flame); }
+.op-news a:focus-visible,
+.op-news button:focus-visible,
+.op-news input:focus-visible {
+  outline: 2px solid var(--flame); outline-offset: 2px;
+}
+@media (min-width: 600px) {
+  .op-news__form { flex-direction: row; align-items: stretch; flex-wrap: wrap; }
+  .op-news__form input[type="email"] { flex: 1 1 280px; min-width: 0; }
+  .op-news__form button { flex: 0 0 auto; }
+  .op-news__error, .op-news__success { flex-basis: 100%; }
+}
+
+/* ─── NEWSLETTER POP-UP ────────────────────────────────────────────
+   Engagement-triggered modal — timer + scroll trigger, suppression
+   on /learn, focus trap, scroll lock, ESC + backdrop close. */
+body.op-noscroll { overflow: hidden; }
+.op-popup-overlay {
+  position: fixed; inset: 0;
+  background: rgba(14, 34, 64, 0.55);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+.op-popup-overlay[hidden] { display: none; }
+.op-popup {
+  position: relative;
+  width: 100%; max-width: 420px;
+  max-height: calc(100vh - 32px); overflow: auto;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  box-shadow: 0 18px 48px rgba(14, 34, 64, 0.28);
+  font-family: var(--font-sans);
+  color: var(--ink);
+}
+.op-popup__accent { height: 3px; background: var(--flame); }
+.op-popup__body { padding: 26px 24px 24px; position: relative; }
+.op-popup__close {
+  position: absolute; top: 14px; right: 12px;
+  width: 30px; height: 30px;
+  border: 0; background: transparent;
+  color: var(--graphite-soft); font-size: 22px; line-height: 1;
+  cursor: pointer; border-radius: 4px;
+}
+.op-popup__close:hover { color: var(--ink); background: var(--rule-soft); }
+.op-popup__close:focus-visible,
+.op-popup__btn:focus-visible,
+.op-popup__decline:focus-visible {
+  outline: 2px solid var(--flame); outline-offset: 2px;
+}
+.op-popup__eyebrow {
+  margin: 0;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--graphite-soft);
+}
+.op-popup__title {
+  margin: 10px 0 0;
+  font-family: var(--font-serif); font-weight: 600;
+  font-size: 26px; line-height: 1.14; letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.op-popup__lede {
+  margin: 12px 0 0;
+  font-family: var(--font-serif); font-size: 16px; line-height: 1.5;
+  color: var(--ink-soft);
+}
+.op-popup__field-label {
+  display: block; margin: 20px 0 6px;
+  font-size: 12px; font-weight: 500;
+}
+.op-popup__input {
+  width: 100%; height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--rule); border-radius: 4px;
+  background: var(--paper-pure);
+  font-family: var(--font-sans); font-size: 15px;
+  color: var(--ink); outline: none;
+}
+.op-popup__input:focus-visible {
+  border-color: var(--flame);
+  box-shadow: 0 0 0 2px rgba(217, 70, 28, 0.18);
+}
+.op-popup__hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.op-popup__btn {
+  margin-top: 14px;
+  width: 100%; height: 50px;
+  border: 0; border-radius: 4px;
+  background: var(--flame); color: #fff;
+  font-family: var(--font-sans); font-weight: 600; font-size: 15px;
+  cursor: pointer;
+}
+.op-popup__btn:hover { background: var(--flame-deep); }
+.op-popup__btn:disabled { opacity: 0.7; cursor: progress; }
+.op-popup__success {
+  margin: 18px 0 0;
+  font-family: var(--font-serif); font-size: 16px;
+  color: var(--ink);
+}
+.op-popup__error {
+  margin: 10px 0 0;
+  font-family: var(--font-sans); font-size: 13px;
+  color: var(--flame-deep);
+}
+.op-popup__micro { margin: 12px 0 0; font-size: 12px; color: var(--graphite-soft); }
+.op-popup__decline {
+  margin-top: 14px;
+  width: 100%; border: 0; background: transparent;
+  font-family: var(--font-sans); font-size: 13px;
+  color: var(--graphite-soft);
+  text-decoration: underline; text-underline-offset: 2px;
+  cursor: pointer;
+}
+.op-popup__decline:hover { color: var(--ink); }
+.op-popup__form [hidden] { display: none; }
 """
+
+# Standalone newsletter CSS — extracted from the inline CSS block above so
+# the editorial-page patcher (which doesn't go through chrome_head) can
+# inject the same styles without duplicating them. Kept as a runtime
+# slice of CSS to preserve a single source of truth.
+_NEWSLETTER_CSS_MARKER = "/* ─── NEWSLETTER FOOTER SIGNUP"
+NEWSLETTER_CSS = _NEWSLETTER_CSS_MARKER + CSS.split(_NEWSLETTER_CSS_MARKER, 1)[1]
+
 
 # ─── Page chrome (shared across all pages) ───
 
@@ -749,9 +975,397 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
 """
 
 
+def newsletter_footer_block() -> str:
+    """Footer signup block — rendered above the regular .site-foot bar.
+    Returns "" when Mailchimp env vars aren't set, so dev builds without
+    credentials skip the form entirely instead of showing a broken one."""
+    if not NEWSLETTER_CONFIGURED:
+        return ""
+    hp = escape(MAILCHIMP_HONEYPOT_NAME)
+    return f"""<section class="op-news" aria-labelledby="op-news-title">
+  <div class="op-news__inner">
+    <p class="op-news__eyebrow">New to prediction markets?</p>
+    <h2 class="op-news__title" id="op-news-title">Start with the weekly primer.</h2>
+    <p class="op-news__lede">Plain-English notes on prediction markets, sportsbooks, and World Cup prices before you read the verdicts.</p>
+    <form class="op-news__form" id="op-news-form" novalidate>
+      <label class="visually-hidden" for="op-news-email">Email address</label>
+      <input type="email" name="EMAIL" id="op-news-email" placeholder="you@email.com" required autocomplete="email">
+      <div class="op-news__hp" aria-hidden="true">
+        <input type="text" name="{hp}" tabindex="-1" value="" autocomplete="off">
+      </div>
+      <button type="submit">Get the primer</button>
+      <p class="op-news__error" id="op-news-error" role="alert" hidden></p>
+      <p class="op-news__success" id="op-news-success" role="status" hidden>You&rsquo;re in &mdash; check your inbox.</p>
+    </form>
+    <p class="op-news__micro">Free. Weekly. Educational only. Unsubscribe anytime.</p>
+    <p class="op-news__alt">Prefer to just read? Start here: <a href="/learn/read-a-price">How to read a price</a></p>
+  </div>
+</section>
+"""
+
+
+def newsletter_popup_block() -> str:
+    """Modal pop-up + inline JS for trigger/focus-trap/Mailchimp JSON-P.
+    Mirrors the React NewsletterPopup component verbatim in behaviour:
+    50s timer (15s on high-intent paths), 50% scroll trigger, suppress on
+    /learn, dismissals 10d / subscribers 365d in localStorage."""
+    if not NEWSLETTER_CONFIGURED:
+        return ""
+    hp_attr = escape(MAILCHIMP_HONEYPOT_NAME)
+    action_js = json.dumps(MAILCHIMP_FORM_ACTION)
+    hp_js     = json.dumps(MAILCHIMP_HONEYPOT_NAME)
+    return f"""<div class="op-popup-overlay" id="op-popup" hidden>
+  <section class="op-popup" role="dialog" aria-modal="true" aria-labelledby="op-popup-title">
+    <div class="op-popup__accent" aria-hidden="true"></div>
+    <div class="op-popup__body">
+      <button type="button" class="op-popup__close" id="op-popup-close" aria-label="Close newsletter sign-up">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <p class="op-popup__eyebrow">The newsletter</p>
+      <h2 class="op-popup__title" id="op-popup-title">Read World Cup odds before the verdicts arrive.</h2>
+      <p class="op-popup__lede">One weekly primer on prediction markets, sportsbooks, and how to understand a price. No betting advice. No hype.</p>
+      <form class="op-popup__form" id="op-popup-form" novalidate>
+        <label class="op-popup__field-label" for="op-popup-email">Email address</label>
+        <input class="op-popup__input" type="email" name="EMAIL" id="op-popup-email" placeholder="you@email.com" required autocomplete="email">
+        <div class="op-popup__hp" aria-hidden="true">
+          <input type="text" name="{hp_attr}" tabindex="-1" value="" autocomplete="off">
+        </div>
+        <button class="op-popup__btn" type="submit" id="op-popup-submit">Get the weekly primer</button>
+        <p class="op-popup__error" id="op-popup-error" role="alert" hidden></p>
+      </form>
+      <p class="op-popup__success" id="op-popup-success" role="status" hidden>You&rsquo;re in &mdash; check your inbox.</p>
+      <p class="op-popup__micro">Free. One email a week. Unsubscribe anytime.</p>
+      <button type="button" class="op-popup__decline" id="op-popup-decline">Continue reading</button>
+    </div>
+  </section>
+</div>
+<script>
+(function () {{
+  var FORM_ACTION = {action_js};
+  var HONEYPOT    = {hp_js};
+
+  var POPUP_DELAY_MS    = 50000;
+  var HIGH_INTENT_MS    = 15000;
+  var SCROLL_TRIGGER    = 0.5;
+  var DISMISS_DAYS      = 10;
+  var SUBSCRIBED_DAYS   = 365;
+  var SUPPRESS_PATHS    = ['/learn'];
+  var HIGH_INTENT_PATHS = ['/matches', '/match', '/outrights'];
+  var STORAGE_KEY       = 'op_newsletter_popup';
+  var FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
+  var popup    = document.getElementById('op-popup');
+  var form     = document.getElementById('op-popup-form');
+  var emailEl  = document.getElementById('op-popup-email');
+  var submitEl = document.getElementById('op-popup-submit');
+  var errEl    = document.getElementById('op-popup-error');
+  var okEl     = document.getElementById('op-popup-success');
+  if (!popup || !form) return;
+
+  var path = location.pathname;
+  var lastFocus = null;
+  var fired = false;
+
+  function startsAny(list) {{
+    for (var i = 0; i < list.length; i++) {{
+      if (path === list[i] || path.indexOf(list[i] + '/') === 0) return true;
+    }}
+    return false;
+  }}
+  function readStored() {{
+    try {{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      var v = JSON.parse(raw);
+      if (v && v.exp && Date.now() > v.exp) {{ localStorage.removeItem(STORAGE_KEY); return null; }}
+      return v ? v.status : null;
+    }} catch (e) {{ return null; }}
+  }}
+  function writeStored(status, days) {{
+    try {{ localStorage.setItem(STORAGE_KEY, JSON.stringify({{ status: status, exp: Date.now() + days * 864e5 }})); }} catch (e) {{}}
+  }}
+
+  function trap(e) {{
+    if (e.key === 'Escape') {{ e.preventDefault(); close('dismissed', DISMISS_DAYS); return; }}
+    if (e.key !== 'Tab') return;
+    var nodes = popup.querySelectorAll(FOCUSABLE);
+    if (!nodes.length) return;
+    var first = nodes[0], last = nodes[nodes.length - 1];
+    if (e.shiftKey && document.activeElement === first) {{ e.preventDefault(); last.focus(); }}
+    else if (!e.shiftKey && document.activeElement === last) {{ e.preventDefault(); first.focus(); }}
+  }}
+  function open() {{
+    if (fired || readStored() || startsAny(SUPPRESS_PATHS)) return;
+    fired = true;
+    lastFocus = document.activeElement;
+    popup.hidden = false;
+    document.body.classList.add('op-noscroll');
+    document.addEventListener('keydown', trap);
+    if (emailEl) emailEl.focus();
+  }}
+  function close(status, days) {{
+    popup.hidden = true;
+    document.body.classList.remove('op-noscroll');
+    document.removeEventListener('keydown', trap);
+    if (status) writeStored(status, days || DISMISS_DAYS);
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }}
+
+  // ── trigger: timer + scroll, one-shot ──
+  if (!readStored() && !startsAny(SUPPRESS_PATHS)) {{
+    var delay = startsAny(HIGH_INTENT_PATHS) ? HIGH_INTENT_MS : POPUP_DELAY_MS;
+    setTimeout(open, delay);
+    window.addEventListener('scroll', function onScroll() {{
+      if (fired) {{ window.removeEventListener('scroll', onScroll); return; }}
+      var h = document.documentElement;
+      var max = (h.scrollHeight - h.clientHeight) || 1;
+      var depth = (h.scrollTop || document.body.scrollTop) / max;
+      if (depth >= SCROLL_TRIGGER) {{ window.removeEventListener('scroll', onScroll); open(); }}
+    }}, {{ passive: true }});
+  }}
+
+  document.getElementById('op-popup-close').addEventListener('click', function () {{ close('dismissed', DISMISS_DAYS); }});
+  document.getElementById('op-popup-decline').addEventListener('click', function () {{ close('dismissed', DISMISS_DAYS); }});
+  popup.addEventListener('click', function (e) {{ if (e.target === popup) close('dismissed', DISMISS_DAYS); }});
+
+  // ── submit via Mailchimp JSON-P ──
+  form.addEventListener('submit', function (e) {{
+    e.preventDefault();
+    if (submitEl.disabled) return;
+    var email = (emailEl.value || '').trim();
+    if (!email) return;
+    submitEl.disabled = true;
+    submitEl.textContent = 'Sending';
+    errEl.hidden = true;
+
+    var cb = 'op_mc_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+    var script = null;
+    var settled = false;
+    var to = setTimeout(function () {{
+      if (settled) return;
+      settled = true;
+      cleanup();
+      fail('That took longer than expected. Please try again.');
+    }}, 10000);
+
+    function cleanup() {{
+      if (script && script.parentNode) script.parentNode.removeChild(script);
+      try {{ delete window[cb]; }} catch (_e) {{ window[cb] = undefined; }}
+    }}
+    function fail(msg) {{
+      submitEl.disabled = false;
+      submitEl.textContent = 'Get the weekly primer';
+      errEl.textContent = msg || 'Something went wrong. Please try again.';
+      errEl.hidden = false;
+    }}
+    function ok() {{
+      form.hidden = true;
+      okEl.hidden = false;
+      writeStored('subscribed', SUBSCRIBED_DAYS);
+    }}
+
+    window[cb] = function (resp) {{
+      if (settled) return;
+      settled = true;
+      clearTimeout(to);
+      cleanup();
+      if (resp && resp.result === 'success') {{ ok(); return; }}
+      var raw = (resp && resp.msg) ? String(resp.msg) : '';
+      var cleaned = raw.replace(/^\\d+\\s*-\\s*/, '').replace(/<[^>]+>/g, '').trim();
+      fail(cleaned);
+    }};
+
+    var base = FORM_ACTION.indexOf('/post-json?') !== -1 ? FORM_ACTION : FORM_ACTION.replace('/post?', '/post-json?');
+    var joiner = base.indexOf('?') !== -1 ? '&' : '?';
+    var url = base + joiner + 'EMAIL=' + encodeURIComponent(email)
+      + '&' + encodeURIComponent(HONEYPOT) + '='
+      + '&c=' + cb;
+    script = document.createElement('script');
+    script.src = url;
+    script.async = true;
+    script.onerror = function () {{
+      if (settled) return;
+      settled = true;
+      clearTimeout(to);
+      cleanup();
+      fail('Could not reach the newsletter service. Please try again.');
+    }};
+    document.body.appendChild(script);
+  }});
+}})();
+</script>
+"""
+
+
+def newsletter_footer_form_js() -> str:
+    """Footer-signup form handler — same JSON-P submit path as the popup,
+    scoped to the #op-news-form element. Kept separate so the popup can be
+    suppressed on /learn while the footer form still works there."""
+    if not NEWSLETTER_CONFIGURED:
+        return ""
+    action_js = json.dumps(MAILCHIMP_FORM_ACTION)
+    hp_js     = json.dumps(MAILCHIMP_HONEYPOT_NAME)
+    return f"""<script>
+(function () {{
+  var FORM_ACTION = {action_js};
+  var HONEYPOT    = {hp_js};
+  var SUBSCRIBED_DAYS = 365;
+  var STORAGE_KEY     = 'op_newsletter_popup';
+
+  var form = document.getElementById('op-news-form');
+  if (!form) return;
+  var submitEl = form.querySelector('button[type="submit"]');
+  var emailEl  = form.querySelector('input[type="email"]');
+  var errEl    = document.getElementById('op-news-error');
+  var okEl     = document.getElementById('op-news-success');
+
+  function writeStored(status, days) {{
+    try {{ localStorage.setItem(STORAGE_KEY, JSON.stringify({{ status: status, exp: Date.now() + days * 864e5 }})); }} catch (e) {{}}
+  }}
+
+  form.addEventListener('submit', function (e) {{
+    e.preventDefault();
+    if (submitEl.disabled) return;
+    var email = (emailEl.value || '').trim();
+    if (!email) return;
+    submitEl.disabled = true;
+    var origLabel = submitEl.textContent;
+    submitEl.textContent = 'Sending';
+    errEl.hidden = true;
+
+    var cb = 'op_mcf_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+    var script = null;
+    var settled = false;
+    var to = setTimeout(function () {{
+      if (settled) return;
+      settled = true; cleanup();
+      fail('That took longer than expected. Please try again.');
+    }}, 10000);
+
+    function cleanup() {{
+      if (script && script.parentNode) script.parentNode.removeChild(script);
+      try {{ delete window[cb]; }} catch (_e) {{ window[cb] = undefined; }}
+    }}
+    function fail(msg) {{
+      submitEl.disabled = false;
+      submitEl.textContent = origLabel;
+      errEl.textContent = msg || 'Something went wrong. Please try again.';
+      errEl.hidden = false;
+    }}
+    function ok() {{
+      form.hidden = true;
+      okEl.hidden = false;
+      writeStored('subscribed', SUBSCRIBED_DAYS);
+    }}
+
+    window[cb] = function (resp) {{
+      if (settled) return;
+      settled = true; clearTimeout(to); cleanup();
+      if (resp && resp.result === 'success') {{ ok(); return; }}
+      var raw = (resp && resp.msg) ? String(resp.msg) : '';
+      var cleaned = raw.replace(/^\\d+\\s*-\\s*/, '').replace(/<[^>]+>/g, '').trim();
+      fail(cleaned);
+    }};
+
+    var base = FORM_ACTION.indexOf('/post-json?') !== -1 ? FORM_ACTION : FORM_ACTION.replace('/post?', '/post-json?');
+    var joiner = base.indexOf('?') !== -1 ? '&' : '?';
+    var url = base + joiner + 'EMAIL=' + encodeURIComponent(email)
+      + '&' + encodeURIComponent(HONEYPOT) + '='
+      + '&c=' + cb;
+    script = document.createElement('script');
+    script.src = url;
+    script.async = true;
+    script.onerror = function () {{
+      if (settled) return;
+      settled = true; clearTimeout(to); cleanup();
+      fail('Could not reach the newsletter service. Please try again.');
+    }};
+    document.body.appendChild(script);
+  }});
+}})();
+</script>
+"""
+
+
+EDITORIAL_PAGES = (
+    "about", "learn",
+    "method", "methodology",
+    "responsible-use", "affiliate-disclosure", "corrections",
+    "terms", "privacy", "cookies", "404",
+)
+
+
+def patch_editorial_pages(log=print) -> None:
+    """Inject (or strip) the newsletter pop-up + footer signup in every
+    hand-written editorial HTML file under site/public/.
+
+    Idempotent: each injection is wrapped in HTML-comment markers so a
+    re-run strips the previous insertion and rewrites it from the
+    current env vars. When NEWSLETTER_CONFIGURED is false, the function
+    runs anyway but only strips — useful for local generation that
+    deliberately omits Mailchimp creds."""
+    import re
+
+    css_start  = "<!-- op-newsletter-css-start -->"
+    css_end    = "<!-- op-newsletter-css-end -->"
+    foot_start = "<!-- op-newsletter-footer-start -->"
+    foot_end   = "<!-- op-newsletter-footer-end -->"
+    pop_start  = "<!-- op-newsletter-popup-start -->"
+    pop_end    = "<!-- op-newsletter-popup-end -->"
+
+    foot_block = newsletter_footer_block()
+    popup_block = newsletter_popup_block() + newsletter_footer_form_js()
+
+    def strip_between(html: str, a: str, b: str) -> str:
+        return re.sub(re.escape(a) + r".*?" + re.escape(b), "", html, flags=re.DOTALL)
+
+    n_patched = 0
+    for name in EDITORIAL_PAGES:
+        path = SITE_OUT / f"{name}.html"
+        if not path.is_file():
+            continue
+        html = path.read_text()
+        before = html
+
+        # Always strip any previous injection so re-runs don't double up.
+        html = strip_between(html, css_start,  css_end)
+        html = strip_between(html, foot_start, foot_end)
+        html = strip_between(html, pop_start,  pop_end)
+
+        if NEWSLETTER_CONFIGURED:
+            # CSS goes in its own <style> block right before </head> —
+            # avoids splicing into the existing hand-written inline CSS.
+            css_inject = (
+                f"\n{css_start}\n<style>{NEWSLETTER_CSS}</style>\n{css_end}\n"
+            )
+            if "</head>" in html:
+                html = html.replace("</head>", css_inject + "</head>", 1)
+
+            # Footer signup sits immediately above the existing
+            # <footer class="site-footer"> markup.
+            foot_inject = f"\n{foot_start}\n{foot_block}\n{foot_end}\n"
+            html = html.replace(
+                '<footer class="site-footer">',
+                foot_inject + '<footer class="site-footer">',
+                1,
+            )
+
+            # Popup + JS sits right before </body>.
+            pop_inject = f"\n{pop_start}\n{popup_block}\n{pop_end}\n"
+            html = html.replace("</body>", pop_inject + "</body>", 1)
+
+        if html != before:
+            path.write_text(html)
+            n_patched += 1
+
+    if n_patched:
+        verb = "patched" if NEWSLETTER_CONFIGURED else "stripped"
+        log(f"Editorial      : {verb} newsletter blocks in {n_patched} page(s)")
+
+
 def chrome_footer() -> str:
     today = datetime.now(timezone.utc).strftime("%-d %b %Y")
-    return f"""<footer class="site-foot page">
+    return f"""{newsletter_footer_block()}<footer class="site-foot page">
   <div class="foot-row">
     <span class="left">Odds Primer · educational, not advice</span>
     <span>The Desk · v1.1 · {today}</span>
@@ -766,7 +1380,7 @@ def chrome_footer() -> str:
     <a href="/cookies">Cookies</a>
   </nav>
 </footer>
-</body>
+{newsletter_popup_block()}{newsletter_footer_form_js()}</body>
 </html>
 """
 
@@ -1690,6 +2304,11 @@ def main():
         (SITE_OUT / "o" / f"{oid}.html").write_text(render_outright_page(o))
     if outrights:
         log(f"Wrote          : {len(outrights)} outright page(s) in o/")
+
+    # Hand-written editorial pages live under site/public/ as flat HTML;
+    # the generator doesn't rewrite them, but it does inject (or strip)
+    # the newsletter pop-up + footer signup so they stay in sync.
+    patch_editorial_pages(log=log)
 
     log(f"\n✓ Site ready  : {SITE_OUT}")
 

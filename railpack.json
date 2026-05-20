@@ -19,6 +19,6 @@
     }
   },
   "deploy": {
-    "startCommand": "python main.py --dashboard --port $PORT"
+    "startCommand": "python site/generate.py --quiet || true; python main.py --dashboard --port $PORT"
   }
 }
