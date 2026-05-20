@@ -475,6 +475,7 @@ a { color: inherit; }
 .lv-card .lv-action .cta-caption.is-best   { color: var(--flame-deep); }
 .lv-card .lv-action .cta-caption.is-live   { color: var(--ink); }
 .lv-card .lv-action .cta-caption.is-search { color: var(--graphite-soft); font-style: italic; letter-spacing: 0.04em; text-transform: none; font-size: 11px; font-weight: 500; }
+.lv-card .lv-action .cta-caption.is-spacer { visibility: hidden; }
 
 /* Secondary "Read the case" CTA — text link, no pill. Sits next to the
    two primary trade pills as a tertiary action. */
@@ -670,15 +671,6 @@ a { color: inherit; }
               border-color var(--dur-fast) var(--ease-standard);
 }
 .site-foot .foot-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
-.site-foot .foot-operator {
-  margin: 6px 0 0; padding-top: 10px;
-  font-family: var(--font-serif); font-style: italic;
-  font-size: 12px; letter-spacing: 0; text-transform: none;
-  color: var(--graphite); font-weight: 400;
-  border-top: var(--hairline-soft);
-}
-.site-foot .foot-operator a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
-.site-foot .foot-operator a:hover { color: var(--flame-deep); }
 
 /* ─── NEWSLETTER FOOTER SIGNUP ─────────────────────────────────────
    Sits above .site-foot. Dark navy block, on-ink text, single email
@@ -1419,7 +1411,6 @@ def chrome_footer() -> str:
     <a href="/privacy">Privacy</a>
     <a href="/cookies">Cookies</a>
   </nav>
-  <p class="foot-operator">Operated by Adi Dagan t/a Odds Primer &middot; <a href="mailto:hello@oddsprimer.com">hello@oddsprimer.com</a></p>
 </footer>
 {newsletter_popup_block()}{newsletter_footer_form_js()}</body>
 </html>
@@ -1672,15 +1663,16 @@ def _cta_pill(
         f'{escape(label)} <span class="arr">↗</span>'
         f'</a>'
     )
-    if not caption:
-        return f'<span class="cta-stack">{pill}</span>'
+    # Always emit a `.cta-caption` line, even when empty, so the two side-by-side
+    # CTA stacks share the same total height and their bottom edges line up. An
+    # invisible non-breaking space holds the line; the visible caption sits in
+    # the same place when present.
     kind_cls = f" is-{caption_kind}" if caption_kind else ""
-    return (
-        f'<span class="cta-stack">'
-        f'{pill}'
-        f'<span class="cta-caption{kind_cls}">{escape(caption)}</span>'
-        f'</span>'
-    )
+    if not caption:
+        caption_html = '<span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span>'
+    else:
+        caption_html = f'<span class="cta-caption{kind_cls}">{escape(caption)}</span>'
+    return f'<span class="cta-stack">{pill}{caption_html}</span>'
 
 
 def _read_case_link(detail_href: str) -> str:
