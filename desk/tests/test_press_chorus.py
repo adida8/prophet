@@ -59,17 +59,47 @@ def test_chorus_returns_none_when_outlets_dedup_below_threshold() -> None:
 
 # ── Consensus shape (quote survives) ─────────────────────────────────
 
-def test_chorus_consensus_quotes_top_reliability_outlet() -> None:
+def test_chorus_quotes_top_reliability_outlet() -> None:
     """citations are pre-sorted by reliability desc — chorus features
-    the first surviving (voice-clean) quote and names that outlet."""
+    the first surviving (voice-clean) outlet AND quote. Two outlets
+    means the 2-quote shape may fire instead of one — either way,
+    the top outlet + quote are present."""
     out = _press_chorus([
         _cite("The Guardian", quote="Deschamps signals an unchanged starting XI."),
         _cite("ESPN", quote="Squad arrived in Guadalajara on Monday."),
-    ])
+    ], salt="fix-1")
     assert out is not None
     assert "The Guardian" in out
     assert "Deschamps signals an unchanged starting XI." in out
-    assert out.startswith("Coverage converged")
+
+
+def test_chorus_two_quote_shape_includes_both_outlets() -> None:
+    """When ≥ 2 outlets each contribute a clean quote, both should be
+    named and quoted in the chorus."""
+    out = _press_chorus([
+        _cite("The Guardian", quote="Deschamps signals an unchanged starting XI."),
+        _cite("ESPN", quote="Squad arrived in Guadalajara on Monday."),
+    ], salt="fix-1")
+    assert out is not None
+    assert "The Guardian" in out and "ESPN" in out
+    assert "Deschamps signals an unchanged starting XI." in out
+    assert "Squad arrived in Guadalajara on Monday." in out
+
+
+def test_chorus_opener_is_deterministic_per_salt() -> None:
+    """Same fixture (salt) always picks the same opener variant."""
+    cites = [
+        _cite("BBC Sport", quote="A clean line one."),
+        _cite("ESPN",      quote="A clean line two."),
+    ]
+    a = _press_chorus(cites, salt="france-mexico")
+    b = _press_chorus(cites, salt="france-mexico")
+    c = _press_chorus(cites, salt="brazil-morocco")
+    assert a == b           # deterministic
+    # Different fixtures *may* land on different variants, but with 3
+    # opener variants and SHA-1 hashing across two salts they often do.
+    # We only assert determinism above; cross-salt difference isn't
+    # a contract (collisions are fine).
 
 
 def test_chorus_consensus_truncates_overlong_quote() -> None:
@@ -188,7 +218,8 @@ def test_pick_blurb_appends_chorus_when_citations_present() -> None:
     with_cs = build_copy(_pick_inputs(editorial_citations=cites))
     assert len(with_cs.blurb) > len(bare.blurb)
     assert "The Guardian" in with_cs.blurb
-    assert "Coverage converged" in with_cs.blurb
+    # The opener varies by salt — assert structural markers, not exact phrasing.
+    assert "Deschamps signals an unchanged starting XI." in with_cs.blurb
 
 
 def test_pick_blurb_unchanged_when_no_citations() -> None:
@@ -215,7 +246,9 @@ def test_pass_blurb_appends_chorus_when_citations_present() -> None:
         editorial_citations=cites,
     )
     out = build_copy(inputs)
-    assert "Coverage converged" in out.blurb or "Recent coverage" in out.blurb
+    # New shapes either name + quote outlets or fall through to the
+    # count shape — assert at least one named outlet appears.
+    assert ("The Guardian" in out.blurb) or ("BBC Sport" in out.blurb)
 
 
 def test_avoid_blurb_appends_chorus_when_citations_present() -> None:
@@ -233,5 +266,4 @@ def test_avoid_blurb_appends_chorus_when_citations_present() -> None:
         editorial_citations=cites,
     )
     out = build_copy(inputs)
-    assert ("Coverage converged" in out.blurb
-            or "Recent coverage" in out.blurb)
+    assert ("ESPN" in out.blurb) or ("Sky Sports" in out.blurb)

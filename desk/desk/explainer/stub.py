@@ -671,7 +671,7 @@ def _pick_copy(i: Inputs) -> Copy:
         model_p=model_p, market_p=market_p, a=a, b=b,
         competition=competition, venue_label=venue_label, salt=salt,
     )
-    blurb = _with_chorus(blurb, i.get("editorial_citations"))
+    blurb = _with_chorus(blurb, i.get("editorial_citations"), salt=salt)
     drivers = [
         f"Pre-tournament Elo gives {side_name} a stronger prior than the {venue_label} line implies.",
         f"The {edge:+.1f}pp gap clears our 3 percentage point threshold for a Pick.",
@@ -695,7 +695,7 @@ def _pass_copy(i: Inputs) -> Copy:
         f"as kickoff approaches and late-binding signals (form, weather, confirmed XI) "
         f"come in."
     )
-    blurb = _with_chorus(blurb, i.get("editorial_citations"))
+    blurb = _with_chorus(blurb, i.get("editorial_citations"), salt=f"{a}|{b}|pass")
     drivers = [
         "Model and market sit within a percentage point on every side.",
         "No structural disagreement to publish — both are pricing the same shape.",
@@ -719,7 +719,7 @@ def _avoid_copy(i: Inputs) -> Copy:
         f"outcome. A reader's takeaway: this market doesn't carry an edge for the engine, "
         f"and we surface that distinctly from Pass so it isn't read as ambiguous."
     )
-    blurb = _with_chorus(blurb, i.get("editorial_citations"))
+    blurb = _with_chorus(blurb, i.get("editorial_citations"), salt=f"{a}|{b}|avoid")
     drivers = [
         f"Every side priced shorter than our model — most-negative gap is {edge:+.1f}pp.",
         "No side priced attractively against the engine's Elo prior.",
@@ -760,65 +760,129 @@ def _distinct_outlets(cites: list[Citation]) -> list[str]:
     return out
 
 
-def _press_chorus(cites: list[Citation] | None) -> str | None:
-    """One-sentence "press chorus" appended to a blurb when news
-    citations are present. Returns None when nothing safe to say.
+# Deterministic-by-fixture opener variants. Same fixture → same chorus
+# wording across re-runs. The voice rules and length budget filter
+# anything that drifts into endorsement-speak or marketing tone.
+#
+# `{outlet}` is the single attributed outlet for the one-quote shape.
+# `{quote}` is the truncated, voice-clean line, rendered between double
+# quotes by the caller.
+_ONE_QUOTE_OPENERS: tuple[str, ...] = (
+    'Per {outlet}: "{quote}"',
+    'From {outlet}: "{quote}"',
+    '{outlet} reported: "{quote}"',
+    '{outlet} carried the line: "{quote}"',
+    '{outlet}\'s line on this fixture: "{quote}"',
+)
 
-    Two shapes, picked by what survives the voice filter:
+# Two-quote shape: cite a second outlet to evidence the consensus.
+_TWO_QUOTE_OPENERS: tuple[str, ...] = (
+    '{outlet1} reported: "{quote1}" {outlet2} added: "{quote2}"',
+    'Per {outlet1}: "{quote1}" {outlet2} carried the same line: "{quote2}"',
+    'Two outlets covered the build-up this week — {outlet1}: "{quote1}"; {outlet2}: "{quote2}"',
+)
 
-      1. **Consensus shape** — when the top-reliability citation carries
-         a voice-clean quote, mention it: `Coverage this week converged
-         on the fixture; {Outlet} carried the line "{quote}".`
-      2. **Count shape** — when no clean quote survives but ≥ 2 distinct
-         outlets remain, list them: `Recent coverage from {N} outlets
-         ({first}, {second}, …) sits behind this verdict; full sources
-         below.`
+
+def _press_chorus(
+    cites: list[Citation] | None,
+    *,
+    salt: str = "",
+) -> str | None:
+    """Voice-clean press chorus appended to a blurb when news citations
+    are present. Returns None when nothing safe to say.
+
+    Three shapes, picked by what survives the voice filter:
+
+      1. **Two-quote shape** — when ≥ 2 outlets each contribute a voice-
+         clean quote: cite both. Variant chosen deterministically by
+         `salt` so the same fixture always reads the same way.
+      2. **One-quote shape** — when only one outlet has a usable quote:
+         feature it. Variant also salt-deterministic.
+      3. **Count shape** — when no quote survives the voice filter but
+         ≥ 2 distinct outlets remain: name the outlets, skip the prose.
+         Last-resort framing that still tells the reader who covered
+         the fixture.
 
     All output is voice-checked one final time before return. A failing
     final check returns None — the blurb body still ships unchanged.
     """
     cites = cites or []
-    if len(cites) < _CHORUS_MIN_OUTLETS:
+    distinct_outlets = _distinct_outlets(cites)
+    if len(distinct_outlets) < _CHORUS_MIN_OUTLETS:
         return None
 
-    # Pre-filter: drop citations whose quote would fail the voice gate.
-    # Outlet name + URL stay attached; the quote isn't usable in prose.
-    safe_quoted = [c for c in cites if c.quote and is_voice_clean(c.quote)]
-    distinct = _distinct_outlets(cites)
-    if len(distinct) < _CHORUS_MIN_OUTLETS:
+    # Pre-filter quotes by voice — banned phrases like "guaranteed",
+    # "lock", "back the" get nuked. The outlet's URL + name still ship
+    # via the editorial_citations contract; we just don't quote them.
+    safe = [c for c in cites if c.quote and is_voice_clean(c.quote)]
+
+    candidate = _try_two_quote(safe, salt) \
+             or _try_one_quote(safe, salt) \
+             or _count_shape(distinct_outlets)
+
+    return candidate if (candidate and is_voice_clean(candidate)) else None
+
+
+def _try_two_quote(safe: list[Citation], salt: str) -> str | None:
+    """Render the two-quote shape if ≥ 2 outlets each have a clean quote.
+
+    Picks the first surviving citation from each of the two top outlets
+    (citations arrive pre-sorted by source reliability desc), so the
+    pair reflects the strongest two sources.
+    """
+    by_outlet: dict[str, Citation] = {}
+    for c in safe:
+        name = (c.outlet or "").strip()
+        if name and name not in by_outlet:
+            by_outlet[name] = c
+    if len(by_outlet) < 2:
         return None
-
-    candidate: str | None = None
-
-    # Consensus shape: prefer a real quote if one survived the filter.
-    # `editorial.build_citations` already sorts by source reliability
-    # desc, so the first surviving quote is the best one to feature.
-    if safe_quoted:
-        c = safe_quoted[0]
-        quote = _truncate_quote(c.quote).strip().rstrip('"').rstrip("'")
-        candidate = (
-            f'Coverage converged on the fixture this week; '
-            f'{c.outlet.strip()} carried the line "{quote}".'
-        )
-
-    # Count shape: fall back when no usable quote, but ≥ N outlets carry it.
-    if candidate is None or not is_voice_clean(candidate):
-        names = distinct[:_CHORUS_MAX_NAMED_OUTLETS]
-        rest  = len(distinct) - len(names)
-        listed = ", ".join(names)
-        if rest > 0:
-            listed += f", and {rest} other{'s' if rest != 1 else ''}"
-        candidate = (
-            f'Recent coverage from {len(distinct)} outlets '
-            f'({listed}) sits behind this verdict; full sources below.'
-        )
-
-    return candidate if is_voice_clean(candidate) else None
+    items = list(by_outlet.items())[:2]
+    template = _TWO_QUOTE_OPENERS[_variant_index(salt + "/chorus2", len(_TWO_QUOTE_OPENERS))]
+    return template.format(
+        outlet1=items[0][0],
+        quote1=_truncate_quote(items[0][1].quote).strip().rstrip('"').rstrip("'"),
+        outlet2=items[1][0],
+        quote2=_truncate_quote(items[1][1].quote).strip().rstrip('"').rstrip("'"),
+    )
 
 
-def _with_chorus(blurb: str, cites: list[Citation] | None) -> str:
+def _try_one_quote(safe: list[Citation], salt: str) -> str | None:
+    """Render the one-quote shape if exactly one outlet has a clean quote."""
+    if not safe:
+        return None
+    c = safe[0]
+    outlet = (c.outlet or "").strip()
+    if not outlet:
+        return None
+    template = _ONE_QUOTE_OPENERS[_variant_index(salt + "/chorus1", len(_ONE_QUOTE_OPENERS))]
+    return template.format(
+        outlet=outlet,
+        quote=_truncate_quote(c.quote).strip().rstrip('"').rstrip("'"),
+    )
+
+
+def _count_shape(distinct_outlets: list[str]) -> str:
+    """Last-resort framing when no clean quote survived the voice filter."""
+    names = distinct_outlets[:_CHORUS_MAX_NAMED_OUTLETS]
+    rest  = len(distinct_outlets) - len(names)
+    listed = ", ".join(names)
+    if rest > 0:
+        listed += f", and {rest} other{'s' if rest != 1 else ''}"
+    return (
+        f'Recent coverage from {len(distinct_outlets)} outlets '
+        f'({listed}) sits behind this verdict; full sources below.'
+    )
+
+
+def _with_chorus(
+    blurb: str,
+    cites: list[Citation] | None,
+    *,
+    salt: str = "",
+) -> str:
     """Append the press chorus to a blurb when one is available."""
-    chorus = _press_chorus(cites)
+    chorus = _press_chorus(cites, salt=salt)
     if not chorus:
         return blurb
     return f"{blurb} {chorus}".strip()

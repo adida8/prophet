@@ -588,6 +588,38 @@ a { color: inherit; }
 }
 .blurb p + p { margin-top: 14px; }
 
+/* Sources — verifiable links behind the press chorus in the blurb.
+   One row per outlet; each row links to the article and shows the
+   verbatim line we quoted. Editorial register, not a directory. */
+.sources { margin: 32px 0 0; max-width: 64ch; }
+.sources h2 {
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  margin: 0 0 12px; padding-bottom: 8px; border-bottom: var(--hairline);
+}
+.sources ul { list-style: none; padding: 0; margin: 0; }
+.sources li {
+  padding: 14px 0;
+  border-bottom: var(--hairline-soft);
+}
+.sources li:last-child { border-bottom: none; }
+.sources li a {
+  font-family: var(--font-sans); font-size: 13px; font-weight: 700;
+  letter-spacing: 0.04em; color: var(--ink);
+  text-decoration: none; border-bottom: 1px solid var(--ink);
+}
+.sources li a:hover { color: var(--flame-deep); border-bottom-color: var(--flame-deep); }
+.sources .src-date {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  letter-spacing: 0.02em; color: var(--graphite-soft);
+  margin-left: 4px;
+}
+.sources blockquote {
+  margin: 6px 0 0; padding: 0;
+  font-family: var(--font-serif); font-style: italic; font-size: 15px;
+  line-height: 1.5; color: var(--ink-soft);
+}
+
 .cta-row {
   margin: 28px 0 0; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
 }
@@ -2034,12 +2066,59 @@ def render_matches_index(matches: list[dict]) -> str:
     )
 
 
+def _render_sources_block(citations: list[dict]) -> str:
+    """Render `editorial_citations` as a clickable Sources block.
+
+    Each row: outlet name (link to the article) · published date (when
+    present) · verbatim quote. Empty list → empty string (the section
+    is hidden entirely rather than showing an empty header).
+
+    Links carry `rel="nofollow noopener"` + `target="_blank"`, matching
+    the existing market-CTA convention. Quotes are HTML-escaped; URLs
+    are escaped for attribute safety.
+    """
+    if not citations:
+        return ""
+    items: list[str] = []
+    for c in citations:
+        outlet = (c.get("outlet") or "").strip()
+        url    = (c.get("url") or "").strip()
+        quote  = (c.get("quote") or "").strip()
+        if not (outlet and url):
+            continue
+        when = ""
+        pub = c.get("published_at")
+        if pub:
+            try:
+                dt = datetime.fromisoformat(pub.replace("Z", "+00:00"))
+                when = f' <span class="src-date">· {dt.strftime("%-d %b %Y")}</span>'
+            except Exception:
+                when = ""
+        items.append(
+            '<li>'
+            f'<a href="{escape(url)}" rel="nofollow noopener" target="_blank">'
+            f'{escape(outlet)}</a>'
+            f'{when}'
+            f'<blockquote>{escape(quote)}</blockquote>'
+            '</li>'
+        )
+    if not items:
+        return ""
+    return (
+        '<section class="sources">'
+        '<h2>Sources</h2>'
+        '<ul>' + "".join(items) + '</ul>'
+        '</section>'
+    )
+
+
 def render_match_page(match: dict) -> str:
-    """Per-match page: header + lead card + blurb + drivers."""
+    """Per-match page: header + lead card + blurb + drivers + sources."""
     title = match["copy"].get("title") or f"{match['team_a']} v {match['team_b']}"
     summary = match["copy"].get("summary") or ""
     blurb = match["copy"].get("blurb") or ""
     drivers = match["copy"].get("drivers") or []
+    citations = match["copy"].get("editorial_citations") or []
     v = match["verdict"]
 
     # Build the blurb paragraphs (single string for now; split on \n\n if multi-para)
@@ -2049,6 +2128,8 @@ def render_match_page(match: dict) -> str:
     if drivers:
         items = "\n".join(f'<li>{escape(d)}</li>' for d in drivers)
         drivers_html = f'<section class="drivers"><h2>The drivers</h2><ol>{items}</ol></section>'
+
+    sources_html = _render_sources_block(citations)
 
     market_url = v.get("market_url")
     venue_name = (v.get("market_venue") or "").title()
@@ -2078,6 +2159,7 @@ def render_match_page(match: dict) -> str:
         + (f'<div class="blurb">{blurb_paras}</div>' if blurb_paras else "")
         + cta_row
         + drivers_html
+        + sources_html
         + '<aside class="voice">'
           '<h3>How to read this</h3>'
           '<p>The verdict compares our <em>model probability</em> against the <em>best available market probability</em>. '
