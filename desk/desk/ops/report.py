@@ -183,6 +183,36 @@ def fixture_row_from_match(match: MatchOutput, *, venues: list[str]) -> FixtureR
     )
 
 
+# ── News-signals impact (per-outlet status + per-run contribution) ────
+
+class SignalImpactRow(BaseModel):
+    """One news outlet's status + impact on this run.
+
+    Combines two operator views in one row:
+      - *status* — fresh / stale / failed / frozen, last-successful-fetch
+        timestamp, and total cached items + extracted signals.
+      - *this-run contribution* — citations contributed, hard-track Elo
+        adjustments driven, distinct fixtures touched.
+
+    Aggregated by `SignalsRuntime.impact()` and threaded through the
+    runner into `RunReport.signal_impact`. Lives alongside (not inside)
+    the existing `sources` list so the ops dashboard can render news
+    outlets in a richer panel without bloating the engine-source row
+    set.
+    """
+    model_config = ConfigDict(extra="forbid", use_enum_values=True)
+
+    source_id:         Annotated[str, StringConstraints(min_length=1, max_length=64)]
+    name:              Annotated[str, StringConstraints(min_length=1, max_length=128)]
+    status:            SourceFreshness
+    last_ok:           Optional[datetime] = None
+    cached_items:      int = Field(default=0, ge=0)
+    extracted_signals: int = Field(default=0, ge=0)
+    citations:         int = Field(default=0, ge=0)
+    hard_adjustments:  int = Field(default=0, ge=0)
+    fixtures_touched:  int = Field(default=0, ge=0)
+
+
 # ── Ingest stats (handed up from a sport's priced-ingest layer) ───────
 
 class IngestStats(BaseModel):
@@ -226,10 +256,11 @@ class RunReport(BaseModel):
     forced_pass:  ForcedPassCounts = Field(default_factory=ForcedPassCounts)
     verdicts:     VerdictCounts    = Field(default_factory=VerdictCounts)
 
-    sources:      list[SourceStatus] = Field(default_factory=list)
-    errors:       list[ErrorEntry]   = Field(default_factory=list)
-    changes:      list[dict]         = Field(default_factory=list)   # populated by PR 3
-    snapshot:     list[FixtureRow]   = Field(default_factory=list)
+    sources:       list[SourceStatus]    = Field(default_factory=list)
+    errors:        list[ErrorEntry]      = Field(default_factory=list)
+    changes:       list[dict]            = Field(default_factory=list)   # populated by PR 3
+    snapshot:      list[FixtureRow]      = Field(default_factory=list)
+    signal_impact: list[SignalImpactRow] = Field(default_factory=list)
 
     @field_validator("started_at", "finished_at")
     @classmethod

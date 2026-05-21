@@ -70,6 +70,7 @@ def build_citations(
     fixture_tags: Iterable[str],
     cache: SignalsCache,
     registry: Registry,
+    teams: Iterable[str] | None = None,
     now: datetime | None = None,
     max_age: timedelta | None = DEFAULT_MAX_AGE,
     max_citations: int = DEFAULT_MAX_CITATIONS,
@@ -85,20 +86,32 @@ def build_citations(
          dominates here, so an injury from a biased outlet stays
          editorial. Hard-track signals do NOT appear in citations;
          they belong on model features (PR F).
-      4. Filter by recency.
-      5. Dedupe by (canonical url + quote).
-      6. Sort by source reliability desc, then `published_at` desc.
-      7. Cap at `max_citations` so a single fixture doesn't trail a
+      4. If `teams` is provided, drop signals whose `team` field doesn't
+         case-insensitively match one of the fixture's teams. Without
+         this filter, every fixture would pull the same global pool —
+         "Foden out of England squad" showing up on a Brazil v Haiti
+         card. Pass `teams=None` to disable.
+      5. Filter by recency.
+      6. Dedupe by (canonical url + quote).
+      7. Sort by source reliability desc, then `published_at` desc.
+      8. Cap at `max_citations` so a single fixture doesn't trail a
          twenty-link bibliography.
     """
     now = now or datetime.now(tz=timezone.utc)
     candidates = _candidates(fixture_tags, cache, registry)
+
+    team_set: set[str] | None = None
+    if teams is not None:
+        team_set = {t.strip().lower() for t in teams if t and t.strip()}
 
     cutoff = now - max_age if max_age else None
     rows: list[tuple[Signal, Source]] = []
     for signal, source in candidates:
         if signal.track(source) != "editorial":
             continue
+        if team_set is not None:
+            if signal.team.strip().lower() not in team_set:
+                continue
         if cutoff and signal.published_at and signal.published_at < cutoff:
             continue
         rows.append((signal, source))

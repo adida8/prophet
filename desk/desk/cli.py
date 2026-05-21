@@ -109,7 +109,8 @@ def _cmd_fetch_signals(args: argparse.Namespace) -> int:
     from desk.signals.registry import Registry
 
     reg = Registry.from_csv()
-    db_path = Path(args.db) if args.db else Path("desk/data/signals.db")
+    from desk.signals.runtime import DEFAULT_CACHE_PATH
+    db_path = Path(args.db) if args.db else DEFAULT_CACHE_PATH
     tiers: tuple[str, ...] = ("trusted_core",)
     if args.include_long_tail:
         tiers = tiers + ("long_tail",)
@@ -144,7 +145,8 @@ def _cmd_extract_signals(args: argparse.Namespace) -> int:
         print("ANTHROPIC_API_KEY not set", file=sys.stderr)
         return 2
 
-    db_path = Path(args.db) if args.db else Path("desk/data/signals.db")
+    from desk.signals.runtime import DEFAULT_CACHE_PATH
+    db_path = Path(args.db) if args.db else DEFAULT_CACHE_PATH
     extractor = AnthropicExtractor(model=args.model)
     with SignalsCache(db_path) as cache:
         outcomes = extract_all(

@@ -6,17 +6,24 @@ pip-installed in the Railway deploy. We therefore drive the existing
 `python -m desk …` CLI as subprocesses (cwd=desk/) instead of
 importing the package directly.
 
-Each tick runs three steps in sequence, isolated:
-  1. `python -m desk run --once`   — football match pipeline
-  2. `python -m desk outrights`    — WC 2026 winner MC sim
-  3. `python site/generate.py --quiet` — regenerate the static site
-     so the masthead's "Last refresh" stamp and the per-match pages
-     pick up the new JSON.
+Each tick runs steps in sequence, isolated:
+  0a. `python -m desk fetch-signals`   — pull RSS into signals cache
+      (gated on DESK_SIGNALS_FETCH=1)
+  0b. `python -m desk extract-signals` — Haiku reads cache → Signals
+      (gated on DESK_SIGNALS_EXTRACT=1, needs ANTHROPIC_API_KEY)
+  1.  `python -m desk run --once`      — football match pipeline
+      (auto-enriches `copy.editorial_citations` + hard-signal Elo
+      adjustments when the signals cache has rows for a fixture)
+  2.  `python -m desk outrights`       — WC 2026 winner MC sim
+  3.  `python site/generate.py --quiet` — regenerate the static site
+      so the masthead's "Last refresh" stamp and the per-match pages
+      pick up the new JSON.
 
 A single tick fires shortly after boot so the site reflects fresh data
 even when the last committed JSON is stale.
 
-Disabled with DESK_AUTORUN=0 (defaults to on).
+Disabled with DESK_AUTORUN=0 (defaults to on). Signals steps default
+off so a deploy without ANTHROPIC_API_KEY runs cleanly.
 """
 
 from __future__ import annotations
@@ -58,6 +65,26 @@ def _run(cmd: list[str], *, cwd: Path, timeout: int, label: str) -> None:
 
 def _tick() -> None:
     py = sys.executable
+
+    # News-signals steps run only when explicitly enabled — they hit
+    # external services + the Anthropic API, so an unconfigured deploy
+    # should never accidentally start charging tokens.
+    if os.getenv("DESK_SIGNALS_FETCH", "0") == "1":
+        _run([py, "-m", "desk", "fetch-signals"],
+             cwd=DESK_DIR, timeout=180, label="desk fetch-signals")
+
+    if os.getenv("DESK_SIGNALS_EXTRACT", "0") == "1":
+        if not os.getenv("ANTHROPIC_API_KEY"):
+            log.warning("desk extract-signals: ANTHROPIC_API_KEY unset, skipping")
+        else:
+            extract_cmd = [py, "-m", "desk", "extract-signals"]
+            # Optional per-source-per-tick cap, e.g. DESK_SIGNALS_EXTRACT_LIMIT=25
+            # keeps the steady-state cost predictable. Unset ⇒ no cap.
+            cap = os.getenv("DESK_SIGNALS_EXTRACT_LIMIT")
+            if cap:
+                extract_cmd += ["--limit", cap]
+            _run(extract_cmd, cwd=DESK_DIR, timeout=600, label="desk extract-signals")
+
     _run([py, "-m", "desk", "run", "--once"],
          cwd=DESK_DIR, timeout=300, label="desk matches")
     _run([py, "-m", "desk", "outrights"],

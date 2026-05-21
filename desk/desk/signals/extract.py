@@ -184,6 +184,16 @@ def _quote_is_in_article(quote: str, item: SourceItem) -> bool:
 def _build_signal(raw: dict[str, Any], item: SourceItem, source: Source) -> Signal | None:
     """Construct a `Signal` from LLM-emitted fields + engine-side fields.
     Returns None when the signal fails the citation guarantee."""
+    # The forced tool_use schema *should* always give us a dict per
+    # signal, but Haiku occasionally emits a list-of-strings when the
+    # article gives it nothing to chew on. Defensive skip so a single
+    # mis-typed payload doesn't kill the whole extraction batch.
+    if not isinstance(raw, dict):
+        _LOG.debug(
+            "drop signal: non-dict payload %r  source=%s url=%s",
+            type(raw).__name__, source.id, item.canonical_url,
+        )
+        return None
     quote_for_check = raw.get("quote_original") or raw.get("quote") or ""
     if not _quote_is_in_article(quote_for_check, item):
         _LOG.debug(

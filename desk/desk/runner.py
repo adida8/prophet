@@ -25,6 +25,7 @@ from desk.ops import (
     RunReport,
     RunStatus,
     RunTrigger,
+    SignalImpactRow,
     SourceStatus,
     StageCount,
     VerdictCounts,
@@ -148,9 +149,10 @@ def run_once(
     written: dict[str, list[Path]] = {}
 
     # ── Run-level telemetry accumulators ───────────────────────────
-    errors:        list[ErrorEntry]  = []
-    sources_all:   list[SourceStatus] = []
-    snapshot_rows: list[FixtureRow]  = []
+    errors:        list[ErrorEntry]      = []
+    sources_all:   list[SourceStatus]    = []
+    snapshot_rows: list[FixtureRow]      = []
+    signal_impact: list[SignalImpactRow] = []
     raw_events_total   = 0
     after_filter_total = 0
     priced_total       = 0
@@ -208,6 +210,10 @@ def run_once(
         signals_runtime = signals_runtime_factory(sport, now=now)
         signals_ctx = signals_runtime if signals_runtime is not None else _NullCtx()
 
+        # `signal_impact_snap` is filled inside the `with` (cache open)
+        # and consumed outside (cache closed). Initialise to [] so the
+        # later append is unconditional.
+        signal_impact_snap: list[SignalImpactRow] = []
         with signals_ctx:
             for fx, snapshot in pairs:
                 copy = None
@@ -295,6 +301,18 @@ def run_once(
                 else:
                     n_pass += 1
 
+            # Snapshot per-outlet status + this-run contribution counts
+            # while the cache is still open. Failure here is a warning,
+            # not fatal — the run report is still useful without the
+            # news-signals panel.
+            if signals_runtime is not None:
+                try:
+                    signal_impact_snap = signals_runtime.impact()
+                except Exception as e:                      # noqa: BLE001
+                    log.warning("signals impact snapshot failed: %s", e)
+
+        signal_impact.extend(signal_impact_snap)
+
         if matches:
             idx_path, _ = pub.write_index(sport.code, matches)
             paths.append(idx_path)
@@ -360,6 +378,7 @@ def run_once(
         errors=errors,
         changes=changes_payload,
         snapshot=snapshot_rows,
+        signal_impact=signal_impact,
     )
     try:
         recorder.persist(report)
