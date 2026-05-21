@@ -6,3 +6,7 @@ python-dotenv>=1.0,<2.0
 fastapi>=0.115,<1.0
 uvicorn[standard]>=0.32,<1.0
 aiosqlite>=0.20,<1.0
+# Used by desk/desk/signals/extract.py (Haiku-driven Signal extraction).
+# The desk package isn't pip-installed on Railway — it runs as a
+# subprocess module — so its own pyproject deps don't apply here.
+anthropic>=0.40,<1.0

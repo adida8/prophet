@@ -54,9 +54,17 @@ def _run(cmd: list[str], *, cwd: Path, timeout: int, label: str) -> None:
         if result.returncode == 0:
             log.info("%s: ok", label)
         else:
-            log.warning("%s: exit %d — %s",
-                        label, result.returncode,
-                        (result.stderr or result.stdout).strip()[:500])
+            # Strip the leading Pydantic UserWarning that contract.py emits
+            # on every import — it's noise that pushes the real exception
+            # off the visible end of the truncated log line. Keep up to 2000
+            # chars of the actual tail so a traceback survives.
+            blob = (result.stderr or result.stdout)
+            lines = [ln for ln in blob.splitlines()
+                     if "UserWarning" not in ln
+                     and "shadows an attribute" not in ln
+                     and "class MatchOutput" not in ln]
+            tail = "\n".join(lines)[-2000:].strip()
+            log.warning("%s: exit %d — %s", label, result.returncode, tail)
     except subprocess.TimeoutExpired:
         log.warning("%s: timed out after %ds", label, timeout)
     except Exception:
