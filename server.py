@@ -13,6 +13,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,7 +23,6 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
 
 import config
 from core.logger import get_portfolio_summary
@@ -107,15 +107,11 @@ def _read_settings() -> dict:
         return dict(SETTINGS_DEFAULTS)
 
 
-def _write_settings(data: dict) -> None:
-    SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    SETTINGS_PATH.write_text(json.dumps(data, indent=2))
-
-
-class SettingsUpdate(BaseModel):
-    yes_ceiling: Optional[float] = None
-    no_floor:    Optional[float] = None
-    min_edge:    Optional[float] = None
+# NOTE: settings writes are intentionally removed. The legacy
+# `POST /api/settings` endpoint was an unauthenticated config write with
+# no value bounds; nothing live consumes it. If a future paper-trade
+# tuning surface needs to land, gate it behind a shared-secret header
+# and clamp each float.
 
 
 # ── Lifespan ──────────────────────────────────────────────────────────
@@ -141,10 +137,17 @@ async def _heartbeat_loop():
 
 app = FastAPI(title="Prophet — Prediction Market Intelligence", lifespan=lifespan)
 
+ALLOWED_ORIGINS = [
+    o.strip() for o in os.getenv(
+        "CORS_ALLOW_ORIGINS",
+        "https://oddsprimer.com,https://www.oddsprimer.com,http://localhost:5173",
+    ).split(",") if o.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -225,19 +228,6 @@ async def get_settings():
     return _read_settings()
 
 
-@app.post("/api/settings")
-async def update_settings(body: SettingsUpdate):
-    current = _read_settings()
-    if body.yes_ceiling is not None:
-        current["yes_ceiling"] = body.yes_ceiling
-    if body.no_floor is not None:
-        current["no_floor"] = body.no_floor
-    if body.min_edge is not None:
-        current["min_edge"] = body.min_edge
-    _write_settings(current)
-    return current
-
-
 @app.get("/api/summary")
 async def api_summary():
     return get_portfolio_summary()
@@ -249,11 +239,34 @@ async def api_trades():
 
 
 # ── WebSockets ────────────────────────────────────────────────────────
+# Both sockets are unauthenticated. Two guards apply before accept:
+#   - Origin check against the CORS allowlist — refuses cross-site WS
+#     handshakes from arbitrary hosts.
+#   - Per-route connection cap — refuses with close code 1013 ("Try
+#     Again Later") so the server can't be exhausted by parking
+#     connections open.
+MAX_WS_PER_ROUTE = int(os.getenv("MAX_WS_PER_ROUTE", "200"))
+
+
+async def _ws_admit(ws: WebSocket, clients: set[WebSocket]) -> bool:
+    """Run pre-accept guards. Returns True if the socket was accepted
+    and added to `clients`; False if it was refused (already closed)."""
+    origin = ws.headers.get("origin")
+    if origin and origin not in ALLOWED_ORIGINS:
+        await ws.close(code=1008)  # policy violation
+        return False
+    if len(clients) >= MAX_WS_PER_ROUTE:
+        await ws.close(code=1013)  # try again later
+        return False
+    await ws.accept()
+    clients.add(ws)
+    return True
+
 
 @app.websocket("/ws/live")
 async def ws_live(ws: WebSocket):
-    await ws.accept()
-    _live_clients.add(ws)
+    if not await _ws_admit(ws, _live_clients):
+        return
     log.info("Live client connected (%d total)", len(_live_clients))
     try:
         if _scheduler and _scheduler.last_updated:
@@ -272,8 +285,8 @@ async def ws_live(ws: WebSocket):
 @app.websocket("/ws/dashboard")
 async def ws_dashboard(ws: WebSocket):
     """Legacy paper-trading dashboard WebSocket."""
-    await ws.accept()
-    _dash_clients.add(ws)
+    if not await _ws_admit(ws, _dash_clients):
+        return
     try:
         await ws.send_text(json.dumps({
             "type": "init",
@@ -333,6 +346,21 @@ async def backtest_workbook():
 SITE_PUBLIC = Path(__file__).parent / "site" / "public"
 
 
+def _safe_path(base: Path, rel: str) -> Path | None:
+    """Resolve base/rel and return it only if it stays inside base.
+    Guards every static-file route against `../` traversal — without
+    this, `_serve_site("../../core/auth.py")` resolves to a real file
+    outside the web root and FileResponse will happily stream it."""
+    base = base.resolve()
+    try:
+        full = (base / rel).resolve()
+    except (ValueError, OSError):
+        return None
+    if full == base or base in full.parents:
+        return full
+    return None
+
+
 def _site_not_found():
     """Return the on-brand 404 page when a static-site path is missing.
     Falls back to a minimal JSON 404 if the 404.html file isn't present."""
@@ -347,10 +375,10 @@ def _site_not_found():
 if (SITE_PUBLIC / "index.html").exists():
 
     def _serve_site(rel_path: str):
-        p = SITE_PUBLIC / rel_path
-        if p.is_file():
-            return FileResponse(p, media_type="text/html")
-        return _site_not_found()
+        p = _safe_path(SITE_PUBLIC, rel_path)
+        if p is None or not p.is_file():
+            return _site_not_found()
+        return FileResponse(p, media_type="text/html")
 
     @app.get("/", include_in_schema=False)
     async def site_home():
@@ -415,8 +443,8 @@ if (SITE_PUBLIC / "index.html").exists():
 
     @app.get("/favicon-{size}.png", include_in_schema=False)
     async def site_favicon_png(size: str):
-        p = SITE_PUBLIC / f"favicon-{size}.png"
-        if not p.is_file():
+        p = _safe_path(SITE_PUBLIC, f"favicon-{size}.png")
+        if p is None or not p.is_file():
             return FileResponse(SITE_PUBLIC / "favicon-32.png", media_type="image/png", status_code=404)
         return FileResponse(p, media_type="image/png")
 
@@ -457,8 +485,8 @@ if FRONTEND_DIST.exists():
     @app.get("/{full_path:path}")
     async def spa_fallback(full_path: str):
         if full_path:
-            candidate = FRONTEND_DIST / full_path
-            if candidate.is_file():
+            candidate = _safe_path(FRONTEND_DIST, full_path)
+            if candidate is not None and candidate.is_file():
                 return FileResponse(candidate)
         if _is_spa_path(full_path):
             return FileResponse(FRONTEND_DIST / "index.html")
