@@ -12,13 +12,18 @@ gate, not by the signal type. See package docstring for the rule.
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from enum import Enum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-FeedType = Literal["rss", "sitemap", "api", "aggregator"]
+# `none` here means "the source is in the trust registry but has no public
+# feed we can fetch from". Reuters / AP / AFP / The Athletic etc. — we want
+# them in the trust framework (so a future licensed-API ingest is just a
+# fetcher swap) but they never come through the RSS path.
+FeedType = Literal["rss", "sitemap", "api", "aggregator", "none"]
 BiasFlag = Literal["none", "national", "club"]
 Tier     = Literal["trusted_core", "long_tail"]
 
@@ -66,7 +71,10 @@ class Source(BaseModel):
     id:           str = Field(min_length=2, max_length=64, pattern=r"^[a-z0-9][a-z0-9-]*$")
     name:         str = Field(min_length=1, max_length=120)
     feed_type:    FeedType
-    feed_ref:     str = Field(min_length=1)
+    # `feed_ref` is the URL (rss/sitemap), query template (aggregator), or
+    # API endpoint (api). For `feed_type=none` it MUST be empty — the row
+    # is in the registry for trust weighting only, not fetchable.
+    feed_ref:     str = ""
     language:     str = Field(min_length=2, max_length=8)
     coverage_tags: frozenset[str]
     reliability:  float = Field(ge=0.0, le=1.0)
@@ -74,15 +82,31 @@ class Source(BaseModel):
     parent_org:   str | None = None
     tier:         Tier
     enabled:      bool = True
+    # Free-text editorial note on the row (verification date, why it
+    # carries `feed_type=none`, etc.). Never reaches the contract.
+    notes:        str | None = None
 
     @field_validator("coverage_tags", mode="before")
     @classmethod
-    def _split_pipe_separated_tags(cls, value):
-        # Seed CSV stores tags as a single pipe-separated column. Pipe
-        # chosen over comma so the CSV stays single-column-per-field
-        # without needing quoting.
+    def _parse_tags(cls, value):
+        """Accept three on-disk shapes:
+          * JSON array literal — `["global", "sport:football"]`
+          * Pipe-separated — `global|sport:football`
+          * Python iterable — already a list/set
+        """
         if isinstance(value, str):
-            return frozenset(t.strip() for t in value.split("|") if t.strip())
+            s = value.strip()
+            if s.startswith("[") and s.endswith("]"):
+                # CSV-stored JSON array.
+                try:
+                    parsed = json.loads(s)
+                    if isinstance(parsed, list):
+                        return frozenset(
+                            str(t).strip() for t in parsed if str(t).strip()
+                        )
+                except json.JSONDecodeError:
+                    pass
+            return frozenset(t.strip() for t in s.split("|") if t.strip())
         return frozenset(value)
 
     @field_validator("coverage_tags")
@@ -91,6 +115,22 @@ class Source(BaseModel):
         if not value:
             raise ValueError("coverage_tags must contain at least one tag")
         return value
+
+    @model_validator(mode="after")
+    def _feed_ref_matches_feed_type(self) -> "Source":
+        if self.feed_type == "none":
+            if self.feed_ref:
+                raise ValueError(
+                    f"source {self.id!r}: feed_type='none' must have empty feed_ref "
+                    f"(got {self.feed_ref!r})"
+                )
+        else:
+            if not self.feed_ref:
+                raise ValueError(
+                    f"source {self.id!r}: feed_type={self.feed_type!r} requires "
+                    f"a non-empty feed_ref"
+                )
+        return self
 
     @property
     def can_feed_model(self) -> bool:

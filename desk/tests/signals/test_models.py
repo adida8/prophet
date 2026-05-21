@@ -72,6 +72,50 @@ def test_coverage_tags_must_be_nonempty():
         _source(coverage_tags="")
 
 
+def test_coverage_tags_accept_json_array_string():
+    s = _source(coverage_tags='["global", "sport:football", "country:ar"]')
+    assert s.coverage_tags == frozenset({"global", "sport:football", "country:ar"})
+
+
+# ── feed_type=none invariant ──────────────────────────────────────────
+
+def test_feed_type_none_requires_empty_feed_ref():
+    with pytest.raises(ValidationError, match="feed_type='none' must have empty"):
+        _source(feed_type="none", feed_ref="https://something/rss")
+
+
+def test_non_none_feed_type_requires_feed_ref():
+    with pytest.raises(ValidationError, match="requires.*feed_ref"):
+        _source(feed_type="rss", feed_ref="")
+
+
+def test_feed_type_none_with_empty_feed_ref_loads():
+    s = _source(feed_type="none", feed_ref="")
+    assert s.feed_type == "none"
+    assert s.feed_ref == ""
+
+
+def test_feed_type_none_with_high_reliability_still_can_feed_model():
+    # Reuters / AP / AFP route here: feed_type=none, reliability=0.9.
+    # They're "in the trust framework" — the gate doesn't care about
+    # fetchability, only trust. A future API ingest can wire them in.
+    s = _source(feed_type="none", feed_ref="", reliability=0.9,
+                bias_flag="none", tier="trusted_core")
+    assert s.can_feed_model
+
+
+# ── notes round-trip ──────────────────────────────────────────────────
+
+def test_notes_optional_and_round_trips():
+    s = _source(notes="Verified 2026-05-21; English desk only.")
+    assert s.notes == "Verified 2026-05-21; English desk only."
+
+
+def test_notes_defaults_to_none():
+    s = _source()
+    assert s.notes is None
+
+
 # ── Signal.track — source gate dominates type ──────────────────────────
 
 def _signal(source_id: str, type: SignalType) -> Signal:

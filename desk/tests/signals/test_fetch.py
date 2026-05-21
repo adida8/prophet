@@ -215,23 +215,40 @@ def test_aggregator_unknown_scheme_returns_unsupported(cache):
 
 def test_fetch_all_only_hits_trusted_core_by_default(cache):
     reg = Registry.from_csv()
-    # Map every source's feed_ref to its own canned response so the
-    # fake client serves all of them.
-    responses = {s.feed_ref: _FakeResponse(200, _rss_body()) for s in reg.enabled()}
+    # Map every reachable source's feed_ref to a canned RSS response;
+    # feed_type=none sources have empty feed_ref and we don't even reach
+    # them, the fetcher returns "unsupported" without a network call.
+    responses = {
+        s.feed_ref: _FakeResponse(200, _rss_body())
+        for s in reg.enabled() if s.feed_ref
+    }
     client = _FakeClient(responses)
 
     outcomes = fetch_all(reg, cache, client=client, now=_NOW)
-
     statuses = {o.source_id: o.status for o in outcomes}
-    # long-tail aggregator skipped by the default tier filter.
-    assert "gdelt-football" not in statuses
-    # every trusted-core RSS source got an "ok"
-    assert all(s == "ok" for s in statuses.values())
+
+    rss_ids:   set[str] = {s.id for s in reg.enabled() if s.feed_type == "rss"}
+    nofeed_ids: set[str] = {s.id for s in reg.enabled() if s.feed_type == "none"}
+    # RSS sources got an "ok"
+    assert all(statuses[i] == "ok" for i in rss_ids)
+    # Trust-only (feed_type=none) rows surface as "unsupported" — the
+    # fetcher knows there's no public feed to hit, so it skips them
+    # cleanly without an http call.
+    assert all(statuses[i] == "unsupported" for i in nofeed_ids)
 
 
-def test_fetch_all_with_long_tail_hits_aggregator_too(cache):
-    reg = Registry.from_csv()
+def test_fetch_all_with_long_tail_hits_aggregator(cache, tmp_path):
+    # The shipped seed currently carries no long-tail rows, so spin up
+    # a tiny synthetic registry to exercise the long-tail path.
+    from desk.signals.models import Source
     gdelt_body = (FIXTURES / "sample-gdelt.json").read_text(encoding="utf-8")
+    reg = Registry((
+        _source(id="trusted-rss", feed_type="rss",
+                feed_ref="https://example.com/rss", tier="trusted_core"),
+        _source(id="long-tail-gdelt", feed_type="aggregator",
+                feed_ref="gdelt:query=sport:football", tier="long_tail"),
+    ))
+
     class _MixedClient:
         def __init__(self):
             self.calls = []
@@ -248,4 +265,5 @@ def test_fetch_all_with_long_tail_hits_aggregator_too(cache):
         tiers=("trusted_core", "long_tail"),
     )
     statuses = {o.source_id: o.status for o in outcomes}
-    assert statuses.get("gdelt-football") == "ok"
+    assert statuses["long-tail-gdelt"] == "ok"
+    assert statuses["trusted-rss"]     == "ok"

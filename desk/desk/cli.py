@@ -166,6 +166,56 @@ def _cmd_extract_signals(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_signals_validate(args: argparse.Namespace) -> int:
+    """Load + report on the source seed.
+
+    Catches malformed seeds before they reach the fetcher / explainer.
+    Prints one line per source with its trust-gate verdict and a
+    summary so the operator can eyeball the registry shape.
+    """
+    from desk.signals.registry import DEFAULT_SEED_PATH, Registry
+    from desk.signals.resolve import sources_for
+
+    seed_path = Path(args.seed) if args.seed else DEFAULT_SEED_PATH
+    try:
+        reg = Registry.from_csv(seed_path)
+    except (ValueError, FileNotFoundError) as e:
+        print(f"validate: {e}", file=sys.stderr)
+        return 2
+
+    enabled       = reg.enabled()
+    model_eligible = [s for s in enabled if s.can_feed_model]
+    editorial      = [s for s in enabled if s.editorial_only]
+    by_feed_type:  dict[str, int] = {}
+    for s in enabled:
+        by_feed_type[s.feed_type] = by_feed_type.get(s.feed_type, 0) + 1
+
+    print(f"seed: {seed_path}")
+    print(f"  rows: {len(reg.all())}  enabled: {len(enabled)}  "
+          f"disabled: {len(reg.all()) - len(enabled)}")
+    print(f"  can_feed_model: {len(model_eligible)}  "
+          f"editorial_only: {len(editorial)}")
+    print(f"  by feed_type: " + ", ".join(
+        f"{ft}={n}" for ft, n in sorted(by_feed_type.items())
+    ))
+    print()
+    print(f"  {'id':24s} {'feed_type':11s} {'rel':>5s}  bias       tier         gate")
+    for s in reg.all():
+        gate = "model" if s.can_feed_model else "editorial-only"
+        enabled_mark = " " if s.enabled else "X"
+        print(f"  {enabled_mark} {s.id:22s} {s.feed_type:11s} "
+              f"{s.reliability:>5.2f}  {s.bias_flag:9s}  "
+              f"{s.tier:11s}  {gate}")
+
+    # Smoke the resolver on the most common tag set so a regression in
+    # tag intersection at least one row off the seed gets caught here.
+    if args.resolve:
+        tags = set(args.resolve.split(","))
+        print()
+        print(f"resolve {sorted(tags)}: {len(sources_for(tags, reg))} match(es)")
+    return 0
+
+
 def _cmd_backtest(args: argparse.Namespace) -> int:
     """Run the historical backtest harness.
 
@@ -275,6 +325,16 @@ def build_parser() -> argparse.ArgumentParser:
     es.add_argument("--limit", type=int, default=None,
                     help="extract at most N items per source (smoke-testing)")
     es.set_defaults(func=_cmd_extract_signals)
+
+    # `desk signals <subcommand>` — nested subparser. `validate` is the
+    # only entry for now; future ops (list, stats, …) plug in here.
+    sg = sub.add_parser("signals", help="news-signals subsystem ops")
+    sg_sub = sg.add_subparsers(dest="signals_cmd", required=True)
+    sv = sg_sub.add_parser("validate", help="load + report on the source seed")
+    sv.add_argument("--seed", help="override seed CSV path (default: shipped seed)")
+    sv.add_argument("--resolve",
+                    help="comma-separated tags; report how many sources match")
+    sv.set_defaults(func=_cmd_signals_validate)
 
     bt = sub.add_parser("backtest", help="run the historical backtest harness")
     bt.add_argument("--tournament", action="append",

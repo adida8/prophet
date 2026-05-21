@@ -80,29 +80,34 @@ def test_resolver_returns_mix_of_can_feed_model_and_editorial_only():
     assert any(s.editorial_only for s in out)
 
 
-def test_realistic_national_team_fixture_tag_set():
-    # Argentina v France (WC26 final, say). The football glue would
-    # build this tag set from the FixtureRef.
+def test_realistic_global_football_fixture_tag_set():
+    # Argentina v France (WC26 final, say). The shipped seed is the
+    # global-trusted-core set — every row carries `global` and
+    # `sport:football`, so a football-flavoured fixture pulls everyone.
+    # Once nation-tagged rows land in the seed, the country: tags
+    # narrow this further; today they're all tier-1 globals.
     reg = Registry.from_csv()
     tags = {"global", "sport:football", "country:ar", "country:fr", "league:wc26"}
-    ids = {s.id for s in sources_for(tags, reg)}
-    # tier-1 globals always in (matched on `global` or `sport:football`)
-    assert "bbc-sport-football" in ids
-    assert "reuters-sport" in ids
-    # home-country outlets pulled by their country tag
-    assert "ole-ar" in ids
-    assert "lequipe-football" in ids
-    # ranked highest-reliability first
-    ordered = [s.id for s in sources_for(tags, reg)]
-    rels = [s.reliability for s in sources_for(tags, reg)]
-    assert rels == sorted(rels, reverse=True), ordered
+    matches = sources_for(tags, reg)
+    ids = {s.id for s in matches}
+
+    # Tier-1 globals always in (matched on `global` or `sport:football`)
+    assert "bbc-sport"          in ids
+    assert "guardian-football"  in ids
+    assert "nyt-soccer"         in ids
+    # Including the wires that have feed_type=none — the resolver
+    # doesn't care about fetchability, just tag intersection.
+    assert "reuters"            in ids
+    assert "ap-sports"          in ids
+    # Ranked highest-reliability first
+    rels = [s.reliability for s in matches]
+    assert rels == sorted(rels, reverse=True)
 
 
-def test_country_only_tag_excludes_outlets_lacking_that_country():
-    # A purely country-scoped intent (no sport:football) should only
-    # match outlets carrying that country tag.
+def test_country_only_tag_returns_empty_against_current_seed():
+    # The current seed has no country-tagged outlets; a purely
+    # country-scoped intent should miss everything. This test pins
+    # that property — when nation-tagged rows ship (Olé / L'Équipe /
+    # Globo Esporte / etc.), we'll come back here.
     reg = Registry.from_csv()
-    ids = {s.id for s in sources_for({"country:ar"}, reg)}
-    assert "ole-ar" in ids
-    assert "lequipe-football" not in ids
-    assert "ge-futebol" not in ids
+    assert sources_for({"country:ar"}, reg) == []
