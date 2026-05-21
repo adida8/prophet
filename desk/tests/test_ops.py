@@ -469,6 +469,59 @@ def test_scheduled_trigger_persists_with_correct_field(
     assert r.trigger == "scheduled"
 
 
+# ── News-signals impact threads into RunReport ─────────────────────
+
+def test_signal_impact_rows_appear_in_run_report(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, two_priced,
+) -> None:
+    """When the signals runtime returns impact rows, the runner threads
+    them onto `report.signal_impact`. Hermetic: we patch the factory so
+    no signals.db file is needed."""
+    from desk.ops import SignalImpactRow, SourceFreshness
+    rows = [
+        SignalImpactRow(
+            source_id="bbc-sport", name="BBC Sport",
+            status=SourceFreshness.FRESH, last_ok=datetime.now(tz=timezone.utc),
+            cached_items=120, extracted_signals=18,
+            citations=4, hard_adjustments=1, fixtures_touched=3,
+        ),
+        SignalImpactRow(
+            source_id="nyt-soccer", name="The New York Times (soccer)",
+            status=SourceFreshness.STALE, last_ok=None,
+            cached_items=0, extracted_signals=0,
+            citations=0, hard_adjustments=0, fixtures_touched=0,
+        ),
+    ]
+
+    class _FakeRuntime:
+        def __enter__(self): return self
+        def __exit__(self, *exc): return False
+        def impact(self): return rows
+
+    # Patch the factory so the runner gets our fake regardless of
+    # whether a real signals.db exists.
+    monkeypatch.setattr(
+        "desk.runner.SignalsRuntime.for_sport",
+        classmethod(lambda cls, sport, **kw: _FakeRuntime()),
+    )
+    monkeypatch.setattr(
+        "desk.runner.active_sports",
+        lambda: [_FakeSport(
+            two_priced,
+            stats=_stats_ok(raw_events=2, after_filter=2, priced=2),
+        )],
+    )
+
+    run_once(output_dir=tmp_path / "output")
+    report = Recorder(root=tmp_path / "output" / "ops").latest()
+
+    ids = {r.source_id for r in report.signal_impact}
+    assert ids == {"bbc-sport", "nyt-soccer"}
+    bbc = next(r for r in report.signal_impact if r.source_id == "bbc-sport")
+    assert bbc.citations == 4
+    assert bbc.status == "fresh"
+
+
 # ── Sport-boundary guard ────────────────────────────────────────────
 
 def test_ops_modules_do_not_import_from_sports() -> None:

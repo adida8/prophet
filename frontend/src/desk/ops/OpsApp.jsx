@@ -131,6 +131,9 @@ export default function OpsApp() {
             <Section title="Verdict split">
               <VerdictSplit v={report.verdicts} published={publishedCount(report)} />
             </Section>
+            <Section title={`News signals · ${(report.signal_impact || []).length} outlets`}>
+              <SignalImpact rows={report.signal_impact || []} />
+            </Section>
             <Section title={`Match changes since last run · ${report.changes.length}`}>
               <Changes changes={report.changes} />
             </Section>
@@ -285,6 +288,58 @@ function VerdictSplit({ v, published }) {
         </div>
       )}
     </div>
+  );
+}
+
+function SignalImpact({ rows }) {
+  if (!rows || rows.length === 0) {
+    return <div className="ops__empty">no news outlets registered (or signals cache empty)</div>;
+  }
+  // Order: failed first (surface problems), then by this-run contribution
+  // desc, then by name. Lets the operator scan top-down for "what acted
+  // up" and "what mattered".
+  const STATUS_ORDER = { failed: 0, stale: 1, fresh: 2, frozen: 3, static: 4 };
+  const sorted = [...rows].sort((a, b) => {
+    const sa = STATUS_ORDER[a.status] ?? 9;
+    const sb = STATUS_ORDER[b.status] ?? 9;
+    if (sa !== sb) return sa - sb;
+    const ca = (a.citations || 0) + (a.hard_adjustments || 0);
+    const cb = (b.citations || 0) + (b.hard_adjustments || 0);
+    if (cb !== ca) return cb - ca;
+    return a.name.localeCompare(b.name);
+  });
+  return (
+    <table className="ops__signals">
+      <thead>
+        <tr>
+          <th>Outlet</th>
+          <th>Status</th>
+          <th>Cached</th>
+          <th>Signals</th>
+          <th>Cites</th>
+          <th>Hard adj.</th>
+          <th>Fixtures</th>
+          <th>Last fetch</th>
+        </tr>
+      </thead>
+      <tbody>
+        {sorted.map((r) => (
+          <tr key={r.source_id}>
+            <td className="ops__signal-name">
+              <span className="ops__signal-name-text">{r.name}</span>
+              <span className="ops__signal-id mono small">{r.source_id}</span>
+            </td>
+            <td><span className={`ops__pill ops__pill--source-${r.status}`}>{r.status}</span></td>
+            <td className="mono small num">{r.cached_items}</td>
+            <td className="mono small num">{r.extracted_signals}</td>
+            <td className="mono small num">{r.citations}</td>
+            <td className="mono small num">{r.hard_adjustments}</td>
+            <td className="mono small num">{r.fixtures_touched}</td>
+            <td className="mono small">{fmtAgo(r.last_ok)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 

@@ -176,19 +176,20 @@
 /* ---------- shared table styling ---------- */
 
 .ops__funnel, .ops__sources, .ops__changes,
-.ops__errors, .ops__history {
+.ops__errors, .ops__history, .ops__signals {
   width: 100%;
   border-collapse: collapse;
 }
 
 .ops__funnel td, .ops__sources td, .ops__changes td,
-.ops__errors td, .ops__history td, .ops__history th {
+.ops__errors td, .ops__history td, .ops__history th,
+.ops__signals td, .ops__signals th {
   padding: 6px 8px;
   vertical-align: top;
   border-bottom: var(--hairline-soft);
   font-size: var(--t-micro);
 }
-.ops__history th {
+.ops__history th, .ops__signals th {
   text-align: left;
   font-family: var(--font-sans);
   text-transform: uppercase;
@@ -196,6 +197,14 @@
   color: var(--graphite-soft);
   font-weight: 600;
 }
+
+/* ---------- news signals ---------- */
+
+.ops__signals th { background: var(--paper-warm); }
+.ops__signals td.num { text-align: right; width: 60px; color: var(--ink); }
+.ops__signal-name { width: 220px; }
+.ops__signal-name-text { display: block; font-weight: 500; color: var(--ink); }
+.ops__signal-id { color: var(--graphite-soft); }
 
 /* ---------- funnel ---------- */
 
