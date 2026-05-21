@@ -8,7 +8,7 @@ import pytest
 
 from desk.publish.contract import MarketVenue, Verdict, VerdictState
 from desk.verdict.compare import MarketSnapshot, VenuePrice
-from desk.verdict.decide import decide
+from desk.verdict.decide import DecisionMeta, decide
 from desk.verdict.thresholds import Thresholds, current
 
 SIDES = ("a", "draw", "b")
@@ -40,7 +40,7 @@ def test_pick_fires_when_one_side_clears_pick_threshold() -> None:
         ("polymarket", "draw"): 0.27,
         ("polymarket", "b"):    0.27,
     })
-    v = decide(
+    v, _ = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
         market_url=_TEST_URL,
@@ -60,7 +60,7 @@ def test_pick_picks_largest_edge_when_multiple_sides_qualify() -> None:
         ("polymarket", "draw"): 0.21,           # +9pp on draw
         ("polymarket", "b"):    0.33,           # −13pp on Mexico
     })
-    v = decide(
+    v, _ = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
         market_url=_TEST_URL,
@@ -79,7 +79,7 @@ def test_pass_when_every_side_within_pass_band() -> None:
         ("polymarket", "draw"): 0.275,
         ("polymarket", "b"):    0.265,
     })
-    v = decide(
+    v, _ = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
         market_url=_TEST_URL,
@@ -98,7 +98,7 @@ def test_pass_when_in_neither_pick_nor_avoid_band() -> None:
         ("polymarket", "draw"): 0.28,           # −1pp
         ("polymarket", "b"):    0.26,           # −1pp
     })
-    v = decide(
+    v, _ = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
         market_url=_TEST_URL,
@@ -116,7 +116,7 @@ def test_avoid_when_every_side_below_avoid_band() -> None:
         ("polymarket", "draw"): 0.34,           # −4pp
         ("polymarket", "b"):    0.36,           # −6pp
     })
-    v = decide(
+    v, _ = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
         market_url=_TEST_URL,
@@ -135,7 +135,7 @@ def test_avoid_populates_edge_pp_with_most_negative() -> None:
         ("polymarket", "draw"): 0.34,           # −4pp
         ("polymarket", "b"):    0.36,           # −6pp  (most negative)
     })
-    v = decide(
+    v, _ = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
         market_url=_TEST_URL,
@@ -156,7 +156,7 @@ def test_stub_elo_forces_pass_even_with_pick_edge() -> None:
         ("polymarket", "draw"): 0.30,
         ("polymarket", "b"):    0.25,
     })
-    v = decide(
+    v, _ = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="A", team_b="B", thresholds=T_DEFAULT,
         elo_sources=("clubelo", "stub"),
@@ -172,7 +172,7 @@ def test_real_elo_does_not_force_pass() -> None:
         ("polymarket", "draw"): 0.30,
         ("polymarket", "b"):    0.25,
     })
-    v = decide(
+    v, _ = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="A", team_b="B", thresholds=T_DEFAULT,
         elo_sources=("wiki", "wiki"),
@@ -189,7 +189,7 @@ def test_extreme_long_shot_market_forces_pass() -> None:
         ("polymarket", "draw"): 0.49,
         ("polymarket", "b"):    0.01,           # ≤ 0.02 → reject as illiquid
     })
-    v = decide(
+    v, _ = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="A", team_b="B", thresholds=T_DEFAULT,
         market_url=_TEST_URL,
@@ -206,7 +206,7 @@ def test_missing_side_falls_back_to_pass() -> None:
         ("polymarket", "a"): 0.45,
         # draw and b absent
     })
-    v = decide(
+    v, _ = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
         market_url=_TEST_URL,
@@ -229,7 +229,7 @@ def test_env_override_changes_pick_into_pass(monkeypatch: pytest.MonkeyPatch) ->
 
     # Default → Pick
     monkeypatch.delenv("DESK_PICK_PP", raising=False)
-    v = decide(
+    v, _ = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico",
         thresholds=current(),
@@ -239,7 +239,7 @@ def test_env_override_changes_pick_into_pass(monkeypatch: pytest.MonkeyPatch) ->
 
     # Tighter pick threshold → Pass
     monkeypatch.setenv("DESK_PICK_PP", "5.0")
-    v2 = decide(
+    v2, _ = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="France", team_b="Mexico",
         thresholds=current(),
@@ -258,7 +258,7 @@ def test_env_override_changes_avoid_into_pass(monkeypatch: pytest.MonkeyPatch) -
 
     # Default avoid_pp = −2.0 → all sides are exactly at threshold → Avoid.
     monkeypatch.delenv("DESK_AVOID_PP", raising=False)
-    v = decide(
+    v, _ = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="A", team_b="B",
         thresholds=current(),
@@ -268,10 +268,66 @@ def test_env_override_changes_avoid_into_pass(monkeypatch: pytest.MonkeyPatch) -
 
     # Loosen avoid threshold to −3 → no longer in Avoid → Pass.
     monkeypatch.setenv("DESK_AVOID_PP", "-3.0")
-    v2 = decide(
+    v2, _ = decide(
         model_p=model_p, market=market, sides=SIDES,
         team_a="A", team_b="B",
         thresholds=current(),
         market_url=_TEST_URL,
     )
     assert v2.state == VerdictState.PASS.value
+
+
+# ── PR 2: DecisionMeta returned alongside the Verdict ─────────────────
+
+def test_meta_reports_stub_elo_reason() -> None:
+    """When the stub-Elo gate forces Pass, the meta names that reason
+    and echoes the elo_sources so the runner can roll up counts."""
+    model_p = {"a": 0.50, "draw": 0.25, "b": 0.25}
+    market = _snap({
+        ("polymarket", "a"):    0.45,
+        ("polymarket", "draw"): 0.30,
+        ("polymarket", "b"):    0.25,
+    })
+    v, meta = decide(
+        model_p=model_p, market=market, sides=SIDES,
+        team_a="A", team_b="B", thresholds=T_DEFAULT,
+        elo_sources=("clubelo", "stub"),
+        market_url=_TEST_URL,
+    )
+    assert v.state == VerdictState.PASS.value
+    assert meta.forced_pass_reason == "stub_elo"
+    assert meta.elo_sources == ("clubelo", "stub")
+
+
+def test_meta_reports_illiquid_reason() -> None:
+    """An extreme price triggers the liquidity gate; meta records it."""
+    model_p = {"a": 0.50, "draw": 0.30, "b": 0.20}
+    market = _snap({
+        ("polymarket", "a"):    0.50,
+        ("polymarket", "draw"): 0.49,
+        ("polymarket", "b"):    0.01,           # ≤ 0.02 → illiquid
+    })
+    v, meta = decide(
+        model_p=model_p, market=market, sides=SIDES,
+        team_a="A", team_b="B", thresholds=T_DEFAULT,
+        market_url=_TEST_URL,
+    )
+    assert v.state == VerdictState.PASS.value
+    assert meta.forced_pass_reason == "illiquid"
+
+
+def test_meta_clean_on_natural_pick() -> None:
+    """A threshold-driven Pick is not a forced Pass — reason stays None."""
+    model_p = {"a": 0.50, "draw": 0.25, "b": 0.25}
+    market = _snap({
+        ("polymarket", "a"):    0.45,           # +5pp
+        ("polymarket", "draw"): 0.27,
+        ("polymarket", "b"):    0.27,
+    })
+    v, meta = decide(
+        model_p=model_p, market=market, sides=SIDES,
+        team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+        market_url=_TEST_URL,
+    )
+    assert v.state == VerdictState.PICK.value
+    assert meta.forced_pass_reason is None

@@ -41,7 +41,7 @@ def test_pick_fires_when_lower_bound_clears_threshold() -> None:
         ("polymarket", "draw"): 0.27,
         ("polymarket", "b"):    0.28,
     })
-    v = decide(
+    v, _ = decide(
         model_p=model_p, model_p_lower=model_p_lower, market=market,
         sides=SIDES, team_a="A", team_b="B", thresholds=T,
         market_url=_TEST_URL,
@@ -60,7 +60,7 @@ def test_wide_band_kills_a_borderline_pick() -> None:
         ("polymarket", "draw"): 0.27,
         ("polymarket", "b"):    0.28,
     })
-    v = decide(
+    v, _ = decide(
         model_p=model_p, model_p_lower=model_p_lower, market=market,
         sides=SIDES, team_a="A", team_b="B", thresholds=T,
         market_url=_TEST_URL,
@@ -79,7 +79,7 @@ def test_no_band_falls_back_to_point_estimate() -> None:
         ("polymarket", "draw"): 0.27,
         ("polymarket", "b"):    0.28,
     })
-    v = decide(
+    v, _ = decide(
         model_p=model_p, market=market,
         sides=SIDES, team_a="A", team_b="B", thresholds=T,
         market_url=_TEST_URL,

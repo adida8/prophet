@@ -359,6 +359,10 @@ Override via `DESK_PICK_PP` / `DESK_PASS_PP` / `DESK_AVOID_PP` in `.env`.
 |---|---|---|
 | `DESK_COMPETITIONS` | `wc26` | Comma-separated allowlist of competition codes that pass the live football ingest. Set to `*` to disable filtering. |
 | `DESK_OUTPUT_DIR` | `desk/data/output` | Where the publisher writes per-match + per-outright JSON |
+| `DESK_OPS_USER` | unset | Username for the internal ops dashboard at `/desk/ops`. Both this and `DESK_OPS_PASS` must be set or the page + `/api/desk/ops/*` 404 (disabled-by-default — Railway-only surface). |
+| `DESK_OPS_PASS` | unset | Password for the ops dashboard. Set both on Railway to enable; leave unset locally to keep the surface invisible. |
+| `DESK_OPS_RETENTION` | `200` | How many `RunReport` JSONs the recorder keeps before pruning the oldest. |
+| `DESK_OPS_EDGE_DELTA_PP` | `1.0` | Minimum |edge_pp| delta between consecutive runs that fires an `edge` change in the diff engine. |
 
 ### Output contract (what the website consumes)
 

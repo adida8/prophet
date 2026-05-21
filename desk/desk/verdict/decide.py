@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Literal, Mapping
+from typing import Literal, Mapping, Optional
 
 from desk.publish.contract import Verdict, VerdictState
 from desk.verdict.compare import MarketSnapshot, Side, VenuePrice
@@ -33,6 +33,28 @@ from desk.verdict.thresholds import Thresholds, current as _current_thresholds
 log = logging.getLogger("desk.verdict.decide")
 
 EloSource = Literal["wiki", "clubelo", "stub"]
+ForcedPassReason = Literal["illiquid", "stub_elo"]
+
+
+@dataclass(frozen=True)
+class DecisionMeta:
+    """Internal-only metadata about how a verdict was reached.
+
+    Sister return value of `decide()`. Carries the *why* behind a forced
+    Pass and the Elo provenance for both teams. Never written to the
+    public `MatchOutput` contract — surfaced only to the ops dashboard
+    via the runner's `RunReport`.
+
+    `forced_pass_reason` is set only when a sanity gate (PR 4.5)
+    overrode the threshold ladder. A natural Pass from threshold logic
+    leaves it `None`.
+
+    `elo_sources` mirrors the input `(team_a_source, team_b_source)`
+    tuple when supplied, or `None` when the caller didn't pass one
+    (e.g. backtest scenarios where provenance isn't tracked).
+    """
+    forced_pass_reason: Optional[ForcedPassReason] = None
+    elo_sources:        Optional[tuple[EloSource, EloSource]] = None
 
 
 @dataclass(frozen=True)
@@ -84,7 +106,7 @@ def decide(
     match_id:       str | None = None,        # for logs only
     model_p_lower:  Mapping[Side, float] | None = None,         # Phase A.3
     market_url:     str | None = None,        # deep link to venue page (CTA)
-) -> Verdict:
+) -> tuple[Verdict, DecisionMeta]:
     """Apply the Pick / Pass / Avoid ladder.
 
     Phase A.3 (confidence-band gate): if `model_p_lower` is supplied,
@@ -92,6 +114,11 @@ def decide(
     clears the threshold against the market — not just the point
     estimate. Forces the engine to be conservative when the Elo prior
     is uncertain.
+
+    Returns `(verdict, meta)` — see `DecisionMeta`. PR 2 of the ops
+    dashboard spec promoted the meta from internal log lines to a
+    structured side-channel so the runner can roll up forced-Pass
+    counts without parsing logs.
     """
     th = thresholds if thresholds is not None else _current_thresholds()
 
@@ -101,18 +128,27 @@ def decide(
     # diffing 1500 vs 1500 against whatever the market is doing.
     if elo_sources is not None and "stub" in elo_sources:
         log.debug("forcing Pass: club_elo_stub on %s", match_id or "<unknown>")
-        return Verdict(state=VerdictState.PASS, market_url=market_url)
+        return (
+            Verdict(state=VerdictState.PASS, market_url=market_url),
+            DecisionMeta(forced_pass_reason="stub_elo", elo_sources=elo_sources),
+        )
 
     # ── Sanity gate: liquidity (PR 4.5) ────────────────────────────
     liq = is_liquid(market, sides, liquidity)
     if not liq.is_liquid:
         log.debug("forcing Pass: %s on %s", liq.reason, match_id or "<unknown>")
-        return Verdict(state=VerdictState.PASS, market_url=market_url)
+        return (
+            Verdict(state=VerdictState.PASS, market_url=market_url),
+            DecisionMeta(forced_pass_reason="illiquid", elo_sources=elo_sources),
+        )
 
     edges = _compute_edges(model_p, market, sides)
     if edges is None:
         # Missing market data on at least one side — default to Pass per spec §9.
-        return Verdict(state=VerdictState.PASS, market_url=market_url)
+        return (
+            Verdict(state=VerdictState.PASS, market_url=market_url),
+            DecisionMeta(elo_sources=elo_sources),
+        )
 
     # ── Pick ───────────────────────────────────────────────────────
     # Phase A.3: when a lower-bound band is provided, a Pick fires only
@@ -136,16 +172,22 @@ def decide(
             # Pass rather than violating the contract — better to under-
             # call than to publish a Pick with no link.
             log.warning("forcing Pass: pick on %s but market_url missing", match_id or "<unknown>")
-            return Verdict(state=VerdictState.PASS)
-        return Verdict(
-            state=VerdictState.PICK,
-            side=_name_for_side(side, team_a=team_a, team_b=team_b),
-            market_venue=bv.venue,                       # type: ignore[arg-type]
-            price=_to_american_odds(bv.implied_p),
-            edge_pp=round(edge_pp, 2),
-            market_url=market_url,
-            model_p=round(model_p[side], 4),
-            market_p=round(bv.implied_p, 4),
+            return (
+                Verdict(state=VerdictState.PASS),
+                DecisionMeta(elo_sources=elo_sources),
+            )
+        return (
+            Verdict(
+                state=VerdictState.PICK,
+                side=_name_for_side(side, team_a=team_a, team_b=team_b),
+                market_venue=bv.venue,                       # type: ignore[arg-type]
+                price=_to_american_odds(bv.implied_p),
+                edge_pp=round(edge_pp, 2),
+                market_url=market_url,
+                model_p=round(model_p[side], 4),
+                market_p=round(bv.implied_p, 4),
+            ),
+            DecisionMeta(elo_sources=elo_sources),
         )
 
     # ── Avoid ──────────────────────────────────────────────────────
@@ -154,11 +196,17 @@ def decide(
         # edge across all sides — the worst-case "how short is the
         # market on the most overpriced side" signal.
         most_negative = min(edges.by_side[s] for s in sides)
-        return Verdict(
-            state=VerdictState.AVOID,
-            edge_pp=round(most_negative, 2),
-            market_url=market_url,
+        return (
+            Verdict(
+                state=VerdictState.AVOID,
+                edge_pp=round(most_negative, 2),
+                market_url=market_url,
+            ),
+            DecisionMeta(elo_sources=elo_sources),
         )
 
     # ── Pass (everyone within ±pass_pp) or default ─────────────────
-    return Verdict(state=VerdictState.PASS, market_url=market_url)
+    return (
+        Verdict(state=VerdictState.PASS, market_url=market_url),
+        DecisionMeta(elo_sources=elo_sources),
+    )

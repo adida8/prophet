@@ -17,9 +17,15 @@ import "./desk.css";
 import DeskList   from "./DeskList";
 import DeskMatch  from "./DeskMatch";
 import DeskHeader from "./DeskHeader";
+import OpsApp     from "./ops/OpsApp";
 
 // match_id pattern from desk/contract.schema.json
 const MATCH_ID_RE = /^[a-z0-9]{2,8}-[a-z0-9]+(?:-[a-z0-9]+){2,}-\d{8}$/;
+
+function isOpsPath() {
+  const p = window.location.pathname.replace(/\/+$/, "");
+  return p === "/desk/ops";
+}
 
 function readMatchIdFromPath() {
   // /desk/{match_id} → match_id  ;  /desk → null
@@ -29,6 +35,13 @@ function readMatchIdFromPath() {
 }
 
 export default function DeskApp() {
+  // The ops dashboard owns its own surface — render it before the match
+  // list/detail. Server.py gates the page route, so an unauthed user
+  // never reaches this code path.
+  if (typeof window !== "undefined" && isOpsPath()) {
+    return <OpsApp />;
+  }
+
   const [matchId, setMatchId] = useState(() => readMatchIdFromPath());
 
   useEffect(() => {

@@ -16,6 +16,7 @@ import logging
 from typing import Iterable
 
 from desk.explainer import build_copy
+from desk.ops.report import IngestStats, SourceFreshness, SourceStatus
 from desk.publish.contract import Copy, Verdict
 from desk.sport import FixtureRef, MarketSide
 from desk.sports.football.features_builder import build_features
@@ -24,9 +25,9 @@ from desk.sports.football.fixtures import (
     list_priced_football_fixtures,
 )
 from desk.sports.football.model import compute as compute_model
-from desk.sports.football.priced import list_priced_fixtures
+from desk.sports.football.priced import list_priced_fixtures_with_stats
 from desk.verdict.compare import MarketSnapshot
-from desk.verdict.decide import decide as decide_verdict
+from desk.verdict.decide import DecisionMeta, decide as decide_verdict
 
 log = logging.getLogger("desk.sports.football")
 
@@ -73,6 +74,10 @@ class FootballSport:
     short_code: str = "fb"
     label:      str = "Football"
 
+    def __init__(self) -> None:
+        self._last_stats: IngestStats | None = None
+        self._last_decisions: list[DecisionMeta] = []
+
     def market_outcomes(self) -> tuple[MarketSide, ...]:
         return MARKET_OUTCOMES_3WAY
 
@@ -80,7 +85,39 @@ class FootballSport:
         return _run_async(list_priced_football_fixtures())
 
     def list_priced_fixtures(self) -> list[tuple[FixtureRef, MarketSnapshot]]:
-        return _run_async(list_priced_fixtures())
+        pairs, stats = _run_async(list_priced_fixtures_with_stats())
+        # Reset the per-run decision log — the runner will populate it
+        # by calling decide_and_explain for each fixture in `pairs`.
+        # The Elo seed source row is *not* added here: it depends on the
+        # decisions yet to be made (count of fixtures on stub), so the
+        # runner sources it via `last_model_sources()` after the loop.
+        self._last_stats = IngestStats(
+            raw_events=stats.raw_events,
+            after_filter=stats.after_filter,
+            priced=stats.priced,
+            kalshi_hits=stats.kalshi_hits,
+            filtered_note=stats.filtered_note,
+            priced_note=stats.priced_note,
+            sources=list(stats.sources) + [
+                SourceStatus(
+                    id="wc26_venues",
+                    status=SourceFreshness.STATIC,
+                    last_ok=None,
+                    detail="16 venues",
+                ),
+            ],
+        )
+        self._last_decisions = []
+        return pairs
+
+    def last_ingest_stats(self) -> IngestStats | None:
+        """Stats from the most recent `list_priced_fixtures()` call.
+
+        Read by the runner to build the ops `RunReport`. Returns `None`
+        when called before any ingest has happened — the runner records
+        an empty funnel in that case.
+        """
+        return self._last_stats
 
     # ── Model + verdict (PR 4) ──────────────────────────────────────
 
@@ -89,23 +126,28 @@ class FootballSport:
         fx: FixtureRef,
         snapshot: MarketSnapshot,
     ) -> Verdict:
-        verdict, _copy = self.decide_and_explain(fx, snapshot)
+        verdict, _copy, _meta = self.decide_and_explain(fx, snapshot)
         return verdict
 
     def decide_and_explain(
         self,
         fx: FixtureRef,
         snapshot: MarketSnapshot,
-    ) -> tuple[Verdict, Copy]:
-        """Compute the verdict and the editorial copy in one pass.
+    ) -> tuple[Verdict, Copy, DecisionMeta]:
+        """Compute the verdict, the editorial copy, and the decision meta
+        in one pass.
 
         Runs the model once and reuses its output for both branches.
         PR 5 will swap the templated copy for Haiku-generated prose.
+
+        `DecisionMeta` is internal — the runner aggregates it for the
+        ops `RunReport` (forced-Pass reasons + Elo provenance). It
+        never appears in the published `MatchOutput` contract.
         """
         features = build_features(fx)
         out = compute_model(features)
         market_url = _market_url_for_fixture(fx)
-        verdict = decide_verdict(
+        verdict, meta = decide_verdict(
             model_p={"a": out.p_a, "draw": out.p_draw, "b": out.p_b},
             model_p_lower={"a": out.p_a_lower, "draw": out.p_draw_lower, "b": out.p_b_lower},
             market=snapshot,
@@ -116,6 +158,7 @@ class FootballSport:
             match_id=fx.match_id,
             market_url=market_url,
         )
+        self._last_decisions.append(meta)
 
         market_p = {
             "a":    snapshot.best_for("a").implied_p    if snapshot.best_for("a")    else 0.0,
@@ -154,4 +197,35 @@ class FootballSport:
             "venue_country":      fx.venue_country,
             "kickoff_utc":        fx.kickoff_utc.isoformat() if fx.kickoff_utc else None,
         })
-        return verdict, copy
+        return verdict, copy, meta
+
+    def last_decisions(self) -> list[DecisionMeta]:
+        """Decision metas collected during this run's decide_and_explain
+        calls. The runner uses these to aggregate forced-Pass counts.
+        """
+        return list(self._last_decisions)
+
+    def last_model_sources(self) -> list[SourceStatus]:
+        """Model-derived source rows for the ops dashboard.
+
+        Computed from `_last_decisions` rather than `_last_stats` because
+        the elo_seed status depends on how many fixtures wound up on the
+        stub prior — information that only exists post-decision. Stays
+        `frozen` until live Elo ingest lands (see
+        THE_DESK_DATA_LAYER_SPEC.md §1b); the *count* in the detail tells
+        the operator how load-bearing the migration is right now.
+        """
+        n = len(self._last_decisions)
+        stub_n = sum(
+            1 for d in self._last_decisions
+            if d.elo_sources and "stub" in d.elo_sources
+        )
+        detail = f"model prior · {stub_n} of {n} fixtures on stub"
+        return [
+            SourceStatus(
+                id="elo_seed",
+                status=SourceFreshness.FROZEN,
+                last_ok=None,
+                detail=detail,
+            ),
+        ]

@@ -27,6 +27,7 @@ from fastapi.staticfiles import StaticFiles
 import config
 from core.logger import get_portfolio_summary
 from desk_api import router as desk_router
+from desk_ops_api import router as desk_ops_router
 from ledger import db as ledger_db
 from ledger.router import router as ledger_router
 from signup_api import router as signup_router
@@ -154,6 +155,10 @@ app.add_middleware(
 
 app.include_router(ledger_router)
 app.include_router(desk_router)
+# Ops router goes before the SPA catch-all (which is registered later via
+# `app.get("/", ...)` etc.) so `/api/desk/ops/*` resolves to the API
+# adapter, not the React shell. Disabled-by-default — see desk_ops_api.
+app.include_router(desk_ops_router)
 app.include_router(signup_router)
 
 
@@ -478,6 +483,18 @@ if FRONTEND_DIST.exists():
     assets_dir = FRONTEND_DIST / "assets"
     if assets_dir.exists():
         app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+    # Ops dashboard SPA route — gated by the same HTTP Basic dependency
+    # the /api/desk/ops/* endpoints use, so the page itself doesn't
+    # render unauthed (spec §9). When the env vars are unset, the gate
+    # raises 404 and the route looks like it doesn't exist at all.
+    from fastapi import Depends
+    from desk_ops_api import _gate as _desk_ops_gate
+
+    @app.get("/desk/ops", include_in_schema=False, dependencies=[Depends(_desk_ops_gate)])
+    @app.get("/desk/ops/", include_in_schema=False, dependencies=[Depends(_desk_ops_gate)])
+    async def desk_ops_spa():
+        return FileResponse(FRONTEND_DIST / "index.html")
 
     # SPA fallback: serves the React app for /ledger, /desk, /dashboard
     # (and their sub-paths). Everything else — paths not matched by the

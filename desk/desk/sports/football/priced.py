@@ -14,12 +14,13 @@ PR 6's scheduler will poll this every 60s for the verdict cadence.
 from __future__ import annotations
 
 import logging
-from datetime import date
+from datetime import date, datetime, timezone
 
 from desk import config
 from desk.ingest.kalshi_prices import FixtureKey, fetch_wc26_snapshots
 from desk.ingest.polymarket import PolymarketSoccerEventsSource
 from desk.ingest.polymarket_prices import prices_from_polymarket_event
+from desk.ops.report import IngestStats, SourceFreshness, SourceStatus
 from desk.sport import FixtureRef
 from desk.sports.football.fixtures import from_polymarket_event
 from desk.verdict.compare import MarketSnapshot
@@ -60,18 +61,29 @@ def _merge_kalshi(
     )
 
 
-async def list_priced_fixtures_polymarket() -> list[tuple[FixtureRef, MarketSnapshot]]:
-    """Polymarket-only fixture+price pairs. Used in places that haven't
-    been migrated to the multi-venue path yet (kept for backwards
-    compatibility with callers in the repo)."""
+async def _list_priced_fixtures_polymarket_with_stats() -> tuple[
+    list[tuple[FixtureRef, MarketSnapshot]],
+    int | None,           # raw events fetched, None on fetch failure
+    SourceStatus,         # polymarket_gamma source row
+]:
+    """Polymarket-only fixture+price pairs + the stats the ops dashboard
+    needs from this layer. Internal — the public sync entry points wrap
+    this and discard the stats they don't need.
+    """
     out: list[tuple[FixtureRef, MarketSnapshot]] = []
     seen: set[str] = set()
+    now = datetime.now(tz=timezone.utc)
 
     try:
         events = await PolymarketSoccerEventsSource().fetch()
     except Exception as e:                      # noqa: BLE001 — spec §9
         log.warning("polymarket fetch failed: %s", e)
-        return out
+        return out, None, SourceStatus(
+            id="polymarket_gamma",
+            status=SourceFreshness.FAILED,
+            last_ok=None,
+            detail=f"fixture-of-record · fetch failed: {e}",
+        )
 
     allow = config.COMPETITION_ALLOWLIST
     n_filtered = 0
@@ -96,25 +108,63 @@ async def list_priced_fixtures_polymarket() -> list[tuple[FixtureRef, MarketSnap
             "competition allowlist %s — kept %d, filtered %d",
             sorted(allow), len(out), n_filtered,
         )
-    return out
+
+    pm_status = SourceStatus(
+        id="polymarket_gamma",
+        status=SourceFreshness.FRESH,
+        last_ok=now,
+        detail=f"fixture-of-record · {len(events)} events fetched, {len(out)} priced",
+    )
+    return out, len(events), pm_status
 
 
-async def list_priced_fixtures() -> list[tuple[FixtureRef, MarketSnapshot]]:
-    """Multi-venue fixture+price pairs. Merges Polymarket (fixture source +
-    prices) with Kalshi (prices only) into one `MarketSnapshot` per fixture.
-
-    Failure-mode: Kalshi failures degrade silently to Polymarket-only;
-    a Polymarket failure returns an empty list (no fixtures to publish).
+async def list_priced_fixtures_polymarket() -> list[tuple[FixtureRef, MarketSnapshot]]:
+    """Polymarket-only fixture+price pairs. Kept for callers that don't
+    need the multi-venue merge.
     """
-    pm_pairs = await list_priced_fixtures_polymarket()
+    pairs, _, _ = await _list_priced_fixtures_polymarket_with_stats()
+    return pairs
+
+
+async def list_priced_fixtures_with_stats() -> tuple[
+    list[tuple[FixtureRef, MarketSnapshot]],
+    IngestStats,
+]:
+    """Multi-venue fixture+price pairs + stats for ops telemetry.
+
+    Failure-mode mirrors `list_priced_fixtures`: Kalshi failures degrade
+    silently to Polymarket-only; a Polymarket failure returns an empty
+    list. The returned `IngestStats` records the failure so the runner
+    can mark the run `partial`/`fail` accordingly.
+    """
+    now = datetime.now(tz=timezone.utc)
+    pm_pairs, raw_events, pm_status = await _list_priced_fixtures_polymarket_with_stats()
     if not pm_pairs:
-        return pm_pairs
+        return [], IngestStats(
+            raw_events=raw_events,
+            after_filter=0,
+            priced=0,
+            kalshi_hits=None,
+            sources=[pm_status],
+        )
 
     try:
         kalshi_by_key = await fetch_wc26_snapshots()
+        kalshi_status = SourceStatus(
+            id="kalshi_kxwcgame",
+            status=SourceFreshness.FRESH,
+            last_ok=now,
+            detail="",  # detail filled in after counting hits
+        )
     except Exception as e:                      # noqa: BLE001
         log.warning("kalshi snapshot pull failed: %s", e)
         kalshi_by_key = {}
+        kalshi_status = SourceStatus(
+            id="kalshi_kxwcgame",
+            status=SourceFreshness.FAILED,
+            last_ok=None,
+            detail=f"2nd venue · pull failed: {e}",
+        )
 
     out: list[tuple[FixtureRef, MarketSnapshot]] = []
     n_kalshi_hits = 0
@@ -130,4 +180,35 @@ async def list_priced_fixtures() -> list[tuple[FixtureRef, MarketSnapshot]]:
         "priced fixtures: %d total, %d with kalshi coverage",
         len(out), n_kalshi_hits,
     )
-    return out
+
+    if kalshi_status.status == SourceFreshness.FRESH:
+        kalshi_status = SourceStatus(
+            id=kalshi_status.id,
+            status=kalshi_status.status,
+            last_ok=kalshi_status.last_ok,
+            detail=f"2nd venue · {n_kalshi_hits} of {len(out)} matches priced",
+        )
+
+    priced_note = (
+        f"{n_kalshi_hits} of {len(out)} with kalshi coverage"
+        if out else None
+    )
+    return out, IngestStats(
+        raw_events=raw_events,
+        after_filter=len(pm_pairs),
+        priced=len(out),
+        kalshi_hits=n_kalshi_hits,
+        priced_note=priced_note,
+        sources=[pm_status, kalshi_status],
+    )
+
+
+async def list_priced_fixtures() -> list[tuple[FixtureRef, MarketSnapshot]]:
+    """Multi-venue fixture+price pairs. Merges Polymarket (fixture source +
+    prices) with Kalshi (prices only) into one `MarketSnapshot` per fixture.
+
+    Failure-mode: Kalshi failures degrade silently to Polymarket-only;
+    a Polymarket failure returns an empty list (no fixtures to publish).
+    """
+    pairs, _ = await list_priced_fixtures_with_stats()
+    return pairs

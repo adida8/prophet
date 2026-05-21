@@ -11,6 +11,10 @@ node_modules/
 .claude/
 
 data/*.db
+desk/data/*.db
+
+# Ops dashboard run log — local-only telemetry, never committed.
+desk/data/output/ops/
 
 # Office app lockfiles (LibreOffice / Excel)
 .~lock.*#
