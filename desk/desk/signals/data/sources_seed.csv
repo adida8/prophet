@@ -1,0 +1,13 @@
+id,name,feed_type,feed_ref,language,coverage_tags,reliability,bias_flag,parent_org,tier,enabled
+bbc-sport-football,BBC Sport — Football,rss,https://feeds.bbci.co.uk/sport/football/rss.xml,en,global|sport:football,0.95,none,bbc,trusted_core,true
+guardian-football,The Guardian — Football,rss,https://www.theguardian.com/football/rss,en,global|sport:football,0.92,none,guardian_media,trusted_core,true
+reuters-sport,Reuters Sport,rss,https://www.reuters.com/arc/outboundfeeds/rss/category/sports/,en,global|sport:football,0.95,none,reuters,trusted_core,true
+espn-fc,ESPN FC,rss,https://www.espn.com/espn/rss/soccer/news,en,global|sport:football,0.88,none,espn,trusted_core,true
+nytimes-soccer,The New York Times — Soccer,rss,https://rss.nytimes.com/services/xml/rss/nyt/Soccer.xml,en,global|sport:football|country:us,0.90,none,nyt,trusted_core,true
+ole-ar,Olé,rss,https://www.ole.com.ar/rss/argentina/,es,country:ar|sport:football,0.75,national,clarin_group,trusted_core,true
+ge-futebol,Globo Esporte — Futebol,rss,https://ge.globo.com/rss/ge/futebol.xml,pt,country:br|sport:football,0.82,national,grupo_globo,trusted_core,true
+marca-es,Marca,rss,https://e00-marca.uecdn.es/rss/portada.xml,es,country:es|sport:football,0.70,national,unidad_editorial,trusted_core,true
+lequipe-football,L'Équipe — Football,rss,https://www.lequipe.fr/rss/actu_rss_Football.xml,fr,country:fr|sport:football,0.85,national,lequipe,trusted_core,true
+kicker-de,kicker,rss,https://newsfeed.kicker.de/news/aktuell,de,country:de|sport:football,0.82,national,olympia_verlag,trusted_core,true
+gazzetta-it,La Gazzetta dello Sport,rss,https://www.gazzetta.it/rss/home.xml,it,country:it|sport:football,0.78,national,rcs,trusted_core,true
+gdelt-football,GDELT football long-tail,aggregator,gdelt:query=sport:football,mul,global|sport:football,0.50,none,gdelt,long_tail,true
