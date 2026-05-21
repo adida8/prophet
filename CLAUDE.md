@@ -361,7 +361,7 @@ A per-team verdict is `"pick"` only when the better side's `lower_edge_pp` clear
 
 ### Server routes (read-only)
 
-The Prophet server mounts the desk output at `/api/desk/*` (see `desk_api.py`) and renders the static site at `/`, `/matches`, `/m/{id}`, `/outrights`, `/o/{id}` (rendered by `site/generate.py` from `desk/data/output/`).
+The Prophet server mounts the desk output at `/api/desk/*` (see `desk_api.py`) and renders the static site at `/`, `/matches`, `/m/{id}`, `/outrights`, `/o/{id}` (rendered by `site/generate.py` from `desk/data/output/`). Match pages carry a `<section class="sources">` block under the blurb (added 2026-05-21 in `4bd50cf`) — one row per `editorial_citations[]` entry: outlet name as an external link, published date, verbatim quote in italic blockquote. Mirrors the `drivers` block styling.
 
 | Path | Returns |
 |---|---|
