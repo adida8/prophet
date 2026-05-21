@@ -24,6 +24,10 @@ from desk.sports.football.fixtures import (
     MARKET_OUTCOMES_3WAY,
     list_priced_football_fixtures,
 )
+from desk.sports.football.hard_signals import (
+    HardSignalAdjustment,
+    apply_hard_signals,
+)
 from desk.sports.football.model import compute as compute_model
 from desk.sports.football.priced import list_priced_fixtures_with_stats
 from desk.sports.football.signals_glue import tags_for as _football_signals_tags
@@ -78,6 +82,11 @@ class FootballSport:
     def __init__(self) -> None:
         self._last_stats: IngestStats | None = None
         self._last_decisions: list[DecisionMeta] = []
+        # Hard-signal adjustments applied in the most recent run. The
+        # runner reads these for ops telemetry; PR 5's explainer can
+        # cite them in copy. None when no adjustments — keep distinct
+        # from "no signals applied" (= []) vs "this is a stale list".
+        self._last_hard_signal_adjustments: list[HardSignalAdjustment] = []
 
     def market_outcomes(self) -> tuple[MarketSide, ...]:
         return MARKET_OUTCOMES_3WAY
@@ -109,6 +118,7 @@ class FootballSport:
             ],
         )
         self._last_decisions = []
+        self._last_hard_signal_adjustments = []
         return pairs
 
     def last_ingest_stats(self) -> IngestStats | None:
@@ -134,6 +144,8 @@ class FootballSport:
         self,
         fx: FixtureRef,
         snapshot: MarketSnapshot,
+        *,
+        signals_runtime=None,
     ) -> tuple[Verdict, Copy, DecisionMeta]:
         """Compute the verdict, the editorial copy, and the decision meta
         in one pass.
@@ -141,11 +153,37 @@ class FootballSport:
         Runs the model once and reuses its output for both branches.
         PR 5 will swap the templated copy for Haiku-generated prose.
 
+        When `signals_runtime` is provided AND the fixture is inside the
+        late-binding window, news-signal injuries / suspensions nudge
+        each team's Elo before the model runs (bounded, per news-
+        signals spec §9). When omitted or outside the window, the path
+        is a no-op — the model sees the seed Elo as before.
+
         `DecisionMeta` is internal — the runner aggregates it for the
         ops `RunReport` (forced-Pass reasons + Elo provenance). It
         never appears in the published `MatchOutput` contract.
         """
         features = build_features(fx)
+        hard_adjustments: list[HardSignalAdjustment] = []
+        if signals_runtime is not None:
+            try:
+                pairs = signals_runtime.hard_signals_for(fx)
+            except Exception as e:  # noqa: BLE001 — never block the model on signals
+                log.warning("hard-signal lookup failed for %s: %s", fx.match_id, e)
+                pairs = []
+            if pairs:
+                features, hard_adjustments = apply_hard_signals(
+                    features, fx=fx, signals=pairs,
+                )
+                if hard_adjustments:
+                    log.info(
+                        "hard signals: %s: %d adjustment(s); a=%.1f b=%.1f Elo",
+                        fx.match_id, len(hard_adjustments),
+                        sum(a.delta_elo for a in hard_adjustments if a.side == "a"),
+                        sum(a.delta_elo for a in hard_adjustments if a.side == "b"),
+                    )
+        self._last_hard_signal_adjustments.extend(hard_adjustments)
+
         out = compute_model(features)
         market_url = _market_url_for_fixture(fx)
         verdict, meta = decide_verdict(
@@ -206,6 +244,12 @@ class FootballSport:
         """Tag set the news-signals resolver uses to pick covering
         outlets. Sport-agnostic resolver, football-specific tags."""
         return _football_signals_tags(fx)
+
+    def last_hard_signal_adjustments(self) -> list[HardSignalAdjustment]:
+        """Hard-signal adjustments collected during the last run's
+        decide_and_explain calls. Read by the runner for ops telemetry
+        and by PR 5's explainer for attributed prose."""
+        return list(self._last_hard_signal_adjustments)
 
     def last_decisions(self) -> list[DecisionMeta]:
         """Decision metas collected during this run's decide_and_explain

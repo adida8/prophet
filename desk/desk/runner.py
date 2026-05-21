@@ -213,7 +213,16 @@ def run_once(
                 copy = None
                 try:
                     if hasattr(sport, "decide_and_explain"):
-                        result = sport.decide_and_explain(fx, snapshot)
+                        # Pass the signals runtime through (PR F). Sports
+                        # that don't accept the kwarg silently ignore it,
+                        # but FootballSport uses it to apply bounded
+                        # hard-signal Elo adjustments before the model.
+                        try:
+                            result = sport.decide_and_explain(
+                                fx, snapshot, signals_runtime=signals_runtime,
+                            )
+                        except TypeError:
+                            result = sport.decide_and_explain(fx, snapshot)
                         # PR 2: decide_and_explain may return (v, copy) or
                         # (v, copy, DecisionMeta). Forced-pass counts come
                         # from the meta — older sports without it just don't

@@ -22,6 +22,8 @@ from typing import Any
 from desk.publish.contract import Citation
 from desk.signals.cache import SignalsCache
 from desk.signals.editorial import build_citations
+from desk.signals.hard_track import hard_signals_for
+from desk.signals.models import Signal, Source
 from desk.signals.registry import Registry
 
 log = logging.getLogger("desk.signals.runtime")
@@ -83,6 +85,19 @@ class SignalsRuntime:
             raise RuntimeError("SignalsRuntime not entered — use `with` block")
         tags = self._tags_fn(fixture)
         return build_citations(
+            fixture_tags=tags,
+            cache=self._cache,
+            registry=self._registry,
+            now=self._now,
+        )
+
+    def hard_signals_for(self, fixture: Any) -> list[tuple[Signal, Source]]:
+        """Return hard-track `(signal, source)` pairs covering the fixture
+        — the input to the sport's feature adjuster (PR F)."""
+        if self._cache is None or self._registry is None:
+            raise RuntimeError("SignalsRuntime not entered — use `with` block")
+        tags = self._tags_fn(fixture)
+        return hard_signals_for(
             fixture_tags=tags,
             cache=self._cache,
             registry=self._registry,
