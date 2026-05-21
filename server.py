@@ -29,6 +29,7 @@ from core.logger import get_portfolio_summary
 from desk_api import router as desk_router
 from ledger import db as ledger_db
 from ledger.router import router as ledger_router
+from signup_api import router as signup_router
 
 log = logging.getLogger("prophet.server")
 
@@ -153,6 +154,7 @@ app.add_middleware(
 
 app.include_router(ledger_router)
 app.include_router(desk_router)
+app.include_router(signup_router)
 
 
 # ─────────────────────────── REST endpoints ───────────────────────────

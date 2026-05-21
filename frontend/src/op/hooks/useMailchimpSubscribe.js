@@ -1,24 +1,18 @@
-// Shared Mailchimp subscribe hook — both the newsletter pop-up and the
-// footer signup call this so submission logic, error surfacing, and the
-// "remember subscribers" localStorage flag live in one place.
+// Shared newsletter subscribe hook. Both the timed pop-up and the footer
+// signup call this so submission logic, error surfacing, and the "remember
+// subscribers" localStorage flag live in one place.
 //
-// Mailchimp embedded forms don't allow cross-origin POST + JSON response,
-// so we use their JSON-P endpoint: swap /post → /post-json and supply a
-// &c={callbackName} parameter. Mailchimp invokes window[callbackName]
-// with { result: 'success' | 'error', msg: '…' }.
+// Posts the email to the Prophet backend (/api/subscribe), which forwards
+// it to SendX server-side — the SendX API key never reaches the browser.
+// (Filename kept as-is from the prior Mailchimp implementation to avoid
+// churn at the three call sites; the integration is SendX now.)
 
 import { useCallback, useState } from "react";
 
-// Public, non-secret Mailchimp embed identifiers (audience "Oddsprimer", dc us2).
-// Env vars override the baked defaults so prod works without per-host config.
-const FORM_ACTION   = import.meta.env.VITE_MAILCHIMP_FORM_ACTION
-  || "https://oddsprimer.us2.list-manage.com/subscribe/post?u=5639b505d384d746edb6af404&id=51ee011415";
-const HONEYPOT_NAME = import.meta.env.VITE_MAILCHIMP_HONEYPOT_NAME
-  || "b_5639b505d384d746edb6af404_51ee011415";
-
-const STORAGE_KEY      = "op_newsletter_popup";
-const SUBSCRIBED_DAYS  = 365;
-const REQUEST_TIMEOUT  = 10000;
+const SUBSCRIBE_URL   = "/api/subscribe";
+const STORAGE_KEY     = "op_newsletter_popup";
+const SUBSCRIBED_DAYS = 365;
+const REQUEST_TIMEOUT = 10000;
 
 function markSubscribed() {
   try {
@@ -31,13 +25,6 @@ function markSubscribed() {
   }
 }
 
-function toJsonpAction(action) {
-  // Mailchimp embeds give you /subscribe/post?u=…&id=… — convert to
-  // /subscribe/post-json?u=…&id=… so the response can fire our callback.
-  if (action.includes("/post-json?")) return action;
-  return action.replace("/post?", "/post-json?");
-}
-
 export default function useMailchimpSubscribe() {
   const [status, setStatus] = useState("idle");      // idle | submitting | success | error
   const [errorMsg, setErrorMsg] = useState("");
@@ -47,12 +34,8 @@ export default function useMailchimpSubscribe() {
     setErrorMsg("");
   }, []);
 
-  const subscribe = useCallback((email) => {
-    if (!FORM_ACTION || !HONEYPOT_NAME) {
-      setStatus("error");
-      setErrorMsg("The newsletter is not configured yet. Please try again later.");
-      return;
-    }
+  // `hp` is the optional honeypot value — real users leave it empty.
+  const subscribe = useCallback(async (email, hp = "") => {
     if (!email) {
       setStatus("error");
       setErrorMsg("Enter an email address to subscribe.");
@@ -62,61 +45,49 @@ export default function useMailchimpSubscribe() {
     setStatus("submitting");
     setErrorMsg("");
 
-    const cbName = `op_mc_cb_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
-    let script = null;
-    let settled = false;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
-    const cleanup = () => {
-      if (script && script.parentNode) script.parentNode.removeChild(script);
-      try { delete window[cbName]; } catch (_e) { window[cbName] = undefined; }
-    };
-
-    const timeoutId = setTimeout(() => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      setStatus("error");
-      setErrorMsg("That took longer than expected. Please try again.");
-    }, REQUEST_TIMEOUT);
-
-    window[cbName] = (response) => {
-      if (settled) return;
-      settled = true;
+    try {
+      const resp = await fetch(SUBSCRIBE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, hp }),
+        signal: controller.signal,
+      });
       clearTimeout(timeoutId);
-      cleanup();
-      const ok = response && response.result === "success";
-      if (ok) {
+
+      if (resp.ok) {
         setStatus("success");
         markSubscribed();
         return;
       }
-      // Mailchimp returns messages prefixed with HTML codes like "0 - …" —
-      // strip that and any embedded markup before showing the reader.
-      const raw = (response && response.msg) ? String(response.msg) : "";
-      const cleaned = raw.replace(/^\d+\s*-\s*/, "").replace(/<[^>]+>/g, "").trim();
+
+      let detail = "";
+      try {
+        const data = await resp.json();
+        detail = data && data.detail ? String(data.detail) : "";
+      } catch (_e) {
+        // Non-JSON error body — fall through to a generic message.
+      }
+
       setStatus("error");
-      setErrorMsg(cleaned || "Something went wrong. Please try again.");
-    };
-
-    const base = toJsonpAction(FORM_ACTION);
-    const joiner = base.includes("?") ? "&" : "?";
-    const url =
-      `${base}${joiner}EMAIL=${encodeURIComponent(email)}` +
-      `&${encodeURIComponent(HONEYPOT_NAME)}=` +
-      `&c=${cbName}`;
-
-    script = document.createElement("script");
-    script.src = url;
-    script.async = true;
-    script.onerror = () => {
-      if (settled) return;
-      settled = true;
+      if (resp.status === 429) {
+        setErrorMsg("You're going a little fast — try again in a moment.");
+      } else if (resp.status === 400) {
+        setErrorMsg(detail || "Please enter a valid email address.");
+      } else {
+        setErrorMsg(detail || "Something went wrong. Please try again.");
+      }
+    } catch (err) {
       clearTimeout(timeoutId);
-      cleanup();
       setStatus("error");
-      setErrorMsg("Could not reach the newsletter service. Please try again.");
-    };
-    document.body.appendChild(script);
+      setErrorMsg(
+        err && err.name === "AbortError"
+          ? "That took longer than expected. Please try again."
+          : "Could not reach the newsletter service. Please try again."
+      );
+    }
   }, []);
 
   return {
@@ -124,6 +95,6 @@ export default function useMailchimpSubscribe() {
     errorMsg,
     subscribe,
     reset,
-    configured: Boolean(FORM_ACTION && HONEYPOT_NAME),
+    configured: true,
   };
 }

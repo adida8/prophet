@@ -45,3 +45,15 @@ MATCH_THRESHOLD = float(os.getenv("MATCH_THRESHOLD", "0.30"))
 
 # ── Server ────────────────────────────────────────────────────────────
 PORT = int(os.getenv("PORT", "8000"))
+
+# ── SendX (newsletter signup) ─────────────────────────────────────────
+# Team API Key from SendX → Settings → API & Webhooks. Held server-side
+# only; never exposed to the browser. Empty = signup endpoint returns 503.
+SENDX_API_KEY = os.getenv("SENDX_API_KEY", "")
+# Tags applied to every new subscriber. A SendX visual workflow can fire
+# the welcome email off one of these tags. Comma-separated in the env.
+SENDX_SIGNUP_TAGS = [
+    t.strip()
+    for t in os.getenv("SENDX_SIGNUP_TAGS", "newsletter-signup").split(",")
+    if t.strip()
+]

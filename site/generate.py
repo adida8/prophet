@@ -41,24 +41,18 @@ FOOTBALL_DIR = DESK_OUT / "football"
 OUTRIGHTS_DIR = DESK_OUT / "outrights"
 SITE_OUT = ROOT / "site" / "public"
 
-# Mailchimp embedded-form values for the newsletter pop-up + footer signup.
-# Public anti-bot identifiers (not secrets) — env vars override the baked
-# defaults so we can swap audiences without a redeploy. Same names the
-# React side reads (VITE_-prefixed) work because Railway puts them in
-# the build process env for both. Bare-name vars are honored too.
-_MAILCHIMP_DEFAULT_ACTION   = "https://oddsprimer.us2.list-manage.com/subscribe/post?u=5639b505d384d746edb6af404&id=51ee011415"
-_MAILCHIMP_DEFAULT_HONEYPOT = "b_5639b505d384d746edb6af404_51ee011415"
-MAILCHIMP_FORM_ACTION = (
-    os.environ.get("MAILCHIMP_FORM_ACTION")
-    or os.environ.get("VITE_MAILCHIMP_FORM_ACTION")
-    or _MAILCHIMP_DEFAULT_ACTION
-).strip()
-MAILCHIMP_HONEYPOT_NAME = (
-    os.environ.get("MAILCHIMP_HONEYPOT_NAME")
-    or os.environ.get("VITE_MAILCHIMP_HONEYPOT_NAME")
-    or _MAILCHIMP_DEFAULT_HONEYPOT
-).strip()
-NEWSLETTER_CONFIGURED = bool(MAILCHIMP_FORM_ACTION and MAILCHIMP_HONEYPOT_NAME)
+# Newsletter signup → posts to the Prophet backend (/api/subscribe), which
+# forwards the opt-in to SendX server-side. No form action or API key is
+# exposed in the generated HTML; the only client-visible value is the
+# same-origin endpoint path. SUBSCRIBE_ENDPOINT can be overridden if the
+# backend is ever hosted on a different origin.
+SUBSCRIBE_ENDPOINT = (os.environ.get("OP_SUBSCRIBE_ENDPOINT") or "/api/subscribe").strip()
+# Off-screen anti-bot field name. Real users never see or fill it; a
+# non-empty value makes the backend silently drop the submission.
+NEWSLETTER_HONEYPOT_NAME = "op_company"
+# The forms always render — config now lives on the backend, so there is
+# no client-side credential to gate on.
+NEWSLETTER_CONFIGURED = True
 
 # Populated at the start of main() — see `_load_kalshi_event_index`.
 # Maps (kickoff_date, frozenset({iso3_a, iso3_b})) → event_ticker (str).
@@ -1035,7 +1029,7 @@ def newsletter_footer_block() -> str:
     credentials skip the form entirely instead of showing a broken one."""
     if not NEWSLETTER_CONFIGURED:
         return ""
-    hp = escape(MAILCHIMP_HONEYPOT_NAME)
+    hp = escape(NEWSLETTER_HONEYPOT_NAME)
     return f"""<section class="op-news" aria-labelledby="op-news-title">
   <div class="op-news__inner">
     <p class="op-news__eyebrow">New to prediction markets?</p>
@@ -1065,9 +1059,9 @@ def newsletter_popup_block() -> str:
     /learn, dismissals 10d / subscribers 365d in localStorage."""
     if not NEWSLETTER_CONFIGURED:
         return ""
-    hp_attr = escape(MAILCHIMP_HONEYPOT_NAME)
-    action_js = json.dumps(MAILCHIMP_FORM_ACTION)
-    hp_js     = json.dumps(MAILCHIMP_HONEYPOT_NAME)
+    hp_attr     = escape(NEWSLETTER_HONEYPOT_NAME)
+    endpoint_js = json.dumps(SUBSCRIBE_ENDPOINT)
+    hp_js       = json.dumps(NEWSLETTER_HONEYPOT_NAME)
     return f"""<div class="op-popup-overlay" id="op-popup" hidden>
   <section class="op-popup" role="dialog" aria-modal="true" aria-labelledby="op-popup-title">
     <div class="op-popup__accent" aria-hidden="true"></div>
@@ -1095,8 +1089,8 @@ def newsletter_popup_block() -> str:
 </div>
 <script>
 (function () {{
-  var FORM_ACTION = {action_js};
-  var HONEYPOT    = {hp_js};
+  var ENDPOINT = {endpoint_js};
+  var HONEYPOT = {hp_js};
 
   var POPUP_DELAY_MS    = 50000;
   var HIGH_INTENT_MS    = 15000;
@@ -1182,30 +1176,18 @@ def newsletter_popup_block() -> str:
   document.getElementById('op-popup-decline').addEventListener('click', function () {{ close('dismissed', DISMISS_DAYS); }});
   popup.addEventListener('click', function (e) {{ if (e.target === popup) close('dismissed', DISMISS_DAYS); }});
 
-  // ── submit via Mailchimp JSON-P ──
+  // ── submit via backend → SendX ──
   form.addEventListener('submit', function (e) {{
     e.preventDefault();
     if (submitEl.disabled) return;
     var email = (emailEl.value || '').trim();
     if (!email) return;
+    var hpEl = form.querySelector('input[name="' + HONEYPOT + '"]');
+    var hp = hpEl ? (hpEl.value || '') : '';
     submitEl.disabled = true;
     submitEl.textContent = 'Sending';
     errEl.hidden = true;
 
-    var cb = 'op_mc_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
-    var script = null;
-    var settled = false;
-    var to = setTimeout(function () {{
-      if (settled) return;
-      settled = true;
-      cleanup();
-      fail('That took longer than expected. Please try again.');
-    }}, 10000);
-
-    function cleanup() {{
-      if (script && script.parentNode) script.parentNode.removeChild(script);
-      try {{ delete window[cb]; }} catch (_e) {{ window[cb] = undefined; }}
-    }}
     function fail(msg) {{
       submitEl.disabled = false;
       submitEl.textContent = 'Get the weekly primer';
@@ -1218,33 +1200,27 @@ def newsletter_popup_block() -> str:
       writeStored('subscribed', SUBSCRIBED_DAYS);
     }}
 
-    window[cb] = function (resp) {{
-      if (settled) return;
-      settled = true;
-      clearTimeout(to);
-      cleanup();
-      if (resp && resp.result === 'success') {{ ok(); return; }}
-      var raw = (resp && resp.msg) ? String(resp.msg) : '';
-      var cleaned = raw.replace(/^\\d+\\s*-\\s*/, '').replace(/<[^>]+>/g, '').trim();
-      fail(cleaned);
-    }};
+    var ctrl = new AbortController();
+    var to = setTimeout(function () {{ ctrl.abort(); }}, 10000);
 
-    var base = FORM_ACTION.indexOf('/post-json?') !== -1 ? FORM_ACTION : FORM_ACTION.replace('/post?', '/post-json?');
-    var joiner = base.indexOf('?') !== -1 ? '&' : '?';
-    var url = base + joiner + 'EMAIL=' + encodeURIComponent(email)
-      + '&' + encodeURIComponent(HONEYPOT) + '='
-      + '&c=' + cb;
-    script = document.createElement('script');
-    script.src = url;
-    script.async = true;
-    script.onerror = function () {{
-      if (settled) return;
-      settled = true;
+    fetch(ENDPOINT, {{
+      method: 'POST',
+      headers: {{ 'Content-Type': 'application/json' }},
+      body: JSON.stringify({{ email: email, hp: hp }}),
+      signal: ctrl.signal
+    }}).then(function (resp) {{
       clearTimeout(to);
-      cleanup();
-      fail('Could not reach the newsletter service. Please try again.');
-    }};
-    document.body.appendChild(script);
+      if (resp.ok) {{ ok(); return; }}
+      return resp.json().catch(function () {{ return {{}}; }}).then(function (data) {{
+        if (resp.status === 429) fail("You're going a little fast — try again in a moment.");
+        else fail((data && data.detail) ? data.detail : 'Something went wrong. Please try again.');
+      }});
+    }}).catch(function (err) {{
+      clearTimeout(to);
+      fail(err && err.name === 'AbortError'
+        ? 'That took longer than expected. Please try again.'
+        : 'Could not reach the newsletter service. Please try again.');
+    }});
   }});
 }})();
 </script>
@@ -1257,12 +1233,12 @@ def newsletter_footer_form_js() -> str:
     suppressed on /learn while the footer form still works there."""
     if not NEWSLETTER_CONFIGURED:
         return ""
-    action_js = json.dumps(MAILCHIMP_FORM_ACTION)
-    hp_js     = json.dumps(MAILCHIMP_HONEYPOT_NAME)
+    endpoint_js = json.dumps(SUBSCRIBE_ENDPOINT)
+    hp_js       = json.dumps(NEWSLETTER_HONEYPOT_NAME)
     return f"""<script>
 (function () {{
-  var FORM_ACTION = {action_js};
-  var HONEYPOT    = {hp_js};
+  var ENDPOINT = {endpoint_js};
+  var HONEYPOT = {hp_js};
   var SUBSCRIBED_DAYS = 365;
   var STORAGE_KEY     = 'op_newsletter_popup';
 
@@ -1282,24 +1258,13 @@ def newsletter_footer_form_js() -> str:
     if (submitEl.disabled) return;
     var email = (emailEl.value || '').trim();
     if (!email) return;
+    var hpEl = form.querySelector('input[name="' + HONEYPOT + '"]');
+    var hp = hpEl ? (hpEl.value || '') : '';
     submitEl.disabled = true;
     var origLabel = submitEl.textContent;
     submitEl.textContent = 'Sending';
     errEl.hidden = true;
 
-    var cb = 'op_mcf_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
-    var script = null;
-    var settled = false;
-    var to = setTimeout(function () {{
-      if (settled) return;
-      settled = true; cleanup();
-      fail('That took longer than expected. Please try again.');
-    }}, 10000);
-
-    function cleanup() {{
-      if (script && script.parentNode) script.parentNode.removeChild(script);
-      try {{ delete window[cb]; }} catch (_e) {{ window[cb] = undefined; }}
-    }}
     function fail(msg) {{
       submitEl.disabled = false;
       submitEl.textContent = origLabel;
@@ -1312,29 +1277,27 @@ def newsletter_footer_form_js() -> str:
       writeStored('subscribed', SUBSCRIBED_DAYS);
     }}
 
-    window[cb] = function (resp) {{
-      if (settled) return;
-      settled = true; clearTimeout(to); cleanup();
-      if (resp && resp.result === 'success') {{ ok(); return; }}
-      var raw = (resp && resp.msg) ? String(resp.msg) : '';
-      var cleaned = raw.replace(/^\\d+\\s*-\\s*/, '').replace(/<[^>]+>/g, '').trim();
-      fail(cleaned);
-    }};
+    var ctrl = new AbortController();
+    var to = setTimeout(function () {{ ctrl.abort(); }}, 10000);
 
-    var base = FORM_ACTION.indexOf('/post-json?') !== -1 ? FORM_ACTION : FORM_ACTION.replace('/post?', '/post-json?');
-    var joiner = base.indexOf('?') !== -1 ? '&' : '?';
-    var url = base + joiner + 'EMAIL=' + encodeURIComponent(email)
-      + '&' + encodeURIComponent(HONEYPOT) + '='
-      + '&c=' + cb;
-    script = document.createElement('script');
-    script.src = url;
-    script.async = true;
-    script.onerror = function () {{
-      if (settled) return;
-      settled = true; clearTimeout(to); cleanup();
-      fail('Could not reach the newsletter service. Please try again.');
-    }};
-    document.body.appendChild(script);
+    fetch(ENDPOINT, {{
+      method: 'POST',
+      headers: {{ 'Content-Type': 'application/json' }},
+      body: JSON.stringify({{ email: email, hp: hp }}),
+      signal: ctrl.signal
+    }}).then(function (resp) {{
+      clearTimeout(to);
+      if (resp.ok) {{ ok(); return; }}
+      return resp.json().catch(function () {{ return {{}}; }}).then(function (data) {{
+        if (resp.status === 429) fail("You're going a little fast — try again in a moment.");
+        else fail((data && data.detail) ? data.detail : 'Something went wrong. Please try again.');
+      }});
+    }}).catch(function (err) {{
+      clearTimeout(to);
+      fail(err && err.name === 'AbortError'
+        ? 'That took longer than expected. Please try again.'
+        : 'Could not reach the newsletter service. Please try again.');
+    }});
   }});
 }})();
 </script>
