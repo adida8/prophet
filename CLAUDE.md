@@ -8,7 +8,7 @@ others.
 |---|---|---|---|
 | **Prophet** | Paper-trading bot for prediction markets, plus the platform's market data engine and React dashboard | `prophet/` (or repo root for legacy code), `frontend/` | shipping; deployed to Railway |
 | **Ledger** | Connected portfolio tracker for Polymarket (Kalshi in Phase 1). Paste-a-wallet viewer at `/ledger`. | `ledger/`, `frontend/src/ledger/` | Phase 0 shipped; live on Railway |
-| **The Desk** | Verdict engine that evaluates every priced football match + the WC 2026 outright winner market | `desk/` | PRs 1–4 + backtest + 4.5 sanity + explainer stub + **optimization-spec Phase A** + **outright engine (parallel pipeline, live on Polymarket)** + **WC26-only ingest filter** + **per-team outright ladder UI** + **team-id collision fix + seed-Elo audit** all landed; Phase B (form / FIFA / weather / injuries) + PR 5 Haiku + PR 6 scheduler outstanding |
+| **The Desk** | Verdict engine that evaluates every priced football match + the WC 2026 outright winner market | `desk/` | PRs 1–4 + backtest + 4.5 sanity + explainer stub + **optimization-spec Phase A** + **outright engine (parallel pipeline, live on Polymarket)** + **WC26-only ingest filter** + **per-team outright ladder UI** + **team-id collision fix + seed-Elo audit** + **news-signals PRs A–F all live in production** (12 trusted-core RSS → Haiku → `copy.editorial_citations` + bounded Elo nudges) all landed; PR 5 Haiku-driven blurb + PR 6 scheduler still outstanding |
 | **Odds Primer site (React)** | Editorial front-of-house: home (`/`), about (`/about`), learn (`/learn` + 3 primers). Reuses the design system; hardcoded sample data — live wiring is a later workstream. Legacy Prophet trading dashboard moved to `/dashboard` (unlinked). | `frontend/src/op/` | shipped to staging 2026-05-13 (PR #27). **Route conflict at `/` with `site/generate.py`'s static site (`/`, `/matches`, `/outrights`) needs reconciling before prod promote.** |
 
 Build specs live alongside the code:
@@ -20,6 +20,7 @@ Build specs live alongside the code:
 - `THE_DESK_OPTIMIZATION_SPEC.md` — v1.1 + v1.2 optimization spec; **Phase A landed**, B–F outstanding
 - `THE_DESK_OUTRIGHTS_SPEC.md` — outright winner build spec; v0.2 supersedes earlier drafts. Note: v0.2 wants outrights folded through the position-list waist, but **the parallel-pipeline implementation in `desk/outrights/` shipped first** — it predates the waist refactor and runs live on Polymarket today.
 - `THE_DESK_DATA_LAYER_SPEC.md` — data layer spec; Phase 1b (live Elo from eloratings.net / clubelo.com) is the credibility-load-bearing piece the match-Pick page needs before its Picks become real signals
+- `THE_DESK_NEWS_SIGNALS_SPEC.md` — news & editorial signals spec (v0.1 draft). PRs A–F **all shipped** as of 2026-05-21 — sport-agnostic source registry + resolver, RSS fetcher + cache, Haiku extractor, editorial track → `copy.editorial_citations`, GDELT aggregator path, hard-track Elo adjustments. Live on Railway behind `DESK_SIGNALS_FETCH=1` + `DESK_SIGNALS_EXTRACT=1` (needs `ANTHROPIC_API_KEY`).
 - `STATUS.md` — overnight-run briefing (refreshed when an autonomous run lands work; check it in the morning)
 - `ledger-phase-0-brief.md` — Phase 0 brief for Ledger
 - `Odds Primer Design System/` — voice, palette, type, components. Canonical brand assets live at the **top level**: `assets/wordmark.svg`, `assets/wordmark-tagline.svg`, `assets/glyph-bars.svg`, with the lockup spec in `preview/wordmark.html`. Wordmark is **Inter Tight 700** (not Source Serif 4); bars glyph uses `viewBox 0 0 38 34`. The earlier `branding/locked/` folder is **archived** — don't read or import from it.
@@ -143,7 +144,8 @@ Six-step pipeline, each independently replaceable:
 - ✅ WC26-only live ingest filter — `DESK_COMPETITIONS=wc26` (default) gates Polymarket ingest to the World Cup. Override with `DESK_COMPETITIONS=wc26,epl,ucl` or `*` for all.
 - ✅ Team-id collision fix — Polymarket reuses slug code `kor` for both Korea Republic and Curaçao ("Kòrsou"). Ingest now prefers title-name → ISO3 lookup (see `iso3_for_name` in `desk/sports/football/teams.py`), falls back to slug code only when title is unknown.
 - ✅ Seed-Elo audit — `desk/sports/football/data/elo_seed.py` audited against eloratings.net mid-2026. Frozen until live ingest lands.
-- ⬜ PR 5 — explainer Haiku replacement (needs `ANTHROPIC_API_KEY`)
+- ✅ News-signals PRs A–F (per `THE_DESK_NEWS_SIGNALS_SPEC.md`) — 21-source global registry (13 RSS active + 8 trust-only / `feed_type=none` reserved for licensed APIs), `desk fetch-signals` populates `desk/data/signals.db`, `desk extract-signals` runs Haiku with prompt caching + tool-use schema (cost ~$0.003/article, content-hash dedupe makes steady-state nearly free), `copy.editorial_citations` filled by `build_citations` with team binding to the participating sides + ≥2-org consensus detector for plural attribution, hard-track injury/suspension Signals from `can_feed_model` sources nudge each team's Elo within the 5-day late-binding window (bounded -8 injury / -6 suspension, capped -30 total per team). Wired into `desk_refresh_loop.py` so the hourly tick fetches + extracts + republishes JSON.
+- ⬜ PR 5 — explainer Haiku replacement (the *blurb-writer*; PR-C wired Haiku for signal **extraction**, this is for prose generation)
 - ⬜ PR 6 — scheduler + CLI + serve
 - ⬜ Phase B (form / FIFA-rank residual / weather / injuries) — biggest Brier lever
 - ⬜ Phase C–F per optimization spec
@@ -230,6 +232,13 @@ python -m desk run --once                   # live pipeline → data/output/foot
 python -m desk match fb-wc26-fra-mex-20260612
 python -m desk outrights                    # MC-sim WC26 winner market → data/output/outrights/
 python -m desk backtest --tournament wc-2022 # historical replay → workbook + dashboard
+
+# News-signals subsystem (gated on env vars on Railway; freely runnable locally)
+python -m desk signals validate              # load + report the source seed (fails loud on bad rows)
+python -m desk fetch-signals                 # 13 RSS feeds → desk/data/signals.db (~30s, free)
+python -m desk fetch-signals --include-long-tail  # also pull GDELT (paid: external API)
+python -m desk extract-signals               # Haiku reads cached items → Signals (needs ANTHROPIC_API_KEY)
+python -m desk extract-signals --limit 25    # cap items per source per run (cost guard)
 ```
 
 ### Layout
@@ -268,7 +277,23 @@ desk/
 │   │       ├── teams.py              # team-id system + competition map
 │   │       ├── data/                 # Elo seed, WC26 venues, club grounds
 │   │       ├── ingest/               # Elo intl/club readers (v1: seed)
-│   │       └── metadata/             # FIFA + club adapters
+│   │       ├── metadata/             # FIFA + club adapters
+│   │       ├── signals_glue.py       # FixtureRef → registry tag set (country/league/club)
+│   │       └── hard_signals.py       # Signal → bounded Elo adjustment (PR F)
+│   ├── signals/                      # NEWS-SIGNALS subsystem (sport-agnostic)
+│   │   ├── models.py                  # Source / SourceItem / Signal Pydantic v2
+│   │   ├── registry.py                # CSV seed loader (fail-loud per row)
+│   │   ├── resolve.py                 # fixture tag set → sources_for()
+│   │   ├── canonical.py               # tracker-stripping URL normaliser
+│   │   ├── parse.py                   # stdlib RSS 2.0 + Atom parser
+│   │   ├── aggregator.py              # GDELT 2.0 DOC API client
+│   │   ├── fetch.py                   # http GET → cache (polite 10-min gate)
+│   │   ├── cache.py                   # SQLite cache (items + extractions)
+│   │   ├── extract.py                 # Extractor protocol + AnthropicExtractor (Haiku, prompt-cached)
+│   │   ├── editorial.py               # build_citations + find_consensus
+│   │   ├── hard_track.py              # hard_signals_for() — track gate + recency
+│   │   ├── runtime.py                 # SignalsRuntime: opens cache, yields citations/hard signals per fixture
+│   │   └── data/sources_seed.csv      # the 21-row global seed (verified 2026-05-21)
 │   ├── outrights/                    # PARALLEL pipeline for tournament-winner markets
 │   │   ├── ingest_polymarket.py      # gamma client for WC winner event
 │   │   ├── wc26_data.py              # bracket structure + Elo seed
@@ -290,6 +315,7 @@ desk/
 └── data/
     ├── output/football/              # live per-match JSON + index.json (WC26-only by default)
     ├── output/outrights/              # live per-outright JSON + index.json
+    ├── signals.db                    # news-signals cache (gitignored — ephemeral on Railway)
     └── backtest/                     # frozen Elo snapshots + manual CSVs
 ```
 
@@ -363,6 +389,14 @@ Override via `DESK_PICK_PP` / `DESK_PASS_PP` / `DESK_AVOID_PP` in `.env`.
 | `DESK_OPS_PASS` | unset | Password for the ops dashboard. Set both on Railway to enable; leave unset locally to keep the surface invisible. |
 | `DESK_OPS_RETENTION` | `200` | How many `RunReport` JSONs the recorder keeps before pruning the oldest. |
 | `DESK_OPS_EDGE_DELTA_PP` | `1.0` | Minimum |edge_pp| delta between consecutive runs that fires an `edge` change in the diff engine. |
+| `ANTHROPIC_API_KEY` | unset | Required for `desk extract-signals` (Haiku). Without it, extraction exits non-zero — the rest of the pipeline still runs and the cache still fills via fetch, just no Signals are produced. |
+| `DESK_SIGNALS_FETCH` | `0` | Set to `1` to enable the hourly RSS fetch step in `desk_refresh_loop.py`. Off by default so a fresh deploy doesn't hit external services until the operator opts in. |
+| `DESK_SIGNALS_EXTRACT` | `0` | Set to `1` to enable the hourly Haiku extraction step. Needs `ANTHROPIC_API_KEY` to actually run; logs a warning + skips if the key isn't present. |
+| `DESK_SIGNALS_EXTRACT_LIMIT` | unset | Optional per-source-per-tick cap on extraction. E.g. `25` keeps steady-state Anthropic cost predictable while the source set is being tuned. |
+| `DESK_HARD_SIGNAL_INJURY_ELO` | `8.0` | Magnitude of the Elo penalty applied for a single confirmed injury signal (from a `can_feed_model` source, inside the late-binding window). |
+| `DESK_HARD_SIGNAL_SUSPENSION_ELO` | `6.0` | Same, for confirmed suspensions / bans. |
+| `DESK_HARD_SIGNAL_MAX_ELO` | `30.0` | Hard per-team cap on total hard-signal Elo penalty. Multiple injuries cumulate but never below this floor. |
+| `DESK_HARD_SIGNAL_WINDOW_DAYS` | `5` | Late-binding window. A hard signal only adjusts Elo when the fixture's kickoff is within this many days. Outside the window, the path is a no-op. |
 
 ### Output contract (what the website consumes)
 
@@ -385,18 +419,33 @@ Schema lives in `desk/contract.schema.json`. Sample:
     "price": "-180",
     "edge_pp": 4.2
   },
-  "copy": { "title": "...", "summary": "...", "blurb": "...", "citations": [...] },
+  "copy": {
+    "title": "...", "summary": "...", "blurb": "...",
+    "citations": [...],
+    "editorial_citations": [
+      {
+        "outlet":         "The Guardian (football)",
+        "url":            "https://www.theguardian.com/football/...",
+        "quote":          "He will be an important player in this World Cup.",
+        "quote_original": null,
+        "quote_lang":     null,
+        "published_at":   "2026-05-19T15:00:00Z"
+      }
+    ]
+  },
   "updated_at": "2026-06-12T17:00:00Z"
 }
 ```
 
-Internals (`p_a/p_draw/p_b`, drivers, raw market prices) **stay inside The Desk**. Adding a contract field requires an ADR.
+Internals (`p_a/p_draw/p_b`, drivers, raw market prices, raw `Signal` objects, the registry itself) **stay inside The Desk**. Adding a contract field requires an ADR.
+
+`copy.editorial_citations` was added news-signals PR D — additive (legacy `copy.citations` URL list preserved). Each entry carries the outlet's display name, deep link, verbatim English quote, plus the source-language original + ISO-639-1 lang for translated quotes.
 
 ---
 
 ## Tech stack
 
-**Backend** Python 3.11+, httpx, websockets, cryptography, pandas, FastAPI, uvicorn, Pydantic v2, aiosqlite, APScheduler (PR 6+), Anthropic SDK (PR 5+).
+**Backend** Python 3.11+, httpx, websockets, cryptography, pandas, FastAPI, uvicorn, Pydantic v2, aiosqlite, APScheduler (PR 6+), Anthropic SDK (Haiku for news-signals extraction + future PR 5 blurb generation — listed in root `requirements.txt` so the Railway image installs it; `desk/pyproject.toml` is **not** pip-installed in production, the package runs as a subprocess via PYTHONPATH).
 
 **Frontend** React 19, Vite, Recharts, Lucide React. The editorial site (`frontend/src/op/`), Ledger (`frontend/src/ledger/`), and Desk page (`frontend/src/desk/`) all use the Odds Primer Design System (`Odds Primer Design System/`) — Source Serif 4 (body), Inter Tight (wordmark + chrome), JetBrains Mono (numerics). All three share the locked tokens at `frontend/src/ledger/op-tokens.css`. The legacy Prophet trading dashboard at `/dashboard` still uses its older dark-theme tokens.
 
@@ -406,6 +455,9 @@ Internals (`p_a/p_draw/p_b`, drivers, raw market prices) **stay inside The Desk*
 
 - **Work on `staging` by default.** Commit, push, check the staging URL. Feature branches are optional and only worth the overhead when two unrelated things are in flight at once.
 - **`init/project-setup` is production.** Only receives merges from `staging` once changes have been eyeballed. Never push half-finished work straight to it.
-- **Never commit `data/*.db`.** Already in `.gitignore`.
+- **Never commit `data/*.db`.** Already in `.gitignore` (covers root `data/*.db` AND `desk/data/*.db` — the news-signals cache lives at `desk/data/signals.db`, ephemeral per Railway container).
+- **`desk_refresh_loop.py` runs hourly on Railway.** Each tick: `desk fetch-signals` (if `DESK_SIGNALS_FETCH=1`) → `desk extract-signals` (if `DESK_SIGNALS_EXTRACT=1` + `ANTHROPIC_API_KEY` set) → `desk run --once` → `desk outrights` → `site/generate.py`. Disabled with `DESK_AUTORUN=0`.
+- **DW (Deutsche Welle) feed is RSS 1.0 / RDF**, which the stdlib parser in `desk/signals/parse.py` doesn't handle. One source out of 13 currently dropping `parse_error`. Not blocking — fix when convenient.
+- **8 trust-only sources** (Reuters, AP, AFP, FIFA, UEFA, The Athletic, Eurosport, Goal.com) carry `feed_type=none`. They're in the registry for trust weighting but can't be fetched today — each needs a paid API integration or custom adapter to activate.
 - **VS Code git/PR extension auto-stages files.** If `git status` shows surprise staged content, run `git reset` (touches no files) before committing.
 - When you say "save session", "snapshot", "load context", or "sync memory", follow `~/Google Drive/My Drive/Claude/memory/session-snapshot-SKILL.md`.
