@@ -4,6 +4,7 @@ The output contract is the only thing Faktor sees. Treat it as a public API.
 """
 
 from desk.publish.contract import (  # noqa: F401
+    Citation,
     Competition,
     Copy,
     MatchOutput,

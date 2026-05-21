@@ -1,0 +1,36 @@
+{
+  "articles": [
+    {
+      "url": "https://example.com/argentina-injury?utm_source=gdelt",
+      "url_mobile": "",
+      "title": "Argentina lose midfielder to injury ahead of qualifier",
+      "seendate": "20260519T080000Z",
+      "socialimage": "",
+      "domain": "example.com",
+      "language": "English",
+      "sourcecountry": "Argentina"
+    },
+    {
+      "url": "https://otro-medio.example.org/news/brasil-vence",
+      "title": "Brasil vence amistoso por 2 a 0",
+      "seendate": "20260518T193000Z",
+      "domain": "otro-medio.example.org",
+      "language": "Portuguese",
+      "sourcecountry": "Brazil"
+    },
+    {
+      "url": "",
+      "title": "Item with no url is dropped",
+      "seendate": "20260518T120000Z"
+    },
+    {
+      "url": "https://no-title.example.com/x",
+      "title": "",
+      "seendate": "20260518T120000Z"
+    },
+    {
+      "url": "https://no-date.example.com/x",
+      "title": "Item with missing seendate is still kept"
+    }
+  ]
+}

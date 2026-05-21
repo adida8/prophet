@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Sample Atom Feed</title>
+  <link href="https://example.org/feed" rel="self"/>
+  <link href="https://example.org/" rel="alternate"/>
+  <updated>2026-05-19T10:00:00Z</updated>
+  <id>tag:example.org,2026:feed</id>
+
+  <entry>
+    <id>tag:example.org,2026:1</id>
+    <title>Brazil drop Vinicius after training spat</title>
+    <link href="https://example.org/articles/vini-dropped" rel="alternate"/>
+    <link href="https://example.org/articles/vini-dropped/comments" rel="replies"/>
+    <published>2026-05-19T09:00:00Z</published>
+    <summary>The forward will miss the qualifier after a disagreement with the manager.</summary>
+  </entry>
+
+  <entry>
+    <id>tag:example.org,2026:2</id>
+    <title>England complete training session ahead of Sunday's friendly</title>
+    <link href="https://example.org/articles/england-training"/>
+    <updated>2026-05-18T18:30:00+00:00</updated>
+    <content>All 23 players took part in the session at St George's Park.</content>
+  </entry>
+</feed>

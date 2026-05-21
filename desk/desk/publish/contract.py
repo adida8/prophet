@@ -131,10 +131,41 @@ class Verdict(BaseModel):
         return self
 
 
+class Citation(BaseModel):
+    """An attributed reference behind a claim in the editorial blurb.
+
+    Carries enough for the front-of-house to render a verifiable
+    quotation: the outlet's display name, the deep link, the verbatim
+    sentence the article carried. `quote` is in English; for
+    non-English sources `quote_original` holds the verbatim source-
+    language sentence and `quote_lang` the ISO-639-1 code, so a reader
+    can verify the translation.
+
+    See `THE_DESK_NEWS_SIGNALS_SPEC.md` §8 — the citation is load-
+    bearing for the editorial track. "According to local press…"
+    requires a real, fetchable line behind it.
+    """
+    model_config = ConfigDict(extra="forbid")
+
+    outlet:         Annotated[str, StringConstraints(min_length=1, max_length=120)]
+    url:            Annotated[str, StringConstraints(min_length=1, max_length=512)]
+    quote:          Annotated[str, StringConstraints(min_length=1, max_length=600)]
+    quote_original: Optional[Annotated[str, StringConstraints(min_length=1, max_length=600)]] = None
+    quote_lang:     Optional[Annotated[str, StringConstraints(min_length=2, max_length=8)]] = None
+    published_at:   Optional[datetime] = None
+
+
 class Copy(BaseModel):
     """Editorial output. Voice rules enforced by explainer post-checks (PR 5).
 
-    Citations are URLs of the sources Haiku referenced in the blurb.
+    `citations` is the legacy URL-only list — populated by the explainer
+    stub today; the front-of-house renders it as a row of source links.
+
+    `editorial_citations` is the structured form added in news-signals
+    PR D — each entry carries outlet name + verbatim quote + (optional)
+    translation. Populated when the signals cache has editorial-track
+    signals covering this fixture; empty otherwise, so this is a
+    purely additive contract change.
 
     `drivers` is the structured "Why this call?" list — 3-4 short
     bullets the front-of-house renders above the CTA. Each bullet is a
@@ -144,11 +175,12 @@ class Copy(BaseModel):
     """
     model_config = ConfigDict(extra="forbid")
 
-    title:     Annotated[str, StringConstraints(min_length=0, max_length=120)] = ""
-    summary:   Annotated[str, StringConstraints(min_length=0, max_length=400)] = ""
-    blurb:     Annotated[str, StringConstraints(min_length=0, max_length=4000)] = ""
-    citations: list[str] = Field(default_factory=list)
-    drivers:   list[Annotated[str, StringConstraints(min_length=1, max_length=200)]] = Field(default_factory=list, max_length=6)
+    title:               Annotated[str, StringConstraints(min_length=0, max_length=120)] = ""
+    summary:             Annotated[str, StringConstraints(min_length=0, max_length=400)] = ""
+    blurb:               Annotated[str, StringConstraints(min_length=0, max_length=4000)] = ""
+    citations:           list[str] = Field(default_factory=list)
+    editorial_citations: list[Citation] = Field(default_factory=list, max_length=10)
+    drivers:             list[Annotated[str, StringConstraints(min_length=1, max_length=200)]] = Field(default_factory=list, max_length=6)
 
 
 # ── Top-level contract ────────────────────────────────────────────────

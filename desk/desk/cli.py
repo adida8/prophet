@@ -95,6 +95,77 @@ def _cmd_replay(args: argparse.Namespace) -> int:
     return 2
 
 
+def _cmd_fetch_signals(args: argparse.Namespace) -> int:
+    """Fetch the trusted-core sources into the signals cache.
+
+    Read-only against the engine — does nothing to /api/desk/* output.
+    Useful for poking at what the registry actually pulls down. Long-
+    tail aggregators (GDELT) are off by default since they hit external
+    APIs whose query has to be tuned per use case; opt in with
+    `--include-long-tail`.
+    """
+    from desk.signals.cache import SignalsCache
+    from desk.signals.fetch import fetch_all
+    from desk.signals.registry import Registry
+
+    reg = Registry.from_csv()
+    db_path = Path(args.db) if args.db else Path("desk/data/signals.db")
+    tiers: tuple[str, ...] = ("trusted_core",)
+    if args.include_long_tail:
+        tiers = tiers + ("long_tail",)
+    with SignalsCache(db_path) as cache:
+        outcomes = fetch_all(reg, cache, tiers=tiers)
+
+    totals = {"new": 0, "changed": 0, "unchanged": 0}
+    for o in outcomes:
+        totals["new"]       += o.new
+        totals["changed"]   += o.changed
+        totals["unchanged"] += o.unchanged
+        suffix = f"  err={o.error}" if o.error else ""
+        print(
+            f"  {o.source_id:28s}  {o.status:14s}  "
+            f"new={o.new:3d}  changed={o.changed:3d}  unchanged={o.unchanged:3d}{suffix}"
+        )
+    print()
+    print(f"  totals: new={totals['new']}  changed={totals['changed']}  "
+          f"unchanged={totals['unchanged']}  (db: {db_path})")
+    return 0
+
+
+def _cmd_extract_signals(args: argparse.Namespace) -> int:
+    """Run the LLM extractor across the signals cache. Idempotent — items
+    we've already extracted (at the same content_hash) are skipped."""
+    import os
+
+    from desk.signals.cache import SignalsCache
+    from desk.signals.extract import AnthropicExtractor, extract_all
+
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        print("ANTHROPIC_API_KEY not set", file=sys.stderr)
+        return 2
+
+    db_path = Path(args.db) if args.db else Path("desk/data/signals.db")
+    extractor = AnthropicExtractor(model=args.model)
+    with SignalsCache(db_path) as cache:
+        outcomes = extract_all(
+            cache,
+            extractor=extractor,
+            source_ids=set(args.source) if args.source else None,
+            limit_per_source=args.limit,
+        )
+
+    counts: dict[str, int] = {}
+    new = 0
+    for o in outcomes:
+        counts[o.status] = counts.get(o.status, 0) + 1
+        new += o.new_signals
+    for status, n in sorted(counts.items()):
+        print(f"  {status:18s}  {n}")
+    print()
+    print(f"  signals written: {new}  (db: {db_path})")
+    return 0
+
+
 def _cmd_backtest(args: argparse.Namespace) -> int:
     """Run the historical backtest harness.
 
@@ -187,6 +258,23 @@ def build_parser() -> argparse.ArgumentParser:
     rp.add_argument("match_id")
     rp.add_argument("--as-of", required=False)
     rp.set_defaults(func=_cmd_replay)
+
+    fs = sub.add_parser("fetch-signals", help="fetch trusted-core sources into the signals cache")
+    fs.add_argument("--db", help="override signals DB path (default: desk/data/signals.db)")
+    fs.add_argument("--include-long-tail", action="store_true",
+                    help="also fetch long-tail aggregators (e.g. GDELT) — extra cost")
+    fs.set_defaults(func=_cmd_fetch_signals)
+
+    es = sub.add_parser("extract-signals",
+                        help="run the LLM extractor across cached items (needs ANTHROPIC_API_KEY)")
+    es.add_argument("--db", help="override signals DB path (default: desk/data/signals.db)")
+    es.add_argument("--model", default="claude-haiku-4-5",
+                    help="Claude model id (default: claude-haiku-4-5)")
+    es.add_argument("--source", action="append",
+                    help="restrict to source(s) by id; repeatable")
+    es.add_argument("--limit", type=int, default=None,
+                    help="extract at most N items per source (smoke-testing)")
+    es.set_defaults(func=_cmd_extract_signals)
 
     bt = sub.add_parser("backtest", help="run the historical backtest harness")
     bt.add_argument("--tournament", action="append",

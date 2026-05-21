@@ -19,7 +19,20 @@ The mapping of hard signals to sport-specific features lives in each
 sport package.
 """
 
+# Re-export the core types only. Callers needing the runners
+# (`fetch_all`, `extract_all`) should import from the submodules to
+# keep the two namespaces unambiguous.
+from desk.signals.cache import SignalsCache
+from desk.signals.canonical import canonical_url
+from desk.signals.extract import (
+    AnthropicExtractor,
+    ExtractionOutcome,
+    Extractor,
+    extract_item,
+)
+from desk.signals.fetch import FetchOutcome, fetch_source
 from desk.signals.models import Signal, SignalType, Source, SourceItem
+from desk.signals.parse import parse_feed
 from desk.signals.registry import Registry
 from desk.signals.resolve import sources_for
 
@@ -30,4 +43,13 @@ __all__ = [
     "SourceItem",
     "Registry",
     "sources_for",
+    "canonical_url",
+    "parse_feed",
+    "SignalsCache",
+    "FetchOutcome",
+    "fetch_source",
+    "Extractor",
+    "ExtractionOutcome",
+    "AnthropicExtractor",
+    "extract_item",
 ]

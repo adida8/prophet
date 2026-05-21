@@ -1,6 +1,78 @@
 {
   "MatchOutput": {
     "$defs": {
+      "Citation": {
+        "additionalProperties": false,
+        "description": "An attributed reference behind a claim in the editorial blurb.\n\nCarries enough for the front-of-house to render a verifiable\nquotation: the outlet's display name, the deep link, the verbatim\nsentence the article carried. `quote` is in English; for\nnon-English sources `quote_original` holds the verbatim source-\nlanguage sentence and `quote_lang` the ISO-639-1 code, so a reader\ncan verify the translation.\n\nSee `THE_DESK_NEWS_SIGNALS_SPEC.md` \u00a78 \u2014 the citation is load-\nbearing for the editorial track. \"According to local press\u2026\"\nrequires a real, fetchable line behind it.",
+        "properties": {
+          "outlet": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Outlet",
+            "type": "string"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Published At"
+          },
+          "quote": {
+            "maxLength": 600,
+            "minLength": 1,
+            "title": "Quote",
+            "type": "string"
+          },
+          "quote_lang": {
+            "anyOf": [
+              {
+                "maxLength": 8,
+                "minLength": 2,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Quote Lang"
+          },
+          "quote_original": {
+            "anyOf": [
+              {
+                "maxLength": 600,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Quote Original"
+          },
+          "url": {
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outlet",
+          "url",
+          "quote"
+        ],
+        "title": "Citation",
+        "type": "object"
+      },
       "Competition": {
         "additionalProperties": false,
         "description": "League or tournament. `stage` is optional and only populated when\nmeaningful (`group_d`, `semi_final`, `matchday_8`).",
@@ -43,7 +115,7 @@
       },
       "Copy": {
         "additionalProperties": false,
-        "description": "Editorial output. Voice rules enforced by explainer post-checks (PR 5).\n\nCitations are URLs of the sources Haiku referenced in the blurb.\n\n`drivers` is the structured \"Why this call?\" list \u2014 3-4 short\nbullets the front-of-house renders above the CTA. Each bullet is a\nplain-language sentence, not a data dump. The list is allowed to\nbe empty for fixtures the engine can't characterise (e.g. a Pass\non a tightly-priced market with nothing further to say).",
+        "description": "Editorial output. Voice rules enforced by explainer post-checks (PR 5).\n\n`citations` is the legacy URL-only list \u2014 populated by the explainer\nstub today; the front-of-house renders it as a row of source links.\n\n`editorial_citations` is the structured form added in news-signals\nPR D \u2014 each entry carries outlet name + verbatim quote + (optional)\ntranslation. Populated when the signals cache has editorial-track\nsignals covering this fixture; empty otherwise, so this is a\npurely additive contract change.\n\n`drivers` is the structured \"Why this call?\" list \u2014 3-4 short\nbullets the front-of-house renders above the CTA. Each bullet is a\nplain-language sentence, not a data dump. The list is allowed to\nbe empty for fixtures the engine can't characterise (e.g. a Pass\non a tightly-priced market with nothing further to say).",
         "properties": {
           "blurb": {
             "default": "",
@@ -67,6 +139,14 @@
             },
             "maxItems": 6,
             "title": "Drivers",
+            "type": "array"
+          },
+          "editorial_citations": {
+            "items": {
+              "$ref": "#/$defs/Citation"
+            },
+            "maxItems": 10,
+            "title": "Editorial Citations",
             "type": "array"
           },
           "summary": {

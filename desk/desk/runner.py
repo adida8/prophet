@@ -40,11 +40,19 @@ from desk.publish import (
     Verdict,
 )
 from desk.publish.contract import VerdictState
+from desk.signals.runtime import SignalsRuntime
 from desk.sport import FixtureRef
 from desk.sports import active_sports
 from desk.verdict.compare import MarketSnapshot
 
 log = logging.getLogger("desk.runner")
+
+
+class _NullCtx:
+    """No-op context manager — used when the signals runtime is unavailable
+    so the inner loop can unconditionally sit inside `with`."""
+    def __enter__(self): return self
+    def __exit__(self, *exc): return False
 
 
 def _build_match(
@@ -152,6 +160,12 @@ def run_once(
     n_illiquid = n_stub_elo = 0
     any_sport_ran = False
 
+    # News-signals are entirely additive: if the operator has been
+    # running `desk fetch-signals` + `desk extract-signals`, the cache
+    # file exists and we enrich each match's editorial_citations from
+    # it. If it doesn't, we publish exactly what we did before.
+    signals_runtime_factory = SignalsRuntime.for_sport
+
     for sport in active_sports():
         any_sport_ran = True
         log.info("listing priced fixtures for %s", sport.code)
@@ -190,63 +204,87 @@ def run_once(
         matches: list[MatchOutput] = []
         paths: list[Path] = []
         now = datetime.now(tz=timezone.utc)
-        for fx, snapshot in pairs:
-            copy = None
-            try:
-                if hasattr(sport, "decide_and_explain"):
-                    result = sport.decide_and_explain(fx, snapshot)
-                    # PR 2: decide_and_explain may return (v, copy) or
-                    # (v, copy, DecisionMeta). Forced-pass counts come
-                    # from the meta — older sports without it just don't
-                    # populate the breakdown.
-                    if len(result) == 3:
-                        v, copy, meta = result
-                        if meta is not None and meta.forced_pass_reason == "illiquid":
-                            n_illiquid += 1
-                        elif meta is not None and meta.forced_pass_reason == "stub_elo":
-                            n_stub_elo += 1
-                    else:
-                        v, copy = result
-                else:
-                    v = sport.decide(fx, snapshot)
-            except Exception as e:                      # noqa: BLE001
-                log.warning("decide failed for %s: %s", fx.match_id, e)
-                errors.append(ErrorEntry(
-                    level=ErrorLevel.WARN, stage="decide",
-                    message=f"{fx.match_id}: {e}",
-                ))
-                v = Verdict(state=VerdictState.PASS)
-            try:
-                m = _build_match(fx, verdict=v, now=now, copy=copy)
-            except Exception as e:                      # noqa: BLE001
-                log.warning("build_match failed for %s: %s", fx.match_id, e)
-                errors.append(ErrorEntry(
-                    level=ErrorLevel.WARN, stage="build_match",
-                    message=f"{fx.match_id}: {e}",
-                ))
-                continue
-            try:
-                path, _ = pub.write_match(m)
-            except Exception as e:                      # noqa: BLE001
-                log.warning("write_match failed for %s: %s", fx.match_id, e)
-                errors.append(ErrorEntry(
-                    level=ErrorLevel.WARN, stage="publish",
-                    message=f"{fx.match_id}: {e}",
-                ))
-                continue
 
-            matches.append(m)
-            paths.append(path)
-            snapshot_rows.append(
-                fixture_row_from_match(m, venues=_venues_in(snapshot))
-            )
-            n_published += 1
-            if v.state == VerdictState.PICK.value or v.state == VerdictState.PICK:
-                n_pick += 1
-            elif v.state == VerdictState.AVOID.value or v.state == VerdictState.AVOID:
-                n_avoid += 1
-            else:
-                n_pass += 1
+        signals_runtime = signals_runtime_factory(sport, now=now)
+        signals_ctx = signals_runtime if signals_runtime is not None else _NullCtx()
+
+        with signals_ctx:
+            for fx, snapshot in pairs:
+                copy = None
+                try:
+                    if hasattr(sport, "decide_and_explain"):
+                        result = sport.decide_and_explain(fx, snapshot)
+                        # PR 2: decide_and_explain may return (v, copy) or
+                        # (v, copy, DecisionMeta). Forced-pass counts come
+                        # from the meta — older sports without it just don't
+                        # populate the breakdown.
+                        if len(result) == 3:
+                            v, copy, meta = result
+                            if meta is not None and meta.forced_pass_reason == "illiquid":
+                                n_illiquid += 1
+                            elif meta is not None and meta.forced_pass_reason == "stub_elo":
+                                n_stub_elo += 1
+                        else:
+                            v, copy = result
+                    else:
+                        v = sport.decide(fx, snapshot)
+                except Exception as e:                      # noqa: BLE001
+                    log.warning("decide failed for %s: %s", fx.match_id, e)
+                    errors.append(ErrorEntry(
+                        level=ErrorLevel.WARN, stage="decide",
+                        message=f"{fx.match_id}: {e}",
+                    ))
+                    v = Verdict(state=VerdictState.PASS)
+                try:
+                    m = _build_match(fx, verdict=v, now=now, copy=copy)
+                except Exception as e:                      # noqa: BLE001
+                    log.warning("build_match failed for %s: %s", fx.match_id, e)
+                    errors.append(ErrorEntry(
+                        level=ErrorLevel.WARN, stage="build_match",
+                        message=f"{fx.match_id}: {e}",
+                    ))
+                    continue
+
+                # News-signals editorial citations: only attempt when
+                # the runtime has been set up (cache file exists + sport
+                # has a tag-builder). Failures are warnings, not fatal.
+                if signals_runtime is not None:
+                    try:
+                        cites = signals_runtime.editorial_citations_for(fx)
+                        if cites:
+                            m.copy = m.copy.model_copy(
+                                update={"editorial_citations": list(cites)},
+                            )
+                    except Exception as e:                  # noqa: BLE001
+                        log.warning("editorial citations failed for %s: %s",
+                                    fx.match_id, e)
+                        errors.append(ErrorEntry(
+                            level=ErrorLevel.WARN, stage="editorial_citations",
+                            message=f"{fx.match_id}: {e}",
+                        ))
+
+                try:
+                    path, _ = pub.write_match(m)
+                except Exception as e:                      # noqa: BLE001
+                    log.warning("write_match failed for %s: %s", fx.match_id, e)
+                    errors.append(ErrorEntry(
+                        level=ErrorLevel.WARN, stage="publish",
+                        message=f"{fx.match_id}: {e}",
+                    ))
+                    continue
+
+                matches.append(m)
+                paths.append(path)
+                snapshot_rows.append(
+                    fixture_row_from_match(m, venues=_venues_in(snapshot))
+                )
+                n_published += 1
+                if v.state == VerdictState.PICK.value or v.state == VerdictState.PICK:
+                    n_pick += 1
+                elif v.state == VerdictState.AVOID.value or v.state == VerdictState.AVOID:
+                    n_avoid += 1
+                else:
+                    n_pass += 1
 
         if matches:
             idx_path, _ = pub.write_index(sport.code, matches)

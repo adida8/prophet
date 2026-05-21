@@ -26,6 +26,7 @@ from desk.sports.football.fixtures import (
 )
 from desk.sports.football.model import compute as compute_model
 from desk.sports.football.priced import list_priced_fixtures_with_stats
+from desk.sports.football.signals_glue import tags_for as _football_signals_tags
 from desk.verdict.compare import MarketSnapshot
 from desk.verdict.decide import DecisionMeta, decide as decide_verdict
 
@@ -198,6 +199,13 @@ class FootballSport:
             "kickoff_utc":        fx.kickoff_utc.isoformat() if fx.kickoff_utc else None,
         })
         return verdict, copy, meta
+
+    # ── News-signals glue ───────────────────────────────────────────
+
+    def signals_tags_for(self, fx: FixtureRef) -> frozenset[str]:
+        """Tag set the news-signals resolver uses to pick covering
+        outlets. Sport-agnostic resolver, football-specific tags."""
+        return _football_signals_tags(fx)
 
     def last_decisions(self) -> list[DecisionMeta]:
         """Decision metas collected during this run's decide_and_explain

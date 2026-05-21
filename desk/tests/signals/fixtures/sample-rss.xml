@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Sample Football Feed</title>
+    <link>https://example.com/sport/football</link>
+    <description>Test RSS 2.0 sample</description>
+    <item>
+      <title>Mbappé out with calf strain</title>
+      <link>https://example.com/sport/football/mbappe-calf?utm_source=rss&amp;utm_medium=feed</link>
+      <description>The France forward will miss tomorrow's match with a calf strain, the federation confirmed.</description>
+      <pubDate>Mon, 19 May 2026 08:15:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Argentina name unchanged XI for opener</title>
+      <link>https://example.com/sport/football/argentina-xi</link>
+      <description>Lionel Scaloni keeps the team that won the Copa América last summer.</description>
+      <pubDate>Mon, 19 May 2026 06:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title></title>
+      <link>https://example.com/sport/football/empty-title</link>
+      <description>Items with no title are dropped.</description>
+      <pubDate>Mon, 19 May 2026 05:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>
