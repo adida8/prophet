@@ -16,8 +16,22 @@ from __future__ import annotations
 import hashlib
 from typing import TypedDict
 
-from desk.explainer.voice import assert_voice_clean
-from desk.publish.contract import Copy, VerdictState
+from desk.explainer.voice import assert_voice_clean, is_voice_clean
+from desk.publish.contract import Citation, Copy, VerdictState
+
+# Minimum distinct outlets behind a fixture before a press-chorus
+# sentence is appended. Below this we stay silent rather than name a
+# single source as "coverage" — that risks reading like an endorsement
+# of one outlet's framing.
+_CHORUS_MIN_OUTLETS = 2
+
+# Outlet names listed in the count-shape sentence stop at this many.
+# Beyond it we say "{first}, {second}, {third}, and N others".
+_CHORUS_MAX_NAMED_OUTLETS = 3
+
+# A quoted line in the consensus shape is truncated to this many chars
+# (best-effort at word boundary) so the chorus stays a single sentence.
+_CHORUS_QUOTE_MAX_CHARS = 140
 
 
 class Inputs(TypedDict, total=False):
@@ -55,6 +69,11 @@ class Inputs(TypedDict, total=False):
     venue_stadium:     str | None
     venue_country:     str | None       # ISO-2 — e.g. "MX" / "US" / "CA"
     kickoff_utc:       str | None       # ISO-8601 string; explainer parses
+    # News-signals editorial citations covering this fixture, in the same
+    # shape they ship on the published contract. The templated blurb
+    # appends one extra "press chorus" sentence when ≥ 2 citations land
+    # — until PR 5 wires real Haiku prose around them.
+    editorial_citations: list[Citation] | None
 
 
 def _pct(p: float | None) -> str:
@@ -652,6 +671,7 @@ def _pick_copy(i: Inputs) -> Copy:
         model_p=model_p, market_p=market_p, a=a, b=b,
         competition=competition, venue_label=venue_label, salt=salt,
     )
+    blurb = _with_chorus(blurb, i.get("editorial_citations"))
     drivers = [
         f"Pre-tournament Elo gives {side_name} a stronger prior than the {venue_label} line implies.",
         f"The {edge:+.1f}pp gap clears our 3 percentage point threshold for a Pick.",
@@ -675,6 +695,7 @@ def _pass_copy(i: Inputs) -> Copy:
         f"as kickoff approaches and late-binding signals (form, weather, confirmed XI) "
         f"come in."
     )
+    blurb = _with_chorus(blurb, i.get("editorial_citations"))
     drivers = [
         "Model and market sit within a percentage point on every side.",
         "No structural disagreement to publish — both are pricing the same shape.",
@@ -698,12 +719,109 @@ def _avoid_copy(i: Inputs) -> Copy:
         f"outcome. A reader's takeaway: this market doesn't carry an edge for the engine, "
         f"and we surface that distinctly from Pass so it isn't read as ambiguous."
     )
+    blurb = _with_chorus(blurb, i.get("editorial_citations"))
     drivers = [
         f"Every side priced shorter than our model — most-negative gap is {edge:+.1f}pp.",
         "No side priced attractively against the engine's Elo prior.",
         "Avoid is reported separately from Pass so it doesn't read as ambiguous.",
     ]
     return Copy(title=title, summary=summary, blurb=blurb, drivers=drivers)
+
+
+# ── Press chorus (news-signals stopgap until PR 5 / Haiku) ───────────
+
+def _truncate_quote(quote: str, *, limit: int = _CHORUS_QUOTE_MAX_CHARS) -> str:
+    """Trim a quoted line to roughly one sentence's worth.
+
+    Tries to break on a word boundary before `limit`, falling back to a
+    hard cut. Trailing ellipsis "…" is appended only when we actually
+    truncated, so short quotes ride through verbatim.
+    """
+    q = (quote or "").strip()
+    if len(q) <= limit:
+        return q
+    head = q[: limit].rstrip()
+    sp = head.rfind(" ")
+    if sp >= limit - 30:                # only honour space if reasonably close to the limit
+        head = head[: sp].rstrip()
+    return head.rstrip(",.;:") + "…"
+
+
+def _distinct_outlets(cites: list[Citation]) -> list[str]:
+    """Outlet display names in citation order, deduped, falsy stripped."""
+    seen: set[str] = set()
+    out: list[str] = []
+    for c in cites:
+        name = (c.outlet or "").strip()
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        out.append(name)
+    return out
+
+
+def _press_chorus(cites: list[Citation] | None) -> str | None:
+    """One-sentence "press chorus" appended to a blurb when news
+    citations are present. Returns None when nothing safe to say.
+
+    Two shapes, picked by what survives the voice filter:
+
+      1. **Consensus shape** — when the top-reliability citation carries
+         a voice-clean quote, mention it: `Coverage this week converged
+         on the fixture; {Outlet} carried the line "{quote}".`
+      2. **Count shape** — when no clean quote survives but ≥ 2 distinct
+         outlets remain, list them: `Recent coverage from {N} outlets
+         ({first}, {second}, …) sits behind this verdict; full sources
+         below.`
+
+    All output is voice-checked one final time before return. A failing
+    final check returns None — the blurb body still ships unchanged.
+    """
+    cites = cites or []
+    if len(cites) < _CHORUS_MIN_OUTLETS:
+        return None
+
+    # Pre-filter: drop citations whose quote would fail the voice gate.
+    # Outlet name + URL stay attached; the quote isn't usable in prose.
+    safe_quoted = [c for c in cites if c.quote and is_voice_clean(c.quote)]
+    distinct = _distinct_outlets(cites)
+    if len(distinct) < _CHORUS_MIN_OUTLETS:
+        return None
+
+    candidate: str | None = None
+
+    # Consensus shape: prefer a real quote if one survived the filter.
+    # `editorial.build_citations` already sorts by source reliability
+    # desc, so the first surviving quote is the best one to feature.
+    if safe_quoted:
+        c = safe_quoted[0]
+        quote = _truncate_quote(c.quote).strip().rstrip('"').rstrip("'")
+        candidate = (
+            f'Coverage converged on the fixture this week; '
+            f'{c.outlet.strip()} carried the line "{quote}".'
+        )
+
+    # Count shape: fall back when no usable quote, but ≥ N outlets carry it.
+    if candidate is None or not is_voice_clean(candidate):
+        names = distinct[:_CHORUS_MAX_NAMED_OUTLETS]
+        rest  = len(distinct) - len(names)
+        listed = ", ".join(names)
+        if rest > 0:
+            listed += f", and {rest} other{'s' if rest != 1 else ''}"
+        candidate = (
+            f'Recent coverage from {len(distinct)} outlets '
+            f'({listed}) sits behind this verdict; full sources below.'
+        )
+
+    return candidate if is_voice_clean(candidate) else None
+
+
+def _with_chorus(blurb: str, cites: list[Citation] | None) -> str:
+    """Append the press chorus to a blurb when one is available."""
+    chorus = _press_chorus(cites)
+    if not chorus:
+        return blurb
+    return f"{blurb} {chorus}".strip()
 
 
 # ── Public entry point ────────────────────────────────────────────────

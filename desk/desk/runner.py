@@ -260,23 +260,11 @@ def run_once(
                     ))
                     continue
 
-                # News-signals editorial citations: only attempt when
-                # the runtime has been set up (cache file exists + sport
-                # has a tag-builder). Failures are warnings, not fatal.
-                if signals_runtime is not None:
-                    try:
-                        cites = signals_runtime.editorial_citations_for(fx)
-                        if cites:
-                            m.copy = m.copy.model_copy(
-                                update={"editorial_citations": list(cites)},
-                            )
-                    except Exception as e:                  # noqa: BLE001
-                        log.warning("editorial citations failed for %s: %s",
-                                    fx.match_id, e)
-                        errors.append(ErrorEntry(
-                            level=ErrorLevel.WARN, stage="editorial_citations",
-                            message=f"{fx.match_id}: {e}",
-                        ))
+                # Editorial citations now arrive populated on `m.copy`
+                # from the sport adapter (FootballSport.decide_and_explain)
+                # — and the templated blurb already saw them via build_copy
+                # so the press-chorus sentence rides on the published prose.
+                # See `desk/explainer/stub.py::_press_chorus`.
 
                 try:
                     path, _ = pub.write_match(m)

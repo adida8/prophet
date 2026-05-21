@@ -184,6 +184,19 @@ class FootballSport:
                     )
         self._last_hard_signal_adjustments.extend(hard_adjustments)
 
+        # Editorial citations covering this fixture — used by the
+        # templated explainer to append a press-chorus sentence to the
+        # blurb when ≥ 2 outlets carry it, and ridden onto the published
+        # Copy unchanged. Failures degrade silently to no citations; the
+        # blurb body still ships.
+        editorial_cites: list = []
+        if signals_runtime is not None:
+            try:
+                editorial_cites = list(signals_runtime.editorial_citations_for(fx))
+            except Exception as e:  # noqa: BLE001 — never block prose on signals
+                log.warning("editorial citations lookup failed for %s: %s",
+                            fx.match_id, e)
+
         out = compute_model(features)
         market_url = _market_url_for_fixture(fx)
         verdict, meta = decide_verdict(
@@ -235,7 +248,13 @@ class FootballSport:
             "venue_stadium":      fx.venue_stadium,
             "venue_country":      fx.venue_country,
             "kickoff_utc":        fx.kickoff_utc.isoformat() if fx.kickoff_utc else None,
+            "editorial_citations": editorial_cites,
         })
+        # Ride the citation list onto the published Copy. The blurb
+        # already saw them inside build_copy; the contract surfaces them
+        # as a separate structured list for the front-of-house.
+        if editorial_cites:
+            copy = copy.model_copy(update={"editorial_citations": editorial_cites})
         return verdict, copy, meta
 
     # ── News-signals glue ───────────────────────────────────────────
