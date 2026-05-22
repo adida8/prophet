@@ -30,6 +30,16 @@ function fmtAgo(iso) {
   return `${Math.round(sec / 86400)}d ago`;
 }
 
+function fmtClockUTC(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  const ss = String(d.getUTCSeconds()).padStart(2, "0");
+  return `${hh}:${mm}:${ss}Z`;
+}
+
 async function fetchJson(path) {
   const r = await fetch(path, { credentials: "same-origin" });
   if (!r.ok) {
@@ -215,6 +225,8 @@ function RunHistory({ manifest, selectedRunId, onSelect }) {
       <thead>
         <tr>
           <th>Run</th>
+          <th>Start</th>
+          <th>End</th>
           <th>Finished</th>
           <th>Trigger</th>
           <th>Status</th>
@@ -231,6 +243,8 @@ function RunHistory({ manifest, selectedRunId, onSelect }) {
             onClick={() => onSelect(row.run_id)}
           >
             <td className="mono small">{row.run_id}</td>
+            <td className="mono small">{fmtClockUTC(row.started_at)}</td>
+            <td className="mono small">{fmtClockUTC(row.finished_at)}</td>
             <td className="small">{fmtAgo(row.finished_at)}</td>
             <td className="small">{row.trigger}</td>
             <td><StatusPill status={row.status} /></td>

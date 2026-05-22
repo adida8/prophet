@@ -281,6 +281,7 @@ class RunManifestEntry(BaseModel):
     model_config = ConfigDict(extra="forbid", use_enum_values=True)
 
     run_id:        RunId
+    started_at:    datetime
     finished_at:   datetime
     trigger:       RunTrigger
     status:        RunStatus
@@ -303,6 +304,7 @@ def manifest_entry_from_report(report: RunReport) -> RunManifestEntry:
     )
     return RunManifestEntry(
         run_id=report.run_id,
+        started_at=report.started_at,
         finished_at=report.finished_at,
         trigger=report.trigger,
         status=report.status,

@@ -168,6 +168,7 @@ def _load_manifest() -> dict[str, Any]:
             continue
         rows.append({
             "run_id":       r.get("run_id", f.stem),
+            "started_at":   r.get("started_at"),
             "finished_at":  r.get("finished_at"),
             "trigger":      r.get("trigger", "manual"),
             "status":       r.get("status", "ok"),
