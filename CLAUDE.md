@@ -318,7 +318,7 @@ desk/
 └── data/
     ├── output/football/              # live per-match JSON + index.json (WC26-only by default)
     ├── output/outrights/              # live per-outright JSON + index.json
-    ├── signals.db                    # news-signals cache (gitignored — ephemeral on Railway)
+    ├── signals.db                    # news-signals cache (gitignored locally; on Railway the path is overridden via DESK_SIGNALS_DB_PATH to a mounted volume so the cache survives deploys)
     └── backtest/                     # frozen Elo snapshots + manual CSVs
 ```
 
@@ -462,7 +462,7 @@ Internals (`p_a/p_draw/p_b`, drivers, raw market prices, raw `Signal` objects, t
 
 - **Work on `staging` by default.** Commit, push, check the staging URL. Feature branches are optional and only worth the overhead when two unrelated things are in flight at once.
 - **`init/project-setup` is production.** Only receives merges from `staging` once changes have been eyeballed. Never push half-finished work straight to it.
-- **Never commit `data/*.db`.** Already in `.gitignore` (covers root `data/*.db` AND `desk/data/*.db` — the news-signals cache lives at `desk/data/signals.db`, ephemeral per Railway container).
+- **Never commit `data/*.db`.** Already in `.gitignore` (covers root `data/*.db` AND `desk/data/*.db`). The news-signals cache lives at `desk/data/signals.db` locally; on Railway the path is overridden via `DESK_SIGNALS_DB_PATH` to a file on the mounted `/data` volume so the cache survives container restarts and deploys.
 - **`desk_refresh_loop.py` runs hourly on Railway.** Each tick: `desk fetch-signals` (if `DESK_SIGNALS_FETCH=1`) → `desk extract-signals` (if `DESK_SIGNALS_EXTRACT=1` + `ANTHROPIC_API_KEY` set) → `desk run --once` → `desk outrights` → `site/generate.py`. Disabled with `DESK_AUTORUN=0`.
 - **DW (Deutsche Welle) feed is RSS 1.0 / RDF**, which the stdlib parser in `desk/signals/parse.py` doesn't handle. One source out of 13 currently dropping `parse_error`. Not blocking — fix when convenient.
 - **8 trust-only sources** (Reuters, AP, AFP, FIFA, UEFA, The Athletic, Eurosport, Goal.com) carry `feed_type=none`. They're in the registry for trust weighting but can't be fetched today — each needs a paid API integration or custom adapter to activate.
