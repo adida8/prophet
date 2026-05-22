@@ -52,13 +52,18 @@ _basic = HTTPBasic(auto_error=False)
 
 # desk/data/output/ops/ — `desk/` is a sibling of this file. Same
 # convention as desk_api.py. Tests + non-default deploys can override
-# the root by exporting DESK_OUTPUT_DIR — same env var the runner reads
-# in desk/desk/config.py, so writer + API always agree on a path.
+# the root by exporting DESK_OUTPUT_DIR (or, for the ops history
+# specifically, DESK_OPS_DIR — pointing this at a Railway volume is
+# how the dashboard survives deploys). Both env vars match what the
+# runner reads in desk/desk/config.py so writer + API agree on a path.
 _PROJECT_ROOT = Path(__file__).resolve().parent
 _DEFAULT_OUTPUT = _PROJECT_ROOT / "desk" / "data" / "output"
 
 
 def _ops_root() -> Path:
+    ops_dir = os.getenv("DESK_OPS_DIR")
+    if ops_dir:
+        return Path(ops_dir)
     return Path(os.getenv("DESK_OUTPUT_DIR") or _DEFAULT_OUTPUT) / "ops"
 
 

@@ -13,6 +13,7 @@ contract is unchanged — the run log is a separate internal artifact.
 from __future__ import annotations
 
 import logging
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -143,7 +144,12 @@ def run_once(
     output_dir = Path(output_dir or config.OUTPUT_DIR)
     pub = Publisher(output_dir=output_dir)
     if recorder is None:
-        recorder = Recorder(root=output_dir / "ops")
+        # DESK_OPS_DIR (when set) wins so prod can point ops history at
+        # a persistent volume that survives Railway deploys. Otherwise
+        # fall back to the runtime output_dir so tests + --output-dir
+        # overrides keep working.
+        ops_dir_env = os.getenv("DESK_OPS_DIR")
+        recorder = Recorder(root=Path(ops_dir_env) if ops_dir_env else output_dir / "ops")
 
     started_at = datetime.now(tz=timezone.utc)
     written: dict[str, list[Path]] = {}

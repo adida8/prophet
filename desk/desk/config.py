@@ -21,6 +21,9 @@ ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_DIR:   Path = Path(os.getenv("DESK_OUTPUT_DIR", str(ROOT / "data" / "output")))
 CACHE_DIR:    Path = Path(os.getenv("DESK_CACHE_DIR", str(ROOT / "data" / "cache")))
 SNAPSHOT_DIR: Path = Path(os.getenv("DESK_SNAPSHOT_DIR", str(ROOT / "data" / "snapshots")))
+# DESK_OPS_DIR (no default constant — runner + ops API each read the
+# env var directly because the default depends on the caller's
+# output_dir; see desk/runner.py and desk_ops_api.py).
 
 # ── Verdict thresholds (percentage points) ───────────────────────────
 # Locked in spec §4 PR 4. Read once at process start.
