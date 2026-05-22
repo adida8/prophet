@@ -17,7 +17,11 @@ from typing import Iterable
 
 from desk.explainer import build_copy
 from desk.ops.report import IngestStats, SourceFreshness, SourceStatus
-from desk.publish.contract import Copy, Verdict
+from desk.publish.contract import (
+    Copy,
+    HardSignalAdjustment as ContractHardSignalAdjustment,
+    Verdict,
+)
 from desk.sport import FixtureRef, MarketSide
 from desk.sports.football.features_builder import build_features
 from desk.sports.football.fixtures import (
@@ -137,7 +141,7 @@ class FootballSport:
         fx: FixtureRef,
         snapshot: MarketSnapshot,
     ) -> Verdict:
-        verdict, _copy, _meta = self.decide_and_explain(fx, snapshot)
+        verdict, _copy, _meta, _adjs = self.decide_and_explain(fx, snapshot)
         return verdict
 
     def decide_and_explain(
@@ -146,9 +150,9 @@ class FootballSport:
         snapshot: MarketSnapshot,
         *,
         signals_runtime=None,
-    ) -> tuple[Verdict, Copy, DecisionMeta]:
-        """Compute the verdict, the editorial copy, and the decision meta
-        in one pass.
+    ) -> tuple[Verdict, Copy, DecisionMeta, list[ContractHardSignalAdjustment]]:
+        """Compute the verdict, the editorial copy, the decision meta,
+        and the per-match hard-signal audit list in one pass.
 
         Runs the model once and reuses its output for both branches.
         PR 5 will swap the templated copy for Haiku-generated prose.
@@ -162,6 +166,12 @@ class FootballSport:
         `DecisionMeta` is internal — the runner aggregates it for the
         ops `RunReport` (forced-Pass reasons + Elo provenance). It
         never appears in the published `MatchOutput` contract.
+
+        The 4th element is the per-fixture hard-signal audit, converted
+        to the public `HardSignalAdjustment` contract type. The runner
+        threads it onto `MatchOutput.hard_signal_adjustments` so the
+        published JSON carries enough to answer 'did this signal change
+        the verdict?'. Empty list when no adjustments fired.
         """
         features = build_features(fx)
         hard_adjustments: list[HardSignalAdjustment] = []
@@ -255,7 +265,28 @@ class FootballSport:
         # as a separate structured list for the front-of-house.
         if editorial_cites:
             copy = copy.model_copy(update={"editorial_citations": editorial_cites})
-        return verdict, copy, meta
+
+        # Convert the internal dataclass audit log to the public contract
+        # shape. The pydantic model carries the same fields plus the
+        # source's display name + the signal's published_at, which we
+        # carry through `apply_hard_signals` so the renderer can show
+        # "Guardian · 9 Jun" without re-resolving the source registry.
+        contract_adjustments = [
+            ContractHardSignalAdjustment(
+                side=a.side,
+                team=a.team,
+                delta_elo=a.delta_elo,
+                capped=a.capped,
+                reason=a.reason,
+                signal_type=a.signal_type,
+                signal_url=a.signal_url,
+                source_id=a.source_id,
+                source_name=a.source_name,
+                published_at=a.published_at,
+            )
+            for a in hard_adjustments
+        ]
+        return verdict, copy, meta, contract_adjustments
 
     # ── News-signals glue ───────────────────────────────────────────
 

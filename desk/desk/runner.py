@@ -63,6 +63,7 @@ def _build_match(
     verdict: Verdict,
     now: datetime,
     copy=None,
+    hard_signal_adjustments=None,
 ) -> MatchOutput:
     venue = None
     if fx.venue_city and fx.venue_stadium and fx.venue_country:
@@ -89,6 +90,8 @@ def _build_match(
     )
     if copy is not None:
         kwargs["copy"] = copy
+    if hard_signal_adjustments:
+        kwargs["hard_signal_adjustments"] = list(hard_signal_adjustments)
     return MatchOutput(**kwargs)
 
 
@@ -223,6 +226,7 @@ def run_once(
         with signals_ctx:
             for fx, snapshot in pairs:
                 copy = None
+                hard_adjustments = None
                 try:
                     if hasattr(sport, "decide_and_explain"):
                         # Pass the signals runtime through (PR F). Sports
@@ -235,18 +239,22 @@ def run_once(
                             )
                         except TypeError:
                             result = sport.decide_and_explain(fx, snapshot)
-                        # PR 2: decide_and_explain may return (v, copy) or
-                        # (v, copy, DecisionMeta). Forced-pass counts come
-                        # from the meta — older sports without it just don't
-                        # populate the breakdown.
-                        if len(result) == 3:
+                        # decide_and_explain may return (v, copy),
+                        # (v, copy, DecisionMeta), or
+                        # (v, copy, DecisionMeta, hard_signal_adjustments).
+                        # Older sports without meta + adjustments just
+                        # don't populate those slots.
+                        if len(result) == 4:
+                            v, copy, meta, hard_adjustments = result
+                        elif len(result) == 3:
                             v, copy, meta = result
-                            if meta is not None and meta.forced_pass_reason == "illiquid":
-                                n_illiquid += 1
-                            elif meta is not None and meta.forced_pass_reason == "stub_elo":
-                                n_stub_elo += 1
                         else:
                             v, copy = result
+                            meta = None
+                        if meta is not None and meta.forced_pass_reason == "illiquid":
+                            n_illiquid += 1
+                        elif meta is not None and meta.forced_pass_reason == "stub_elo":
+                            n_stub_elo += 1
                     else:
                         v = sport.decide(fx, snapshot)
                 except Exception as e:                      # noqa: BLE001
@@ -257,7 +265,10 @@ def run_once(
                     ))
                     v = Verdict(state=VerdictState.PASS)
                 try:
-                    m = _build_match(fx, verdict=v, now=now, copy=copy)
+                    m = _build_match(
+                        fx, verdict=v, now=now, copy=copy,
+                        hard_signal_adjustments=hard_adjustments,
+                    )
                 except Exception as e:                      # noqa: BLE001
                     log.warning("build_match failed for %s: %s", fx.match_id, e)
                     errors.append(ErrorEntry(

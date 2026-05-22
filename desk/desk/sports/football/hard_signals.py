@@ -75,16 +75,21 @@ Side = Literal["a", "b"]
 @dataclass(frozen=True)
 class HardSignalAdjustment:
     """Audit row for one applied adjustment. PR 5's explainer reads
-    these to write attributed prose; the runner logs them for ops."""
+    these to write attributed prose; the runner logs them for ops; the
+    sport adapter serialises them onto the published `MatchOutput` so a
+    reader can answer 'did this signal change the verdict?' without
+    grepping logs."""
 
-    side:        Side
-    team:        str         # the fixture's team name
-    delta_elo:   float       # negative ⇒ penalty
-    capped:      bool        # True if the per-team cap clipped this row
-    reason:      str         # short normalised claim from the Signal
-    signal_url:  str
-    signal_type: str         # e.g. "injury"
-    source_id:   str
+    side:         Side
+    team:         str         # the fixture's team name
+    delta_elo:    float       # negative ⇒ penalty
+    capped:       bool        # True if the per-team cap clipped this row
+    reason:       str         # short normalised claim from the Signal
+    signal_url:   str
+    signal_type:  str         # e.g. "injury"
+    source_id:    str
+    source_name:  str | None = None
+    published_at: datetime | None = None
 
 
 def _match_side(signal_team: str, *, team_a: str, team_b: str) -> Side | None:
@@ -174,6 +179,8 @@ def apply_hard_signals(
             signal_url=signal.url,
             signal_type=signal.type.value if hasattr(signal.type, "value") else str(signal.type),
             source_id=source.id,
+            source_name=source.name,
+            published_at=signal.published_at,
         ))
 
     if deltas["a"] == 0.0 and deltas["b"] == 0.0:

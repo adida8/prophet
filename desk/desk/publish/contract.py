@@ -155,6 +155,35 @@ class Citation(BaseModel):
     published_at:   Optional[datetime] = None
 
 
+class HardSignalAdjustment(BaseModel):
+    """One news-signal-driven Elo nudge applied before the model ran.
+
+    Surfaces the audit trail the engine keeps internally: which side was
+    moved, by how much, from which signal, and where to verify it. Lets
+    a reader answer "did this signal change the verdict?" from the
+    published JSON alone, without grepping run logs.
+
+    `side` is `"a"` or `"b"` matching the fixture's `team_a` / `team_b`
+    naming; `delta_elo` is negative for a penalty (the v1 only direction).
+    `capped` is true when the per-team penalty cap clipped this row —
+    useful for spotting fixtures where multiple injuries piled up. The
+    `signal_*` fields point back to the originating Signal so a reader
+    can chase the underlying claim.
+    """
+    model_config = ConfigDict(extra="forbid")
+
+    side:         Literal["a", "b"]
+    team:         Annotated[str, StringConstraints(min_length=1, max_length=64)]
+    delta_elo:    float
+    capped:       bool = False
+    reason:       Annotated[str, StringConstraints(min_length=1, max_length=240)]
+    signal_type:  Annotated[str, StringConstraints(min_length=1, max_length=32)]
+    signal_url:   Annotated[str, StringConstraints(min_length=1, max_length=512)]
+    source_id:    Annotated[str, StringConstraints(min_length=1, max_length=64)]
+    source_name:  Optional[Annotated[str, StringConstraints(min_length=1, max_length=128)]] = None
+    published_at: Optional[datetime] = None
+
+
 class Copy(BaseModel):
     """Editorial output. Voice rules enforced by explainer post-checks (PR 5).
 
@@ -204,6 +233,7 @@ class MatchOutput(BaseModel):
     market_outcomes: list[Literal["a", "b", "draw"]] = Field(min_length=2, max_length=3)
     verdict:         Verdict
     copy:            Copy = Field(default_factory=Copy)
+    hard_signal_adjustments: list[HardSignalAdjustment] = Field(default_factory=list, max_length=20)
     updated_at:      datetime
 
     @field_validator("kickoff_utc", "updated_at")

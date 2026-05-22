@@ -167,6 +167,97 @@
         "title": "Copy",
         "type": "object"
       },
+      "HardSignalAdjustment": {
+        "additionalProperties": false,
+        "description": "One news-signal-driven Elo nudge applied before the model ran.\n\nSurfaces the audit trail the engine keeps internally: which side was\nmoved, by how much, from which signal, and where to verify it. Lets\na reader answer \"did this signal change the verdict?\" from the\npublished JSON alone, without grepping run logs.\n\n`side` is `\"a\"` or `\"b\"` matching the fixture's `team_a` / `team_b`\nnaming; `delta_elo` is negative for a penalty (the v1 only direction).\n`capped` is true when the per-team penalty cap clipped this row \u2014\nuseful for spotting fixtures where multiple injuries piled up. The\n`signal_*` fields point back to the originating Signal so a reader\ncan chase the underlying claim.",
+        "properties": {
+          "capped": {
+            "default": false,
+            "title": "Capped",
+            "type": "boolean"
+          },
+          "delta_elo": {
+            "title": "Delta Elo",
+            "type": "number"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Published At"
+          },
+          "reason": {
+            "maxLength": 240,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "side": {
+            "enum": [
+              "a",
+              "b"
+            ],
+            "title": "Side",
+            "type": "string"
+          },
+          "signal_type": {
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Signal Type",
+            "type": "string"
+          },
+          "signal_url": {
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Signal Url",
+            "type": "string"
+          },
+          "source_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Source Id",
+            "type": "string"
+          },
+          "source_name": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Name"
+          },
+          "team": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Team",
+            "type": "string"
+          }
+        },
+        "required": [
+          "side",
+          "team",
+          "delta_elo",
+          "reason",
+          "signal_type",
+          "signal_url",
+          "source_id"
+        ],
+        "title": "HardSignalAdjustment",
+        "type": "object"
+      },
       "MarketVenue": {
         "enum": [
           "kalshi",
@@ -330,6 +421,14 @@
       },
       "copy": {
         "$ref": "#/$defs/Copy"
+      },
+      "hard_signal_adjustments": {
+        "items": {
+          "$ref": "#/$defs/HardSignalAdjustment"
+        },
+        "maxItems": 20,
+        "title": "Hard Signal Adjustments",
+        "type": "array"
       },
       "kickoff_utc": {
         "format": "date-time",

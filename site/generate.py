@@ -41,6 +41,11 @@ FOOTBALL_DIR = DESK_OUT / "football"
 OUTRIGHTS_DIR = DESK_OUT / "outrights"
 SITE_OUT = ROOT / "site" / "public"
 
+# Canonical host for the public site. www is the host that serves every
+# page in production (the bare apex 404s on deep paths), so canonical tags,
+# og:url, sitemap.xml and robots.txt all agree on it. Single source of truth.
+BASE_URL = "https://www.oddsprimer.com"
+
 # Newsletter signup → posts to the Prophet backend (/api/subscribe), which
 # forwards the opt-in to SendX server-side. No form action or API key is
 # exposed in the generated HTML; the only client-visible value is the
@@ -620,6 +625,45 @@ a { color: inherit; }
   line-height: 1.5; color: var(--ink-soft);
 }
 
+/* Model adjustments — per-signal Elo nudges applied before the model ran.
+   Diagnostic block; lets a reader trace a verdict back to a specific
+   news signal without opening the JSON. */
+.model-adjustments { margin: 32px 0 0; max-width: 64ch; }
+.model-adjustments h2 {
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  margin: 0 0 8px; padding-bottom: 8px; border-bottom: var(--hairline);
+}
+.model-adjustments .adj-lede {
+  font-family: var(--font-serif); font-size: 14px; line-height: 1.5;
+  color: var(--ink-soft); margin: 0 0 12px;
+}
+.model-adjustments ul { list-style: none; padding: 0; margin: 0; }
+.model-adjustments li {
+  padding: 10px 0; border-bottom: var(--hairline-soft);
+  font-family: var(--font-sans); font-size: 13px; line-height: 1.5;
+  color: var(--ink-soft);
+}
+.model-adjustments li:last-child { border-bottom: none; }
+.model-adjustments .adj-delta {
+  font-family: var(--font-mono); font-weight: 700; color: var(--ink);
+}
+.model-adjustments .adj-team { font-weight: 700; color: var(--ink); }
+.model-adjustments .adj-reason { color: var(--ink-soft); }
+.model-adjustments .adj-date {
+  font-family: var(--font-mono); font-size: 11px; color: var(--graphite-soft);
+}
+.model-adjustments .adj-type {
+  font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--graphite-soft); margin-left: 6px;
+}
+.model-adjustments a {
+  color: var(--ink); text-decoration: none;
+  border-bottom: 1px solid var(--ink);
+}
+.model-adjustments a:hover { color: var(--flame-deep); border-bottom-color: var(--flame-deep); }
+
 .cta-row {
   margin: 28px 0 0; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
 }
@@ -1145,7 +1189,7 @@ def chrome_head(title: str, description: str = "", *, path: str = "/", extra_hea
     pass their own path so shared links unfurl with the right URL.
     `extra_head` is injected verbatim before </head> (e.g. <meta name="robots">)."""
     desc = description or "Educational verdicts on Polymarket and Kalshi prices. Pick · Pass · Avoid."
-    base = "https://oddsprimer.com"
+    base = BASE_URL
     url = base + path
     og_image = f"{base}/favicon-192.png"
     return f"""<!doctype html>
@@ -2503,6 +2547,70 @@ def render_matches_index(matches: list[dict]) -> str:
     )
 
 
+def _render_model_adjustments_block(adjustments: list[dict]) -> str:
+    """Render `hard_signal_adjustments` as a transparency block.
+
+    One row per applied Elo nudge: signed delta · team · short reason ·
+    outlet (linked to the signal). Lets a reader answer "did this signal
+    change the verdict?" from the page alone. Empty list → empty string
+    (the section is hidden when no adjustments fired)."""
+    if not adjustments:
+        return ""
+    items: list[str] = []
+    for a in adjustments:
+        team = (a.get("team") or "").strip()
+        reason = (a.get("reason") or "").strip()
+        url = (a.get("signal_url") or "").strip()
+        outlet = (a.get("source_name") or a.get("source_id") or "").strip()
+        sig_type = (a.get("signal_type") or "").strip()
+        try:
+            delta = float(a.get("delta_elo") or 0.0)
+        except (TypeError, ValueError):
+            delta = 0.0
+        if not (team and reason):
+            continue
+        delta_str = f"{delta:+.1f} Elo"
+        capped = " · capped" if a.get("capped") else ""
+        when = ""
+        pub = a.get("published_at")
+        if pub:
+            try:
+                dt = datetime.fromisoformat(pub.replace("Z", "+00:00"))
+                when = f' <span class="adj-date">· {dt.strftime("%-d %b %Y")}</span>'
+            except Exception:
+                when = ""
+        outlet_html = ""
+        if outlet and url:
+            outlet_html = (
+                f' · <a href="{escape(url)}" rel="nofollow noopener" target="_blank">'
+                f'{escape(outlet)}</a>'
+            )
+        elif outlet:
+            outlet_html = f' · {escape(outlet)}'
+        type_tag = f'<span class="adj-type">{escape(sig_type)}</span>' if sig_type else ""
+        items.append(
+            '<li>'
+            f'<span class="adj-delta">{escape(delta_str)}</span>'
+            f' · <span class="adj-team">{escape(team)}</span>'
+            f' · <span class="adj-reason">{escape(reason)}</span>'
+            f'{capped}'
+            f'{outlet_html}'
+            f'{when}'
+            f'{type_tag}'
+            '</li>'
+        )
+    if not items:
+        return ""
+    return (
+        '<section class="model-adjustments">'
+        '<h2>Model adjustments</h2>'
+        '<p class="adj-lede">News-signal nudges applied to each team\'s Elo before the model ran. '
+        'Negative values are penalties; the cap is −30 Elo per team.</p>'
+        '<ul>' + "".join(items) + '</ul>'
+        '</section>'
+    )
+
+
 def _render_sources_block(citations: list[dict]) -> str:
     """Render `editorial_citations` as a clickable Sources block.
 
@@ -2556,6 +2664,7 @@ def render_match_page(match: dict) -> str:
     blurb = match["copy"].get("blurb") or ""
     drivers = match["copy"].get("drivers") or []
     citations = match["copy"].get("editorial_citations") or []
+    adjustments = match.get("hard_signal_adjustments") or []
     v = match["verdict"]
 
     blurb_paras = "\n".join(f"<p>{escape(p)}</p>" for p in blurb.split("\n\n") if p.strip())
@@ -2566,6 +2675,7 @@ def render_match_page(match: dict) -> str:
         drivers_html = f'<section class="drivers"><h2>The drivers</h2><ol>{items}</ol></section>'
 
     sources_html = _render_sources_block(citations)
+    adjustments_html = _render_model_adjustments_block(adjustments)
 
     # ── Trust strip: updated/model-refresh/market-snapshot timestamps ──
     updated_at = match.get("updated_at") or ""
@@ -2653,6 +2763,7 @@ def render_match_page(match: dict) -> str:
         + cta_row
         + why_disagrees_html
         + drivers_html
+        + adjustments_html
         + sources_html
         + '<aside class="voice">'
           '<h3>How to read this</h3>'
@@ -2877,6 +2988,88 @@ def filter_priced_upcoming(matches: list[dict], now_utc: datetime | None = None)
 
 # ─── Entry point ───
 
+# ── sitemap.xml + robots.txt ──────────────────────────────────────────────
+# Static, indexable pages that the server actually routes (see server.py's
+# _EDITORIAL_PAGES + explicit routes). /the-desk is intentionally absent —
+# the file exists but isn't routed, so it 404s and must stay out of the map.
+# Outrights are hidden until a real verdict lands, so they're excluded too.
+_SITEMAP_STATIC = [
+    # (url path, backing file under SITE_OUT, priority, changefreq)
+    ("/",                     "index.html",          "1.0", "hourly"),
+    ("/matches",              "matches/index.html",  "0.9", "hourly"),
+    ("/about",                "about.html",          "0.4", "monthly"),
+    ("/learn",                "learn.html",          "0.6", "weekly"),
+    ("/method",               "method.html",         "0.5", "monthly"),
+    ("/methodology",          "methodology.html",    "0.5", "monthly"),
+    ("/responsible-use",      "responsible-use.html","0.3", "yearly"),
+    ("/affiliate-disclosure", "affiliate-disclosure.html", "0.3", "yearly"),
+    ("/corrections",          "corrections.html",    "0.3", "yearly"),
+    ("/terms",                "terms.html",          "0.2", "yearly"),
+    ("/privacy",              "privacy.html",        "0.2", "yearly"),
+    ("/cookies",              "cookies.html",        "0.2", "yearly"),
+]
+
+
+def _match_is_indexable(m: dict) -> bool:
+    """Mirror render_match_page's noindex gate: only matches with a real
+    verdict + prose are indexable, so only those belong in the sitemap."""
+    v = m.get("verdict") or {}
+    copy = m.get("copy") or {}
+    return bool(
+        v.get("state") in ("pick", "pass", "avoid")
+        and (copy.get("blurb") or copy.get("summary"))
+    )
+
+
+def render_sitemap(matches: list[dict]) -> str:
+    from datetime import datetime, timezone
+
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    rows: list[str] = []
+
+    def add(loc: str, lastmod: str, priority: str, changefreq: str) -> None:
+        rows.append(
+            "  <url>\n"
+            f"    <loc>{escape(loc)}</loc>\n"
+            f"    <lastmod>{lastmod}</lastmod>\n"
+            f"    <changefreq>{changefreq}</changefreq>\n"
+            f"    <priority>{priority}</priority>\n"
+            "  </url>"
+        )
+
+    for path, rel, priority, changefreq in _SITEMAP_STATIC:
+        if (SITE_OUT / rel).is_file():
+            add(BASE_URL + path, today, priority, changefreq)
+
+    for m in matches:
+        if not _match_is_indexable(m):
+            continue
+        updated = (m.get("updated_at") or "")[:10] or today
+        add(f"{BASE_URL}/m/{m['match_id']}", updated, "0.7", "daily")
+
+    body = "\n".join(rows)
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{body}\n"
+        "</urlset>\n"
+    )
+
+
+def render_robots() -> str:
+    """Allow everything indexable; keep crawlers off app/API surfaces and
+    point them at the sitemap."""
+    return (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /api/\n"
+        "Disallow: /dashboard\n"
+        "Disallow: /backtest\n"
+        "\n"
+        f"Sitemap: {BASE_URL}/sitemap.xml\n"
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description="Odds Primer static site generator")
     parser.add_argument("--quiet", action="store_true", help="suppress per-file output")
@@ -2947,6 +3140,14 @@ def main():
     # the generator doesn't rewrite them, but it does inject (or strip)
     # the newsletter pop-up + footer signup so they stay in sync.
     patch_editorial_pages(log=log)
+
+    # sitemap.xml + robots.txt (regenerated every run so they track the
+    # current indexable match set)
+    (SITE_OUT / "sitemap.xml").write_text(render_sitemap(matches))
+    n_urls = render_sitemap(matches).count("<url>")
+    log(f"Wrote          : sitemap.xml ({n_urls} URLs)")
+    (SITE_OUT / "robots.txt").write_text(render_robots())
+    log("Wrote          : robots.txt")
 
     log(f"\n✓ Site ready  : {SITE_OUT}")
 
