@@ -74,6 +74,17 @@ def _run(cmd: list[str], *, cwd: Path, timeout: int, label: str) -> None:
 def _tick() -> None:
     py = sys.executable
 
+    # Order matters: matches + outrights + site come first so the
+    # dashboard-critical artifacts always get refreshed, even if the
+    # news-signals steps run long. Signals enrich next tick's matches —
+    # one-tick lag is fine, missing matches isn't.
+    _run([py, "-m", "desk", "run", "--once"],
+         cwd=DESK_DIR, timeout=600, label="desk matches")
+    _run([py, "-m", "desk", "outrights"],
+         cwd=DESK_DIR, timeout=300, label="desk outrights")
+    _run([py, str(SITE_GEN), "--quiet"],
+         cwd=ROOT, timeout=120, label="site regenerate")
+
     # News-signals steps run only when explicitly enabled — they hit
     # external services + the Anthropic API, so an unconfigured deploy
     # should never accidentally start charging tokens.
@@ -92,13 +103,6 @@ def _tick() -> None:
             if cap:
                 extract_cmd += ["--limit", cap]
             _run(extract_cmd, cwd=DESK_DIR, timeout=600, label="desk extract-signals")
-
-    _run([py, "-m", "desk", "run", "--once"],
-         cwd=DESK_DIR, timeout=300, label="desk matches")
-    _run([py, "-m", "desk", "outrights"],
-         cwd=DESK_DIR, timeout=300, label="desk outrights")
-    _run([py, str(SITE_GEN), "--quiet"],
-         cwd=ROOT, timeout=120, label="site regenerate")
 
 
 async def run_desk_loop() -> None:
