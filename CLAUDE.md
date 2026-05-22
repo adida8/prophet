@@ -397,6 +397,7 @@ Override via `DESK_PICK_PP` / `DESK_PASS_PP` / `DESK_AVOID_PP` in `.env`.
 | `DESK_SIGNALS_FETCH` | `0` | Set to `1` to enable the hourly RSS fetch step in `desk_refresh_loop.py`. Off by default so a fresh deploy doesn't hit external services until the operator opts in. |
 | `DESK_SIGNALS_EXTRACT` | `0` | Set to `1` to enable the hourly Haiku extraction step. Needs `ANTHROPIC_API_KEY` to actually run; logs a warning + skips if the key isn't present. |
 | `DESK_SIGNALS_EXTRACT_LIMIT` | unset | Optional per-source-per-tick cap on extraction. E.g. `25` keeps steady-state Anthropic cost predictable while the source set is being tuned. |
+| `DESK_SIGNALS_DB_PATH` | unset → `desk/data/signals.db` | Override the signals cache path. **Set this on Railway** to a mounted volume (e.g. `/data/signals.db`) so the news-signals cache survives deploys — without it, every redeploy wipes `signals.db` and the first post-deploy tick publishes matches with no citations. Honoured by both writers (`desk fetch-signals`, `desk extract-signals`) and reader (`SignalsRuntime.for_sport` in `desk/desk/runner.py`). |
 | `DESK_HARD_SIGNAL_INJURY_ELO` | `8.0` | Magnitude of the Elo penalty applied for a single confirmed injury signal (from a `can_feed_model` source, inside the late-binding window). |
 | `DESK_HARD_SIGNAL_SUSPENSION_ELO` | `6.0` | Same, for confirmed suspensions / bans. |
 | `DESK_HARD_SIGNAL_MAX_ELO` | `30.0` | Hard per-team cap on total hard-signal Elo penalty. Multiple injuries cumulate but never below this floor. |

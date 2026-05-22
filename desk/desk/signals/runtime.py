@@ -14,6 +14,7 @@ cache (via `desk fetch-signals` + `desk extract-signals`).
 from __future__ import annotations
 
 import logging
+import os
 from collections.abc import Callable, Iterable
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -33,7 +34,28 @@ log = logging.getLogger("desk.signals.runtime")
 # from `cd desk && python -m desk …`, so a literal `desk/data/...`
 # relative path would resolve to `desk/desk/data/...` and the runner
 # would silently see "no cache". The absolute form is cwd-independent.
-DEFAULT_CACHE_PATH = Path(__file__).resolve().parents[2] / "data" / "signals.db"
+_PACKAGE_CACHE_PATH = Path(__file__).resolve().parents[2] / "data" / "signals.db"
+
+
+def default_cache_path() -> Path:
+    """Resolve the signals cache path at call time.
+
+    Honours `DESK_SIGNALS_DB_PATH` so production can point the cache at a
+    mounted Railway volume that survives container restarts. Without it,
+    `desk/data/signals.db` lives in the container's writable layer and
+    every deploy wipes the cache — taking news-signals enrichment with
+    it for the first post-deploy tick.
+    """
+    env = os.getenv("DESK_SIGNALS_DB_PATH")
+    if env:
+        return Path(env)
+    return _PACKAGE_CACHE_PATH
+
+
+# Backwards-compatible alias for code that imports the module-level
+# constant. New callers should call `default_cache_path()` so the env
+# override is read at process start, not module import.
+DEFAULT_CACHE_PATH = _PACKAGE_CACHE_PATH
 
 # Window inside which a source's last successful fetch keeps it `fresh`.
 # RSS feeds polled hourly stay green; daily aggregators may slip to
@@ -88,7 +110,7 @@ class SignalsRuntime:
         tags_fn = getattr(sport, "signals_tags_for", None)
         if tags_fn is None:
             return None
-        path = cache_path or DEFAULT_CACHE_PATH
+        path = cache_path or default_cache_path()
         if not path.exists():
             return None
         return cls(cache_path=path, tags_fn=tags_fn, registry=registry, now=now)
