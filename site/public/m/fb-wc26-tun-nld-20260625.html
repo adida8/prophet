@@ -5,17 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tunisia v Netherlands · model and market agree · Odds Primer</title>
 <meta name="description" content="Across all three sides the model and the market sit within a percentage point. The state reads Pass — no actionable edge today.">
-<link rel="canonical" href="https://oddsprimer.com/m/fb-wc26-tun-nld-20260625">
+<link rel="canonical" href="https://www.oddsprimer.com/m/fb-wc26-tun-nld-20260625">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Odds Primer">
 <meta property="og:title" content="Tunisia v Netherlands · model and market agree · Odds Primer">
 <meta property="og:description" content="Across all three sides the model and the market sit within a percentage point. The state reads Pass — no actionable edge today.">
-<meta property="og:url" content="https://oddsprimer.com/m/fb-wc26-tun-nld-20260625">
-<meta property="og:image" content="https://oddsprimer.com/favicon-192.png">
+<meta property="og:url" content="https://www.oddsprimer.com/m/fb-wc26-tun-nld-20260625">
+<meta property="og:image" content="https://www.oddsprimer.com/favicon-192.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Tunisia v Netherlands · model and market agree · Odds Primer">
 <meta name="twitter:description" content="Across all three sides the model and the market sit within a percentage point. The state reads Pass — no actionable edge today.">
-<meta name="twitter:image" content="https://oddsprimer.com/favicon-192.png">
+<meta name="twitter:image" content="https://www.oddsprimer.com/favicon-192.png">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
@@ -591,6 +591,45 @@ a { color: inherit; }
   font-family: var(--font-serif); font-style: italic; font-size: 15px;
   line-height: 1.5; color: var(--ink-soft);
 }
+
+/* Model adjustments — per-signal Elo nudges applied before the model ran.
+   Diagnostic block; lets a reader trace a verdict back to a specific
+   news signal without opening the JSON. */
+.model-adjustments { margin: 32px 0 0; max-width: 64ch; }
+.model-adjustments h2 {
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  margin: 0 0 8px; padding-bottom: 8px; border-bottom: var(--hairline);
+}
+.model-adjustments .adj-lede {
+  font-family: var(--font-serif); font-size: 14px; line-height: 1.5;
+  color: var(--ink-soft); margin: 0 0 12px;
+}
+.model-adjustments ul { list-style: none; padding: 0; margin: 0; }
+.model-adjustments li {
+  padding: 10px 0; border-bottom: var(--hairline-soft);
+  font-family: var(--font-sans); font-size: 13px; line-height: 1.5;
+  color: var(--ink-soft);
+}
+.model-adjustments li:last-child { border-bottom: none; }
+.model-adjustments .adj-delta {
+  font-family: var(--font-mono); font-weight: 700; color: var(--ink);
+}
+.model-adjustments .adj-team { font-weight: 700; color: var(--ink); }
+.model-adjustments .adj-reason { color: var(--ink-soft); }
+.model-adjustments .adj-date {
+  font-family: var(--font-mono); font-size: 11px; color: var(--graphite-soft);
+}
+.model-adjustments .adj-type {
+  font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--graphite-soft); margin-left: 6px;
+}
+.model-adjustments a {
+  color: var(--ink); text-decoration: none;
+  border-bottom: 1px solid var(--ink);
+}
+.model-adjustments a:hover { color: var(--flame-deep); border-bottom-color: var(--flame-deep); }
 
 .cta-row {
   margin: 28px 0 0; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;

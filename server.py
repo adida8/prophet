@@ -455,6 +455,20 @@ if (SITE_PUBLIC / "index.html").exists():
     async def site_favicon_ico():
         return FileResponse(SITE_PUBLIC / "favicon-32.png", media_type="image/png")
 
+    @app.get("/sitemap.xml", include_in_schema=False)
+    async def site_sitemap():
+        p = SITE_PUBLIC / "sitemap.xml"
+        if p.is_file():
+            return FileResponse(p, media_type="application/xml")
+        return _site_not_found()
+
+    @app.get("/robots.txt", include_in_schema=False)
+    async def site_robots():
+        p = SITE_PUBLIC / "robots.txt"
+        if p.is_file():
+            return FileResponse(p, media_type="text/plain")
+        return _site_not_found()
+
 
 # ── Static frontend ───────────────────────────────────────────────────
 # The React SPA owns the sub-products only: /ledger, /desk, /dashboard
