@@ -35,6 +35,7 @@
   gtag('config', 'G-DH4D6X8YRN');
 })();
 </script>
+
 <style>@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
@@ -669,6 +670,174 @@ a { color: inherit; }
 }
 .site-foot .foot-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
 
+/* ─── FOOTER TRUST BLOCK ───────────────────────────────────────────── */
+.site-foot .foot-trust {
+  margin: 0 0 18px;
+  padding: 16px 18px;
+  background: var(--paper-warm);
+  border-left: 3px solid var(--flame);
+  font-family: var(--font-serif);
+  color: var(--ink);
+  font-size: 13.5px; line-height: 1.55;
+}
+.site-foot .foot-trust .ft-disclaimer {
+  margin: 0 0 8px; font-weight: 500;
+}
+.site-foot .foot-trust .ft-data,
+.site-foot .foot-trust .ft-contact {
+  margin: 0; font-size: 13px; color: var(--graphite);
+}
+.site-foot .foot-trust .ft-lbl {
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--flame-deep);
+  margin-right: 6px;
+}
+.site-foot .foot-trust a {
+  color: var(--ink); text-decoration: underline;
+  text-decoration-color: var(--rule); text-underline-offset: 3px;
+}
+.site-foot .foot-trust a:hover { color: var(--flame-deep); }
+
+/* ─── TRUST STRIP ON EVENT PAGES ───────────────────────────────────── */
+.trust-strip {
+  display: flex; flex-wrap: wrap; gap: 6px 18px;
+  margin: 0 0 14px;
+  padding: 8px 0;
+  border-top: var(--hairline-soft); border-bottom: var(--hairline-soft);
+  font-family: var(--font-sans); font-size: 11px;
+  color: var(--graphite-soft); letter-spacing: 0.04em;
+}
+.trust-strip .ts-item { white-space: nowrap; }
+.trust-strip .ts-lbl {
+  font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--flame-deep); margin-right: 5px;
+}
+
+/* ─── EDITORIAL DISCLAIMER UNDER VERDICT ───────────────────────────── */
+.event-disclaimer {
+  margin: 10px 0 18px;
+  font-family: var(--font-sans); font-size: 11.5px;
+  color: var(--graphite-soft);
+  letter-spacing: 0.02em;
+  border-left: 2px solid var(--rule);
+  padding: 4px 0 4px 10px;
+}
+
+/* ─── WHY THE MODEL DISAGREES (wide-gap Picks) ─────────────────────── */
+.why-disagrees {
+  margin: 24px 0 18px;
+  padding: 16px 20px;
+  background: var(--paper-warm); border-left: 3px solid var(--flame);
+}
+.why-disagrees h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--flame-deep);
+}
+.why-disagrees p {
+  margin: 0; font-family: var(--font-serif); font-size: 16px; line-height: 1.55;
+  color: var(--ink); max-width: 64ch;
+}
+
+/* ─── HOW THE DESK WORKS ───────────────────────────────────────────── */
+.how-desk {
+  margin: 24px 0 28px;
+  padding: 22px 22px 18px;
+  border-top: var(--hairline-strong); border-bottom: var(--hairline);
+  background: var(--paper-pure);
+}
+.how-desk .hd-title {
+  margin: 0 0 18px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--flame-deep);
+}
+.how-desk .hd-steps {
+  list-style: none; padding: 0; margin: 0;
+  display: grid; grid-template-columns: 1fr; gap: 14px;
+}
+@media (min-width: 720px) {
+  .how-desk .hd-steps { grid-template-columns: repeat(4, 1fr); gap: 22px; }
+}
+.how-desk .hd-steps li {
+  position: relative;
+  padding: 8px 0 8px 38px;
+  border-top: 2px solid var(--ink);
+}
+.how-desk .hd-num {
+  position: absolute; left: 0; top: 8px;
+  font-family: var(--font-sans); font-size: 22px; font-weight: 700;
+  color: var(--flame-deep); line-height: 1;
+}
+.how-desk .hd-steps h3 {
+  margin: 0 0 4px;
+  font-family: var(--font-sans); font-size: 14.5px; font-weight: 700;
+  letter-spacing: -0.005em; color: var(--ink);
+}
+.how-desk .hd-steps p {
+  margin: 0;
+  font-family: var(--font-serif); font-size: 14.5px; line-height: 1.45;
+  color: var(--graphite);
+}
+.how-desk .hd-thesis {
+  margin: 18px 0 0;
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 16px; line-height: 1.5; color: var(--ink-soft);
+  max-width: 60ch;
+  padding-top: 14px; border-top: var(--hairline);
+}
+
+/* ─── THE DESK POSITIONING BLOCK ───────────────────────────────────── */
+.the-desk-block {
+  margin: 32px 0 12px;
+  padding: 28px 0 28px;
+  border-top: var(--hairline-strong);
+}
+.the-desk-block .td-eyebrow {
+  margin: 0 0 8px;
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--flame-deep);
+}
+.the-desk-block .td-title {
+  margin: 0 0 14px;
+  font-family: var(--font-serif); font-weight: 600;
+  font-size: clamp(22px, 3.2vw, 30px); line-height: 1.15;
+  letter-spacing: -0.012em; color: var(--ink);
+  max-width: 28ch; text-wrap: balance;
+}
+.the-desk-block .td-lede {
+  margin: 0 0 12px;
+  font-family: var(--font-serif); font-size: 17px; line-height: 1.55;
+  color: var(--ink); max-width: 60ch;
+}
+.the-desk-block .td-body {
+  margin: 0;
+  font-family: var(--font-serif); font-size: 15.5px; line-height: 1.55;
+  color: var(--graphite); max-width: 60ch;
+}
+
+/* ─── HOMEPAGE HERO SECONDARY STANDFIRST ───────────────────────────── */
+.hero .standfirst-secondary {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: clamp(15px, 1.5vw, 17px); line-height: 1.5;
+  color: var(--ink-soft);
+  margin: 10px 0 0; max-width: 56ch;
+}
+
+/* ─── MOBILE WHITESPACE TIGHTENING ─────────────────────────────────── */
+@media (max-width: 720px) {
+  .hero { padding: 22px 0 14px; }
+  .hero h1 { font-size: clamp(28px, 8vw, 38px); margin-bottom: 8px; }
+  .hero .standfirst { font-size: 15.5px; margin-top: 8px; }
+  .hero .standfirst-secondary { font-size: 14px; margin-top: 6px; }
+  .how-desk { padding: 16px 14px 14px; margin: 16px 0 18px; }
+  .how-desk .hd-steps { gap: 10px; }
+  .how-desk .hd-steps li { padding: 6px 0 6px 32px; }
+  .the-desk-block { padding: 20px 0 18px; margin: 20px 0 8px; }
+  .the-desk-block .td-title { font-size: 22px; }
+  .trust-strip { gap: 4px 12px; font-size: 10.5px; padding: 6px 0; }
+  .event-disclaimer { font-size: 11px; margin: 8px 0 14px; }
+}
+
 /* ─── NEWSLETTER FOOTER SIGNUP ─────────────────────────────────────
    Sits above .site-foot. Dark navy block, on-ink text, single email
    field, stacks on mobile and goes inline at ≥600px. */
@@ -891,7 +1060,7 @@ body.op-noscroll { overflow: hidden; }
         <li><a href="/about">About</a></li>
       </ul>
     </nav>
-    <span class="nav-meta">Last refresh 10:36 UTC</span>
+    <span class="nav-meta">Last refresh 11:52 UTC</span>
     <details class="burger">
       <summary class="burger-btn" aria-label="More links">
         <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
@@ -928,7 +1097,7 @@ body.op-noscroll { overflow: hidden; }
   <a href="/learn">Learn</a>
   <a href="/about">About</a>
 </nav>
-<main class="page"><section class="page-header"><a class="crumb" href="/outrights/"><span class="arr">←</span> All outrights</a><h1>World Cup 2026 winner · markets agree across the field</h1></section><div class="lv-card is-pass"><a class="lv-card-link" href="/o/fb-wc26-winner" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">—</span><span class="lv-lab">Pass</span><span class="lv-when">Resolves 20 Jul 2026</span></div><h3 class="lv-teams">World Cup 2026</h3><p class="lv-venue-meta">World Cup 2026 — outright winner</p><p class="lv-thesis">The model and the market agree on the field. The biggest gap is Argentina on the YES side at +6.5pp — not wide enough on the lower-bound check to call a Pick.</p><div class="lv-foot"><span class="lv-flat-msg">Markets agree on this field.</span><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/2026-fifa-world-cup-winner-595" target="_blank" rel="nofollow noopener">View source on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">See live market</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">View source on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/o/fb-wc26-winner">Read the case <span class="arr">→</span></a></div></div></div><div class="blurb"><p>The Desk simulates the tournament ten thousand times to produce a per-team probability. Across the 48-team field the biggest disagreement with the market is on Argentina (YES) at +6.5pp — a gap the bootstrap lower bound can&#x27;t sustain. No position clears the +3.0pp Pick gate today.</p>
+<main class="page"><section class="page-header"><a class="crumb" href="/outrights/"><span class="arr">←</span> All outrights</a><h1>World Cup 2026 winner · markets agree across the field</h1></section><div class="lv-card is-pass"><a class="lv-card-link" href="/o/fb-wc26-winner" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">—</span><span class="lv-lab">Pass</span><span class="lv-when">Resolves 20 Jul 2026</span></div><h3 class="lv-teams">World Cup 2026</h3><p class="lv-venue-meta">World Cup 2026 — outright winner</p><p class="lv-thesis">The model and the market agree on the field. The biggest gap is Argentina on the YES side at +6.5pp — not wide enough on the lower-bound check to call a Pick.</p><div class="lv-foot"><span class="lv-flat-msg">Markets agree on this field.</span><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/2026-fifa-world-cup-winner-595" target="_blank" rel="nofollow noopener">View live market on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">See live market</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">View live market on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/o/fb-wc26-winner">Read the case <span class="arr">→</span></a></div></div></div><div class="blurb"><p>The Desk simulates the tournament ten thousand times to produce a per-team probability. Across the 48-team field the biggest disagreement with the market is on Argentina (YES) at +6.5pp — a gap the bootstrap lower bound can&#x27;t sustain. No position clears the +3.0pp Pick gate today.</p>
 <p>The field can move quickly — qualifying clarifies team ratings, draws change the bracket, and the market reprices around news. We re-run on the data layer&#x27;s late-binding cadence and republish when something opens up.</p></div><section class="drivers"><h2>The drivers</h2><ol><li>Top market: Argentina (YES) at +6.5pp point-estimate edge.</li>
 <li>Field size: 48 priced participants × YES + NO = 96 positions.</li>
 <li>Sims: 10,000. Bootstrap: 100 samples × 1,000 sims with ±50 Elo perturbation.</li></ol></section></main><section class="op-news" aria-labelledby="op-news-title">
@@ -951,8 +1120,21 @@ body.op-noscroll { overflow: hidden; }
   </div>
 </section>
 <footer class="site-foot page">
+  <div class="foot-trust">
+    <p class="ft-disclaimer">
+      Editorial analysis only. Odds Primer does not provide betting, investment, or financial advice.
+    </p>
+    <p class="ft-data">
+      <span class="ft-lbl">Data sources:</span>
+      Polymarket, Kalshi, public football data, internal model estimates.
+    </p>
+    <p class="ft-contact">
+      <span class="ft-lbl">Corrections &amp; contact:</span>
+      <a href="mailto:editor@oddsprimer.com">editor@oddsprimer.com</a>
+    </p>
+  </div>
   <div class="foot-row">
-    <span class="left">Odds Primer · educational, not advice</span>
+    <span class="left">Odds Primer · AI-assisted sports market intelligence</span>
     <span>The Desk · v1.1 · 22 May 2026</span>
   </div>
   <nav class="foot-nav" aria-label="Trust and editorial">

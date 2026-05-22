@@ -206,7 +206,7 @@ def test_build_copy_falls_back_when_haiku_returns_none(monkeypatch: pytest.Monke
     copy = build_copy(_pick_inputs())
     # Falls back to the stub's templated prose.
     assert "the model leans" in copy.title
-    assert "Pre-tournament Elo" in copy.drivers[0]
+    assert any("Elo" in d for d in copy.drivers)
 
 
 def test_build_copy_falls_back_when_api_key_missing(monkeypatch: pytest.MonkeyPatch) -> None:

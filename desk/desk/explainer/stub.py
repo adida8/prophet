@@ -513,9 +513,9 @@ def _pick_blurb(
     para_model_options = [
         f"{model_split} The {_side_label(side, a=a, b=b)} side reads {_pct(model_p)} on this "
         f"distribution — the model's central case for {side_name}.",
-        f"{model_split} The Desk's three-way distribution is calibrated against the W/D/L "
-        f"resolution Polymarket and Kalshi settle on, not against the exact scoreline. "
-        f"{side_name} sits at {_pct(model_p)} of the mass.",
+        f"{model_split} The Desk publishes a three-way read against the same W/D/L "
+        f"resolution Polymarket and Kalshi settle on — not a scoreline guess. {side_name} "
+        f"sits at {_pct(model_p)} of the mass.",
         f"{model_split} Draw share decays with Elo gap; on a fixture this evenly matched "
         f"the draw carries more probability than a casual reader might guess. {side_name} "
         f"on the win side reads {_pct(model_p)}.",
@@ -574,44 +574,44 @@ def _pick_blurb(
         )
 
     posture_options = [
-        " The Desk's posture is that calibration sits with the closing market across recent "
-        "fixtures — we're not claiming the market is generally wrong, only that this side, "
-        "on this fixture, looks mispriced. Selection is the dimension this verdict adds value on.",
-        " We're not arguing the market is broadly wrong; the closing line and the model are "
-        "in approximate agreement across recent fixtures by Brier score. The claim is "
-        "narrower: this side specifically reads mispriced.",
-        " Calibration tracks the closing market on the bulk sample; selection — picking the "
-        "single side where the gap is wide — is where the engine's edge has to come from. "
-        "This verdict is a selection call on the {side_name} side.".format(side_name=side_name),
+        f" The claim is narrow: on this fixture, on this side, the price is below what the "
+        f"underlying read supports. We don't argue the market is broadly wrong — across the "
+        f"priced field the model and the line agree more often than they disagree. We surface "
+        f"the ones where they don't.",
+        f" The point is selection, not a blanket call. Most matches the model and the market "
+        f"agree on. This is one of the ones where they don't, and the gap is on the "
+        f"{side_name} side specifically.",
+        f" The engine isn't arguing reputation, recency, or narrative. It's reading the "
+        f"underlying numbers and finding {side_name} priced shorter on the market than the "
+        f"prior supports — that's the disagreement.",
     ]
     para_discipline = bootstrap_line + pick("§5-posture", posture_options)
 
-    # ── §6. Late-binding + close — vary by time-to-kickoff ───────────
+    # ── §6. What moves this — vary by time-to-kickoff ────────────────
     cadence_phrase: str
     if days_out is None:
         cadence_phrase = (
-            "The model refreshes weekly outside T-5d of kickoff, daily inside T-5d, and "
-            "hourly inside T-24h."
+            "The engine republishes on a regular cadence and again after major news."
         )
     elif days_out > 30:
         cadence_phrase = (
-            f"With kickoff roughly {days_out} days out, the model is on the weekly refresh "
-            f"cadence; we'll move to daily once we cross the T-5d window."
+            f"With kickoff {days_out} days out, the refresh is weekly until we cross five "
+            f"days, then daily, then hourly inside the final day."
         )
     elif days_out > 5:
         cadence_phrase = (
-            f"With kickoff {days_out} days out, we're still on weekly refresh; the daily "
-            f"cadence picks up inside T-5d."
+            f"With kickoff {days_out} days out, refresh is weekly; daily cadence picks up "
+            f"inside the final five days."
         )
     elif days_out > 1:
         cadence_phrase = (
-            f"Inside T-5d now — {days_out} days to kickoff — so refresh is daily. "
-            f"The model will move to hourly inside T-24h."
+            f"Inside the final five days now — {days_out} days to kickoff — so the model "
+            f"refreshes daily. Hourly inside the final 24 hours."
         )
     elif days_out >= 0:
         cadence_phrase = (
-            f"Inside T-24h — hourly refresh active. Late-binding signals re-enter the "
-            f"prior on every cycle until kickoff."
+            f"Inside the final 24 hours — hourly refresh. Team news and weather re-enter "
+            f"the prior on every cycle until kickoff."
         )
     else:
         cadence_phrase = (
@@ -619,20 +619,20 @@ def _pick_blurb(
         )
 
     para_close_options = [
-        f"This number will move. Confirmed starting elevens, injuries, weather at the venue, "
-        f"and suspensions carried in from previous fixtures all re-enter the prior on the "
-        f"late-binding cadence. {cadence_phrase} The Pick can flip to a Pass if news moves "
-        f"enough of the prior. The Desk does not tip and does not recommend a trade — the "
-        f"model price, the market price, and the gap across them are what's on the page.",
-        f"The number above is the most recent read; it isn't frozen. {cadence_phrase} Injury "
-        f"news, the actual XI, and weather conditions at kickoff all feed back into the prior "
-        f"when they land. We republish on every refresh. The Desk surfaces edge; what to do "
-        f"with that surface is a reader's call.",
-        f"News will move the prior. {cadence_phrase} On a Pick this wide, it would take "
-        f"material news — a missing star, a tournament dropout, a venue change — to collapse "
-        f"the gap below the +3pp threshold; on the narrower side of the field, a single "
-        f"refresh can flip Pick to Pass. Either way, the Desk re-publishes after each "
-        f"refresh and does not recommend a trade.",
+        f"This number will move. The confirmed starting eleven, fitness news, weather at the "
+        f"venue, and any tournament suspension carried in from previous matches all feed back "
+        f"into the prior. {cadence_phrase} A wide Pick can collapse into a Pass if news moves "
+        f"enough of the read. Editorial analysis only — Odds Primer does not place trades "
+        f"and does not recommend a wager.",
+        f"The read above is the most recent one, not a frozen call. {cadence_phrase} Injury "
+        f"news, the actual XI, and conditions at kickoff all change what the model sees. "
+        f"We re-publish on every refresh. The page shows what the engine reads; what to do "
+        f"with that information is a reader's call.",
+        f"What would close this gap: confirmed team news that pulls the prior down on the "
+        f"side we like, a venue or weather change, or a tournament suspension landing before "
+        f"kickoff. {cadence_phrase} A Pick this wide doesn't collapse on small news; a narrow "
+        f"one can flip to Pass on a single refresh. Either way, the engine republishes and "
+        f"the page reflects the latest read.",
     ]
     para_close = pick("§6", para_close_options)
 
@@ -672,12 +672,16 @@ def _pick_copy(i: Inputs) -> Copy:
         competition=competition, venue_label=venue_label, salt=salt,
     )
     blurb = _with_chorus(blurb, i.get("editorial_citations"), salt=salt)
-    drivers = [
-        f"Pre-tournament Elo gives {side_name} a stronger prior than the {venue_label} line implies.",
-        f"The {edge:+.1f}pp gap clears our 3 percentage point threshold for a Pick.",
-        f"Calibration sits with the closing market across recent fixtures, so selection is the lever.",
-        f"Late-binding signals — form, confirmed XI, weather — re-evaluate closer to kickoff.",
+    pick_driver_pool = [
+        f"Pre-match Elo gives {side_name} a stronger prior than the {venue_label} line implies.",
+        f"The {edge:+.1f}pp gap clears the Desk's 3 percentage point threshold for a Pick.",
+        f"This is a selection call on the {side_name} side, not a blanket read on the market.",
+        f"Confirmed XI, fitness news, and weather re-enter the prior closer to kickoff.",
+        f"Bootstrap lower-bound on the {side_name} side still clears the Pick threshold.",
+        f"Editorial analysis only — Odds Primer does not place trades or recommend a wager.",
     ]
+    _pd = _variant_index(salt + "/drivers", len(pick_driver_pool))
+    drivers = [pick_driver_pool[(_pd + k) % len(pick_driver_pool)] for k in range(4)]
     return Copy(title=title, summary=summary, blurb=blurb, drivers=drivers)
 
 
@@ -700,103 +704,114 @@ def _pass_copy(i: Inputs) -> Copy:
         return opts[_variant_index(salt + "/" + key, len(opts))]
 
     pass_title_options = [
-        f"{a} v {b} · model and market agree",
-        f"{a} v {b} · the price looks fair",
-        f"{a} v {b} · no gap to call",
-        f"{a} v {b} · model lands on the line",
+        f"{a} v {b} · the price already reflects what we see",
+        f"{a} v {b} · no real gap to publish",
+        f"{a} v {b} · the line is doing its job",
+        f"{a} v {b} · two reads, one answer",
+        f"{a} v {b} · model and market line up",
+        f"{a} v {b} · nothing to chase here",
+        f"{a} v {b} · the read is the same on both sides",
+        f"{a} v {b} · priced about right",
     ]
 
     pass_summary_options = [
-        f"The model and {venue_label} land within a point of each other on all three "
-        f"sides of {a} v {b}. No gap to publish — the state reads Pass.",
-        f"{venue_label}'s line on {a} v {b} already sits where the model does, to within "
-        f"a point on every side. Pass: the price has done the work.",
-        f"{fav} should win, and at {_pct(fav_kp)} the market already prices it that way — "
-        f"the model agrees to within a point. Pass.",
-        f"{a} v {b} reads close to both the model and the market, and neither finds a "
-        f"side worth separating. Pass — nothing stands out.",
-        f"Where a small gap exists on {a} v {b}, it sits inside the model's own "
-        f"uncertainty. Not enough conviction to call. Pass.",
-        f"Today the model and {venue_label} agree on {a} v {b} to within a point. Nothing "
-        f"has moved the prior yet. Pass, for now.",
-        f"On {a} v {b} the honest read is no edge: model and market sit a point apart at "
-        f"most. Pass — we won't manufacture one.",
+        # 1 — quiet convergence
+        f"Our model lands close to {venue_label} on every side of {a} v {b}. Nothing wide "
+        f"enough to publish as a Pick. Pass.",
+        # 2 — favourite priced about right
+        f"{fav} is the favourite at {_pct(fav_kp)}; the model lands within touching distance "
+        f"at {_pct(fav_mp)}. Nothing to chase. Pass.",
+        # 3 — tight match
+        f"{a} v {b} is genuinely tight, and the market knows it. No side gives the model "
+        f"enough room to disagree. Pass.",
+        # 4 — noise vs signal
+        f"Any gap on {a} v {b} sits inside the model's own uncertainty band. Pass — the "
+        f"signal isn't there yet.",
+        # 5 — line is doing its work
+        f"The line on {a} v {b} is doing its job: the price is already absorbing the same "
+        f"reads the model is using. Pass.",
+        # 6 — news pending
+        f"On {a} v {b} the model and the market read the fixture the same way. Line-ups, "
+        f"weather, and any late news will be revisited closer to kickoff. Pass for now.",
+        # 7 — no manufactured edge
+        f"There's no Pick to manufacture on {a} v {b}. The model and {venue_label} arrive "
+        f"at the same shape. Pass.",
+        # 8 — short note, sides equal
+        f"Across {a}, the draw, and {b}, neither side stretches more than a point past the "
+        f"market. Pass.",
     ]
 
     pass_blurb_options = [
-        # 1 · agreement-as-signal
-        f"For {a} versus {b}, the model and {venue_label} arrive at the same answer from "
-        f"different directions — within a point of each other on all three sides. That "
-        f"agreement is the story, not an empty result: two independent ways of estimating "
-        f"the same match converging is itself a signal that the price is about right. "
-        f"There is no side where the model sees value the market has missed, and none where "
-        f"it sees the reverse. So there is nothing to surface here beyond the convergence. "
-        f"We'll look again closer to kickoff, when confirmed line-ups and any late news can "
-        f"pull the two numbers apart.",
-        # 2 · market-efficiency
-        f"{venue_label}'s line on {a} versus {b} is already sitting where the model would "
-        f"put it, to within a point on every side. A market this efficient is doing its "
-        f"job: the available information is priced, and there's no slow-moving line for the "
-        f"engine to catch. The model's three-way read — {a} at {_pct(p_a)}, the draw at "
-        f"{_pct(p_d)}, {b} at {_pct(p_b)} — tracks the market's shape closely enough that "
-        f"the difference is noise, not edge. Pass is the right call when the price has "
-        f"nothing left to give away. The interesting fixtures are the ones where the line "
-        f"lags; today, this is not one of them.",
-        # 3 · clear favourite priced right
-        f"{fav} should win this one, and the price already knows it — the model lands "
-        f"within a point of {venue_label} on all three sides, both pricing {fav} as the "
-        f"clear favourite. The agreement is the point: when a strong side is also a short "
-        f"price, there's rarely a gap to find, and forcing one would be the opposite of "
-        f"useful. The model rates {fav} at {_pct(fav_mp)}; the market has them at "
-        f"{_pct(fav_kp)}. Close enough that the only honest verdict is Pass. We'll revisit "
-        f"near kickoff, when the confirmed eleven and any fitness news land — those are what "
-        f"move a settled favourite, not the prior.",
-        # 4 · close / even match
-        f"{a} versus {b} is a genuinely close fixture, and both the model and {venue_label} "
-        f"see it that way — no side carries enough probability to stand out, and the draw "
-        f"holds real weight. The model's split reads {a} {_pct(p_a)}, draw {_pct(p_d)}, "
-        f"{b} {_pct(p_b)}; the market's shape is the same to within a point. On a match this "
-        f"even, a small gap on any one side is well inside the model's own margin, so there's "
-        f"no conviction to publish. Pass is the call. A close game can swing on a single piece "
-        f"of team news, so this is one to check again as kickoff approaches.",
-        # 5 · low-confidence / uncertainty bands
-        f"On {a} versus {b}, wherever the model and {venue_label} differ, the gap is smaller "
-        f"than the model's own uncertainty about its number. The engine carries a confidence "
-        f"band around every estimate, and here the market price sits comfortably inside it on "
-        f"all three sides. That means any apparent edge is more likely measurement noise than "
-        f"a real disagreement worth acting on. The model rates the three sides at {_pct(p_a)} "
-        f"/ {_pct(p_d)} / {_pct(p_b)}, close to the market throughout. When the signal is "
-        f"inside the noise, the honest verdict is Pass. We'll re-evaluate as the bands tighten "
-        f"nearer kickoff.",
-        # 6 · news-pending / late-binding
-        f"For now, the model and {venue_label} agree on {a} versus {b} to within a point on "
-        f"every side — and 'for now' is the operative phrase. The inputs that usually separate "
-        f"two numbers — the confirmed eleven, fresh injury and fitness news, weather at the "
-        f"venue — haven't landed yet, so today there's nothing pulling the prior away from the "
-        f"price. That makes Pass the correct read today, not a permanent one. The model's "
-        f"three-way ({_pct(p_a)} / {_pct(p_d)} / {_pct(p_b)}) sits on top of the market's "
-        f"shape. The engine refreshes as kickoff nears; if news moves enough of the prior, "
-        f"this can turn into a Pick. Until then, there's no gap to show.",
-        # 7 · discipline / won't manufacture
-        f"The honest read on {a} versus {b} is that there's no edge here: the model and "
-        f"{venue_label} sit a point apart at most, on every side. Manufacturing a disagreement "
-        f"out of that — talking up a tenth of a point as though it meant something — is the one "
-        f"thing this desk won't do. The model's numbers ({_pct(p_a)} / {_pct(p_d)} / "
-        f"{_pct(p_b)}) line up with the market's, and a verdict that admits as much is worth "
-        f"more than a forced call. Pass means exactly what it says: we looked, the price is "
-        f"fair, there's nothing to add today. We'll look again when there's something new to "
-        f"weigh.",
+        # 1 · two reads, same answer
+        f"On {a} versus {b}, our model and the market arrive at the same shape from different "
+        f"directions. {a} reads at {_pct(p_a)}, the draw at {_pct(p_d)}, {b} at {_pct(p_b)}. "
+        f"The market's shape sits on top of that read. When two independent estimates "
+        f"converge, there is rarely a Pick worth publishing. We'll revisit closer to kickoff "
+        f"when team news and weather can pull the two numbers apart.",
+        # 2 · market is doing its work
+        f"The line on {a} versus {b} is already absorbing the same information our model is "
+        f"weighing. {venue_label} prices {a} at {_pct(mp_a)}, the draw at {_pct(mp_d)}, {b} at "
+        f"{_pct(mp_b)}; our read is the same shape. Pass means the market is doing its job — "
+        f"not a missed opportunity, not a lazy verdict. We look for disagreement; today, "
+        f"there isn't enough of it on either side.",
+        # 3 · favourite already priced
+        f"{fav} should win, and the price already says so. The model has {fav} at "
+        f"{_pct(fav_mp)}, the market at {_pct(fav_kp)}. Strong favourites priced shorter than "
+        f"the model rates them is where we get Picks; the reverse — both numbers landing in "
+        f"the same place — is where we get a Pass. We'll check again near kickoff when the "
+        f"confirmed eleven and any fitness news land; until then, the price reads fair.",
+        # 4 · close fixture, no separation
+        f"{a} versus {b} is a tight one — neither side carries enough mass to break out, the "
+        f"draw is in play, and the model's three-way ({_pct(p_a)} / {_pct(p_d)} / {_pct(p_b)}) "
+        f"runs close to the market throughout. Tight fixtures rarely produce Picks because the "
+        f"prior is spread, not concentrated. Pass. A single piece of late team news — a "
+        f"surprise omission, a fitness scare — could move this, so it stays on the watch list "
+        f"to the day of the match.",
+        # 5 · signal inside the noise
+        f"Our model carries a confidence band around every estimate, and on {a} versus {b} "
+        f"the market price sits inside that band on all three sides. The point estimates "
+        f"({_pct(p_a)} / {_pct(p_d)} / {_pct(p_b)}) run close to {venue_label}, but more "
+        f"importantly the small differences that do exist are smaller than the model's own "
+        f"uncertainty about its number. Pass is what we publish when the signal is inside "
+        f"the noise. The bands tighten as kickoff nears.",
+        # 6 · sentiment vs read
+        f"Talk around {a} versus {b} can move a price faster than the underlying read "
+        f"changes — narrative pulls one side short, momentum pulls the other. The model's "
+        f"job is to read the fixture, not the room, and on this one the read agrees with the "
+        f"market regardless. {a} {_pct(p_a)}, draw {_pct(p_d)}, {b} {_pct(p_b)}; the line "
+        f"holds the same shape. No disagreement, no Pick. Pass.",
+        # 7 · discipline / no manufactured edge
+        f"On {a} versus {b}, the line and the model are saying the same thing, and we will "
+        f"not invent a disagreement that isn't there. The model rates the three sides at "
+        f"{_pct(p_a)} / {_pct(p_d)} / {_pct(p_b)}; the market's split runs close enough that "
+        f"any gap is well below our Pick threshold. The verdict that says 'we looked, the "
+        f"line is fair, there's nothing to add today' is more useful than a forced call. "
+        f"Pass.",
+        # 8 · stability / no recent move
+        f"Nothing in the lead-up to {a} versus {b} has pulled the price meaningfully off the "
+        f"model. Team news has been quiet, no shock injury or suspension has landed, and the "
+        f"market's three-way ({_pct(mp_a)} / {_pct(mp_d)} / {_pct(mp_b)}) tracks the model's "
+        f"read ({_pct(p_a)} / {_pct(p_d)} / {_pct(p_b)}). Pass holds in a quiet week. The "
+        f"engine republishes as news moves the prior; a confirmed XI surprise is the most "
+        f"likely thing to turn this into a Pick.",
     ]
 
     title   = pick("pass-title",   pass_title_options)
     summary = pick("pass-summary", pass_summary_options)
     blurb   = pick("pass-blurb",   pass_blurb_options)
     blurb   = _with_chorus(blurb, i.get("editorial_citations"), salt=salt)
-    drivers = [
-        "Model and market sit within a percentage point on every side.",
-        "No real disagreement to publish — both are pricing the same shape.",
-        "Form, the confirmed line-ups, and weather get weighed closer to kickoff.",
+    # Rotate driver pools so every Pass page doesn't read three identical bullets.
+    driver_pool = [
+        f"Model puts {a} at {_pct(p_a)}, the draw at {_pct(p_d)}, {b} at {_pct(p_b)} — close to the market on each side.",
+        f"No side runs more than a couple of points clear of the model on this fixture.",
+        f"Team news, weather, and the confirmed XI feed back into the prior as kickoff approaches.",
+        f"Tight three-way pricing rarely produces a Pick — the disagreement isn't there to publish.",
+        f"The market is absorbing the same reads the model is weighing; nothing to chase.",
+        f"Pass for now. The engine republishes hourly inside T-24h and after major news.",
     ]
+    # Pick three drivers, deterministic by fixture but rotated so cards differ.
+    _d_idx = _variant_index(salt + "/drivers", len(driver_pool))
+    drivers = [driver_pool[(_d_idx + k) % len(driver_pool)] for k in range(3)]
     return Copy(title=title, summary=summary, blurb=blurb, drivers=drivers)
 
 
@@ -804,6 +819,7 @@ def _avoid_copy(i: Inputs) -> Copy:
     a, b = i["team_a"], i["team_b"]
     edge = i["edge_pp"] or 0.0
     venue_label = (i.get("market_venue") or "the market").title()
+    competition = i.get("competition") or "this competition"
     p_a = float(i.get("model_p_a")    or 0.0)
     p_d = float(i.get("model_p_draw") or 0.0)
     p_b = float(i.get("model_p_b")    or 0.0)
@@ -814,80 +830,119 @@ def _avoid_copy(i: Inputs) -> Copy:
         return opts[_variant_index(salt + "/" + key, len(opts))]
 
     avoid_title_options = [
-        f"{a} v {b} · every side priced rich",
-        f"{a} v {b} · the whole market reads short",
-        f"{a} v {b} · no side offers value",
+        f"{a} v {b} · the whole field is priced rich",
+        f"{a} v {b} · every side reads short",
+        f"{a} v {b} · nothing in the reader's favour",
+        f"{a} v {b} · the market is asking a premium",
+        f"{a} v {b} · no side this engine would take",
+        f"{a} v {b} · priced ahead of the read on every line",
+        f"{a} v {b} · sit it out",
+        f"{a} v {b} · the field reads overpriced",
     ]
 
     avoid_summary_options = [
-        f"Across {a} v {b}, every side is priced shorter than the model — the most-negative "
-        f"gap is {edge:+.1f}pp. The state reads Avoid: no side offers value.",
-        f"On {a} v {b}, {venue_label} is asking more than the model thinks any outcome is "
-        f"worth, on all three sides — the worst gap runs to {edge:+.1f}pp. Avoid: no edge "
-        f"to take, even on the side closest to fair.",
-        f"{venue_label} prices every outcome of {a} v {b} above the model's number, with the "
-        f"widest gap at {edge:+.1f}pp. Avoid: the whole market reads rich, not just one side.",
-        f"The model sits below the market on all three sides of {a} v {b}, by as much as "
-        f"{edge:+.1f}pp. Avoid — nothing here is priced in the reader's favour.",
-        f"Every side of {a} v {b} is shorter on the market than on the model — the most-negative "
-        f"gap is {edge:+.1f}pp. That's an Avoid, reported plainly so it doesn't read like a "
-        f"near-miss Pass.",
+        # 1 — every side rich
+        f"Every side of {a} v {b} is priced shorter than the model makes it — the worst gap "
+        f"is {edge:+.1f}pp. Avoid.",
+        # 2 — premium across the field
+        f"{venue_label} is asking a premium on all three sides of {a} v {b}, the widest gap "
+        f"running to {edge:+.1f}pp. Avoid — sit this one out.",
+        # 3 — even the best side is rich
+        f"On {a} v {b}, even the side closest to fair is {edge:+.1f}pp short of the model. "
+        f"Avoid: there's no line the engine would take.",
+        # 4 — model below market throughout
+        f"The model reads {a} v {b} lower than the market on every side. Worst gap "
+        f"{edge:+.1f}pp. Avoid.",
+        # 5 — plain language
+        f"Every line on {a} v {b} reads rich against the model. Worst case {edge:+.1f}pp. "
+        f"Avoid — leave this one alone.",
+        # 6 — different from Pass
+        f"{a} v {b} isn't a quiet Pass — it's an Avoid. The market is short of the model "
+        f"on all three sides, by as much as {edge:+.1f}pp.",
+        # 7 — narrative
+        f"On {a} v {b}, the price is running ahead of what the read can justify on every "
+        f"side. Worst gap {edge:+.1f}pp. Avoid.",
+        # 8 — short
+        f"All three sides of {a} v {b} read short of the model — the worst is {edge:+.1f}pp. "
+        f"Avoid.",
     ]
 
     avoid_blurb_options = [
-        # 1 · every-side-rich
-        f"In {a} versus {b}, the model's number comes in below {venue_label}'s on all three "
-        f"sides — the market is asking more for every outcome than the engine thinks it's "
-        f"worth. The widest of those gaps is {edge:+.1f}pp. Avoid is the plain way to say "
-        f"that nothing on this market is priced in the reader's favour, including the side "
-        f"that comes closest to fair. There's no clever angle to add: when every outcome reads "
-        f"rich, the useful thing is to point it out and move on. We report Avoid separately "
-        f"from Pass so it isn't mistaken for a close call — this is a market to leave alone, "
-        f"not one sitting on the edge of a Pick.",
-        # 2 · discipline / why-separate
-        f"{venue_label} prices every side of {a} versus {b} shorter than the model does, the "
-        f"largest gap running to {edge:+.1f}pp. Where a Pass means the price is fair, an Avoid "
-        f"means it's rich across the board — and the two deserve different words, because they "
-        f"tell the reader different things. The model's three-way ({_pct(p_a)} / {_pct(p_d)} / "
-        f"{_pct(p_b)}) sits under the market on each outcome. None of the three offers a gap "
-        f"worth taking. The honest call is to step back: there's no side of this market the "
-        f"engine would describe as good value, so we say so and leave it there.",
-        # 3 · plain / no-drama
-        f"For {a} versus {b}, the model rates all three outcomes lower than the market is "
-        f"charging for them — the most-negative gap is {edge:+.1f}pp. There's nothing dramatic "
-        f"to read into that; it simply means the whole market is priced ahead of the engine's "
-        f"view, with no single side standing out as the culprit. Avoid is the right label, and "
-        f"it's a quiet one. The model's split reads {_pct(p_a)} / {_pct(p_d)} / {_pct(p_b)}, "
-        f"under the market throughout. We'll keep refreshing as kickoff nears — a rich market "
-        f"can come back toward fair as money and news arrive — but as it stands, there's no "
-        f"edge on offer here.",
-        # 4 · closest-side-still-rich
-        f"Every side of {a} versus {b} is priced above what the model makes it, so even the "
-        f"outcome closest to fair doesn't clear into value — the best of a poor set is still "
-        f"{edge:+.1f}pp short. That's what separates an Avoid from a Pass: here the market "
-        f"isn't merely efficient, it's asking a premium on all three sides. The model's numbers "
-        f"({_pct(p_a)} / {_pct(p_d)} / {_pct(p_b)}) sit under the market across the board. The "
-        f"reader's takeaway is simple: there's no side of this one the engine would point to. "
-        f"We surface it as Avoid so the absence of a good side is stated, not left to inference.",
-        # 5 · short / leave-alone
-        f"On {a} versus {b}, the market is shorter than the model on all three sides — the "
-        f"widest gap is {edge:+.1f}pp against the reader. Avoid means what it says: this is a "
-        f"market to leave alone. There's no outcome where the price and the model line up in a "
-        f"way that would interest the engine, and pretending otherwise wouldn't help anyone. "
-        f"The three-way model read ({_pct(p_a)} / {_pct(p_d)} / {_pct(p_b)}) stays under the "
-        f"market throughout. It's a plain verdict for a plain situation — every side rich, "
-        f"nothing to take.",
+        # 1 · field overpriced, no carve-out
+        f"On {a} versus {b}, the model lands lower than the market on every side. The "
+        f"widest gap runs {edge:+.1f}pp against the reader, and even the side closest to fair "
+        f"doesn't clear into value. That separates an Avoid from a Pass: a Pass says the "
+        f"line is fair, an Avoid says the line is rich. There's no clever carve-out "
+        f"here, no underrated side hiding inside the spread. The useful thing is to point it "
+        f"out and move on. We surface Avoid so the absence of a good side is named, not left "
+        f"to inference.",
+        # 2 · sentiment / overreaction
+        f"Pricing on {a} versus {b} is running ahead of what either side's underlying read "
+        f"would support. The model's three-way ({_pct(p_a)} / {_pct(p_d)} / {_pct(p_b)}) sits "
+        f"below the market on each outcome, and the most negative gap reaches {edge:+.1f}pp. "
+        f"This is the pattern that fires when narrative — a big-name favourite, a high-profile "
+        f"opponent, a tournament storyline — pulls one or both sides shorter than they "
+        f"deserve. The verdict is Avoid: there is no side here the engine would take, even "
+        f"on the conservative reading.",
+        # 3 · over-tight overround
+        f"{venue_label} has priced every line on {a} versus {b} above what the model makes "
+        f"it. Read as a probability distribution, the market's overround on this fixture is "
+        f"working against the reader on all three sides at once — and that's what produces an "
+        f"Avoid rather than a single mispriced Pick. The model rates the three sides at "
+        f"{_pct(p_a)} / {_pct(p_d)} / {_pct(p_b)}; the market sits short of each one. The "
+        f"widest gap is {edge:+.1f}pp. We're not picking a side here; we're naming the shape.",
+        # 4 · favourite reputation / overvaluation
+        f"On {a} versus {b}, the model's read is materially lower than the market across the "
+        f"board, with the worst gap at {edge:+.1f}pp. When the field reads rich and there is "
+        f"no obvious carve-out, the engine isn't seeing what the price is seeing — usually "
+        f"because reputation, recency, or a single salient performance has pulled one or both "
+        f"sides shorter than the fundamentals justify. The model is built to ignore that and "
+        f"read the prior. Avoid is the call when the prior doesn't support the price anywhere.",
+        # 5 · stale or thin liquidity
+        f"On a fixture this far from kickoff, with thinner two-way action than the headline "
+        f"markets, prices can sit ahead of the model for a while without being corrected. "
+        f"That's what we're looking at on {a} versus {b}: the model is below {venue_label} on "
+        f"every side, worst gap {edge:+.1f}pp, and the line hasn't moved enough to close the "
+        f"gap on any of them. The verdict is Avoid. We'll re-publish as the market deepens — "
+        f"if the gaps close as kickoff nears, this can shift; today, it reads short throughout.",
+        # 6 · short / leave-alone
+        f"The market is shorter than the model on all three sides of {a} versus {b}. The "
+        f"widest gap runs {edge:+.1f}pp against the reader. Avoid is what we publish when "
+        f"there's no side a reader would want, including the side closest to fair. The model's "
+        f"three-way reads {_pct(p_a)} / {_pct(p_d)} / {_pct(p_b)}; the market sits over each. "
+        f"It's a plain verdict for a plain situation — every side rich, nothing to take, no "
+        f"angle worth surfacing.",
+        # 7 · contrarian angle / wait
+        f"When a whole market reads rich on the model, the useful next step is to wait, "
+        f"not to chase a side. On {a} versus {b}, the model sits below the market by as much "
+        f"as {edge:+.1f}pp, and that kind of misalignment usually clears one of two ways: the "
+        f"line drifts back as money rotates, or fresh news pulls the prior up to meet the "
+        f"price. Either path is a future read. Today, the model has no side it would take, "
+        f"and the call is Avoid.",
+        # 8 · tournament context
+        f"In {competition}, the field on {a} versus {b} reads short of the model across the "
+        f"board — worst gap {edge:+.1f}pp. Tournament fixtures can carry a tighter overround "
+        f"than club football because liquidity concentrates on a smaller number of high-stakes "
+        f"matches; when the model lands under the market on every side, the engine reads that "
+        f"as a market the reader is paying to be in, not a market with a hidden carve-out. "
+        f"Avoid. We re-evaluate as confirmed line-ups and weather arrive — those are what "
+        f"would move the prior up to meet a rich price.",
     ]
 
     title   = pick("avoid-title",   avoid_title_options)
     summary = pick("avoid-summary", avoid_summary_options)
     blurb   = pick("avoid-blurb",   avoid_blurb_options)
     blurb   = _with_chorus(blurb, i.get("editorial_citations"), salt=salt)
-    drivers = [
-        f"Every side priced shorter than our model — most-negative gap is {edge:+.1f}pp.",
-        "No side priced attractively against the engine's Elo prior.",
-        "Avoid is reported separately from Pass so it doesn't read as ambiguous.",
+    avoid_driver_pool = [
+        f"Model reads {a} {_pct(p_a)} / draw {_pct(p_d)} / {b} {_pct(p_b)} — short of the market on every side.",
+        f"Worst gap is {edge:+.1f}pp against the reader; even the side closest to fair doesn't clear.",
+        f"Avoid is a separate verdict from Pass — a Pass is fair, an Avoid is rich across the board.",
+        f"No carve-out side. When the model sits under the market everywhere, the right call is to wait.",
+        f"Pricing is running ahead of what the underlying read on either side supports.",
+        f"The engine re-evaluates as team news, weather, and the confirmed XI land closer to kickoff.",
     ]
+    _ad = _variant_index(salt + "/drivers", len(avoid_driver_pool))
+    drivers = [avoid_driver_pool[(_ad + k) % len(avoid_driver_pool)] for k in range(3)]
     return Copy(title=title, summary=summary, blurb=blurb, drivers=drivers)
 
 

@@ -11,7 +11,7 @@
   "market_url": "https://polymarket.com/event/2026-fifa-world-cup-winner-595",
   "candidate": "—",
   "resolves_at": "2026-07-20T00:00:00Z",
-  "asof": "2026-05-22T10:36:29.627854Z",
+  "asof": "2026-05-22T11:51:58.999849Z",
   "verdict": {
     "state": "pass",
     "candidate": null
@@ -38,12 +38,12 @@
       "model_p": 0.1543,
       "model_p_lower": 0.095,
       "model_p_upper": 0.229,
-      "yes_market_p": 0.1675,
-      "no_market_p": 0.8325,
-      "yes_edge_pp": -1.32,
-      "no_edge_pp": 1.32,
-      "yes_lower_edge_pp": -7.25,
-      "no_lower_edge_pp": -6.15,
+      "yes_market_p": 0.1685,
+      "no_market_p": 0.8315,
+      "yes_edge_pp": -1.42,
+      "no_edge_pp": 1.42,
+      "yes_lower_edge_pp": -7.35,
+      "no_lower_edge_pp": -6.05,
       "verdict": "pass",
       "pick_side": null
     },
@@ -290,12 +290,12 @@
       "model_p": 0.005,
       "model_p_lower": 0.001,
       "model_p_upper": 0.012,
-      "yes_market_p": 0.0185,
-      "no_market_p": 0.9815,
-      "yes_edge_pp": -1.35,
-      "no_edge_pp": 1.35,
-      "yes_lower_edge_pp": -1.75,
-      "no_lower_edge_pp": 0.65,
+      "yes_market_p": 0.0175,
+      "no_market_p": 0.9825,
+      "yes_edge_pp": -1.25,
+      "no_edge_pp": 1.25,
+      "yes_lower_edge_pp": -1.65,
+      "no_lower_edge_pp": 0.55,
       "verdict": "pass",
       "pick_side": null
     },
@@ -706,5 +706,5 @@
       "pick_side": null
     }
   ],
-  "updated_at": "2026-05-22T10:36:42.863712Z"
+  "updated_at": "2026-05-22T11:52:12.110380Z"
 }

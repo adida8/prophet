@@ -35,6 +35,7 @@
   gtag('config', 'G-DH4D6X8YRN');
 })();
 </script>
+
 <style>@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
@@ -669,6 +670,174 @@ a { color: inherit; }
 }
 .site-foot .foot-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
 
+/* ─── FOOTER TRUST BLOCK ───────────────────────────────────────────── */
+.site-foot .foot-trust {
+  margin: 0 0 18px;
+  padding: 16px 18px;
+  background: var(--paper-warm);
+  border-left: 3px solid var(--flame);
+  font-family: var(--font-serif);
+  color: var(--ink);
+  font-size: 13.5px; line-height: 1.55;
+}
+.site-foot .foot-trust .ft-disclaimer {
+  margin: 0 0 8px; font-weight: 500;
+}
+.site-foot .foot-trust .ft-data,
+.site-foot .foot-trust .ft-contact {
+  margin: 0; font-size: 13px; color: var(--graphite);
+}
+.site-foot .foot-trust .ft-lbl {
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--flame-deep);
+  margin-right: 6px;
+}
+.site-foot .foot-trust a {
+  color: var(--ink); text-decoration: underline;
+  text-decoration-color: var(--rule); text-underline-offset: 3px;
+}
+.site-foot .foot-trust a:hover { color: var(--flame-deep); }
+
+/* ─── TRUST STRIP ON EVENT PAGES ───────────────────────────────────── */
+.trust-strip {
+  display: flex; flex-wrap: wrap; gap: 6px 18px;
+  margin: 0 0 14px;
+  padding: 8px 0;
+  border-top: var(--hairline-soft); border-bottom: var(--hairline-soft);
+  font-family: var(--font-sans); font-size: 11px;
+  color: var(--graphite-soft); letter-spacing: 0.04em;
+}
+.trust-strip .ts-item { white-space: nowrap; }
+.trust-strip .ts-lbl {
+  font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--flame-deep); margin-right: 5px;
+}
+
+/* ─── EDITORIAL DISCLAIMER UNDER VERDICT ───────────────────────────── */
+.event-disclaimer {
+  margin: 10px 0 18px;
+  font-family: var(--font-sans); font-size: 11.5px;
+  color: var(--graphite-soft);
+  letter-spacing: 0.02em;
+  border-left: 2px solid var(--rule);
+  padding: 4px 0 4px 10px;
+}
+
+/* ─── WHY THE MODEL DISAGREES (wide-gap Picks) ─────────────────────── */
+.why-disagrees {
+  margin: 24px 0 18px;
+  padding: 16px 20px;
+  background: var(--paper-warm); border-left: 3px solid var(--flame);
+}
+.why-disagrees h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--flame-deep);
+}
+.why-disagrees p {
+  margin: 0; font-family: var(--font-serif); font-size: 16px; line-height: 1.55;
+  color: var(--ink); max-width: 64ch;
+}
+
+/* ─── HOW THE DESK WORKS ───────────────────────────────────────────── */
+.how-desk {
+  margin: 24px 0 28px;
+  padding: 22px 22px 18px;
+  border-top: var(--hairline-strong); border-bottom: var(--hairline);
+  background: var(--paper-pure);
+}
+.how-desk .hd-title {
+  margin: 0 0 18px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--flame-deep);
+}
+.how-desk .hd-steps {
+  list-style: none; padding: 0; margin: 0;
+  display: grid; grid-template-columns: 1fr; gap: 14px;
+}
+@media (min-width: 720px) {
+  .how-desk .hd-steps { grid-template-columns: repeat(4, 1fr); gap: 22px; }
+}
+.how-desk .hd-steps li {
+  position: relative;
+  padding: 8px 0 8px 38px;
+  border-top: 2px solid var(--ink);
+}
+.how-desk .hd-num {
+  position: absolute; left: 0; top: 8px;
+  font-family: var(--font-sans); font-size: 22px; font-weight: 700;
+  color: var(--flame-deep); line-height: 1;
+}
+.how-desk .hd-steps h3 {
+  margin: 0 0 4px;
+  font-family: var(--font-sans); font-size: 14.5px; font-weight: 700;
+  letter-spacing: -0.005em; color: var(--ink);
+}
+.how-desk .hd-steps p {
+  margin: 0;
+  font-family: var(--font-serif); font-size: 14.5px; line-height: 1.45;
+  color: var(--graphite);
+}
+.how-desk .hd-thesis {
+  margin: 18px 0 0;
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 16px; line-height: 1.5; color: var(--ink-soft);
+  max-width: 60ch;
+  padding-top: 14px; border-top: var(--hairline);
+}
+
+/* ─── THE DESK POSITIONING BLOCK ───────────────────────────────────── */
+.the-desk-block {
+  margin: 32px 0 12px;
+  padding: 28px 0 28px;
+  border-top: var(--hairline-strong);
+}
+.the-desk-block .td-eyebrow {
+  margin: 0 0 8px;
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--flame-deep);
+}
+.the-desk-block .td-title {
+  margin: 0 0 14px;
+  font-family: var(--font-serif); font-weight: 600;
+  font-size: clamp(22px, 3.2vw, 30px); line-height: 1.15;
+  letter-spacing: -0.012em; color: var(--ink);
+  max-width: 28ch; text-wrap: balance;
+}
+.the-desk-block .td-lede {
+  margin: 0 0 12px;
+  font-family: var(--font-serif); font-size: 17px; line-height: 1.55;
+  color: var(--ink); max-width: 60ch;
+}
+.the-desk-block .td-body {
+  margin: 0;
+  font-family: var(--font-serif); font-size: 15.5px; line-height: 1.55;
+  color: var(--graphite); max-width: 60ch;
+}
+
+/* ─── HOMEPAGE HERO SECONDARY STANDFIRST ───────────────────────────── */
+.hero .standfirst-secondary {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: clamp(15px, 1.5vw, 17px); line-height: 1.5;
+  color: var(--ink-soft);
+  margin: 10px 0 0; max-width: 56ch;
+}
+
+/* ─── MOBILE WHITESPACE TIGHTENING ─────────────────────────────────── */
+@media (max-width: 720px) {
+  .hero { padding: 22px 0 14px; }
+  .hero h1 { font-size: clamp(28px, 8vw, 38px); margin-bottom: 8px; }
+  .hero .standfirst { font-size: 15.5px; margin-top: 8px; }
+  .hero .standfirst-secondary { font-size: 14px; margin-top: 6px; }
+  .how-desk { padding: 16px 14px 14px; margin: 16px 0 18px; }
+  .how-desk .hd-steps { gap: 10px; }
+  .how-desk .hd-steps li { padding: 6px 0 6px 32px; }
+  .the-desk-block { padding: 20px 0 18px; margin: 20px 0 8px; }
+  .the-desk-block .td-title { font-size: 22px; }
+  .trust-strip { gap: 4px 12px; font-size: 10.5px; padding: 6px 0; }
+  .event-disclaimer { font-size: 11px; margin: 8px 0 14px; }
+}
+
 /* ─── NEWSLETTER FOOTER SIGNUP ─────────────────────────────────────
    Sits above .site-foot. Dark navy block, on-ink text, single email
    field, stacks on mobile and goes inline at ≥600px. */
@@ -891,7 +1060,7 @@ body.op-noscroll { overflow: hidden; }
         <li><a href="/about">About</a></li>
       </ul>
     </nav>
-    <span class="nav-meta">Last refresh 10:36 UTC</span>
+    <span class="nav-meta">Last refresh 11:52 UTC</span>
     <details class="burger">
       <summary class="burger-btn" aria-label="More links">
         <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
@@ -928,15 +1097,15 @@ body.op-noscroll { overflow: hidden; }
   <a href="/learn">Learn</a>
   <a href="/about">About</a>
 </nav>
-<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Belgium v Egypt · the model leans Egypt</h1></section><div class="lv-card is-pick is-lead"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Mon 15 Jun · 19:00 UTC</span></div><h3 class="lv-teams">Belgium <span class="vs">v</span> Egypt</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">A +11.4pp gap across model and market on the Egypt side. Our Elo prior, after host and altitude adjustments, rates Egypt at 27%; Kalshi sits at 16%.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">27%</span></span><span class="rp"><span class="k">Market</span><span class="v">16%</span></span><span class="edge">+11.4pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-bel-egy-2026-06-15" target="_blank" rel="nofollow noopener">View source on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">See live market</span></span><span class="cta-stack"><a class="cta market-cta" href="https://kalshi.com/markets/kxwcgame/world-cup-game/kxwcgame-26jun15belegy?op_market_ticker=KXWCGAME-26JUN15BELEGY-EGY&amp;op_side=BUY&amp;op_order_side=yes&amp;op_order_type=dollars" target="_blank" rel="nofollow noopener">View source on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span></div></div></div><div class="blurb"><p>This is a Pick. Belgium v Egypt in FIFA World Cup 2026 on Monday, and the model and the market disagree on the Egypt side by +11.4pp. That&#x27;s the gap the verdict rests on.</p>
+<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Belgium v Egypt · the model leans Egypt</h1></section><section class="trust-strip" aria-label="Data freshness"><span class="ts-item"><span class="ts-lbl">Updated</span> moments ago</span><span class="ts-item"><span class="ts-lbl">Model refresh</span> 11:51 UTC</span><span class="ts-item"><span class="ts-lbl">Market snapshot</span> live</span></section><div class="lv-card is-pick is-lead"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Mon 15 Jun · 19:00 UTC</span></div><h3 class="lv-teams">Belgium <span class="vs">v</span> Egypt</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">A +11.4pp gap across model and market on the Egypt side. Our Elo prior, after host and altitude adjustments, rates Egypt at 27%; Kalshi sits at 16%.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">27%</span></span><span class="rp"><span class="k">Market</span><span class="v">16%</span></span><span class="edge">+11.4pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-bel-egy-2026-06-15" target="_blank" rel="nofollow noopener">View live market on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">See live market</span></span><span class="cta-stack"><a class="cta market-cta" href="https://kalshi.com/markets/kxwcgame/world-cup-game/kxwcgame-26jun15belegy?op_market_ticker=KXWCGAME-26JUN15BELEGY-EGY&amp;op_side=BUY&amp;op_order_side=yes&amp;op_order_type=dollars" target="_blank" rel="nofollow noopener">View live market on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span></div></div></div><p class="event-disclaimer">Editorial analysis only. Odds Primer does not provide betting or financial advice.</p><div class="blurb"><p>This is a Pick. Belgium v Egypt in FIFA World Cup 2026 on Monday, and the model and the market disagree on the Egypt side by +11.4pp. That&#x27;s the gap the verdict rests on.</p>
 <p>Public Elo rates Belgium 100 points higher than the other side (Belgium 1860, Egypt 1760). The match model&#x27;s logistic translates that Elo gap directly into a win-probability. Both Elo numbers are pulled live from the public Elo source. The adjustment layer is quiet on this fixture — no host bonus, no home-ground correction, no altitude folding in. The Elo numbers above are what the model uses.</p>
-<p>Three-way split from the model: Belgium to win at 49%, the draw at 24%, and Egypt to win at 27%. The Desk&#x27;s three-way distribution is calibrated against the W/D/L resolution Polymarket and Kalshi settle on, not against the exact scoreline. Egypt sits at 27% of the mass.</p>
+<p>Three-way split from the model: Belgium to win at 49%, the draw at 24%, and Egypt to win at 27%. The Desk publishes a three-way read against the same W/D/L resolution Polymarket and Kalshi settle on — not a scoreline guess. Egypt sits at 27% of the mass.</p>
 <p>On the same three-way, Kalshi: Belgium to win at 57%, the draw at 24%, and Egypt to win at 16%. Kalshi has Egypt at 16%, which prices out at American odds of +525; the model has the same side at 27%. The +11.4pp gap across them is the disagreement we&#x27;re surfacing.</p>
-<p>The +3pp Pick threshold isn&#x27;t on the point estimate, it&#x27;s on the 5th-percentile from a 100-sample bootstrap of the Elo prior plus bonuses. On Egypt, that haircut lands the model at 22%; the market is at 16%. Even on the conservative reading, the gap is +6.4pp. Calibration tracks the closing market on the bulk sample; selection — picking the single side where the gap is wide — is where the engine&#x27;s edge has to come from. This verdict is a selection call on the Egypt side.</p>
-<p>This number will move. Confirmed starting elevens, injuries, weather at the venue, and suspensions carried in from previous fixtures all re-enter the prior on the late-binding cadence. With kickoff 24 days out, we&#x27;re still on weekly refresh; the daily cadence picks up inside T-5d. The Pick can flip to a Pass if news moves enough of the prior. The Desk does not tip and does not recommend a trade — the model price, the market price, and the gap across them are what&#x27;s on the page.</p></div><div class="cta-row"><a class="open-market" href="https://polymarket.com/event/fifwc-bel-egy-2026-06-15" rel="nofollow noopener" target="_blank">View source on Kalshi <span class="arr">↗</span></a><span class="meta-note">Odds Primer is editorial. Trades happen at the venue, not here.</span></div><section class="drivers"><h2>The drivers</h2><ol><li>Pre-tournament Elo gives Egypt a stronger prior than the Kalshi line implies.</li>
-<li>The +11.4pp gap clears our 3 percentage point threshold for a Pick.</li>
-<li>Calibration sits with the closing market across recent fixtures, so selection is the lever.</li>
-<li>Late-binding signals — form, confirmed XI, weather — re-evaluate closer to kickoff.</li></ol></section><section class="sources"><h2>Sources</h2><ul><li><a href="https://www.bbc.com/sport/football/articles/cpwpnjkjl94o?at_medium=RSS&amp;at_campaign=rss" rel="nofollow noopener" target="_blank">BBC Sport (football)</a> <span class="src-date">· 21 May 2026</span><blockquote>Liverpool forward Mohamed Salah is named in Egypt&#x27;s preliminary World Cup squad, which will be trimmed by one player this month.</blockquote></li></ul></section><aside class="voice"><h3>How to read this</h3><p>The Desk compares its <em>model probability</em> against the <em>best available market probability</em>. A <em>Pick</em> means the model rates a side three or more percentage points higher than the market. <em>Pass</em> means the line is doing its job. <em>Avoid</em> means every side looks overpriced.</p></aside></main><section class="op-news" aria-labelledby="op-news-title">
+<p>The +3pp Pick threshold isn&#x27;t on the point estimate, it&#x27;s on the 5th-percentile from a 100-sample bootstrap of the Elo prior plus bonuses. On Egypt, that haircut lands the model at 22%; the market is at 16%. Even on the conservative reading, the gap is +6.4pp. The engine isn&#x27;t arguing reputation, recency, or narrative. It&#x27;s reading the underlying numbers and finding Egypt priced shorter on the market than the prior supports — that&#x27;s the disagreement.</p>
+<p>This number will move. The confirmed starting eleven, fitness news, weather at the venue, and any tournament suspension carried in from previous matches all feed back into the prior. With kickoff 24 days out, refresh is weekly; daily cadence picks up inside the final five days. A wide Pick can collapse into a Pass if news moves enough of the read. Editorial analysis only — Odds Primer does not place trades and does not recommend a wager.</p></div><div class="cta-row"><a class="open-market" href="https://polymarket.com/event/fifwc-bel-egy-2026-06-15" rel="nofollow noopener" target="_blank">View live market on Kalshi <span class="arr">↗</span></a><span class="meta-note">Editorial citation only. Odds Primer does not place trades.</span></div><section class="why-disagrees"><h2>Why the model disagrees</h2><p>A gap this wide (+11.4pp) usually means one of the following: a reputation-led short price the model isn't pricing in, a stale line that hasn't absorbed recent fitness or lineup news, a tactical or defensive profile that doesn't match the headline form, or a market lag on travel, altitude, or weather. The drivers below show which of these the engine is weighing on this fixture.</p></section><section class="drivers"><h2>The drivers</h2><ol><li>Confirmed XI, fitness news, and weather re-enter the prior closer to kickoff.</li>
+<li>Bootstrap lower-bound on the Egypt side still clears the Pick threshold.</li>
+<li>Editorial analysis only — Odds Primer does not place trades or recommend a wager.</li>
+<li>Pre-match Elo gives Egypt a stronger prior than the Kalshi line implies.</li></ol></section><section class="sources"><h2>Sources</h2><ul><li><a href="https://www.bbc.com/sport/football/articles/cpwpnjkjl94o?at_medium=RSS&amp;at_campaign=rss" rel="nofollow noopener" target="_blank">BBC Sport (football)</a> <span class="src-date">· 21 May 2026</span><blockquote>Liverpool forward Mohamed Salah is named in Egypt&#x27;s preliminary World Cup squad, which will be trimmed by one player this month.</blockquote></li></ul></section><aside class="voice"><h3>How to read this</h3><p>The Desk compares its <em>model probability</em> against the <em>best available market probability</em>. A <em>Pick</em> means the model rates a side three or more percentage points higher than the market. <em>Pass</em> means the line is doing its job. <em>Avoid</em> means every side looks overpriced.</p></aside></main><section class="op-news" aria-labelledby="op-news-title">
   <div class="op-news__inner">
     <p class="op-news__eyebrow">New to prediction markets?</p>
     <h2 class="op-news__title" id="op-news-title">Start with the weekly primer.</h2>
@@ -956,8 +1125,21 @@ body.op-noscroll { overflow: hidden; }
   </div>
 </section>
 <footer class="site-foot page">
+  <div class="foot-trust">
+    <p class="ft-disclaimer">
+      Editorial analysis only. Odds Primer does not provide betting, investment, or financial advice.
+    </p>
+    <p class="ft-data">
+      <span class="ft-lbl">Data sources:</span>
+      Polymarket, Kalshi, public football data, internal model estimates.
+    </p>
+    <p class="ft-contact">
+      <span class="ft-lbl">Corrections &amp; contact:</span>
+      <a href="mailto:editor@oddsprimer.com">editor@oddsprimer.com</a>
+    </p>
+  </div>
   <div class="foot-row">
-    <span class="left">Odds Primer · educational, not advice</span>
+    <span class="left">Odds Primer · AI-assisted sports market intelligence</span>
     <span>The Desk · v1.1 · 22 May 2026</span>
   </div>
   <nav class="foot-nav" aria-label="Trust and editorial">

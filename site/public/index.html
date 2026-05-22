@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Odds Primer · The 2026 World Cup, priced.</title>
-<meta name="description" content="Verdicts on every World Cup price across Polymarket and Kalshi — Pick, Pass, or Avoid, with the model&#x27;s reasoning. We don&#x27;t tip.">
+<title>Odds Primer · AI-assisted sports market intelligence</title>
+<meta name="description" content="Odds Primer compares live prediction-market prices against an independent AI football model and publishes Pick, Pass, or Avoid verdicts on every major World Cup market.">
 <link rel="canonical" href="https://oddsprimer.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Odds Primer">
-<meta property="og:title" content="Odds Primer · The 2026 World Cup, priced.">
-<meta property="og:description" content="Verdicts on every World Cup price across Polymarket and Kalshi — Pick, Pass, or Avoid, with the model&#x27;s reasoning. We don&#x27;t tip.">
+<meta property="og:title" content="Odds Primer · AI-assisted sports market intelligence">
+<meta property="og:description" content="Odds Primer compares live prediction-market prices against an independent AI football model and publishes Pick, Pass, or Avoid verdicts on every major World Cup market.">
 <meta property="og:url" content="https://oddsprimer.com/">
 <meta property="og:image" content="https://oddsprimer.com/favicon-192.png">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Odds Primer · The 2026 World Cup, priced.">
-<meta name="twitter:description" content="Verdicts on every World Cup price across Polymarket and Kalshi — Pick, Pass, or Avoid, with the model&#x27;s reasoning. We don&#x27;t tip.">
+<meta name="twitter:title" content="Odds Primer · AI-assisted sports market intelligence">
+<meta name="twitter:description" content="Odds Primer compares live prediction-market prices against an independent AI football model and publishes Pick, Pass, or Avoid verdicts on every major World Cup market.">
 <meta name="twitter:image" content="https://oddsprimer.com/favicon-192.png">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
@@ -35,6 +35,7 @@
   gtag('config', 'G-DH4D6X8YRN');
 })();
 </script>
+
 <style>@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
@@ -669,6 +670,174 @@ a { color: inherit; }
 }
 .site-foot .foot-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
 
+/* ─── FOOTER TRUST BLOCK ───────────────────────────────────────────── */
+.site-foot .foot-trust {
+  margin: 0 0 18px;
+  padding: 16px 18px;
+  background: var(--paper-warm);
+  border-left: 3px solid var(--flame);
+  font-family: var(--font-serif);
+  color: var(--ink);
+  font-size: 13.5px; line-height: 1.55;
+}
+.site-foot .foot-trust .ft-disclaimer {
+  margin: 0 0 8px; font-weight: 500;
+}
+.site-foot .foot-trust .ft-data,
+.site-foot .foot-trust .ft-contact {
+  margin: 0; font-size: 13px; color: var(--graphite);
+}
+.site-foot .foot-trust .ft-lbl {
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--flame-deep);
+  margin-right: 6px;
+}
+.site-foot .foot-trust a {
+  color: var(--ink); text-decoration: underline;
+  text-decoration-color: var(--rule); text-underline-offset: 3px;
+}
+.site-foot .foot-trust a:hover { color: var(--flame-deep); }
+
+/* ─── TRUST STRIP ON EVENT PAGES ───────────────────────────────────── */
+.trust-strip {
+  display: flex; flex-wrap: wrap; gap: 6px 18px;
+  margin: 0 0 14px;
+  padding: 8px 0;
+  border-top: var(--hairline-soft); border-bottom: var(--hairline-soft);
+  font-family: var(--font-sans); font-size: 11px;
+  color: var(--graphite-soft); letter-spacing: 0.04em;
+}
+.trust-strip .ts-item { white-space: nowrap; }
+.trust-strip .ts-lbl {
+  font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--flame-deep); margin-right: 5px;
+}
+
+/* ─── EDITORIAL DISCLAIMER UNDER VERDICT ───────────────────────────── */
+.event-disclaimer {
+  margin: 10px 0 18px;
+  font-family: var(--font-sans); font-size: 11.5px;
+  color: var(--graphite-soft);
+  letter-spacing: 0.02em;
+  border-left: 2px solid var(--rule);
+  padding: 4px 0 4px 10px;
+}
+
+/* ─── WHY THE MODEL DISAGREES (wide-gap Picks) ─────────────────────── */
+.why-disagrees {
+  margin: 24px 0 18px;
+  padding: 16px 20px;
+  background: var(--paper-warm); border-left: 3px solid var(--flame);
+}
+.why-disagrees h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--flame-deep);
+}
+.why-disagrees p {
+  margin: 0; font-family: var(--font-serif); font-size: 16px; line-height: 1.55;
+  color: var(--ink); max-width: 64ch;
+}
+
+/* ─── HOW THE DESK WORKS ───────────────────────────────────────────── */
+.how-desk {
+  margin: 24px 0 28px;
+  padding: 22px 22px 18px;
+  border-top: var(--hairline-strong); border-bottom: var(--hairline);
+  background: var(--paper-pure);
+}
+.how-desk .hd-title {
+  margin: 0 0 18px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--flame-deep);
+}
+.how-desk .hd-steps {
+  list-style: none; padding: 0; margin: 0;
+  display: grid; grid-template-columns: 1fr; gap: 14px;
+}
+@media (min-width: 720px) {
+  .how-desk .hd-steps { grid-template-columns: repeat(4, 1fr); gap: 22px; }
+}
+.how-desk .hd-steps li {
+  position: relative;
+  padding: 8px 0 8px 38px;
+  border-top: 2px solid var(--ink);
+}
+.how-desk .hd-num {
+  position: absolute; left: 0; top: 8px;
+  font-family: var(--font-sans); font-size: 22px; font-weight: 700;
+  color: var(--flame-deep); line-height: 1;
+}
+.how-desk .hd-steps h3 {
+  margin: 0 0 4px;
+  font-family: var(--font-sans); font-size: 14.5px; font-weight: 700;
+  letter-spacing: -0.005em; color: var(--ink);
+}
+.how-desk .hd-steps p {
+  margin: 0;
+  font-family: var(--font-serif); font-size: 14.5px; line-height: 1.45;
+  color: var(--graphite);
+}
+.how-desk .hd-thesis {
+  margin: 18px 0 0;
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 16px; line-height: 1.5; color: var(--ink-soft);
+  max-width: 60ch;
+  padding-top: 14px; border-top: var(--hairline);
+}
+
+/* ─── THE DESK POSITIONING BLOCK ───────────────────────────────────── */
+.the-desk-block {
+  margin: 32px 0 12px;
+  padding: 28px 0 28px;
+  border-top: var(--hairline-strong);
+}
+.the-desk-block .td-eyebrow {
+  margin: 0 0 8px;
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--flame-deep);
+}
+.the-desk-block .td-title {
+  margin: 0 0 14px;
+  font-family: var(--font-serif); font-weight: 600;
+  font-size: clamp(22px, 3.2vw, 30px); line-height: 1.15;
+  letter-spacing: -0.012em; color: var(--ink);
+  max-width: 28ch; text-wrap: balance;
+}
+.the-desk-block .td-lede {
+  margin: 0 0 12px;
+  font-family: var(--font-serif); font-size: 17px; line-height: 1.55;
+  color: var(--ink); max-width: 60ch;
+}
+.the-desk-block .td-body {
+  margin: 0;
+  font-family: var(--font-serif); font-size: 15.5px; line-height: 1.55;
+  color: var(--graphite); max-width: 60ch;
+}
+
+/* ─── HOMEPAGE HERO SECONDARY STANDFIRST ───────────────────────────── */
+.hero .standfirst-secondary {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: clamp(15px, 1.5vw, 17px); line-height: 1.5;
+  color: var(--ink-soft);
+  margin: 10px 0 0; max-width: 56ch;
+}
+
+/* ─── MOBILE WHITESPACE TIGHTENING ─────────────────────────────────── */
+@media (max-width: 720px) {
+  .hero { padding: 22px 0 14px; }
+  .hero h1 { font-size: clamp(28px, 8vw, 38px); margin-bottom: 8px; }
+  .hero .standfirst { font-size: 15.5px; margin-top: 8px; }
+  .hero .standfirst-secondary { font-size: 14px; margin-top: 6px; }
+  .how-desk { padding: 16px 14px 14px; margin: 16px 0 18px; }
+  .how-desk .hd-steps { gap: 10px; }
+  .how-desk .hd-steps li { padding: 6px 0 6px 32px; }
+  .the-desk-block { padding: 20px 0 18px; margin: 20px 0 8px; }
+  .the-desk-block .td-title { font-size: 22px; }
+  .trust-strip { gap: 4px 12px; font-size: 10.5px; padding: 6px 0; }
+  .event-disclaimer { font-size: 11px; margin: 8px 0 14px; }
+}
+
 /* ─── NEWSLETTER FOOTER SIGNUP ─────────────────────────────────────
    Sits above .site-foot. Dark navy block, on-ink text, single email
    field, stacks on mobile and goes inline at ≥600px. */
@@ -891,7 +1060,7 @@ body.op-noscroll { overflow: hidden; }
         <li><a href="/about">About</a></li>
       </ul>
     </nav>
-    <span class="nav-meta">Last refresh 10:36 UTC</span>
+    <span class="nav-meta">Last refresh 11:52 UTC</span>
     <details class="burger">
       <summary class="burger-btn" aria-label="More links">
         <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
@@ -928,11 +1097,11 @@ body.op-noscroll { overflow: hidden; }
   <a href="/learn">Learn</a>
   <a href="/about">About</a>
 </nav>
-<main class="page"><section class="hero"><h1>The 2026 World Cup, priced.</h1><p class="standfirst">Our model reads every World Cup price on Polymarket and Kalshi and calls it: <em class="vlead">Pick</em>, <em class="vlead">Pass</em>, or <em class="vlead">Avoid</em>. Today&rsquo;s headline verdict is below.</p></section><div class="section-label"><span>Today's headline verdict</span><a class="see-all" href="/matches/">All matches <span class="arr">→</span></a></div><div class="lv-card is-pick is-lead"><a class="lv-card-link" href="/m/fb-wc26-cro-gha-20260627" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Sat 27 Jun · 21:00 UTC</span></div><h3 class="lv-teams">Croatia <span class="vs">v</span> Ghana</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">Croatia are favourites on the market at 40% — and the model thinks the market is still underrating them. Our prior reads 67%, a +27.0pp upgrade that crosses the Pick threshold comfortably.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">67%</span></span><span class="rp"><span class="k">Market</span><span class="v">40%</span></span><span class="edge">+27.0pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-hrv-gha-2026-06-27" target="_blank" rel="nofollow noopener">View source on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">See live market</span></span><span class="cta-stack"><a class="cta market-cta" href="https://kalshi.com/markets/kxwcgame/world-cup-game/kxwcgame-26jun27crogha?op_market_ticker=KXWCGAME-26JUN27CROGHA-CRO&amp;op_side=BUY&amp;op_order_side=yes&amp;op_order_type=dollars" target="_blank" rel="nofollow noopener">View source on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-cro-gha-20260627">Read the case <span class="arr">→</span></a></div></div></div><p class="affiliate-note">Odds Primer may earn a referral fee if you use a partner venue. Verdicts are editorial and independent.</p><section class="verdict-key" aria-label="Verdict key"><span class="vk-label">Verdict key</span><div class="vk-item"><span class="vk-icon is-pick" aria-hidden="true">&#9650;</span><span class="vk-text"><span class="vk-name is-pick">Pick</span><span class="vk-desc">the line appears underpriced</span></span></div><div class="vk-item"><span class="vk-icon is-pass" aria-hidden="true">&mdash;</span><span class="vk-text"><span class="vk-name is-pass">Pass</span><span class="vk-desc">the line is fair &mdash; no edge to play</span></span></div><div class="vk-item"><span class="vk-icon is-avoid" aria-hidden="true">&times;</span><span class="vk-text"><span class="vk-name is-avoid">Avoid</span><span class="vk-desc">overpriced both ways &mdash; sit it out</span></span></div><p class="vk-note">Colour, glyph, and label all carry the same meaning, so a card's call is readable at a glance.</p></section><div class="section-label"><span>More Picks · 28 more</span><a class="see-all" href="/matches/">See all matches <span class="arr">→</span></a></div><div class="lv-card is-pick"><a class="lv-card-link" href="/m/fb-wc26-ecu-kor-20260621" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Sun 21 Jun · 00:00 UTC</span></div><h3 class="lv-teams">Ecuador <span class="vs">v</span> Curaçao</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">The model thinks Curaçao are mispriced. Our number reads 34% on the away side; the market reads 9%. The +24.1pp gap is the Pick.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">34%</span></span><span class="rp"><span class="k">Market</span><span class="v">9%</span></span><span class="edge">+24.1pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-ecu-kor-2026-06-20" target="_blank" rel="nofollow noopener">View source on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +958</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">View source on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-ecu-kor-20260621">Read the case <span class="arr">→</span></a></div></div></div>
-<div class="lv-card is-pick"><a class="lv-card-link" href="/m/fb-wc26-arg-aut-20260622" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Mon 22 Jun · 17:00 UTC</span></div><h3 class="lv-teams">Argentina <span class="vs">v</span> Austria</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">On every meaningful read, Argentina look stronger here than Kalshi has them. Model 76% vs market 56% — a +19.4pp gap on the favourite side.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">76%</span></span><span class="rp"><span class="k">Market</span><span class="v">56%</span></span><span class="edge">+19.4pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-arg-aut-2026-06-22" target="_blank" rel="nofollow noopener">View source on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">See live market</span></span><span class="cta-stack"><a class="cta market-cta" href="https://kalshi.com/markets/kxwcgame/world-cup-game/kxwcgame-26jun22argaut?op_market_ticker=KXWCGAME-26JUN22ARGAUT-ARG&amp;op_side=BUY&amp;op_order_side=yes&amp;op_order_type=dollars" target="_blank" rel="nofollow noopener">View source on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-arg-aut-20260622">Read the case <span class="arr">→</span></a></div></div></div>
-<div class="lv-card is-pick"><a class="lv-card-link" href="/m/fb-wc26-nor-fra-20260626" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Fri 26 Jun · 19:00 UTC</span></div><h3 class="lv-teams">Norway <span class="vs">v</span> France</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">On every meaningful read, France look stronger here than Polymarket has them. Model 71% vs market 54% — a +17.7pp gap on the favourite side.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">71%</span></span><span class="rp"><span class="k">Market</span><span class="v">54%</span></span><span class="edge">+17.7pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-nor-fra-2026-06-26" target="_blank" rel="nofollow noopener">View source on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · -115</span></span><span class="cta-stack"><a class="cta market-cta" href="https://kalshi.com/markets/kxwcgame/world-cup-game/kxwcgame-26jun26norfra?op_market_ticker=KXWCGAME-26JUN26NORFRA-FRA&amp;op_side=BUY&amp;op_order_side=yes&amp;op_order_type=dollars" target="_blank" rel="nofollow noopener">View source on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-nor-fra-20260626">Read the case <span class="arr">→</span></a></div></div></div>
-<div class="lv-card is-pick"><a class="lv-card-link" href="/m/fb-wc26-rsa-kor-20260625" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Thu 25 Jun · 01:00 UTC</span></div><h3 class="lv-teams">South Africa <span class="vs">v</span> Korea Republic</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">On every meaningful read, Korea Republic look stronger here than Polymarket has them. Model 56% vs market 40% — a +16.1pp gap on the favourite side.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">56%</span></span><span class="rp"><span class="k">Market</span><span class="v">40%</span></span><span class="edge">+16.1pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-rsa-kr-2026-06-24" target="_blank" rel="nofollow noopener">View source on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +153</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">View source on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-rsa-kor-20260625">Read the case <span class="arr">→</span></a></div></div></div>
-<div class="lv-card is-pick"><a class="lv-card-link" href="/m/fb-wc26-bel-irn-20260621" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Sun 21 Jun · 19:00 UTC</span></div><h3 class="lv-teams">Belgium <span class="vs">v</span> IR Iran</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">A +14.8pp gap across model and market on the IR Iran side. Our Elo prior, after host and altitude adjustments, rates IR Iran at 26%; Polymarket sits at 11%.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">26%</span></span><span class="rp"><span class="k">Market</span><span class="v">11%</span></span><span class="edge">+14.8pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-bel-irn-2026-06-21" target="_blank" rel="nofollow noopener">View source on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +809</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">View source on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-bel-irn-20260621">Read the case <span class="arr">→</span></a></div></div></div></main><section class="op-news" aria-labelledby="op-news-title">
+<main class="page"><section class="hero"><h1>The 2026 World Cup, priced.</h1><p class="standfirst">Odds Primer compares live prediction-market prices against an independent AI football model and publishes a <em class="vlead">Pick</em>, <em class="vlead">Pass</em>, or <em class="vlead">Avoid</em> verdict on every major World Cup market.</p><p class="standfirst-secondary">Built for readers who want to understand the price — not just follow it.</p></section><section class="how-desk" aria-labelledby="how-desk-title"><h2 id="how-desk-title" class="hd-title">How The Desk works</h2><ol class="hd-steps"><li><span class="hd-num">1</span><h3>Market prices update</h3><p>Live snapshots from Polymarket and Kalshi.</p></li><li><span class="hd-num">2</span><h3>The model recalculates probabilities</h3><p>An independent football model rebuilds each side&rsquo;s number.</p></li><li><span class="hd-num">3</span><h3>The Desk compares market vs model</h3><p>Two reads, one fixture — the gap is the editorial signal.</p></li><li><span class="hd-num">4</span><h3>Pick / Pass / Avoid is published</h3><p>With the reasoning, the citations, and what would move it.</p></li></ol><p class="hd-thesis">The goal is not to predict everything. The goal is to identify where market pricing and model conviction meaningfully diverge.</p></section><div class="section-label"><span>Today's headline verdict</span><a class="see-all" href="/matches/">All matches <span class="arr">→</span></a></div><div class="lv-card is-pick is-lead"><a class="lv-card-link" href="/m/fb-wc26-cro-gha-20260627" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Sat 27 Jun · 21:00 UTC</span></div><h3 class="lv-teams">Croatia <span class="vs">v</span> Ghana</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">Croatia are favourites on the market at 40% — and the model thinks the market is still underrating them. Our prior reads 67%, a +27.0pp upgrade that crosses the Pick threshold comfortably.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">67%</span></span><span class="rp"><span class="k">Market</span><span class="v">40%</span></span><span class="edge">+27.0pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-hrv-gha-2026-06-27" target="_blank" rel="nofollow noopener">View live market on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">See live market</span></span><span class="cta-stack"><a class="cta market-cta" href="https://kalshi.com/markets/kxwcgame/world-cup-game/kxwcgame-26jun27crogha?op_market_ticker=KXWCGAME-26JUN27CROGHA-CRO&amp;op_side=BUY&amp;op_order_side=yes&amp;op_order_type=dollars" target="_blank" rel="nofollow noopener">View live market on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-cro-gha-20260627">Read the case <span class="arr">→</span></a></div></div></div><p class="affiliate-note">Odds Primer may earn a referral fee if you use a partner venue. Verdicts are editorial and independent.</p><section class="verdict-key" aria-label="Verdict key"><span class="vk-label">Verdict key</span><div class="vk-item"><span class="vk-icon is-pick" aria-hidden="true">&#9650;</span><span class="vk-text"><span class="vk-name is-pick">Pick</span><span class="vk-desc">the line appears underpriced</span></span></div><div class="vk-item"><span class="vk-icon is-pass" aria-hidden="true">&mdash;</span><span class="vk-text"><span class="vk-name is-pass">Pass</span><span class="vk-desc">the line is fair &mdash; no edge to play</span></span></div><div class="vk-item"><span class="vk-icon is-avoid" aria-hidden="true">&times;</span><span class="vk-text"><span class="vk-name is-avoid">Avoid</span><span class="vk-desc">overpriced both ways &mdash; sit it out</span></span></div><p class="vk-note">Colour, glyph, and label all carry the same meaning, so a card's call is readable at a glance.</p></section><div class="section-label"><span>More Picks · 29 more</span><a class="see-all" href="/matches/">See all matches <span class="arr">→</span></a></div><div class="lv-card is-pick"><a class="lv-card-link" href="/m/fb-wc26-ecu-kor-20260621" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Sun 21 Jun · 00:00 UTC</span></div><h3 class="lv-teams">Ecuador <span class="vs">v</span> Curaçao</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">The model thinks Curaçao are mispriced. Our number reads 34% on the away side; the market reads 9%. The +24.1pp gap is the Pick.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">34%</span></span><span class="rp"><span class="k">Market</span><span class="v">9%</span></span><span class="edge">+24.1pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-ecu-kor-2026-06-20" target="_blank" rel="nofollow noopener">View live market on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +958</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">View live market on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-ecu-kor-20260621">Read the case <span class="arr">→</span></a></div></div></div>
+<div class="lv-card is-pick"><a class="lv-card-link" href="/m/fb-wc26-arg-aut-20260622" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Mon 22 Jun · 17:00 UTC</span></div><h3 class="lv-teams">Argentina <span class="vs">v</span> Austria</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">On every meaningful read, Argentina look stronger here than Kalshi has them. Model 76% vs market 56% — a +19.4pp gap on the favourite side.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">76%</span></span><span class="rp"><span class="k">Market</span><span class="v">56%</span></span><span class="edge">+19.4pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-arg-aut-2026-06-22" target="_blank" rel="nofollow noopener">View live market on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">See live market</span></span><span class="cta-stack"><a class="cta market-cta" href="https://kalshi.com/markets/kxwcgame/world-cup-game/kxwcgame-26jun22argaut?op_market_ticker=KXWCGAME-26JUN22ARGAUT-ARG&amp;op_side=BUY&amp;op_order_side=yes&amp;op_order_type=dollars" target="_blank" rel="nofollow noopener">View live market on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-arg-aut-20260622">Read the case <span class="arr">→</span></a></div></div></div>
+<div class="lv-card is-pick"><a class="lv-card-link" href="/m/fb-wc26-nor-fra-20260626" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Fri 26 Jun · 19:00 UTC</span></div><h3 class="lv-teams">Norway <span class="vs">v</span> France</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">On every meaningful read, France look stronger here than Polymarket has them. Model 71% vs market 54% — a +17.7pp gap on the favourite side.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">71%</span></span><span class="rp"><span class="k">Market</span><span class="v">54%</span></span><span class="edge">+17.7pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-nor-fra-2026-06-26" target="_blank" rel="nofollow noopener">View live market on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · -115</span></span><span class="cta-stack"><a class="cta market-cta" href="https://kalshi.com/markets/kxwcgame/world-cup-game/kxwcgame-26jun26norfra?op_market_ticker=KXWCGAME-26JUN26NORFRA-FRA&amp;op_side=BUY&amp;op_order_side=yes&amp;op_order_type=dollars" target="_blank" rel="nofollow noopener">View live market on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-nor-fra-20260626">Read the case <span class="arr">→</span></a></div></div></div>
+<div class="lv-card is-pick"><a class="lv-card-link" href="/m/fb-wc26-rsa-kor-20260625" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Thu 25 Jun · 01:00 UTC</span></div><h3 class="lv-teams">South Africa <span class="vs">v</span> Korea Republic</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">On every meaningful read, Korea Republic look stronger here than Polymarket has them. Model 56% vs market 40% — a +16.1pp gap on the favourite side.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">56%</span></span><span class="rp"><span class="k">Market</span><span class="v">40%</span></span><span class="edge">+16.1pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-rsa-kr-2026-06-24" target="_blank" rel="nofollow noopener">View live market on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +153</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">View live market on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-rsa-kor-20260625">Read the case <span class="arr">→</span></a></div></div></div>
+<div class="lv-card is-pick"><a class="lv-card-link" href="/m/fb-wc26-bel-irn-20260621" aria-label="Read the case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Sun 21 Jun · 19:00 UTC</span></div><h3 class="lv-teams">Belgium <span class="vs">v</span> IR Iran</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">A +14.8pp gap across model and market on the IR Iran side. Our Elo prior, after host and altitude adjustments, rates IR Iran at 26%; Polymarket sits at 11%.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">26%</span></span><span class="rp"><span class="k">Market</span><span class="v">11%</span></span><span class="edge">+14.8pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-bel-irn-2026-06-21" target="_blank" rel="nofollow noopener">View live market on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +809</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">View live market on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/m/fb-wc26-bel-irn-20260621">Read the case <span class="arr">→</span></a></div></div></div><section class="the-desk-block" aria-labelledby="the-desk-title"><p class="td-eyebrow">The Desk</p><h2 id="the-desk-title" class="td-title">An AI-assisted sports market intelligence engine.</h2><p class="td-lede">The Desk compares live prediction-market pricing against an independent football model and publishes a verdict on every priced market it covers.</p><p class="td-body">The Desk does not chase every match. It looks for disagreement, overreaction, uncertainty, and mispricing — and stays quiet when the line is already doing its job.</p></section></main><section class="op-news" aria-labelledby="op-news-title">
   <div class="op-news__inner">
     <p class="op-news__eyebrow">New to prediction markets?</p>
     <h2 class="op-news__title" id="op-news-title">Start with the weekly primer.</h2>
@@ -952,8 +1121,21 @@ body.op-noscroll { overflow: hidden; }
   </div>
 </section>
 <footer class="site-foot page">
+  <div class="foot-trust">
+    <p class="ft-disclaimer">
+      Editorial analysis only. Odds Primer does not provide betting, investment, or financial advice.
+    </p>
+    <p class="ft-data">
+      <span class="ft-lbl">Data sources:</span>
+      Polymarket, Kalshi, public football data, internal model estimates.
+    </p>
+    <p class="ft-contact">
+      <span class="ft-lbl">Corrections &amp; contact:</span>
+      <a href="mailto:editor@oddsprimer.com">editor@oddsprimer.com</a>
+    </p>
+  </div>
   <div class="foot-row">
-    <span class="left">Odds Primer · educational, not advice</span>
+    <span class="left">Odds Primer · AI-assisted sports market intelligence</span>
     <span>The Desk · v1.1 · 22 May 2026</span>
   </div>
   <nav class="foot-nav" aria-label="Trust and editorial">

@@ -17,9 +17,11 @@ export default function Hero({ navigate }) {
       <div className="h-eyebrow">Vol. 1 · World Cup 2026 edition</div>
       <h1 id="hero-title">The 2026 World Cup, priced.</h1>
       <p className="standfirst">
-        The Desk, our verdict engine, reads every World Cup market against its own model —
-        Polymarket, Kalshi, and the sportsbooks — and calls each one Pick, Pass, or Avoid,
-        with the reasoning. We don't tip.
+        Odds Primer compares live prediction-market prices against an independent AI football
+        model and publishes a Pick, Pass, or Avoid verdict on every major World Cup market.
+      </p>
+      <p className="standfirst-secondary">
+        Built for readers who want to understand the price — not just follow it.
       </p>
       <div className="ctas">
         <a className="btn-primary" href="#today" onClick={handleBoard}>

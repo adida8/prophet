@@ -386,14 +386,27 @@
   margin: 0; color: var(--ink); text-wrap: balance; max-width: 16ch;
 }
 .op-site .hero .standfirst {
+  font-family: var(--font-serif);
+  font-size: clamp(18px, 1.8vw, 22px);
+  line-height: 1.5; color: var(--ink);
+  margin: 18px 0 0; max-width: 60ch;
+}
+.op-site .hero .standfirst-secondary {
   font-family: var(--font-serif); font-style: italic;
-  font-size: clamp(17px, 1.6vw, 20px);
+  font-size: clamp(15px, 1.5vw, 17px);
   line-height: 1.5; color: var(--ink-soft);
-  margin: 18px 0 0; max-width: 58ch;
+  margin: 10px 0 0; max-width: 56ch;
 }
 .op-site .hero .ctas {
   display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: baseline;
-  margin-top: 26px;
+  margin-top: 22px;
+}
+@media (max-width: 720px) {
+  .op-site .hero { padding: 24px 0 16px; }
+  .op-site .hero h1 { font-size: clamp(30px, 9vw, 42px); }
+  .op-site .hero .standfirst { font-size: 16px; margin-top: 12px; }
+  .op-site .hero .standfirst-secondary { font-size: 14px; margin-top: 8px; }
+  .op-site .hero .ctas { margin-top: 16px; }
 }
 
 /* ============================================================

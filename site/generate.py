@@ -698,6 +698,174 @@ a { color: inherit; }
 }
 .site-foot .foot-nav a:hover { color: var(--flame-deep); border-bottom-color: var(--flame); }
 
+/* ─── FOOTER TRUST BLOCK ───────────────────────────────────────────── */
+.site-foot .foot-trust {
+  margin: 0 0 18px;
+  padding: 16px 18px;
+  background: var(--paper-warm);
+  border-left: 3px solid var(--flame);
+  font-family: var(--font-serif);
+  color: var(--ink);
+  font-size: 13.5px; line-height: 1.55;
+}
+.site-foot .foot-trust .ft-disclaimer {
+  margin: 0 0 8px; font-weight: 500;
+}
+.site-foot .foot-trust .ft-data,
+.site-foot .foot-trust .ft-contact {
+  margin: 0; font-size: 13px; color: var(--graphite);
+}
+.site-foot .foot-trust .ft-lbl {
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--flame-deep);
+  margin-right: 6px;
+}
+.site-foot .foot-trust a {
+  color: var(--ink); text-decoration: underline;
+  text-decoration-color: var(--rule); text-underline-offset: 3px;
+}
+.site-foot .foot-trust a:hover { color: var(--flame-deep); }
+
+/* ─── TRUST STRIP ON EVENT PAGES ───────────────────────────────────── */
+.trust-strip {
+  display: flex; flex-wrap: wrap; gap: 6px 18px;
+  margin: 0 0 14px;
+  padding: 8px 0;
+  border-top: var(--hairline-soft); border-bottom: var(--hairline-soft);
+  font-family: var(--font-sans); font-size: 11px;
+  color: var(--graphite-soft); letter-spacing: 0.04em;
+}
+.trust-strip .ts-item { white-space: nowrap; }
+.trust-strip .ts-lbl {
+  font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--flame-deep); margin-right: 5px;
+}
+
+/* ─── EDITORIAL DISCLAIMER UNDER VERDICT ───────────────────────────── */
+.event-disclaimer {
+  margin: 10px 0 18px;
+  font-family: var(--font-sans); font-size: 11.5px;
+  color: var(--graphite-soft);
+  letter-spacing: 0.02em;
+  border-left: 2px solid var(--rule);
+  padding: 4px 0 4px 10px;
+}
+
+/* ─── WHY THE MODEL DISAGREES (wide-gap Picks) ─────────────────────── */
+.why-disagrees {
+  margin: 24px 0 18px;
+  padding: 16px 20px;
+  background: var(--paper-warm); border-left: 3px solid var(--flame);
+}
+.why-disagrees h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--flame-deep);
+}
+.why-disagrees p {
+  margin: 0; font-family: var(--font-serif); font-size: 16px; line-height: 1.55;
+  color: var(--ink); max-width: 64ch;
+}
+
+/* ─── HOW THE DESK WORKS ───────────────────────────────────────────── */
+.how-desk {
+  margin: 24px 0 28px;
+  padding: 22px 22px 18px;
+  border-top: var(--hairline-strong); border-bottom: var(--hairline);
+  background: var(--paper-pure);
+}
+.how-desk .hd-title {
+  margin: 0 0 18px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--flame-deep);
+}
+.how-desk .hd-steps {
+  list-style: none; padding: 0; margin: 0;
+  display: grid; grid-template-columns: 1fr; gap: 14px;
+}
+@media (min-width: 720px) {
+  .how-desk .hd-steps { grid-template-columns: repeat(4, 1fr); gap: 22px; }
+}
+.how-desk .hd-steps li {
+  position: relative;
+  padding: 8px 0 8px 38px;
+  border-top: 2px solid var(--ink);
+}
+.how-desk .hd-num {
+  position: absolute; left: 0; top: 8px;
+  font-family: var(--font-sans); font-size: 22px; font-weight: 700;
+  color: var(--flame-deep); line-height: 1;
+}
+.how-desk .hd-steps h3 {
+  margin: 0 0 4px;
+  font-family: var(--font-sans); font-size: 14.5px; font-weight: 700;
+  letter-spacing: -0.005em; color: var(--ink);
+}
+.how-desk .hd-steps p {
+  margin: 0;
+  font-family: var(--font-serif); font-size: 14.5px; line-height: 1.45;
+  color: var(--graphite);
+}
+.how-desk .hd-thesis {
+  margin: 18px 0 0;
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 16px; line-height: 1.5; color: var(--ink-soft);
+  max-width: 60ch;
+  padding-top: 14px; border-top: var(--hairline);
+}
+
+/* ─── THE DESK POSITIONING BLOCK ───────────────────────────────────── */
+.the-desk-block {
+  margin: 32px 0 12px;
+  padding: 28px 0 28px;
+  border-top: var(--hairline-strong);
+}
+.the-desk-block .td-eyebrow {
+  margin: 0 0 8px;
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--flame-deep);
+}
+.the-desk-block .td-title {
+  margin: 0 0 14px;
+  font-family: var(--font-serif); font-weight: 600;
+  font-size: clamp(22px, 3.2vw, 30px); line-height: 1.15;
+  letter-spacing: -0.012em; color: var(--ink);
+  max-width: 28ch; text-wrap: balance;
+}
+.the-desk-block .td-lede {
+  margin: 0 0 12px;
+  font-family: var(--font-serif); font-size: 17px; line-height: 1.55;
+  color: var(--ink); max-width: 60ch;
+}
+.the-desk-block .td-body {
+  margin: 0;
+  font-family: var(--font-serif); font-size: 15.5px; line-height: 1.55;
+  color: var(--graphite); max-width: 60ch;
+}
+
+/* ─── HOMEPAGE HERO SECONDARY STANDFIRST ───────────────────────────── */
+.hero .standfirst-secondary {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: clamp(15px, 1.5vw, 17px); line-height: 1.5;
+  color: var(--ink-soft);
+  margin: 10px 0 0; max-width: 56ch;
+}
+
+/* ─── MOBILE WHITESPACE TIGHTENING ─────────────────────────────────── */
+@media (max-width: 720px) {
+  .hero { padding: 22px 0 14px; }
+  .hero h1 { font-size: clamp(28px, 8vw, 38px); margin-bottom: 8px; }
+  .hero .standfirst { font-size: 15.5px; margin-top: 8px; }
+  .hero .standfirst-secondary { font-size: 14px; margin-top: 6px; }
+  .how-desk { padding: 16px 14px 14px; margin: 16px 0 18px; }
+  .how-desk .hd-steps { gap: 10px; }
+  .how-desk .hd-steps li { padding: 6px 0 6px 32px; }
+  .the-desk-block { padding: 20px 0 18px; margin: 20px 0 8px; }
+  .the-desk-block .td-title { font-size: 22px; }
+  .trust-strip { gap: 4px 12px; font-size: 10.5px; padding: 6px 0; }
+  .event-disclaimer { font-size: 11px; margin: 8px 0 14px; }
+}
+
 /* ─── NEWSLETTER FOOTER SIGNUP ─────────────────────────────────────
    Sits above .site-foot. Dark navy block, on-ink text, single email
    field, stacks on mobile and goes inline at ≥600px. */
@@ -933,12 +1101,13 @@ GA_SNIPPET = """<!-- Google Analytics (gtag.js) — only loads on oddsprimer.com
 </script>"""
 
 
-def chrome_head(title: str, description: str = "", *, path: str = "/") -> str:
+def chrome_head(title: str, description: str = "", *, path: str = "/", extra_head: str = "") -> str:
     """Return the <head> section for any page.
 
     `path` is the absolute URL path of the page being rendered (used for the
     canonical / og:url tag). Defaults to "/" — render_match_page etc. should
-    pass their own path so shared links unfurl with the right URL."""
+    pass their own path so shared links unfurl with the right URL.
+    `extra_head` is injected verbatim before </head> (e.g. <meta name="robots">)."""
     desc = description or "Educational verdicts on Polymarket and Kalshi prices. Pick · Pass · Avoid."
     base = "https://oddsprimer.com"
     url = base + path
@@ -963,10 +1132,43 @@ def chrome_head(title: str, description: str = "", *, path: str = "/") -> str:
 <meta name="twitter:image" content="{escape(og_image)}">
 {FAVICON_LINKS}
 {GA_SNIPPET}
+{extra_head}
 <style>{CSS}</style>
 </head>
 <body>
 """
+
+
+def _relative_updated(iso: str | None) -> str:
+    """Render 'Updated N mins/hours/days ago' from an ISO timestamp."""
+    if not iso:
+        return "moments ago"
+    try:
+        dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+        delta = datetime.now(tz=timezone.utc) - dt
+        secs = int(delta.total_seconds())
+        if secs < 90:
+            return "moments ago"
+        mins = secs // 60
+        if mins < 60:
+            return f"{mins} min{'s' if mins != 1 else ''} ago"
+        hours = mins // 60
+        if hours < 24:
+            return f"{hours} hr{'s' if hours != 1 else ''} ago"
+        days = hours // 24
+        return f"{days} day{'s' if days != 1 else ''} ago"
+    except (ValueError, AttributeError):
+        return "moments ago"
+
+
+def _fmt_short_utc(iso: str | None) -> str:
+    if not iso:
+        return "—"
+    try:
+        dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+        return dt.strftime("%H:%M")
+    except (ValueError, AttributeError):
+        return "—"
 
 
 def _desk_last_refresh_utc() -> datetime | None:
@@ -1421,8 +1623,21 @@ def patch_editorial_pages(log=print) -> None:
 def chrome_footer() -> str:
     today = datetime.now(timezone.utc).strftime("%-d %b %Y")
     return f"""{newsletter_footer_block()}<footer class="site-foot page">
+  <div class="foot-trust">
+    <p class="ft-disclaimer">
+      Editorial analysis only. Odds Primer does not provide betting, investment, or financial advice.
+    </p>
+    <p class="ft-data">
+      <span class="ft-lbl">Data sources:</span>
+      Polymarket, Kalshi, public football data, internal model estimates.
+    </p>
+    <p class="ft-contact">
+      <span class="ft-lbl">Corrections &amp; contact:</span>
+      <a href="mailto:editor@oddsprimer.com">editor@oddsprimer.com</a>
+    </p>
+  </div>
   <div class="foot-row">
-    <span class="left">Odds Primer · educational, not advice</span>
+    <span class="left">Odds Primer · AI-assisted sports market intelligence</span>
     <span>The Desk · v1.1 · {today}</span>
   </div>
   <nav class="foot-nav" aria-label="Trust and editorial">
@@ -1778,11 +1993,11 @@ def market_cta(
         poly_caption, poly_kind = "See live market", "live"
 
     poly_pill = _cta_pill(
-        "View source on Polymarket", poly_url,
+        "View live market on Polymarket", poly_url,
         caption=poly_caption, caption_kind=poly_kind,
     )
     kalshi_pill = _cta_pill(
-        "View source on Kalshi", kalshi_url, placeholder=not kalshi_is_live,
+        "View live market on Kalshi", kalshi_url, placeholder=not kalshi_is_live,
         caption=kalshi_caption, caption_kind=kalshi_kind,
     )
     secondary = _read_case_link(detail_href) if detail_href else ""
@@ -1990,27 +2205,73 @@ def render_home(matches: list[dict], outrights: list[dict]) -> str:
     hero_html = (
         '<section class="hero">'
         '<h1>The 2026 World Cup, priced.</h1>'
-        '<p class="standfirst">Our model reads every World Cup price on Polymarket and Kalshi and '
-        'calls it: <em class="vlead">Pick</em>, <em class="vlead">Pass</em>, or '
-        '<em class="vlead">Avoid</em>. Today&rsquo;s headline verdict is below.</p>'
+        '<p class="standfirst">Odds Primer compares live prediction-market prices against an '
+        'independent AI football model and publishes a <em class="vlead">Pick</em>, '
+        '<em class="vlead">Pass</em>, or <em class="vlead">Avoid</em> verdict on every major '
+        'World Cup market.</p>'
+        '<p class="standfirst-secondary">Built for readers who want to understand the price — '
+        'not just follow it.</p>'
+        '</section>'
+    )
+
+    how_the_desk_works = (
+        '<section class="how-desk" aria-labelledby="how-desk-title">'
+        '<h2 id="how-desk-title" class="hd-title">How The Desk works</h2>'
+        '<ol class="hd-steps">'
+          '<li><span class="hd-num">1</span>'
+            '<h3>Market prices update</h3>'
+            '<p>Live snapshots from Polymarket and Kalshi.</p></li>'
+          '<li><span class="hd-num">2</span>'
+            '<h3>The model recalculates probabilities</h3>'
+            '<p>An independent football model rebuilds each side&rsquo;s number.</p></li>'
+          '<li><span class="hd-num">3</span>'
+            '<h3>The Desk compares market vs model</h3>'
+            '<p>Two reads, one fixture — the gap is the editorial signal.</p></li>'
+          '<li><span class="hd-num">4</span>'
+            '<h3>Pick / Pass / Avoid is published</h3>'
+            '<p>With the reasoning, the citations, and what would move it.</p></li>'
+        '</ol>'
+        '<p class="hd-thesis">The goal is not to predict everything. The goal is to identify '
+        'where market pricing and model conviction meaningfully diverge.</p>'
+        '</section>'
+    )
+
+    the_desk_block = (
+        '<section class="the-desk-block" aria-labelledby="the-desk-title">'
+        '<p class="td-eyebrow">The Desk</p>'
+        '<h2 id="the-desk-title" class="td-title">'
+        'An AI-assisted sports market intelligence engine.'
+        '</h2>'
+        '<p class="td-lede">'
+        'The Desk compares live prediction-market pricing against an independent football '
+        'model and publishes a verdict on every priced market it covers.'
+        '</p>'
+        '<p class="td-body">'
+        'The Desk does not chase every match. It looks for disagreement, overreaction, '
+        'uncertainty, and mispricing — and stays quiet when the line is already doing its '
+        'job.'
+        '</p>'
         '</section>'
     )
 
     return (
         chrome_head(
-            "Odds Primer · The 2026 World Cup, priced.",
+            "Odds Primer · AI-assisted sports market intelligence",
             description=(
-                "Verdicts on every World Cup price across Polymarket and Kalshi — "
-                "Pick, Pass, or Avoid, with the model's reasoning. We don't tip."
+                "Odds Primer compares live prediction-market prices against an independent "
+                "AI football model and publishes Pick, Pass, or Avoid verdicts on every "
+                "major World Cup market."
             ),
             path="/",
         )
         + chrome_masthead("home")
         + '<main class="page">'
         + hero_html
+        + how_the_desk_works
         + headline_html
         + verdict_key_html
         + other_picks_html
+        + the_desk_block
         + '</main>'
         + chrome_footer()
     )
@@ -2121,7 +2382,6 @@ def render_match_page(match: dict) -> str:
     citations = match["copy"].get("editorial_citations") or []
     v = match["verdict"]
 
-    # Build the blurb paragraphs (single string for now; split on \n\n if multi-para)
     blurb_paras = "\n".join(f"<p>{escape(p)}</p>" for p in blurb.split("\n\n") if p.strip())
 
     drivers_html = ""
@@ -2131,6 +2391,32 @@ def render_match_page(match: dict) -> str:
 
     sources_html = _render_sources_block(citations)
 
+    # ── Trust strip: updated/model-refresh/market-snapshot timestamps ──
+    updated_at = match.get("updated_at") or ""
+    rel_updated = _relative_updated(updated_at)
+    model_refresh = _fmt_short_utc(updated_at)
+    trust_strip = (
+        '<section class="trust-strip" aria-label="Data freshness">'
+        f'<span class="ts-item"><span class="ts-lbl">Updated</span> {escape(rel_updated)}</span>'
+        f'<span class="ts-item"><span class="ts-lbl">Model refresh</span> {escape(model_refresh)} UTC</span>'
+        f'<span class="ts-item"><span class="ts-lbl">Market snapshot</span> live</span>'
+        '</section>'
+    )
+
+    # ── Editorial disclaimer beneath the verdict ──
+    disclaimer_html = (
+        '<p class="event-disclaimer">'
+        'Editorial analysis only. Odds Primer does not provide betting or financial advice.'
+        '</p>'
+    )
+
+    # Determine if this is a thin / no-verdict page → noindex it.
+    has_real_verdict = bool(
+        v and v.get("state") in ("pick", "pass", "avoid")
+        and (blurb or summary)
+    )
+    extra_head = "" if has_real_verdict else '<meta name="robots" content="noindex">'
+
     market_url = v.get("market_url")
     venue_name = (v.get("market_venue") or "").title()
     cta_row = ""
@@ -2138,9 +2424,37 @@ def render_match_page(match: dict) -> str:
         cta_row = (
             '<div class="cta-row">'
             f'<a class="open-market" href="{escape(market_url)}" rel="nofollow noopener" target="_blank">'
-            f'View source on {escape(venue_name) if venue_name else "the market"} <span class="arr">↗</span></a>'
-            '<span class="meta-note">Odds Primer is editorial. Trades happen at the venue, not here.</span>'
+            f'View live market on {escape(venue_name) if venue_name else "the source"} <span class="arr">↗</span></a>'
+            '<span class="meta-note">Editorial citation only. Odds Primer does not place trades.</span>'
             '</div>'
+        )
+
+    # "Why the model disagrees" — mandatory on wide-gap Picks where the
+    # gap from the market is unusually large (≥10pp or model > 3× market).
+    why_disagrees_html = ""
+    edge_pp = (v or {}).get("edge_pp")
+    model_p = (v or {}).get("model_p")
+    market_p = (v or {}).get("market_p")
+    if v and v.get("state") == "pick" and edge_pp is not None and edge_pp >= 10:
+        ratio_note = ""
+        if model_p and market_p and market_p > 0 and (model_p / market_p) >= 2.5:
+            ratio_note = (
+                f" The model rates this side at roughly "
+                f"{round(model_p / market_p, 1)}× the market's number."
+            )
+        why_disagrees_html = (
+            '<section class="why-disagrees">'
+            '<h2>Why the model disagrees</h2>'
+            '<p>'
+            f'A gap this wide ({fmt_edge(edge_pp)}) usually means one of the '
+            'following: a reputation-led short price the model isn\'t pricing in, '
+            'a stale line that hasn\'t absorbed recent fitness or lineup news, '
+            'a tactical or defensive profile that doesn\'t match the headline form, '
+            'or a market lag on travel, altitude, or weather. The drivers below show '
+            'which of these the engine is weighing on this fixture.'
+            f'{ratio_note}'
+            '</p>'
+            '</section>'
         )
 
     return (
@@ -2148,6 +2462,7 @@ def render_match_page(match: dict) -> str:
             f"{title} · Odds Primer",
             description=summary or f"Verdict, model probability, market probability, and the read on {title}.",
             path=f"/m/{match['match_id']}",
+            extra_head=extra_head,
         )
         + chrome_masthead("matches")
         + '<main class="page">'
@@ -2155,9 +2470,12 @@ def render_match_page(match: dict) -> str:
           '<a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a>'
           f'<h1>{escape(title)}</h1>'
           '</section>'
+        + trust_strip
         + render_card(match, is_lead=True, show_read_case=False)
+        + disclaimer_html
         + (f'<div class="blurb">{blurb_paras}</div>' if blurb_paras else "")
         + cta_row
+        + why_disagrees_html
         + drivers_html
         + sources_html
         + '<aside class="voice">'
@@ -2309,8 +2627,8 @@ def render_outright_page(outright: dict) -> str:
         cta_row = (
             '<div class="cta-row">'
             f'<a class="open-market" href="{escape(market_url)}" rel="nofollow noopener" target="_blank">'
-            f'View source on {escape(venue_name) if venue_name else "the market"} <span class="arr">↗</span></a>'
-            '<span class="meta-note">Odds Primer is editorial. Trades happen at the venue, not here.</span>'
+            f'View live market on {escape(venue_name) if venue_name else "the source"} <span class="arr">↗</span></a>'
+            '<span class="meta-note">Editorial citation only. Odds Primer does not place trades.</span>'
             '</div>'
         )
 
