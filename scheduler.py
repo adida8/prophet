@@ -24,6 +24,19 @@ from services.market_aggregator import compute_stats, compute_platform_stats, bu
 log = logging.getLogger("prophet.scheduler")
 
 
+def _redact(msg: str) -> str:
+    """Drop the message entirely if it contains a PEM block.
+
+    Defends against a misconfigured KALSHI_PRIVATE_KEY_PATH (set to the
+    PEM contents instead of a path): the resulting FileNotFoundError's
+    `str(e)` includes the failed "filename" — i.e. the whole key —
+    verbatim. We'd rather lose the diagnostic than leak a key.
+    """
+    if "-----BEGIN" in msg:
+        return "<redacted: error message contained a PEM block>"
+    return msg
+
+
 class Scheduler:
     def __init__(self, broadcast_fn: Optional[Callable] = None):
         self._kalshi      = KalshiClient()
@@ -173,7 +186,7 @@ class Scheduler:
                     break
             return markets
         except Exception as e:
-            log.warning("Kalshi fetch error: %s", e)
+            log.warning("Kalshi fetch error: %s", _redact(str(e)))
             return []
 
     async def _fetch_polymarket(self) -> list[dict]:

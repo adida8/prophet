@@ -14,6 +14,15 @@ import config
 
 def _load_private_key(path: Path):
     """Load an RSA private key from a PEM file."""
+    # Guard against KALSHI_PRIVATE_KEY_PATH being configured with the PEM
+    # contents instead of a filesystem path. Without this, read_bytes()
+    # raises FileNotFoundError whose str() contains the whole "filename"
+    # (i.e. the key) verbatim, which then gets logged.
+    if "-----BEGIN" in str(path):
+        raise RuntimeError(
+            "KALSHI_PRIVATE_KEY_PATH appears to contain inline PEM content "
+            "rather than a path to a file. Set it to a filesystem path."
+        )
     pem_data = path.read_bytes()
     return serialization.load_pem_private_key(pem_data, password=None)
 
