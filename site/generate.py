@@ -2998,7 +2998,6 @@ _SITEMAP_STATIC = [
     ("/",                     "index.html",          "1.0", "hourly"),
     ("/matches",              "matches/index.html",  "0.9", "hourly"),
     ("/about",                "about.html",          "0.4", "monthly"),
-    ("/learn",                "learn.html",          "0.6", "weekly"),
     ("/method",               "method.html",         "0.5", "monthly"),
     ("/methodology",          "methodology.html",    "0.5", "monthly"),
     ("/responsible-use",      "responsible-use.html","0.3", "yearly"),
@@ -3007,6 +3006,22 @@ _SITEMAP_STATIC = [
     ("/terms",                "terms.html",          "0.2", "yearly"),
     ("/privacy",              "privacy.html",        "0.2", "yearly"),
     ("/cookies",              "cookies.html",        "0.2", "yearly"),
+]
+
+# SPA-owned, server-routed via SPA_PREFIXES (server.py). No backing static
+# file — content lives in frontend/src/op/. Listed here so the sitemap
+# advertises them; ranking still depends on the SPA being indexable
+# (per-route titles + meta live in OpApp.jsx's META map).
+_SITEMAP_SPA = [
+    # (url path, priority, changefreq)
+    ("/world-cup",                      "0.9", "hourly"),
+    ("/learn",                          "0.6", "weekly"),
+    ("/learn/what-is-a-prediction-market", "0.5", "monthly"),
+    ("/learn/how-prices-are-set",          "0.5", "monthly"),
+    ("/learn/is-it-legal",                 "0.5", "monthly"),
+    ("/learn/is-kalshi-legit",             "0.5", "monthly"),
+    ("/learn/prediction-market-fees",      "0.5", "monthly"),
+    ("/learn/how-to-start",                "0.5", "monthly"),
 ]
 
 
@@ -3040,6 +3055,9 @@ def render_sitemap(matches: list[dict]) -> str:
     for path, rel, priority, changefreq in _SITEMAP_STATIC:
         if (SITE_OUT / rel).is_file():
             add(BASE_URL + path, today, priority, changefreq)
+
+    for path, priority, changefreq in _SITEMAP_SPA:
+        add(BASE_URL + path, today, priority, changefreq)
 
     for m in matches:
         if not _match_is_indexable(m):

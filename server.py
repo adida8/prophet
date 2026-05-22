@@ -416,8 +416,12 @@ if (SITE_PUBLIC / "index.html").exists():
         return _site_not_found()
 
     # ── Editorial / trust pages (sourced from handover-v4) ────────────
+    # `learn` and `world-cup` are intentionally absent: the React SPA owns
+    # both (see SPA_PREFIXES below). The static `site/public/learn.html`
+    # is the older long-form layout — kept as a fossil but no longer
+    # routed, so the SPA's LearnIndex + primer tree owns /learn end-to-end.
     _EDITORIAL_PAGES = (
-        "about", "learn",
+        "about",
         "method", "methodology",
         "responsible-use", "affiliate-disclosure", "corrections",
         "terms", "privacy", "cookies",
@@ -480,7 +484,7 @@ if (SITE_PUBLIC / "index.html").exists():
 
 FRONTEND_DIST = Path(__file__).parent / "frontend" / "dist"
 
-SPA_PREFIXES = ("/ledger", "/desk", "/dashboard")
+SPA_PREFIXES = ("/ledger", "/desk", "/dashboard", "/world-cup", "/learn")
 
 
 def _is_spa_path(path: str) -> bool:
