@@ -8,7 +8,6 @@ import BrandLock from "./BrandLock";
 
 const NAV_ITEMS = [
   { label: "Today",      href: "/#today",      external: false, matchPath: "/" },
-  { label: "Outrights",  href: "/#outrights",  external: false, matchPath: "/" },
   { label: "World Cup",  href: "/world-cup",   external: false, matchPath: "/world-cup" },
   { label: "Learn",      href: "/learn",       external: false, matchPath: "/learn" },
   { label: "About",      href: "/about",       external: false, matchPath: "/about" },

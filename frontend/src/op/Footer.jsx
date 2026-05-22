@@ -8,14 +8,13 @@ import FooterSignup from "./FooterSignup";
 
 const FOOT_LINKS = {
   read: [
-    { label: "Matches",   href: "/matches",   kind: "external" },
-    { label: "Outrights", href: "/outrights", kind: "external" },
-    { label: "Learn",     href: "/learn",     kind: "internal" },
+    { label: "Matches", href: "/matches", kind: "external" },
+    { label: "Learn",   href: "/learn",   kind: "internal" },
   ],
   about: [
-    { label: "Our method",          href: "/methodology",                kind: "external" },
-    { label: "How to read a price", href: "/learn/how-prices-are-set",   kind: "internal" },
-    { label: "Contact",             href: "mailto:hello@oddsprimer.com", kind: "external" },
+    { label: "Our method",          href: "/methodology",                  kind: "external" },
+    { label: "How to read a price", href: "/learn/how-prices-are-set",     kind: "internal" },
+    { label: "Contact",             href: "mailto:editor@oddsprimer.com",  kind: "external" },
   ],
 };
 

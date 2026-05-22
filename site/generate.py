@@ -1211,7 +1211,6 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
       <ul>
         <li><a href="/"{cur('home')}>Home</a></li>
         <li><a href="/matches/"{cur('matches')}>Upcoming matches</a></li>
-        <li><a href="/outrights/"{cur('outrights')}>Outright winners</a></li>
         <li><a href="/methodology"{cur('methodology')}>The Desk</a></li>
         <li><a href="/learn"{cur('learn')}>Learn</a></li>
         <li><a href="/about"{cur('about')}>About</a></li>
@@ -1229,7 +1228,6 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
       <ul class="burger-menu">
         <li><a href="/"{cur('home')}>Home</a></li>
         <li><a href="/matches/"{cur('matches')}>Upcoming matches</a></li>
-        <li><a href="/outrights/"{cur('outrights')}>Outright winners</a></li>
         <li><a href="/methodology"{cur('methodology')}>The Desk</a></li>
         <li><a href="/learn"{cur('learn')}>Learn</a></li>
         <li><a href="/about"{cur('about')}>About</a></li>
@@ -1249,7 +1247,6 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
 <nav class="pill-nav" aria-label="Primary (mobile)">
   <a href="/"{cur('home')}>Home</a>
   <a href="/matches/"{cur('matches')}>Matches</a>
-  <a href="/outrights/"{cur('outrights')}>Winners</a>
   <a href="/methodology"{cur('methodology')}>The Desk</a>
   <a href="/learn"{cur('learn')}>Learn</a>
   <a href="/about"{cur('about')}>About</a>
@@ -1548,7 +1545,8 @@ EDITORIAL_PAGES = (
 
 def patch_editorial_pages(log=print) -> None:
     """Inject (or strip) the newsletter pop-up + footer signup in every
-    hand-written editorial HTML file under site/public/.
+    hand-written editorial HTML file under site/public/, and rewrite the
+    legacy inline nav (primary, burger, pill-nav) to match chrome_masthead.
 
     Idempotent: each injection is wrapped in HTML-comment markers so a
     re-run strips the previous insertion and rewrites it from the
@@ -1576,6 +1574,55 @@ def patch_editorial_pages(log=print) -> None:
             "", html, flags=re.DOTALL,
         )
 
+    # Canonical nav contents (must match chrome_masthead order). We rewrite
+    # the legacy editorial pages' inline nav blocks to these so the pill
+    # nav + burger menu + primary nav all stay in sync with the live chrome.
+    legacy_site_nav_ul = (
+        '\n          <li><a href="/">Home</a></li>'
+        '\n          <li><a href="/matches/">Upcoming matches</a></li>'
+        '\n          <li><a href="/methodology">The Desk</a></li>'
+        '\n          <li><a href="/learn">Learn</a></li>'
+        '\n          <li><a href="/about">About</a></li>'
+        '\n        '
+    )
+    legacy_burger_ul = (
+        '\n          <li><a href="/">Home</a></li>'
+        '\n          <li><a href="/matches/">Upcoming matches</a></li>'
+        '\n          <li><a href="/methodology">The Desk</a></li>'
+        '\n          <li><a href="/learn">Learn</a></li>'
+        '\n          <li><a href="/about">About</a></li>'
+        '\n          <li><a href="/responsible-use">Responsible use</a></li>'
+        '\n          <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>'
+        '\n          <li><a href="/corrections">Corrections</a></li>'
+        '\n        '
+    )
+    legacy_pill_inner = (
+        '\n      <a href="/matches/">Matches</a>'
+        '\n      <a href="/methodology">The Desk</a>'
+        '\n      <a href="/learn">Learn</a>'
+        '\n      <a href="/about">About</a>'
+        '\n    '
+    )
+
+    _SITE_NAV_RE = re.compile(
+        r'(<nav class="site-nav"[^>]*>\s*<ul>)(.*?)(</ul>\s*</nav>)',
+        flags=re.DOTALL,
+    )
+    _BURGER_RE = re.compile(
+        r'(<ul class="burger-menu">)(.*?)(</ul>)',
+        flags=re.DOTALL,
+    )
+    _PILL_RE = re.compile(
+        r'(<nav class="pill-nav"[^>]*>)(.*?)(</nav>)',
+        flags=re.DOTALL,
+    )
+
+    # Strip the "Outright winners" link from the hand-authored .foot-col
+    # editorial column on legacy editorial pages.
+    _FOOT_OUTRIGHT_RE = re.compile(
+        r'\n\s*<li><a href="/outrights/?">Outright winners</a></li>',
+    )
+
     n_patched = 0
     for name in EDITORIAL_PAGES:
         path = SITE_OUT / f"{name}.html"
@@ -1583,6 +1630,21 @@ def patch_editorial_pages(log=print) -> None:
             continue
         html = path.read_text()
         before = html
+
+        # Rewrite the legacy nav blocks to match chrome_masthead.
+        html = _SITE_NAV_RE.sub(
+            lambda m: m.group(1) + legacy_site_nav_ul + m.group(3),
+            html, count=1,
+        )
+        html = _BURGER_RE.sub(
+            lambda m: m.group(1) + legacy_burger_ul + m.group(3),
+            html, count=1,
+        )
+        html = _PILL_RE.sub(
+            lambda m: m.group(1) + legacy_pill_inner + m.group(3),
+            html, count=1,
+        )
+        html = _FOOT_OUTRIGHT_RE.sub("", html)
 
         # Always strip any previous injection so re-runs don't double up.
         html = strip_between(html, css_start,  css_end)
@@ -2750,16 +2812,22 @@ def main():
         (SITE_OUT / "m" / f"{m['match_id']}.html").write_text(render_match_page(m))
     log(f"Wrote          : {len(matches)} match page(s) in m/")
 
-    # Outrights index
-    (SITE_OUT / "outrights" / "index.html").write_text(render_outrights_index(outrights))
-    log("Wrote          : outrights/index.html")
-
-    # Per-outright pages
-    for o in outrights:
-        oid = o["outright_id"]
-        (SITE_OUT / "o" / f"{oid}.html").write_text(render_outright_page(o))
-    if outrights:
-        log(f"Wrote          : {len(outrights)} outright page(s) in o/")
+    # Outrights pages are hidden until the engine has a tournament-winner
+    # market that produces a real Pick / Avoid. Delete any previously-built
+    # /outrights/index.html and /o/*.html so search engines stop indexing
+    # the "Pass" placeholder and the server falls through to the 404.
+    out_idx = SITE_OUT / "outrights" / "index.html"
+    if out_idx.exists():
+        out_idx.unlink()
+        log("Removed        : outrights/index.html (hidden until a real verdict lands)")
+    o_dir = SITE_OUT / "o"
+    n_removed = 0
+    if o_dir.is_dir():
+        for stale in o_dir.glob("*.html"):
+            stale.unlink()
+            n_removed += 1
+    if n_removed:
+        log(f"Removed        : {n_removed} stale outright page(s) in o/")
 
     # Hand-written editorial pages live under site/public/ as flat HTML;
     # the generator doesn't rewrite them, but it does inject (or strip)

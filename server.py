@@ -401,23 +401,19 @@ if (SITE_PUBLIC / "index.html").exists():
         match_id = match_id.removesuffix("/").removesuffix(".html")
         return _serve_site(f"m/{match_id}.html")
 
+    # Outright pages are hidden from the public site until a tournament-
+    # winner market produces a real Pick / Avoid. Every /outrights and
+    # /o/{id} request falls through to the on-brand 404 page.
     @app.get("/outrights", include_in_schema=False)
     @app.get("/outrights/", include_in_schema=False)
-    async def site_outrights():
-        return _serve_site("outrights/index.html")
-
-    @app.get("/o/{outright_id}", include_in_schema=False)
-    async def site_outright(outright_id: str):
-        outright_id = outright_id.removesuffix("/").removesuffix(".html")
-        return _serve_site(f"o/{outright_id}.html")
-
-    # Stable shortlinks for the launch outright. `/outrights/wc26` is
-    # the URL we cite externally; it lands on the same rendered page as
-    # `/o/fb-wc26-winner`.
     @app.get("/outrights/wc26", include_in_schema=False)
     @app.get("/outrights/wc26/", include_in_schema=False)
-    async def site_outright_wc26():
-        return _serve_site("o/fb-wc26-winner.html")
+    async def site_outrights():
+        return _site_not_found()
+
+    @app.get("/o/{outright_id}", include_in_schema=False)
+    async def site_outright(outright_id: str):  # noqa: ARG001
+        return _site_not_found()
 
     # ── Editorial / trust pages (sourced from handover-v4) ────────────
     _EDITORIAL_PAGES = (
