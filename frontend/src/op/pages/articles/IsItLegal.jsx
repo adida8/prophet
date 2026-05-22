@@ -12,11 +12,11 @@ export default function IsItLegal({ navigate, currentPath }) {
       title="Is it legal?"
       standfirst="Mostly yes, in the United States, with state-by-state caveats. We're not lawyers — but we've read the rules, and here's what you need to know before you open an account anywhere."
       meta="The Editors · 12 May 2026 · 4 min read"
-      editionLeft="Learn · 03 of 03"
+      editionLeft="Learn · 03 of 06"
       editionRight="4 min read"
-      nextHref="/#today"
-      nextLabel="See today's board"
-      nextDescription="You've finished the primers"
+      nextHref="/learn/is-kalshi-legit"
+      nextLabel="Is Kalshi legit?"
+      nextDescription="Next up · 04"
     >
       <p>
         Three different legal frames apply to the venues we cover. They each

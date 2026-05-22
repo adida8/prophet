@@ -18,7 +18,7 @@ export default function WhatIsAPredictionMarket({ navigate, currentPath }) {
         </>
       }
       meta="The Editors · 12 May 2026 · 3 min read"
-      editionLeft="Learn · 01 of 03"
+      editionLeft="Learn · 01 of 06"
       editionRight="3 min read"
       nextHref="/learn/how-prices-are-set"
       nextLabel="How are prices set?"

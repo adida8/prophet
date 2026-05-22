@@ -11,7 +11,7 @@
   "market_url": "https://polymarket.com/event/2026-fifa-world-cup-winner-595",
   "candidate": "—",
   "resolves_at": "2026-07-20T00:00:00Z",
-  "asof": "2026-05-21T20:49:03.343525Z",
+  "asof": "2026-05-22T10:36:29.627854Z",
   "verdict": {
     "state": "pass",
     "candidate": null
@@ -30,7 +30,7 @@
     "sims": 10000,
     "bootstrap_samples": 100,
     "seed": 42,
-    "overround_pp": 3.8
+    "overround_pp": 3.7
   },
   "ladder": [
     {
@@ -206,12 +206,12 @@
       "model_p": 0.0137,
       "model_p_lower": 0.004,
       "model_p_upper": 0.024,
-      "yes_market_p": 0.0105,
-      "no_market_p": 0.9895,
-      "yes_edge_pp": 0.32,
-      "no_edge_pp": -0.32,
-      "yes_lower_edge_pp": -0.65,
-      "no_lower_edge_pp": -1.35,
+      "yes_market_p": 0.0095,
+      "no_market_p": 0.9905,
+      "yes_edge_pp": 0.42,
+      "no_edge_pp": -0.42,
+      "yes_lower_edge_pp": -0.55,
+      "no_lower_edge_pp": -1.45,
       "verdict": "pass",
       "pick_side": null
     },
@@ -290,12 +290,12 @@
       "model_p": 0.005,
       "model_p_lower": 0.001,
       "model_p_upper": 0.012,
-      "yes_market_p": 0.0175,
-      "no_market_p": 0.9825,
-      "yes_edge_pp": -1.25,
-      "no_edge_pp": 1.25,
-      "yes_lower_edge_pp": -1.65,
-      "no_lower_edge_pp": 0.55,
+      "yes_market_p": 0.0185,
+      "no_market_p": 0.9815,
+      "yes_edge_pp": -1.35,
+      "no_edge_pp": 1.35,
+      "yes_lower_edge_pp": -1.75,
+      "no_lower_edge_pp": 0.65,
       "verdict": "pass",
       "pick_side": null
     },
@@ -594,6 +594,20 @@
       "pick_side": null
     },
     {
+      "team": "Haiti",
+      "model_p": 0.0,
+      "model_p_lower": 0.0,
+      "model_p_upper": 0.0,
+      "yes_market_p": 0.0005,
+      "no_market_p": 0.9995,
+      "yes_edge_pp": -0.05,
+      "no_edge_pp": 0.05,
+      "yes_lower_edge_pp": -0.05,
+      "no_lower_edge_pp": 0.05,
+      "verdict": "pass",
+      "pick_side": null
+    },
+    {
       "team": "New Zealand",
       "model_p": 0.0,
       "model_p_lower": 0.0,
@@ -604,20 +618,6 @@
       "no_edge_pp": 0.15,
       "yes_lower_edge_pp": -0.15,
       "no_lower_edge_pp": 0.05,
-      "verdict": "pass",
-      "pick_side": null
-    },
-    {
-      "team": "Haiti",
-      "model_p": 0.0,
-      "model_p_lower": 0.0,
-      "model_p_upper": 0.0,
-      "yes_market_p": 0.0015,
-      "no_market_p": 0.9985,
-      "yes_edge_pp": -0.15,
-      "no_edge_pp": 0.15,
-      "yes_lower_edge_pp": -0.15,
-      "no_lower_edge_pp": 0.15,
       "verdict": "pass",
       "pick_side": null
     },
@@ -706,5 +706,5 @@
       "pick_side": null
     }
   ],
-  "updated_at": "2026-05-21T20:49:16.483051Z"
+  "updated_at": "2026-05-22T10:36:42.863712Z"
 }

@@ -25,6 +25,27 @@ const PRIMERS = [
     deck:   "It depends on where you live and which venue you use. A state-by-state read on Kalshi, Polymarket, and the sportsbook-run prediction products — without the lawyer-pretending tone.",
     href:   "/learn/is-it-legal",
   },
+  {
+    num:    "04",
+    meta:   "4 min read · Trust + safety",
+    title:  "Is Kalshi legit and safe?",
+    deck:   "Yes — it's a CFTC-regulated US exchange, not an offshore app. What 'regulated' actually buys you, and where the genuine risk still sits.",
+    href:   "/learn/is-kalshi-legit",
+  },
+  {
+    num:    "05",
+    meta:   "4 min read · The costs",
+    title:  "What are the fees?",
+    deck:   "Small per trade, easy to ignore, and exactly why they add up. How Polymarket and Kalshi charge — and why the fee quietly changes your break-even.",
+    href:   "/learn/prediction-market-fees",
+  },
+  {
+    num:    "06",
+    meta:   "5 min read · Your first trade",
+    title:  "How do I start?",
+    deck:   "Five steps from never-done-this to a placed trade you understand. Pick a legal venue, verify, fund small, read the price, and go.",
+    href:   "/learn/how-to-start",
+  },
 ];
 
 export default function LearnIndex({ navigate, currentPath }) {
@@ -51,18 +72,18 @@ export default function LearnIndex({ navigate, currentPath }) {
         variant="minimal"
         currentPath={currentPath}
         navigate={navigate}
-        navMeta="Three primers · 12 min total"
+        navMeta="Six primers · 25 min total"
         editionLeft="Learn · The basics"
-        editionRight="Updated 12 May 2026"
+        editionRight="Updated 22 May 2026"
       />
 
       <main className="page">
         <section className="learn-hero">
           <div className="learn-eyebrow">Learn · Volume 1</div>
-          <h1>Three short reads, and you'll know how to read the rest of the site.</h1>
+          <h1>Six short reads, and you'll know how to read the rest of the site.</h1>
           <p className="standfirst">
             You don't need a finance background to read a prediction market — you need
-            about twelve minutes and a willingness to think in percentages instead of
+            about twenty-five minutes and a willingness to think in percentages instead of
             slogans. Start with the first; the others are stand-alone.
           </p>
         </section>

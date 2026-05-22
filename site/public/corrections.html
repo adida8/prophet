@@ -584,7 +584,7 @@ body.op-noscroll { overflow: hidden; }
       <label class="visually-hidden" for="op-news-email">Email address</label>
       <input type="email" name="EMAIL" id="op-news-email" placeholder="you@email.com" required autocomplete="email">
       <div class="op-news__hp" aria-hidden="true">
-        <input type="text" name="b_5639b505d384d746edb6af404_51ee011415" tabindex="-1" value="" autocomplete="off">
+        <input type="text" name="op_company" tabindex="-1" value="" autocomplete="off">
       </div>
       <button type="submit">Get the primer</button>
       <p class="op-news__error" id="op-news-error" role="alert" hidden></p>
@@ -693,7 +693,7 @@ body.op-noscroll { overflow: hidden; }
         <label class="op-popup__field-label" for="op-popup-email">Email address</label>
         <input class="op-popup__input" type="email" name="EMAIL" id="op-popup-email" placeholder="you@email.com" required autocomplete="email">
         <div class="op-popup__hp" aria-hidden="true">
-          <input type="text" name="b_5639b505d384d746edb6af404_51ee011415" tabindex="-1" value="" autocomplete="off">
+          <input type="text" name="op_company" tabindex="-1" value="" autocomplete="off">
         </div>
         <button class="op-popup__btn" type="submit" id="op-popup-submit">Get the weekly primer</button>
         <p class="op-popup__error" id="op-popup-error" role="alert" hidden></p>
@@ -706,8 +706,8 @@ body.op-noscroll { overflow: hidden; }
 </div>
 <script>
 (function () {
-  var FORM_ACTION = "https://oddsprimer.us2.list-manage.com/subscribe/post?u=5639b505d384d746edb6af404&id=51ee011415";
-  var HONEYPOT    = "b_5639b505d384d746edb6af404_51ee011415";
+  var ENDPOINT = "/api/subscribe";
+  var HONEYPOT = "op_company";
 
   var POPUP_DELAY_MS    = 50000;
   var HIGH_INTENT_MS    = 15000;
@@ -793,30 +793,18 @@ body.op-noscroll { overflow: hidden; }
   document.getElementById('op-popup-decline').addEventListener('click', function () { close('dismissed', DISMISS_DAYS); });
   popup.addEventListener('click', function (e) { if (e.target === popup) close('dismissed', DISMISS_DAYS); });
 
-  // ── submit via Mailchimp JSON-P ──
+  // ── submit via backend → SendX ──
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     if (submitEl.disabled) return;
     var email = (emailEl.value || '').trim();
     if (!email) return;
+    var hpEl = form.querySelector('input[name="' + HONEYPOT + '"]');
+    var hp = hpEl ? (hpEl.value || '') : '';
     submitEl.disabled = true;
     submitEl.textContent = 'Sending';
     errEl.hidden = true;
 
-    var cb = 'op_mc_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
-    var script = null;
-    var settled = false;
-    var to = setTimeout(function () {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      fail('That took longer than expected. Please try again.');
-    }, 10000);
-
-    function cleanup() {
-      if (script && script.parentNode) script.parentNode.removeChild(script);
-      try { delete window[cb]; } catch (_e) { window[cb] = undefined; }
-    }
     function fail(msg) {
       submitEl.disabled = false;
       submitEl.textContent = 'Get the weekly primer';
@@ -829,40 +817,34 @@ body.op-noscroll { overflow: hidden; }
       writeStored('subscribed', SUBSCRIBED_DAYS);
     }
 
-    window[cb] = function (resp) {
-      if (settled) return;
-      settled = true;
-      clearTimeout(to);
-      cleanup();
-      if (resp && resp.result === 'success') { ok(); return; }
-      var raw = (resp && resp.msg) ? String(resp.msg) : '';
-      var cleaned = raw.replace(/^\d+\s*-\s*/, '').replace(/<[^>]+>/g, '').trim();
-      fail(cleaned);
-    };
+    var ctrl = new AbortController();
+    var to = setTimeout(function () { ctrl.abort(); }, 10000);
 
-    var base = FORM_ACTION.indexOf('/post-json?') !== -1 ? FORM_ACTION : FORM_ACTION.replace('/post?', '/post-json?');
-    var joiner = base.indexOf('?') !== -1 ? '&' : '?';
-    var url = base + joiner + 'EMAIL=' + encodeURIComponent(email)
-      + '&' + encodeURIComponent(HONEYPOT) + '='
-      + '&c=' + cb;
-    script = document.createElement('script');
-    script.src = url;
-    script.async = true;
-    script.onerror = function () {
-      if (settled) return;
-      settled = true;
+    fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, hp: hp }),
+      signal: ctrl.signal
+    }).then(function (resp) {
       clearTimeout(to);
-      cleanup();
-      fail('Could not reach the newsletter service. Please try again.');
-    };
-    document.body.appendChild(script);
+      if (resp.ok) { ok(); return; }
+      return resp.json().catch(function () { return {}; }).then(function (data) {
+        if (resp.status === 429) fail("You're going a little fast — try again in a moment.");
+        else fail((data && data.detail) ? data.detail : 'Something went wrong. Please try again.');
+      });
+    }).catch(function (err) {
+      clearTimeout(to);
+      fail(err && err.name === 'AbortError'
+        ? 'That took longer than expected. Please try again.'
+        : 'Could not reach the newsletter service. Please try again.');
+    });
   });
 })();
 </script>
 <script>
 (function () {
-  var FORM_ACTION = "https://oddsprimer.us2.list-manage.com/subscribe/post?u=5639b505d384d746edb6af404&id=51ee011415";
-  var HONEYPOT    = "b_5639b505d384d746edb6af404_51ee011415";
+  var ENDPOINT = "/api/subscribe";
+  var HONEYPOT = "op_company";
   var SUBSCRIBED_DAYS = 365;
   var STORAGE_KEY     = 'op_newsletter_popup';
 
@@ -882,24 +864,13 @@ body.op-noscroll { overflow: hidden; }
     if (submitEl.disabled) return;
     var email = (emailEl.value || '').trim();
     if (!email) return;
+    var hpEl = form.querySelector('input[name="' + HONEYPOT + '"]');
+    var hp = hpEl ? (hpEl.value || '') : '';
     submitEl.disabled = true;
     var origLabel = submitEl.textContent;
     submitEl.textContent = 'Sending';
     errEl.hidden = true;
 
-    var cb = 'op_mcf_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
-    var script = null;
-    var settled = false;
-    var to = setTimeout(function () {
-      if (settled) return;
-      settled = true; cleanup();
-      fail('That took longer than expected. Please try again.');
-    }, 10000);
-
-    function cleanup() {
-      if (script && script.parentNode) script.parentNode.removeChild(script);
-      try { delete window[cb]; } catch (_e) { window[cb] = undefined; }
-    }
     function fail(msg) {
       submitEl.disabled = false;
       submitEl.textContent = origLabel;
@@ -912,29 +883,27 @@ body.op-noscroll { overflow: hidden; }
       writeStored('subscribed', SUBSCRIBED_DAYS);
     }
 
-    window[cb] = function (resp) {
-      if (settled) return;
-      settled = true; clearTimeout(to); cleanup();
-      if (resp && resp.result === 'success') { ok(); return; }
-      var raw = (resp && resp.msg) ? String(resp.msg) : '';
-      var cleaned = raw.replace(/^\d+\s*-\s*/, '').replace(/<[^>]+>/g, '').trim();
-      fail(cleaned);
-    };
+    var ctrl = new AbortController();
+    var to = setTimeout(function () { ctrl.abort(); }, 10000);
 
-    var base = FORM_ACTION.indexOf('/post-json?') !== -1 ? FORM_ACTION : FORM_ACTION.replace('/post?', '/post-json?');
-    var joiner = base.indexOf('?') !== -1 ? '&' : '?';
-    var url = base + joiner + 'EMAIL=' + encodeURIComponent(email)
-      + '&' + encodeURIComponent(HONEYPOT) + '='
-      + '&c=' + cb;
-    script = document.createElement('script');
-    script.src = url;
-    script.async = true;
-    script.onerror = function () {
-      if (settled) return;
-      settled = true; clearTimeout(to); cleanup();
-      fail('Could not reach the newsletter service. Please try again.');
-    };
-    document.body.appendChild(script);
+    fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, hp: hp }),
+      signal: ctrl.signal
+    }).then(function (resp) {
+      clearTimeout(to);
+      if (resp.ok) { ok(); return; }
+      return resp.json().catch(function () { return {}; }).then(function (data) {
+        if (resp.status === 429) fail("You're going a little fast — try again in a moment.");
+        else fail((data && data.detail) ? data.detail : 'Something went wrong. Please try again.');
+      });
+    }).catch(function (err) {
+      clearTimeout(to);
+      fail(err && err.name === 'AbortError'
+        ? 'That took longer than expected. Please try again.'
+        : 'Could not reach the newsletter service. Please try again.');
+    });
   });
 })();
 </script>

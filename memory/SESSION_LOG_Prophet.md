@@ -1,6 +1,39 @@
 # Session Log — Prophet
 
 ---
+## [2026-05-21 · Newsletter signup migrated Mailchimp → SendX, live on www] — Cowork
+
+**Summary:** Built and shipped the Odds Primer newsletter signup end-to-end after Mailchimp suspended adi@techdad.io (Omnivore, "prohibited content" = the betting/prediction-market vertical). Researched ESPs, chose SendX (single plan incl. automations, explicitly accepts the vertical). Built the backend + repointed all signup surfaces off Mailchimp, set up SendX (domain auth, welcome workflow), and verified the whole chain live on www.oddsprimer.com. System is live and working; remaining items are polish/decisions, not plumbing.
+
+**Decisions (locked 2026-05-21):**
+- **Email provider = SendX.** Mainstream consumer ESPs (Mailchimp, MailerLite explicitly, Kit/Beehiiv discretionary) ban gambling-adjacent content → re-suspension risk. SendX accepts it. Corrected an earlier MailerLite rec made before the suspension surfaced.
+- **Spec-only boundary lifted for this piece** — Adi: "forget faktor, this connects to my prophet project directly." Built directly in the prophet repo (not a Faktor spec).
+- **From-address = hello@oddsprimer.com** on root domain. **Welcome = one email on signup**, tag-triggered, Adi's World Cup design, educational positioning.
+
+**What shipped / Project Updates:**
+- **Code (commit `2ba54fa`, pushed to staging by Adi → Railway deployed → live on www):** new `signup_api.py` (`POST /api/subscribe` → SendX identify, tags `newsletter-signup`, key server-side); wired into `server.py`; `SENDX_API_KEY`/`SENDX_SIGNUP_TAGS` in config + .env.example. Repointed React hook (`useMailchimpSubscribe.js`), `NewsletterCapture.jsx`, and the static-site `generate.py` popup+footer off Mailchimp JSONP onto `/api/subscribe`. Deploy regenerates the static site via `python site/generate.py || true` in the start command.
+- **SendX:** account live (free trial, 500 cap). Domain `oddsprimer.com` verified green (DKIM/Return-Path/Track/DMARC, records added at GoDaddy). Welcome workflow id **1803** ("Simple welcome email") published, sends from hello@oddsprimer.com. Welcome email HTML rewritten with SendX merge tags (`{{.FirstName}}`, `{{.GlobalUnsubscribeLink}}`, `{{.Address}}`) and links pointing only at live pages.
+- **Verified end-to-end:** popup fires on www, `/api/subscribe` returns 200, welcome email delivered (landed in spam — new-domain reputation).
+
+**New Context (architecture — important):**
+- **www.oddsprimer.com = Prophet Railway app** (editorial static site + `/api`). **Apex oddsprimer.com = separate Vercel "Market Tips AI" Next.js B2C events app.** Email + all promo links must use **www.** DNS at GoDaddy: apex A `15.197.225.128`/`3.33.251.168`; www CNAME → `z0nl7qak.up.railway.app`; `staging` CNAME → `…vercel-dns-017.com`.
+- Live editorial site has **ONE `/learn` page** (not the React op app's 3 separate primers). Valid routes: `/`, `/learn`, `/methodology` (nav "The Desk"), `/matches/`, `/outrights/`, `/about`.
+- Popup suppressed 365d after subscribe / 10d after dismiss via localStorage `op_newsletter_popup`.
+
+**Action Items:**
+- [x] Build + deploy SendX signup; verify popup / endpoint / welcome — Claude
+- [ ] Confirm the fixed-link welcome HTML (www + existing pages) is the version saved in SendX — Adi
+- [ ] Set a full postal address in SendX → Company Information (currently just "Madrid, Spain" — CAN-SPAM/GDPR) — Adi
+- [ ] Warm up the domain: mark early welcomes "Not spam"; grow volume gradually — Adi
+- [ ] Promote **www** URLs only (apex = Vercel app, no signup) — Adi
+- [ ] Upgrade SendX before exceeding 500 contacts/emails — Adi
+- [ ] Consider confirmed (double) opt-in given EU base — Adi
+
+**Open Threads:**
+- **Vercel remains.** Adi says he's not using Vercel, but the apex + `staging` DNS still point there and the apex serves the Market Tips AI app live. To make the apex serve editorial: repoint apex DNS off Vercel to Railway + delete `staging`→vercel CNAME at GoDaddy — but first confirm what that Vercel project is so a live product isn't knocked offline. (Adi's DNS action; Claude can supply exact records.)
+- **"One email a week" promise** — the weekly edition pipeline must actually ship, or soften the welcome copy.
+
+---
 ## [2026-05-18 · Card design v4 — dual-chip Layout A locked, slot-audit xlsx, Faktor round-2 spec sync] — Cowork
 
 **Summary:** Continuation of the v4 launch thread. Three big workstreams landed in one long session. **(1) Card design.** the operator asked to redesign the canonical card so both Polymarket and Kalshi prices appear on every match/outright card, with a clear CTA pushing to the venue. Walked through three layouts (A compact dual-chip, B side-by-side panels, C venue ladder) and four CTA push levels (L1 plain text → L4 action language). the operator locked Layout A + L3 button-styled CTA + cents-primary/American-odds-secondary. Built `cards-v4.html` showcase — six variants (Match Pick / Pass / Avoid; Outright Pick / Avoid; lead-verdict scale-up). Caught the −180 vs 52¢ probability-conversion bug (52% implied = −108, not −180); fixed every chip across the showcase so the numbers actually compute. After the operator flagged "CTAs too soft", dropped the unified "Market" reads slot (each venue chip now carries its own implied probability + per-chip edge), promoted venue CTAs to solid ink buttons reading "Open Polymarket ↗" / "Open Kalshi ↗" with flame arrows. Propagated the new card into `handover-v4/home.html` lead verdict, replacing the old `lv-card` single-venue block. Mobile-tightened buttons (34→36px height) and chip padding (12/12/10) so two stacked chips don't dominate the mobile fold. **(2) Slot audit.** Built `desk-content-slot-audit-v4.xlsx` — 99 slots across home/outrights/matches, sourced into six tags (DESK / DESK-NEW / DESK-DERIVED / COMPOSED / EDITORIAL / STATIC). Sheet 2 is a 15-row "Contract gaps" list — the engineer's TODO of fields The Desk needs to surface, sorted by priority. Critical gap is `market_prices.{polymarket, kalshi}` — the dual-chip card needs both venue prices on every output, not just the "chosen" one. **(3) Faktor round-2 spec sync.** Faktor's review flagged that the v0.2/v0.5 spec edits the operator promised never made it to `docs/desk-handoff-specs @ 18a3d41`. Diagnosed the drift: edits existed in `prophet/` (Cowork's spec workspace), never copied into `market_tips_ai-1`. Patched a Stage 5 / PR 1 acceptance internal inconsistency in the waist spec while in there. Bundled three specs into `outputs/desk-spec-sync-2026-05-18/` with SYNC.md commands + reply draft. the operator pushed `15d4370` to `docs/desk-handoff-specs` — diff confirms waist v0.2 + data-layer v0.5 landed cleanly (137 + 30 lines updated across the two files). Faktor unblocked for PR1 + Phase 1a.
@@ -536,124 +569,4 @@ Next session likely the branding session (still owed from morning). After brandi
 **Handoff for branding session:**
 The branding session should start by reading `DESIGN_CONTEXT.md` (it has the voice rules, microcopy examples, and reference vibes already locked). The three live brand candidates: MarketTipsAI (domain owned), PredictionEdge (RETIRED — competitor name collision), or fresh option. Faktor is co-founder so consider including him in any "founder voice" framing. Recommended first deliverables: (1) shortlist of 3–5 names with reasoning, (2) wordmark exploration for top 2, (3) one accent color recommendation that avoids Kalshi green and Polymarket purple, (4) typography pair (one for UI/body, one for numbers). Note: high-fidelity straight, no wireframes.
 
----
-## [2026-05-01] — Cowork
-
-**Summary:** Maintenance session. Two structural changes: (1) the operator consolidated everything Prophet-related into `/Users/adi/Documents/Claude/Projects/prophet/` as the single master folder for code + Cowork artifacts, reversing the prior code-in-Claude-Code / planning-in-Drive split. (2) the operator declared Prophet a private project — memory files moved out of Google Drive into local `./memory/` and must never be synced back.
-
-**Decisions:**
-- Single master folder: `/Users/adi/Documents/Claude/Projects/prophet/` holds code + Cowork stuff. Canonical Prophet workspace.
-- **Prophet is private. Memory stays local.** `SESSION_LOG_Prophet.md` and `PROJECT_Prophet.md` now live at `[project]/memory/` only — NOT in `~/Google Drive/My Drive/Claude/memory/`. Cross-laptop sync intentionally dropped.
-- Snapshot skill gained a generic "project-private override" rule: if a project folder has a `memory/` subfolder, that's its canonical memory location. No project names in Drive.
-
-**Action Items:**
-- [x] Move `SESSION_LOG_Prophet.md` + `PROJECT_Prophet.md` to local `[project]/memory/`, delete from Drive — Claude
-- [x] Scrub Prophet pointers from Drive `MEMORY.md` index — Claude
-- [x] Add private-memory anchor block to local `CLAUDE.md` — Claude
-- [x] Update Drive `session-snapshot-SKILL.md` with generic local-override rule — Claude
-- [x] Update auto-memory `reference_artifacts.md` to reflect new master folder — Claude
-
-**Open Threads:**
-- Track A/B reconciliation still unresolved (carried from 2026-04-23 + 2026-04-22 sessions).
-- Track B 30-day market test ends ~2026-05-22 — call should be made before then.
-- Older `feedback_drive_workspace.md` rule (Cowork auto-memory) about always writing to Drive `/prophet/` is now obsolete and contradicts the new privacy decision; retire in next session.
-- Drive `user_google_drive.md` index entry says "default save location is Drive" — still true for non-Prophet work, but worth a re-read pass on the operator's other rules to make sure none silently push Prophet to Drive.
-
----
-## [2026-04-23] — Cowork
-
-**Summary:** Track A (consumer decision-support) stress-tested with web research + ChatGPT cross-review. Original OddsChecker-for-PMs aggregator scope scored 44/100 (NO-GO). Pivoted to decision-support workspace productizing the Prophet paper-trading + risk-management stack; pivoted scope ceiling was 62–70, revised down to **55–62** after deeper read on OddsJam's PM surfaces. SPRINT.md trimmed ~25% (paper portfolio cut, Telegram demoted to stretch, 10–12 matched pairs target). Private-beta target 2026-04-26 still holds. Track B untouched.
-
-**Decisions (Track A):**
-- Retire "PredictionEdge" brand — yourpredictionedge.com is an active $9.99/mo direct competitor. Revisit "Prophet" before public launch.
-- Kill affiliate-first monetization. Resequenced: paid subscription Months 1–3, affiliate as garnish Months 4–6, SEO + data licensing Months 6–12.
-- Sports markets OUT of beta mapping — regulatory overhang + OddsJam owns sports-tooling.
-- Sprint trimmed: cut paper portfolio / P&L sparkline / seed scripts; Telegram → Day 5 stretch only; dropped "force ≥3 buy signals" acceptance criterion (honest holds are correct).
-- Realistic pivoted ceiling is 55–62, not 90 — don't scope to a ceiling that can't be delivered.
-
-**Action Items:**
-- [x] REVISED_SCOPE.md (Drive /prophet/) — Claude
-- [x] SPRINT.md trimmed v2 (Drive /prophet/) — Claude
-- [x] CLAUDE_CODE_TASKS.md — per-task Claude Code prompts (already in Drive /prophet/, reviewed)
-- [x] PROJECT.md updated with OddsJam re-read + perpetual-futures note — Claude (this session)
-- [ ] Gemini third-review of REVISED_SCOPE.md + SPRINT.md — the operator
-- [ ] Day 1 T1.5 Prophet strategy smoke test (biggest sprint risk) — the operator + Claude Code
-- [ ] Track A/B reconciliation decision — the operator (carried forward from last session, still unresolved)
-
-**Project Updates:**
-- Track A: scope finalized; sprint trimmed; beta 2026-04-26 on track; ceiling 55–62.
-- Track B: untouched this session; 30-day test in flight ending ~2026-05-22.
-
-**New Context (competitor landscape, verified April 2026):**
-- Volumes: Kalshi $12.35–13.07B/mo, Polymarket $10.57B/mo (March 2026). Combined ~$23B/mo; Bernstein $1T/2030 at ~80% CAGR.
-- Direct Track-A competitors: Your Prediction Edge ($9.99, product + name collision), Oddpool ($30/$100/Enterprise), FORS (Solana), Prediction Market Tools, FinFeedAPI, PolyRouter.
-- **OddsJam (Gambling.com Group) is more serious than prior reads assumed.** Dedicated /prediction/traders and /prediction/insiders surfaces, algorithmic trader recommendations + optimal bet sizing + Kalshi/Polymarket deep links, standalone Kelly + EV calculators, Platinum push notifications, PM-to-betting-odds converter. Pricing: Plus $39 / Gold $199.99 / Global $399.99.
-- **Perpetual futures launching on both venues.** Polymarket early-access with 10x leverage on gold, stocks (NVDA, COIN), BTC; Kalshi following. Phase 2 scope question: support perps or stay binary-only. Existing Prophet strategies are binary YES/NO — perps need different risk management.
-- Affiliate reality softer than onepager: Polymarket 30% revshare × 180d gated behind $10K traded volume; Kalshi $25 trading credits (not cash). No public CPA verification at the $60–300/depositor claim.
-- AI Overviews crushed betting-affiliate SEO: 96% of sites hit; CTR 15%→8%.
-- Regulatory: Third Circuit 2-1 for Kalshi (April 6 2026). Polymarket ToS restricts US persons via UI + API.
-
-**Open Threads:**
-- **Track reconciliation still unresolved.** Track A beta 2026-04-26 and Track B 30-day test (~2026-05-22) run in parallel. the operator hasn't decided: run both, delay A for B, or kill one. Flagged in last session's log too; still needs a call.
-- **T1.5 is make-or-break.** If Prophet strategies can't ingest matched-market snapshots cleanly on Monday night, wedge doesn't ship this week — revert to comparison-only or cut the sprint.
-- **Distribution unsolved.** Cold-start paid SaaS + AIO-degraded SEO + no existing audience + expensive regulated-category ads. Private beta doesn't validate this; post-beta it becomes the gating question.
-- **Six strategic questions** live in PROJECT.md. Q6 added post-OddsJam: "Is there a wedge structurally out of reach for OddsJam?" Current best answer: backtested strategy-driven signals on **non-sports** PM categories. If that doesn't hold up in beta feedback, margin for error is very small.
-
-**Process note (filesystem):** This session I repeatedly wrote planning docs to `/Users/adi/Documents/Claude/Projects/prophet/` instead of Google Drive despite the rule in MEMORY.md + the past fix logged in PROJECT_Prophet.md. Corrected after the operator pushed back; Drive folder now mounted (`~/Library/CloudStorage/GoogleDrive-…/My Drive/Claude/prophet/`). Reinforced rule in Cowork auto-memory (`feedback_drive_workspace.md`). If this repeats in a future session, escalate — it's now been flagged twice.
-
----
-## [2026-04-22 / 2026-04-23] — Cowork
-
-**Summary:** Strategic evaluation of an ALTERNATIVE direction for Prophet — running the paper-trading bot's underlying tech as a B2B market-making infrastructure business sold to trading firms and small PM venues. This is a PARALLEL TRACK (Track B). The consumer decision-support workspace pivot from 2026-04-20 (Track A, private beta launching 2026-04-26) is unaffected by this session and was not discussed. Two external analyst reports (ChatGPT + Gemini) returned independent GO-WITH-CHANGES verdicts on the Track B B2B thesis. Built four artifacts to support a 30-day market-validation test for Track B.
-
-**IMPORTANT — Two-track reality:**
-- Track A (consumer decision-support workspace, $29/mo, private beta 2026-04-26): UNCHANGED by this session.
-- Track B (B2B MM infrastructure, this session's focus): NEW evaluation.
-- the operator has not yet decided whether Track B replaces, complements, or is parked alongside Track A. The 30-day test should be the input for that call.
-
-**Decisions:**
-- **Tier A only.** Sell licensed software (customer runs it on their infra, with their capital). Both analysts independently flagged Tier B (managed service) as the thesis killer — capital intensity ($500K-$2M per customer per Gemini), CTA/IB/CPO registration risk, and in-house verticalization by buyers.
-- **Two ICPs, one product.** Trading firms (alpha capture) and small/mid PM venues (seed liquidity). Same software, different value prop. Decide which sells better in 30 days.
-- **Wedge: correlated-event handling.** Both analysts agreed pricing math is commodity; the moat is news-driven volatility handling, adverse-selection defense, and venue connectivity at scale. Operator-console mockup leads with this.
-- **Pricing: $10K-$30K/mo.** Annual contracts. 30-day free pilot on Demo, 60-day paid pilot on live. No managed-service tier (keeps regulatory exposure on customer side).
-- **Brand "Prophet" is a placeholder.** Reads consumer-y for B2B; needs a real name before going to market.
-- **30-day test before any further build.** Six concrete deliverables, ~70 founder-hours, pass/fail bar at day 30.
-
-**Action Items:**
-- [x] Build operator console mockup — Claude → `prophet/mockups/operator-console.html`
-- [x] Build Tier-A revenue & capacity model (xlsx, 1,155 formulas, zero errors) — Claude → `prophet/models/tier-a-revenue-model.xlsx`
-- [x] Build mom-explainer presentation (9 slides, plain language) — Claude → `prophet/presentations/explainer-for-mom.pptx`
-- [x] Build positioning one-pager (validated docx, US Letter) — Claude → `prophet/sales/positioning-onepager.docx`
-- [ ] Record 3-min demo video of Kalshi DEMO bot — the operator (~8 hrs)
-- [ ] Build target list of 30 named contacts (15 quant shops, 10 venues, 5 sportsbook leads) — the operator (~8 hrs)
-- [ ] Send 30 personalized cold emails — the operator (~12 hrs)
-- [ ] Conduct 5+ discovery calls with structured notes — the operator (~20 hrs)
-- [ ] Write end-of-30-days decision memo (GO / PIVOT / KILL) — the operator (~4 hrs)
-- [ ] Decide on real brand name (placeholder "Prophet" doesn't fit B2B) — the operator
-- [ ] Decide on pricing range narrowness ($10-30K vs $5-50K vs $15-25K) — the operator
-- [ ] Decide whether to keep or strike Cboe/Fanatics roadmap claim in onepager — the operator
-
-**Project Updates:**
-- **Prophet (paper-trading bot):** Now reframed as the *demo asset* underpinning a B2B sales motion, not a standalone investor-facing artifact. The bot's Python code, Kelly-sized risk manager, and Kalshi+Polymarket connectivity are the moat-credibility piece for the new B2B pitch.
-- **New parallel track:** Tier-A MM infrastructure thesis evaluation. 30-day market test in flight (deliverables above).
-
-**Model Findings (xlsx):**
-- BASE case (TAM=25 logos, ACV=$15K, close=13.5%): peaks ~3 customers, $44K MRR @ M12 — MISSES $50K target by $6K, then declines as small-TAM pipeline exhausts and churn eats the base.
-- BEAR (TAM=10): non-viable, $1.4K MRR.
-- BULL (TAM=50, ACV=$35K): $458K MRR but capacity utilization 112% — implies quitting day jobs, violates side-project constraint.
-- TAM ceiling is the binding constraint, not close rate. Realistic equilibrium: 5-6 customers, $75-90K MRR.
-
-**New Context:**
-- ChatGPT + Gemini analyst reports both delivered GO-WITH-CHANGES verdicts. Strong convergence: kill Tier B, lead with correlated-event wedge, sell to mid-tier not top sportsbooks, 9-18 month window before Sportradar/OddsJam-class incumbents commoditize.
-- Disagreement: ChatGPT estimates 8-15 realistic Tier-A buyers (venues only); Gemini estimates 30-40 (incl. niche venues). ChatGPT more grounded — quant shops are the variable that pushes TAM to ~25.
-- April 6 2026: Third Circuit ruled CFTC has exclusive jurisdiction over sports event contracts. Helps the category.
-- FanDuel Predicts launched Dec 2025 (5 states, CME partnership); DraftKings Predictions launched Dec 2025 (38 states, CME + Crypto.com). Top sportsbooks vertically integrating PM exposure in-house.
-- Kalshi has SIG as institutional MM partner since 2024; Robinhood + Susquehanna acquired their own exchange/clearing for PMs. Venue-MM relationships are tightening — top tier is closed.
-- Polymarket paying $5M+/month in liquidity incentives (April 2026) — confirms the venue-side pain point.
-
-**Open Threads:**
-- **TRACK RECONCILIATION URGENT.** Track A private beta is 2026-04-26 (4 days away). Track B 30-day test would land ~2026-05-22. the operator needs to decide: (a) launch Track A as planned and run Track B 30-day test in parallel, (b) delay Track A to focus on Track B validation first, or (c) kill one. This session did not address this — the next session should.
-- Bridge to Cowork auto-memory: written to a new memory file `project_prophet_b2b_mm_evaluation.md` to keep the prior decision-support pivot memory intact. Both tracks now coexist in memory.
-- After 30-day Track B test ends (~late May 2026): if GO, scope a 6-month Tier-A build; if KILL, fully shelve the B2B thesis and revert focus to Track A.
-- the operator has not yet run any actual prospect conversations for Track B — the entire current Track B state is desk research + artifact prep.
 ---

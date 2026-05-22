@@ -17,8 +17,9 @@ export default function Hero({ navigate }) {
       <div className="h-eyebrow">Vol. 1 · World Cup 2026 edition</div>
       <h1 id="hero-title">The 2026 World Cup, priced.</h1>
       <p className="standfirst">
-        We compare prices on the World Cup across Polymarket, Kalshi, and the sportsbooks.
-        We explain what the numbers mean. We don't tip.
+        The Desk, our verdict engine, reads every World Cup market against its own model —
+        Polymarket, Kalshi, and the sportsbooks — and calls each one Pick, Pass, or Avoid,
+        with the reasoning. We don't tip.
       </p>
       <div className="ctas">
         <a className="btn-primary" href="#today" onClick={handleBoard}>

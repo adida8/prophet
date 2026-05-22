@@ -12,7 +12,7 @@ export default function HowPricesAreSet({ navigate, currentPath }) {
       title="How are prices set?"
       standfirst="An order book, an implied probability, and a worked example. By the end of this you should be able to look at any quoted price and know what the market thinks the probability is."
       meta="The Editors · 12 May 2026 · 5 min read"
-      editionLeft="Learn · 02 of 03"
+      editionLeft="Learn · 02 of 06"
       editionRight="5 min read"
       nextHref="/learn/is-it-legal"
       nextLabel="Is it legal?"

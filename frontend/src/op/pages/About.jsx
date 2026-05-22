@@ -48,8 +48,8 @@ export default function About({ navigate, currentPath }) {
                 <h2>Who runs this</h2>
                 <p>
                   Odds Primer is a small, independent publication. Two roles do the
-                  work: an <strong>engineer</strong> builds the data engine — internally
-                  we call it <em className="em">The Desk</em> — and an{" "}
+                  work: an <strong>engineer</strong> builds <em className="em">The Desk</em>{" "}
+                  — our verdict engine — and an{" "}
                   <strong>editor</strong> writes the columns. Neither role takes wagers,
                   holds your money, or recommends a play. When you act on what you read
                   here, you do so on a venue under that venue's terms.
@@ -128,8 +128,7 @@ export default function About({ navigate, currentPath }) {
                   The Desk verdict engine is run blind to that revenue.{" "}
                   <strong>The model never sees a venue's trading volume or our payout</strong>{" "}
                   — the only inputs it reads are prices and the football-feature builders
-                  (form, FIFA rank, host effect, altitude). If you want to read the source,
-                  The Desk is internal; the contract it publishes is in{" "}
+                  (form, FIFA rank, host effect, altitude). How The Desk works in full is in{" "}
                   <a href="/methodology">our methodology page</a>.
                 </p>
               </section>

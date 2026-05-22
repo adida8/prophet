@@ -1775,14 +1775,14 @@ def market_cta(
     elif kalshi_price:
         kalshi_caption, kalshi_kind = f"Best price · {kalshi_price}", "best"
     else:
-        poly_caption, poly_kind = "Open the market", "live"
+        poly_caption, poly_kind = "See live market", "live"
 
     poly_pill = _cta_pill(
-        "Trade on Polymarket", poly_url,
+        "View source on Polymarket", poly_url,
         caption=poly_caption, caption_kind=poly_kind,
     )
     kalshi_pill = _cta_pill(
-        "Trade on Kalshi", kalshi_url, placeholder=not kalshi_is_live,
+        "View source on Kalshi", kalshi_url, placeholder=not kalshi_is_live,
         caption=kalshi_caption, caption_kind=kalshi_kind,
     )
     secondary = _read_case_link(detail_href) if detail_href else ""
@@ -2138,7 +2138,7 @@ def render_match_page(match: dict) -> str:
         cta_row = (
             '<div class="cta-row">'
             f'<a class="open-market" href="{escape(market_url)}" rel="nofollow noopener" target="_blank">'
-            f'Open on {escape(venue_name) if venue_name else "market"} <span class="arr">↗</span></a>'
+            f'View source on {escape(venue_name) if venue_name else "the market"} <span class="arr">↗</span></a>'
             '<span class="meta-note">Odds Primer is editorial. Trades happen at the venue, not here.</span>'
             '</div>'
         )
@@ -2162,7 +2162,7 @@ def render_match_page(match: dict) -> str:
         + sources_html
         + '<aside class="voice">'
           '<h3>How to read this</h3>'
-          '<p>The verdict compares our <em>model probability</em> against the <em>best available market probability</em>. '
+          '<p>The Desk compares its <em>model probability</em> against the <em>best available market probability</em>. '
           'A <em>Pick</em> means the model rates a side three or more percentage points higher than the market. '
           '<em>Pass</em> means the line is doing its job. <em>Avoid</em> means every side looks overpriced.</p>'
           '</aside>'
@@ -2309,7 +2309,7 @@ def render_outright_page(outright: dict) -> str:
         cta_row = (
             '<div class="cta-row">'
             f'<a class="open-market" href="{escape(market_url)}" rel="nofollow noopener" target="_blank">'
-            f'Open on {escape(venue_name) if venue_name else "market"} <span class="arr">↗</span></a>'
+            f'View source on {escape(venue_name) if venue_name else "the market"} <span class="arr">↗</span></a>'
             '<span class="meta-note">Odds Primer is editorial. Trades happen at the venue, not here.</span>'
             '</div>'
         )
