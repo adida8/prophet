@@ -1596,13 +1596,29 @@ def patch_editorial_pages(log=print) -> None:
         '\n          <li><a href="/corrections">Corrections</a></li>'
         '\n        '
     )
-    legacy_pill_inner = (
-        '\n      <a href="/matches/">Matches</a>'
-        '\n      <a href="/methodology">The Desk</a>'
-        '\n      <a href="/learn">Learn</a>'
-        '\n      <a href="/about">About</a>'
-        '\n    '
-    )
+    # Page-level pill-nav builder. Marks the current page as aria-current
+    # so the active pill (Matches / The Desk / etc.) renders filled. The
+    # legacy editorial pages map onto these slugs via _CURRENT_PILL_FOR.
+    def _legacy_pill_inner_for(slug: str) -> str:
+        def attr(s: str) -> str:
+            return ' aria-current="page"' if s == slug else ""
+        return (
+            f'\n      <a href="/"{attr("home")}>Home</a>'
+            f'\n      <a href="/matches/"{attr("matches")}>Matches</a>'
+            f'\n      <a href="/methodology"{attr("methodology")}>The Desk</a>'
+            f'\n      <a href="/learn"{attr("learn")}>Learn</a>'
+            f'\n      <a href="/about"{attr("about")}>About</a>'
+            f'\n    '
+        )
+
+    # Page-name → pill slug mapping. Pages not listed get no active pill
+    # (e.g. /responsible-use, /404).
+    _CURRENT_PILL_FOR = {
+        "about":       "about",
+        "learn":       "learn",
+        "method":      "methodology",
+        "methodology": "methodology",
+    }
 
     _SITE_NAV_RE = re.compile(
         r'(<nav class="site-nav"[^>]*>\s*<ul>)(.*?)(</ul>\s*</nav>)',
@@ -1617,10 +1633,59 @@ def patch_editorial_pages(log=print) -> None:
         flags=re.DOTALL,
     )
 
+    # Replace the legacy hand-written edition-strip text ("World Cup 2026 ·
+    # Matchday 2" / "Updated 13 May 2026") with the same dynamic shape the
+    # new chrome_masthead emits ("Vol. 1 · World Cup 2026" / "Markets live").
+    _EDITION_STRIP_RE = re.compile(
+        r'(<div class="edition-strip">\s*<div class="inner">)(.*?)(</div>\s*</div>)',
+        flags=re.DOTALL,
+    )
+    legacy_edition_strip_inner = (
+        '\n        <span class="vol">Vol. 1 · World Cup 2026</span>'
+        '\n        <span class="live">Markets live</span>'
+        '\n      '
+    )
+
     # Strip the "Outright winners" link from the hand-authored .foot-col
     # editorial column on legacy editorial pages.
     _FOOT_OUTRIGHT_RE = re.compile(
         r'\n\s*<li><a href="/outrights/?">Outright winners</a></li>',
+    )
+
+    # CSS override block — re-styles the legacy pill-nav + edition-strip
+    # so they match the new chrome's pill outline + dot indicator. The
+    # legacy inline CSS still defines the masthead/brand; this block only
+    # overrides the diverging rules.
+    chrome_override_start = "<!-- op-chrome-override-start -->"
+    chrome_override_end   = "<!-- op-chrome-override-end -->"
+    chrome_override_css = (
+        "\n" + chrome_override_start + "\n"
+        "<style>\n"
+        "/* Legacy-page chrome override — pill-nav gets the same outlined\n"
+        "   pill look as the canonical chrome on /, /matches, /m/*. */\n"
+        ".pill-nav a {\n"
+        "  border: 1px solid var(--rule, #d9d2c0);\n"
+        "  padding: 11px 16px; min-height: 44px;\n"
+        "  display: inline-flex; align-items: center;\n"
+        "  font-size: 13px;\n"
+        "}\n"
+        ".pill-nav a[aria-current=\"page\"] {\n"
+        "  background: var(--ink, #0e2240); color: var(--paper, #faf7f0);\n"
+        "  border-color: var(--ink, #0e2240);\n"
+        "}\n"
+        ".pill-nav a:not([aria-current=\"page\"]):hover {\n"
+        "  color: var(--flame-deep, #b8390f); border-color: var(--flame, #d9461c);\n"
+        "}\n"
+        "/* Edition strip — dot indicator on the right-hand label. */\n"
+        ".edition-strip .vol { color: var(--ink, #0e2240); }\n"
+        ".edition-strip .live::before {\n"
+        "  content: \"\"; display: inline-block;\n"
+        "  width: 6px; height: 6px; border-radius: 999px;\n"
+        "  background: var(--flame, #d9461c);\n"
+        "  margin-right: 8px; vertical-align: 1px;\n"
+        "}\n"
+        "</style>\n"
+        + chrome_override_end + "\n"
     )
 
     n_patched = 0
@@ -1632,6 +1697,8 @@ def patch_editorial_pages(log=print) -> None:
         before = html
 
         # Rewrite the legacy nav blocks to match chrome_masthead.
+        active_slug = _CURRENT_PILL_FOR.get(name, "")
+        pill_inner = _legacy_pill_inner_for(active_slug)
         html = _SITE_NAV_RE.sub(
             lambda m: m.group(1) + legacy_site_nav_ul + m.group(3),
             html, count=1,
@@ -1641,7 +1708,11 @@ def patch_editorial_pages(log=print) -> None:
             html, count=1,
         )
         html = _PILL_RE.sub(
-            lambda m: m.group(1) + legacy_pill_inner + m.group(3),
+            lambda m: m.group(1) + pill_inner + m.group(3),
+            html, count=1,
+        )
+        html = _EDITION_STRIP_RE.sub(
+            lambda m: m.group(1) + legacy_edition_strip_inner + m.group(3),
             html, count=1,
         )
         html = _FOOT_OUTRIGHT_RE.sub("", html)
@@ -1650,6 +1721,13 @@ def patch_editorial_pages(log=print) -> None:
         html = strip_between(html, css_start,  css_end)
         html = strip_between(html, foot_start, foot_end)
         html = strip_between(html, pop_start,  pop_end)
+        html = strip_between(html, chrome_override_start, chrome_override_end)
+
+        # Inject the chrome override CSS into every editorial page,
+        # regardless of NEWSLETTER_CONFIGURED — the override is required for
+        # the legacy chrome to match the canonical chrome.
+        if "</head>" in html:
+            html = html.replace("</head>", chrome_override_css + "</head>", 1)
 
         if NEWSLETTER_CONFIGURED:
             # CSS goes in its own <style> block right before </head> —

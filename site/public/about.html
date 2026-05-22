@@ -278,6 +278,34 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
 <link rel="apple-touch-icon" sizes="192x192" href="/favicon-192.png">
+<!-- op-chrome-override-start -->
+<style>
+/* Legacy-page chrome override — pill-nav gets the same outlined
+   pill look as the canonical chrome on /, /matches, /m/*. */
+.pill-nav a {
+  border: 1px solid var(--rule, #d9d2c0);
+  padding: 11px 16px; min-height: 44px;
+  display: inline-flex; align-items: center;
+  font-size: 13px;
+}
+.pill-nav a[aria-current="page"] {
+  background: var(--ink, #0e2240); color: var(--paper, #faf7f0);
+  border-color: var(--ink, #0e2240);
+}
+.pill-nav a:not([aria-current="page"]):hover {
+  color: var(--flame-deep, #b8390f); border-color: var(--flame, #d9461c);
+}
+/* Edition strip — dot indicator on the right-hand label. */
+.edition-strip .vol { color: var(--ink, #0e2240); }
+.edition-strip .live::before {
+  content: ""; display: inline-block;
+  width: 6px; height: 6px; border-radius: 999px;
+  background: var(--flame, #d9461c);
+  margin-right: 8px; vertical-align: 1px;
+}
+</style>
+<!-- op-chrome-override-end -->
+
 <!-- op-newsletter-css-start -->
 <style>/* ─── NEWSLETTER FOOTER SIGNUP ─────────────────────────────────────
    Sits above .site-foot. Dark navy block, on-ink text, single email
@@ -530,15 +558,16 @@ body.op-noscroll { overflow: hidden; }
     </div>
     <div class="edition-strip">
       <div class="inner">
-        <span>World Cup 2026 · Matchday 2</span>
-        <span>Updated 13 May 2026</span>
+        <span class="vol">Vol. 1 · World Cup 2026</span>
+        <span class="live">Markets live</span>
       </div>
     </div>
     <nav class="pill-nav" aria-label="Primary (mobile)">
+      <a href="/">Home</a>
       <a href="/matches/">Matches</a>
       <a href="/methodology">The Desk</a>
       <a href="/learn">Learn</a>
-      <a href="/about">About</a>
+      <a href="/about" aria-current="page">About</a>
     </nav>
   </header>
 
