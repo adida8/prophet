@@ -597,13 +597,14 @@ a { color: inherit; }
 }
 .cta-row .open-market {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 11px 16px;
+  padding: 13px 18px; min-height: 44px;
   background: var(--ink); color: var(--paper);
   text-decoration: none; border-radius: 4px;
-  font-family: var(--font-sans); font-size: 12px; font-weight: 700;
-  letter-spacing: 0.08em; text-transform: uppercase;
+  font-family: var(--font-sans); font-size: 12.5px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
   transition: background var(--dur-fast) var(--ease-standard);
 }
+.cta-row .open-market .venue-name { white-space: nowrap; }
 .cta-row .open-market:hover { background: var(--flame-deep); }
 .cta-row .open-market .arr { color: var(--flame); }
 .cta-row .open-market:hover .arr { color: var(--paper); }
@@ -823,6 +824,13 @@ a { color: inherit; }
   margin: 10px 0 0; max-width: 56ch;
 }
 
+/* ─── PILL-NAV: scrollability fade on narrow viewports ─────────────── */
+.pill-nav {
+  position: relative;
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%);
+}
+
 /* ─── MOBILE WHITESPACE TIGHTENING ─────────────────────────────────── */
 @media (max-width: 720px) {
   .hero { padding: 22px 0 14px; }
@@ -834,8 +842,35 @@ a { color: inherit; }
   .how-desk .hd-steps li { padding: 6px 0 6px 32px; }
   .the-desk-block { padding: 20px 0 18px; margin: 20px 0 8px; }
   .the-desk-block .td-title { font-size: 22px; }
-  .trust-strip { gap: 4px 12px; font-size: 10.5px; padding: 6px 0; }
+  /* Trust strip stacks vertically on narrow phones so each label/value
+     pair reads as its own line. */
+  .trust-strip {
+    flex-direction: column; align-items: flex-start;
+    gap: 4px; font-size: 11px; padding: 8px 0;
+  }
+  .trust-strip .ts-item { white-space: normal; }
   .event-disclaimer { font-size: 11px; margin: 8px 0 14px; }
+  /* "Why the model disagrees" comfort on narrow screens */
+  .why-disagrees { padding: 14px 16px; margin: 18px 0 14px; }
+  .why-disagrees p { font-size: 15px; line-height: 1.55; }
+  /* CTA button: ensure full-width-ish behaviour so taps are easy */
+  .cta-row { margin-top: 18px; }
+  .cta-row .open-market { padding: 14px 18px; font-size: 12px; }
+  .cta-row .meta-note { font-size: 12.5px; }
+  /* Footer trust card — fewer pixels of left padding, lighter rule */
+  .site-foot .foot-trust { padding: 14px 14px; font-size: 13px; border-left-width: 2px; }
+  .site-foot .foot-trust .ft-data,
+  .site-foot .foot-trust .ft-contact { font-size: 12.5px; }
+  /* Verdict-key gap tightening on narrow screens */
+  .verdict-key .vk-item { gap: 10px; padding: 8px 0; }
+  /* Popup: clamp to viewport on tiny phones (<420px gutter) */
+  .op-popup { max-width: calc(100vw - 20px); }
+  .op-popup__title { font-size: 22px; line-height: 1.15; }
+  .op-popup__body { padding: 22px 18px 20px; }
+}
+@media (max-width: 380px) {
+  .op-popup__title { font-size: 20px; }
+  .hero h1 { font-size: clamp(26px, 9vw, 34px); }
 }
 
 /* ─── NEWSLETTER FOOTER SIGNUP ─────────────────────────────────────
@@ -873,12 +908,12 @@ a { color: inherit; }
   max-width: 520px;
 }
 .op-news__form input[type="email"] {
-  height: 46px; padding: 0 14px;
+  height: 48px; padding: 0 14px;
   border: 1px solid rgba(217, 210, 192, 0.32);
   border-radius: 4px;
   background: rgba(250, 247, 240, 0.06);
   color: var(--paper);
-  font-family: var(--font-sans); font-size: 15px;
+  font-family: var(--font-sans); font-size: 16px;
   outline: none;
 }
 .op-news__form input[type="email"]::placeholder { color: rgba(250, 247, 240, 0.48); }
@@ -961,10 +996,11 @@ body.op-noscroll { overflow: hidden; }
 .op-popup__accent { height: 3px; background: var(--flame); }
 .op-popup__body { padding: 26px 24px 24px; position: relative; }
 .op-popup__close {
-  position: absolute; top: 14px; right: 12px;
-  width: 30px; height: 30px;
+  position: absolute; top: 10px; right: 10px;
+  width: 44px; height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
   border: 0; background: transparent;
-  color: var(--graphite-soft); font-size: 22px; line-height: 1;
+  color: var(--graphite-soft); font-size: 24px; line-height: 1;
   cursor: pointer; border-radius: 4px;
 }
 .op-popup__close:hover { color: var(--ink); background: var(--rule-soft); }
@@ -1094,7 +1130,7 @@ body.op-noscroll { overflow: hidden; }
   <a href="/learn">Learn</a>
   <a href="/about">About</a>
 </nav>
-<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Brazil v Morocco · nothing to chase here</h1></section><section class="trust-strip" aria-label="Data freshness"><span class="ts-item"><span class="ts-lbl">Updated</span> 22 mins ago</span><span class="ts-item"><span class="ts-lbl">Model refresh</span> 11:51 UTC</span><span class="ts-item"><span class="ts-lbl">Market snapshot</span> live</span></section><div class="lv-card is-pass is-lead"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">—</span><span class="lv-lab">Pass</span><span class="lv-when">Sat 13 Jun · 22:00 UTC</span></div><h3 class="lv-teams">Brazil <span class="vs">v</span> Morocco</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">Brazil is the favourite at 60%; the model lands within touching distance at 56%. Nothing to chase. Pass.</p><div class="lv-foot"><span class="lv-flat-msg">Markets agree — within 1pp on every side.</span><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-bra-mar-2026-06-13" target="_blank" rel="nofollow noopener">View live market on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">See live market</span></span><span class="cta-stack"><a class="cta market-cta" href="https://kalshi.com/markets/kxwcgame/world-cup-game/kxwcgame-26jun13bramar" target="_blank" rel="nofollow noopener">View live market on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span></div></div></div><p class="event-disclaimer">Editorial analysis only. Odds Primer does not provide betting or financial advice.</p><div class="blurb"><p>Brazil versus Morocco is a tight one — neither side carries enough mass to break out, the draw is in play, and the model&#x27;s three-way (56% / 21% / 23%) runs close to the market throughout. Tight fixtures rarely produce Picks because the prior is spread, not concentrated. Pass. A single piece of late team news — a surprise omission, a fitness scare — could move this, so it stays on the watch list to the day of the match. Two outlets covered the build-up this week — The Guardian (football): &quot;He will be an important player in this World Cup.&quot;; France 24 (sport, EN): &quot;Brazil superstar Neymar was handed a dramatic recall to the country&#x27;s World Cup squad on Monday, returning to the national team after a…&quot;</p></div><div class="cta-row"><a class="open-market" href="https://polymarket.com/event/fifwc-bra-mar-2026-06-13" rel="nofollow noopener" target="_blank">View live market on the source <span class="arr">↗</span></a><span class="meta-note">Editorial citation only. Odds Primer does not place trades.</span></div><section class="drivers"><h2>The drivers</h2><ol><li>Pass for now. The engine republishes hourly inside T-24h and after major news.</li>
+<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Brazil v Morocco · nothing to chase here</h1></section><section class="trust-strip" aria-label="Data freshness"><span class="ts-item"><span class="ts-lbl">Updated</span> 36 mins ago</span><span class="ts-item"><span class="ts-lbl">Model refresh</span> 11:51 UTC</span><span class="ts-item"><span class="ts-lbl">Market snapshot</span> live</span></section><div class="lv-card is-pass is-lead"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">—</span><span class="lv-lab">Pass</span><span class="lv-when">Sat 13 Jun · 22:00 UTC</span></div><h3 class="lv-teams">Brazil <span class="vs">v</span> Morocco</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">Brazil is the favourite at 60%; the model lands within touching distance at 56%. Nothing to chase. Pass.</p><div class="lv-foot"><span class="lv-flat-msg">Markets agree — within 1pp on every side.</span><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-bra-mar-2026-06-13" target="_blank" rel="nofollow noopener">View live market on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">See live market</span></span><span class="cta-stack"><a class="cta market-cta" href="https://kalshi.com/markets/kxwcgame/world-cup-game/kxwcgame-26jun13bramar" target="_blank" rel="nofollow noopener">View live market on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span></div></div></div><p class="event-disclaimer">Editorial analysis only. Odds Primer does not provide betting or financial advice.</p><div class="blurb"><p>Brazil versus Morocco is a tight one — neither side carries enough mass to break out, the draw is in play, and the model&#x27;s three-way (56% / 21% / 23%) runs close to the market throughout. Tight fixtures rarely produce Picks because the prior is spread, not concentrated. Pass. A single piece of late team news — a surprise omission, a fitness scare — could move this, so it stays on the watch list to the day of the match. Two outlets covered the build-up this week — The Guardian (football): &quot;He will be an important player in this World Cup.&quot;; France 24 (sport, EN): &quot;Brazil superstar Neymar was handed a dramatic recall to the country&#x27;s World Cup squad on Monday, returning to the national team after a…&quot;</p></div><div class="cta-row"><a class="open-market" href="https://polymarket.com/event/fifwc-bra-mar-2026-06-13" rel="nofollow noopener" target="_blank">View live market on <span class="venue-name">the source</span> <span class="arr">↗</span></a><span class="meta-note">Editorial citation only. Odds Primer does not place trades.</span></div><section class="drivers"><h2>The drivers</h2><ol><li>Pass for now. The engine republishes hourly inside T-24h and after major news.</li>
 <li>Model puts Brazil at 56%, the draw at 21%, Morocco at 23% — close to the market on each side.</li>
 <li>No side runs more than a couple of points clear of the model on this fixture.</li></ol></section><section class="sources"><h2>Sources</h2><ul><li><a href="https://www.theguardian.com/football/2026/may/19/neymar-brazil-world-cup-2026-squad-picked-joao-pedro" rel="nofollow noopener" target="_blank">The Guardian (football)</a> <span class="src-date">· 18 May 2026</span><blockquote>He will be an important player in this World Cup.</blockquote></li><li><a href="https://www.theguardian.com/football/2026/may/19/neymar-brazil-world-cup-2026-squad-picked-joao-pedro" rel="nofollow noopener" target="_blank">The Guardian (football)</a> <span class="src-date">· 18 May 2026</span><blockquote>has improved his fitness</blockquote></li><li><a href="https://www.france24.com/en/sport/20260518-world-cup-2026-brazilian-star-neymar-makes-his-big-return-to-the-sele%C3%A7%C3%A3o" rel="nofollow noopener" target="_blank">France 24 (sport, EN)</a> <span class="src-date">· 18 May 2026</span><blockquote>Brazil superstar Neymar was handed a dramatic recall to the country&#x27;s World Cup squad on Monday, returning to the national team after a near three-year absence.</blockquote></li></ul></section><aside class="voice"><h3>How to read this</h3><p>The Desk compares its <em>model probability</em> against the <em>best available market probability</em>. A <em>Pick</em> means the model rates a side three or more percentage points higher than the market. <em>Pass</em> means the line is doing its job. <em>Avoid</em> means every side looks overpriced.</p></aside></main><section class="op-news" aria-labelledby="op-news-title">
   <div class="op-news__inner">

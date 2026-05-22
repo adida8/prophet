@@ -597,13 +597,14 @@ a { color: inherit; }
 }
 .cta-row .open-market {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 11px 16px;
+  padding: 13px 18px; min-height: 44px;
   background: var(--ink); color: var(--paper);
   text-decoration: none; border-radius: 4px;
-  font-family: var(--font-sans); font-size: 12px; font-weight: 700;
-  letter-spacing: 0.08em; text-transform: uppercase;
+  font-family: var(--font-sans); font-size: 12.5px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
   transition: background var(--dur-fast) var(--ease-standard);
 }
+.cta-row .open-market .venue-name { white-space: nowrap; }
 .cta-row .open-market:hover { background: var(--flame-deep); }
 .cta-row .open-market .arr { color: var(--flame); }
 .cta-row .open-market:hover .arr { color: var(--paper); }
@@ -823,6 +824,13 @@ a { color: inherit; }
   margin: 10px 0 0; max-width: 56ch;
 }
 
+/* ─── PILL-NAV: scrollability fade on narrow viewports ─────────────── */
+.pill-nav {
+  position: relative;
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%);
+}
+
 /* ─── MOBILE WHITESPACE TIGHTENING ─────────────────────────────────── */
 @media (max-width: 720px) {
   .hero { padding: 22px 0 14px; }
@@ -834,8 +842,35 @@ a { color: inherit; }
   .how-desk .hd-steps li { padding: 6px 0 6px 32px; }
   .the-desk-block { padding: 20px 0 18px; margin: 20px 0 8px; }
   .the-desk-block .td-title { font-size: 22px; }
-  .trust-strip { gap: 4px 12px; font-size: 10.5px; padding: 6px 0; }
+  /* Trust strip stacks vertically on narrow phones so each label/value
+     pair reads as its own line. */
+  .trust-strip {
+    flex-direction: column; align-items: flex-start;
+    gap: 4px; font-size: 11px; padding: 8px 0;
+  }
+  .trust-strip .ts-item { white-space: normal; }
   .event-disclaimer { font-size: 11px; margin: 8px 0 14px; }
+  /* "Why the model disagrees" comfort on narrow screens */
+  .why-disagrees { padding: 14px 16px; margin: 18px 0 14px; }
+  .why-disagrees p { font-size: 15px; line-height: 1.55; }
+  /* CTA button: ensure full-width-ish behaviour so taps are easy */
+  .cta-row { margin-top: 18px; }
+  .cta-row .open-market { padding: 14px 18px; font-size: 12px; }
+  .cta-row .meta-note { font-size: 12.5px; }
+  /* Footer trust card — fewer pixels of left padding, lighter rule */
+  .site-foot .foot-trust { padding: 14px 14px; font-size: 13px; border-left-width: 2px; }
+  .site-foot .foot-trust .ft-data,
+  .site-foot .foot-trust .ft-contact { font-size: 12.5px; }
+  /* Verdict-key gap tightening on narrow screens */
+  .verdict-key .vk-item { gap: 10px; padding: 8px 0; }
+  /* Popup: clamp to viewport on tiny phones (<420px gutter) */
+  .op-popup { max-width: calc(100vw - 20px); }
+  .op-popup__title { font-size: 22px; line-height: 1.15; }
+  .op-popup__body { padding: 22px 18px 20px; }
+}
+@media (max-width: 380px) {
+  .op-popup__title { font-size: 20px; }
+  .hero h1 { font-size: clamp(26px, 9vw, 34px); }
 }
 
 /* ─── NEWSLETTER FOOTER SIGNUP ─────────────────────────────────────
@@ -873,12 +908,12 @@ a { color: inherit; }
   max-width: 520px;
 }
 .op-news__form input[type="email"] {
-  height: 46px; padding: 0 14px;
+  height: 48px; padding: 0 14px;
   border: 1px solid rgba(217, 210, 192, 0.32);
   border-radius: 4px;
   background: rgba(250, 247, 240, 0.06);
   color: var(--paper);
-  font-family: var(--font-sans); font-size: 15px;
+  font-family: var(--font-sans); font-size: 16px;
   outline: none;
 }
 .op-news__form input[type="email"]::placeholder { color: rgba(250, 247, 240, 0.48); }
@@ -961,10 +996,11 @@ body.op-noscroll { overflow: hidden; }
 .op-popup__accent { height: 3px; background: var(--flame); }
 .op-popup__body { padding: 26px 24px 24px; position: relative; }
 .op-popup__close {
-  position: absolute; top: 14px; right: 12px;
-  width: 30px; height: 30px;
+  position: absolute; top: 10px; right: 10px;
+  width: 44px; height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
   border: 0; background: transparent;
-  color: var(--graphite-soft); font-size: 22px; line-height: 1;
+  color: var(--graphite-soft); font-size: 24px; line-height: 1;
   cursor: pointer; border-radius: 4px;
 }
 .op-popup__close:hover { color: var(--ink); background: var(--rule-soft); }
@@ -1094,12 +1130,12 @@ body.op-noscroll { overflow: hidden; }
   <a href="/learn">Learn</a>
   <a href="/about">About</a>
 </nav>
-<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Paraguay v Australia · the model leans Australia</h1></section><section class="trust-strip" aria-label="Data freshness"><span class="ts-item"><span class="ts-lbl">Updated</span> 22 mins ago</span><span class="ts-item"><span class="ts-lbl">Model refresh</span> 11:51 UTC</span><span class="ts-item"><span class="ts-lbl">Market snapshot</span> live</span></section><div class="lv-card is-pick is-lead"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Fri 26 Jun · 02:00 UTC</span></div><h3 class="lv-teams">Paraguay <span class="vs">v</span> Australia</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">The away side reads stronger to the model than to the market. Our Elo prior puts Australia at 36%; Polymarket prices that side at 28%. The +8.3pp gap calls a Pick.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">36%</span></span><span class="rp"><span class="k">Market</span><span class="v">28%</span></span><span class="edge">+8.3pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-par-aus-2026-06-25" target="_blank" rel="nofollow noopener">View live market on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +257</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">View live market on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span></div></div></div><p class="event-disclaimer">Editorial analysis only. Odds Primer does not provide betting or financial advice.</p><div class="blurb"><p>FIFA World Cup 2026 on Friday, overnight UTC kickoff, brings Paraguay and Australia together. The Desk&#x27;s read disagrees with the market on the Australia side, by +8.3pp — and that disagreement is the Pick.</p>
+<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Paraguay v Australia · the model leans Australia</h1></section><section class="trust-strip" aria-label="Data freshness"><span class="ts-item"><span class="ts-lbl">Updated</span> 36 mins ago</span><span class="ts-item"><span class="ts-lbl">Model refresh</span> 11:51 UTC</span><span class="ts-item"><span class="ts-lbl">Market snapshot</span> live</span></section><div class="lv-card is-pick is-lead"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Fri 26 Jun · 02:00 UTC</span></div><h3 class="lv-teams">Paraguay <span class="vs">v</span> Australia</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">The away side reads stronger to the model than to the market. Our Elo prior puts Australia at 36%; Polymarket prices that side at 28%. The +8.3pp gap calls a Pick.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">36%</span></span><span class="rp"><span class="k">Market</span><span class="v">28%</span></span><span class="edge">+8.3pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-par-aus-2026-06-25" target="_blank" rel="nofollow noopener">View live market on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +257</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">View live market on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span></div></div></div><p class="event-disclaimer">Editorial analysis only. Odds Primer does not provide betting or financial advice.</p><div class="blurb"><p>FIFA World Cup 2026 on Friday, overnight UTC kickoff, brings Paraguay and Australia together. The Desk&#x27;s read disagrees with the market on the Australia side, by +8.3pp — and that disagreement is the Pick.</p>
 <p>The Elo prior reads Paraguay 1730 vs Australia 1740: 10 points in favour of Australia, which is a meaningful but not decisive prior. Both Elo numbers are pulled live from the public Elo source. The adjustment layer is quiet on this fixture — no host bonus, no home-ground correction, no altitude folding in. The Elo numbers above are what the model uses.</p>
 <p>Three-way split from the model: Paraguay to win at 34%, the draw at 29%, and Australia to win at 36%. The away side reads 36% on this distribution — the model&#x27;s central case for Australia.</p>
 <p>On the same three-way, Polymarket: Paraguay to win at 46%, the draw at 28%, and Australia to win at 28%. The Australia side trades at 28% on Polymarket, which prices out at American odds of +257. That&#x27;s where the engine differs: our number reads 36%, +8.3pp wider.</p>
 <p>Bootstrap discipline matters most on the longshots — wide bands on small point estimates collapse the Pick rate fast. On Australia the lower bound is 31%, which keeps the lower-bound gap at +3.3pp against the market — past +3pp, so the Pick clears. The claim is narrow: on this fixture, on this side, the price is below what the underlying read supports. We don&#x27;t argue the market is broadly wrong — across the priced field the model and the line agree more often than they disagree. We surface the ones where they don&#x27;t.</p>
-<p>This number will move. The confirmed starting eleven, fitness news, weather at the venue, and any tournament suspension carried in from previous matches all feed back into the prior. With kickoff 35 days out, the refresh is weekly until we cross five days, then daily, then hourly inside the final day. A wide Pick can collapse into a Pass if news moves enough of the read. Editorial analysis only — Odds Primer does not place trades and does not recommend a wager.</p></div><div class="cta-row"><a class="open-market" href="https://polymarket.com/event/fifwc-par-aus-2026-06-25" rel="nofollow noopener" target="_blank">View live market on Polymarket <span class="arr">↗</span></a><span class="meta-note">Editorial citation only. Odds Primer does not place trades.</span></div><section class="drivers"><h2>The drivers</h2><ol><li>Bootstrap lower-bound on the Australia side still clears the Pick threshold.</li>
+<p>This number will move. The confirmed starting eleven, fitness news, weather at the venue, and any tournament suspension carried in from previous matches all feed back into the prior. With kickoff 35 days out, the refresh is weekly until we cross five days, then daily, then hourly inside the final day. A wide Pick can collapse into a Pass if news moves enough of the read. Editorial analysis only — Odds Primer does not place trades and does not recommend a wager.</p></div><div class="cta-row"><a class="open-market" href="https://polymarket.com/event/fifwc-par-aus-2026-06-25" rel="nofollow noopener" target="_blank">View live market on <span class="venue-name">Polymarket</span> <span class="arr">↗</span></a><span class="meta-note">Editorial citation only. Odds Primer does not place trades.</span></div><section class="drivers"><h2>The drivers</h2><ol><li>Bootstrap lower-bound on the Australia side still clears the Pick threshold.</li>
 <li>Editorial analysis only — Odds Primer does not place trades or recommend a wager.</li>
 <li>Pre-match Elo gives Australia a stronger prior than the Polymarket line implies.</li>
 <li>The +8.3pp gap clears the Desk&#x27;s 3 percentage point threshold for a Pick.</li></ol></section><aside class="voice"><h3>How to read this</h3><p>The Desk compares its <em>model probability</em> against the <em>best available market probability</em>. A <em>Pick</em> means the model rates a side three or more percentage points higher than the market. <em>Pass</em> means the line is doing its job. <em>Avoid</em> means every side looks overpriced.</p></aside></main><section class="op-news" aria-labelledby="op-news-title">
