@@ -25,6 +25,7 @@ import sys
 import uvicorn
 
 import config
+from desk_distribute_loop import run_distribute_loop
 from desk_refresh_loop import run_desk_loop
 from ledger.refresh_loop import run_refresh_loop as run_ledger_refresh_loop
 from scheduler import Scheduler
@@ -58,6 +59,7 @@ async def main(port: int, paper_trade: bool) -> None:
         asyncio.create_task(server.serve(),          name="server"),
         asyncio.create_task(run_ledger_refresh_loop(), name="ledger_refresh"),
         asyncio.create_task(run_desk_loop(),         name="desk_refresh"),
+        asyncio.create_task(run_distribute_loop(),   name="desk_distribute"),
     ]
 
     if paper_trade:

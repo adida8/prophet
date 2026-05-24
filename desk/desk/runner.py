@@ -18,6 +18,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from desk import config
+from desk.distribute import (
+    BodyTooLarge,
+    DistributeConfig,
+    Outbox,
+    canonical_body,
+    detect_withdrawn,
+    enqueue_match,
+    load_config as load_distribute_config,
+    snapshot_prior_index,
+)
 from desk.ops import (
     FixtureRow,
     ForcedPassCounts,
@@ -146,6 +156,12 @@ def run_once(
 ) -> dict[str, list[Path]]:
     output_dir = Path(output_dir or config.OUTPUT_DIR)
     pub = Publisher(output_dir=output_dir)
+
+    # Distribute layer is push-side-effect only: when DESK_DISTRIBUTE_PUSH=0
+    # (default) the call is a no-op. We hold one outbox handle for the
+    # whole run so per-fixture enqueue doesn't re-open the SQLite file.
+    distribute_cfg, distribute_outbox = _open_distribute()
+
     if recorder is None:
         # DESK_OPS_DIR (when set) wins so prod can point ops history at
         # a persistent volume that survives Railway deploys. Otherwise
@@ -179,6 +195,10 @@ def run_once(
 
     for sport in active_sports():
         any_sport_ran = True
+        # Snapshot the prior per-sport index BEFORE write_index overwrites
+        # it. Used after the loop to detect withdrawn match_ids — fixtures
+        # that were in the prior index but aren't in this run's published set.
+        prior_index_snap = snapshot_prior_index(pub, sport.code)
         log.info("listing priced fixtures for %s", sport.code)
         try:
             pairs = list(sport.list_priced_fixtures())
@@ -293,6 +313,11 @@ def run_once(
                     ))
                     continue
 
+                # Distribute: wire-equivalent of the disk write. Same
+                # canonical bytes go to disk + outbox; the receiver dedupes
+                # on (match_id, updated_at). No-op when push is disabled.
+                _try_enqueue(m, cfg=distribute_cfg, outbox=distribute_outbox)
+
                 matches.append(m)
                 paths.append(path)
                 snapshot_rows.append(
@@ -321,6 +346,26 @@ def run_once(
         if matches:
             idx_path, _ = pub.write_index(sport.code, matches)
             paths.append(idx_path)
+
+        # Withdrawn detection: any match_id in the prior index that didn't
+        # publish this run. Writes a final withdrawn JSON to disk (NOT
+        # added to the index — the index reflects live fixtures only) and
+        # enqueues it. Single-shot: next run's prior_index won't carry it.
+        try:
+            published_ids = [m.match_id for m in matches]
+            withdrawn_matches = detect_withdrawn(
+                sport=sport.code,
+                publisher=pub,
+                prior_index=prior_index_snap,
+                current_match_ids=published_ids,
+                now=now,
+            )
+            for wm in withdrawn_matches:
+                _try_enqueue(wm, cfg=distribute_cfg, outbox=distribute_outbox)
+                n_published += 1
+        except Exception as e:                              # noqa: BLE001
+            log.warning("withdrawn detection failed for %s: %s", sport.code, e)
+
         log.info("%s: %d pick / %d pass / %d avoid",
                  sport.code, n_pick, n_pass, n_avoid)
         written[sport.code] = paths
@@ -390,7 +435,53 @@ def run_once(
     except Exception as e:                              # noqa: BLE001
         log.warning("ops recorder persist failed: %s", e)
 
+    if distribute_outbox is not None:
+        try:
+            distribute_outbox.close()
+        except Exception as e:                          # noqa: BLE001
+            log.warning("distribute outbox close failed: %s", e)
+
     return written
+
+
+def _open_distribute() -> tuple[DistributeConfig | None, Outbox | None]:
+    """Resolve distribute config + open the outbox if push is enabled.
+
+    Returns (None, None) when the config can't be loaded (e.g. push=1
+    without URL/secret). The runner logs and continues — disk writes
+    are decoupled from the wire.
+    """
+    try:
+        cfg = load_distribute_config()
+    except ValueError as e:
+        log.warning("distribute config invalid, push disabled this run: %s", e)
+        return None, None
+    if not cfg.push_enabled:
+        return cfg, None
+    try:
+        return cfg, Outbox(cfg.db_path)
+    except Exception as e:                                  # noqa: BLE001
+        log.warning("distribute outbox open failed, push disabled: %s", e)
+        return cfg, None
+
+
+def _try_enqueue(
+    match: MatchOutput,
+    *,
+    cfg: DistributeConfig | None,
+    outbox: Outbox | None,
+    body: bytes | None = None,
+) -> None:
+    """Best-effort enqueue. Never raises — the on-disk write is the
+    canonical receipt, the wire is a secondary delivery channel."""
+    if cfg is None or outbox is None or not cfg.push_enabled:
+        return
+    try:
+        enqueue_match(match, config=cfg, outbox=outbox, body=body)
+    except BodyTooLarge as e:
+        log.error("distribute enqueue rejected (oversized): %s", e)
+    except Exception as e:                                  # noqa: BLE001
+        log.warning("distribute enqueue failed for %s: %s", match.match_id, e)
 
 
 def _eligible_note(forced: ForcedPassCounts) -> str:

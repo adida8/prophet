@@ -170,6 +170,62 @@ def _cmd_extract_signals(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_distribute_drain(args: argparse.Namespace) -> int:
+    """Single-sweep drainer for the MTA push outbox.
+
+    Designed to be called repeatedly (e.g. every 30s by the
+    project-root async loop). Exits cleanly when push is disabled so a
+    cron-style caller can fire it unconditionally without an env check.
+    """
+    import asyncio
+
+    from desk.distribute import Outbox, drain_once, load_config
+    from desk.distribute.client import MTAClient
+
+    try:
+        cfg = load_config()
+    except ValueError as e:
+        print(f"distribute-drain: {e}", file=sys.stderr)
+        return 2
+
+    if not cfg.push_enabled:
+        print("distribute-drain: DESK_DISTRIBUTE_PUSH=0 — nothing to do")
+        return 0
+
+    async def _run() -> int:
+        assert cfg.webhook_url and cfg.webhook_secret  # load_config guarantees
+        client = MTAClient(
+            webhook_url=cfg.webhook_url,
+            webhook_secret=cfg.webhook_secret,
+        )
+        try:
+            with Outbox(cfg.db_path) as ob:
+                pending_before = ob.pending_count()
+                dead_before    = ob.dead_count()
+                stats = await drain_once(
+                    ob, client,
+                    max_in_flight=cfg.max_in_flight,
+                    rate_per_min=cfg.rate_per_min,
+                )
+                pending_after = ob.pending_count()
+                dead_after    = ob.dead_count()
+        finally:
+            await client.aclose()
+
+        print(
+            f"distribute-drain: claimed={stats.claimed} sent={stats.sent} "
+            f"retried={stats.retried} dead={stats.dead} "
+            f"(pending {pending_before}→{pending_after}, "
+            f"dead {dead_before}→{dead_after})"
+        )
+        if stats.errors_by_kind:
+            kinds = " ".join(f"{k}={v}" for k, v in sorted(stats.errors_by_kind.items()))
+            print(f"  errors: {kinds}")
+        return 0
+
+    return asyncio.run(_run())
+
+
 def _cmd_signals_validate(args: argparse.Namespace) -> int:
     """Load + report on the source seed.
 
@@ -329,6 +385,10 @@ def build_parser() -> argparse.ArgumentParser:
     es.add_argument("--limit", type=int, default=None,
                     help="extract at most N items per source (smoke-testing)")
     es.set_defaults(func=_cmd_extract_signals)
+
+    dd = sub.add_parser("distribute-drain",
+                        help="drain pending outbox rows to MTA (one sweep)")
+    dd.set_defaults(func=_cmd_distribute_drain)
 
     # `desk signals <subcommand>` — nested subparser. `validate` is the
     # only entry for now; future ops (list, stats, …) plug in here.

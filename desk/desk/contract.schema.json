@@ -299,7 +299,7 @@
       },
       "Verdict": {
         "additionalProperties": false,
-        "description": "The call.\n\nPick:  side / market_venue / price / edge_pp / market_url / model_p /\n       market_p all populated. side is the team **name** (e.g.\n       \"France\") or \"draw\" \u2014 never \"team_a\". market_url is the deep\n       link used by the front-of-house CTA. model_p / market_p are\n       the model's and market's implied probabilities for `side`,\n       in [0, 1] \u2014 they let the editorial layer render\n       \"Model: 34% \u00b7 Market: 22% \u00b7 Edge: +11.1pp\" without parsing\n       the blurb.\nPass:  side null, market_venue null, price null, edge_pp may be 0 or\n       null, model_p / market_p null (no single side to talk about).\n       market_url MAY be set so the user can still browse the market\n       on the venue.\nAvoid: side null, market_venue null, price null, edge_pp set to the\n       most-negative side's edge. model_p / market_p null. Per ADR\n       Phase A.4 the avoid framing is fixture-wide, not side-specific\n       \u2014 exposing per-side numbers would be misleading.",
+        "description": "The call.\n\nPick:  side / market_venue / price / edge_pp / market_url / model_p /\n       market_p all populated. side is the team **name** (e.g.\n       \"France\") or \"draw\" \u2014 never \"team_a\". market_url is the deep\n       link used by the front-of-house CTA. model_p / market_p are\n       the model's and market's implied probabilities for `side`,\n       in [0, 1] \u2014 they let the editorial layer render\n       \"Model: 34% \u00b7 Market: 22% \u00b7 Edge: +11.1pp\" without parsing\n       the blurb.\nPass:  side null, market_venue null, price null, edge_pp may be 0 or\n       null, model_p / market_p null (no single side to talk about).\n       market_url MAY be set so the user can still browse the market\n       on the venue.\nAvoid: side null, market_venue null, price null, edge_pp set to the\n       most-negative side's edge. model_p / market_p null. Per ADR\n       Phase A.4 the avoid framing is fixture-wide, not side-specific\n       \u2014 exposing per-side numbers would be misleading.\nWithdrawn: lifecycle terminal \u2014 match_id has left the live universe\n       (cancelled, postponed past slug date, de-listed). All\n       fields match the pass/avoid null-shape; the meaning is \"we\n       previously published this and have now stopped\". See ADR\n       0001 for detection + invariants.",
         "properties": {
           "edge_pp": {
             "anyOf": [
@@ -407,7 +407,8 @@
         "enum": [
           "pick",
           "pass",
-          "avoid"
+          "avoid",
+          "withdrawn"
         ],
         "title": "VerdictState",
         "type": "string"

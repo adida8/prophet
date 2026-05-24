@@ -44,6 +44,36 @@ def test_avoid_match_round_trip(epl_avoid: MatchOutput) -> None:
     assert reloaded.verdict.market_venue is None
 
 
+def test_withdrawn_state_round_trip(fra_mex_pick: MatchOutput) -> None:
+    """ADR 0001 — withdrawn is a fourth state with pass/avoid null-shape."""
+    payload = fra_mex_pick.model_dump(mode="json")
+    payload["verdict"] = {
+        "state":        "withdrawn",
+        "side":         None,
+        "market_venue": None,
+        "price":        None,
+        "edge_pp":      None,
+        "market_url":   None,
+        "model_p":      None,
+        "market_p":     None,
+    }
+    m = MatchOutput.model_validate(payload)
+    assert m.verdict.state == "withdrawn"
+    reloaded = MatchOutput.model_validate_json(m.model_dump_json())
+    assert reloaded.verdict.state == "withdrawn"
+
+
+def test_withdrawn_cannot_carry_pick_fields() -> None:
+    """A withdrawn verdict that smuggles pick fields must fail validation —
+    same null-shape rule as pass/avoid."""
+    with pytest.raises(ValidationError):
+        Verdict(state="withdrawn", market_venue="polymarket")  # type: ignore[call-arg]
+    with pytest.raises(ValidationError):
+        Verdict(state="withdrawn", model_p=0.5)
+    with pytest.raises(ValidationError):
+        Verdict(state="withdrawn", price="-180")  # type: ignore[call-arg]
+
+
 # ── Verdict invariants ─────────────────────────────────────────────────
 
 def test_pick_requires_side_and_venue() -> None:
