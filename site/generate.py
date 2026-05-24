@@ -41,6 +41,15 @@ FOOTBALL_DIR = DESK_OUT / "football"
 OUTRIGHTS_DIR = DESK_OUT / "outrights"
 SITE_OUT = ROOT / "site" / "public"
 
+# Shared team-code → flag helpers live in the desk package. The module is
+# pure stdlib (just a dict + parsing) so this import doesn't pull in the
+# ingest stack the generator deliberately stays away from.
+sys.path.insert(0, str(ROOT / "desk"))
+from desk.sports.football.flags import (  # noqa: E402 — path tweak above
+    flag_path,
+    team_codes_from_match_id,
+)
+
 # Canonical host for the public site. www is the host that serves every
 # page in production (the bare apex 404s on deep paths), so canonical tags,
 # og:url, sitemap.xml and robots.txt all agree on it. Single source of truth.
@@ -362,6 +371,16 @@ a { color: inherit; }
   color: var(--ink); margin: 4px 0 0; text-wrap: balance;
 }
 .lv-card .lv-teams .vs { color: var(--graphite-soft); font-weight: 400; font-style: italic; margin: 0 6px; }
+.lv-card .lv-flag {
+  display: inline-block;
+  width: 1.05em; height: 0.7em;       /* ≈3:2, scales with surrounding type */
+  object-fit: cover;
+  margin-right: 0.32em;
+  vertical-align: -0.05em;
+  border-radius: 2px;
+  /* hairline keeps light flags (Japan, white fields) from bleeding into paper */
+  box-shadow: 0 0 0 1px rgba(14, 34, 64, 0.12);
+}
 .lv-card .lv-venue-meta {
   grid-column: 2; grid-row: 3;
   font-family: var(--font-sans); font-size: 11.5px; color: var(--graphite);
@@ -2246,6 +2265,18 @@ GLYPHS = {"pick": "▲", "pass": "—", "avoid": "✕"}
 LABELS = {"pick": "Pick", "pass": "Pass", "avoid": "Avoid"}
 
 
+def _team_flag_img(team_code: str | None) -> str:
+    """Inline flag <img> for a team short-code. Empty string when there's
+    no resolvable code — keeps the title clean rather than rendering an
+    `_unknown` placeholder where we don't have a team."""
+    if not team_code:
+        return ""
+    return (
+        f'<img class="lv-flag" src="{flag_path(team_code)}" alt="" '
+        f'aria-hidden="true" loading="lazy">'
+    )
+
+
 def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = True) -> str:
     """Render one lv-card from a match JSON. Works for both Pick and Pass.
 
@@ -2259,7 +2290,12 @@ def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = Tr
 
     href = f"/m/{match['match_id']}"
     when = fmt_kickoff_full(match["kickoff_utc"])
-    title = f"{escape(match['team_a'])} <span class=\"vs\">v</span> {escape(match['team_b'])}"
+    code_a, code_b = team_codes_from_match_id(match.get("match_id"))
+    title = (
+        f'{_team_flag_img(code_a)}{escape(match["team_a"])}'
+        f' <span class="vs">v</span> '
+        f'{_team_flag_img(code_b)}{escape(match["team_b"])}'
+    )
 
     # Header
     head = (

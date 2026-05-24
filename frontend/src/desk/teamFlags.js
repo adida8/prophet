@@ -1,5 +1,9 @@
-// AUTO: Desk team-code (ISO3-ish, from match_id) -> flag ISO2 filename in /flags.
-// Source of truth for codes: desk/desk/sports/football/teams.py _NAME_TO_ISO3 values.
+// Desk team-code (ISO3-ish, from match_id) -> flag ISO2 filename in /flags.
+//
+// Keep this map in sync with `desk/desk/sports/football/flags.py`
+// (`TEAM_CODE_TO_ISO2`) — that file is the Python-side source of truth
+// used by `site/generate.py` for the static site. The two render
+// paths share the same /flags/*.svg assets.
 export const TEAM_FLAG = {
   "alg": "dz",
   "arg": "ar",
