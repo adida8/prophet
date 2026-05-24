@@ -66,6 +66,10 @@ export default function OpsAdmin() {
   // with an already-scheduled hour).
   const [picker, setPicker] = useState(null);
 
+  // Distribute (MTA push wire) state, polled independently so a slow
+  // control-state read doesn't block the dead-letter panel.
+  const [dist, setDist] = useState(null);
+
   const load = useCallback(async () => {
     try {
       const c = await fetchJson("/api/desk/ops/control");
@@ -76,7 +80,24 @@ export default function OpsAdmin() {
     }
   }, []);
 
+  const loadDistribute = useCallback(async () => {
+    try {
+      const d = await fetchJson("/api/desk/ops/distribute");
+      setDist(d);
+    } catch (e) {
+      // Surface in the panel, not the page-level error — the schedule
+      // is still operable even if the outbox read fails.
+      setDist({ error: e.message });
+    }
+  }, []);
+
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    loadDistribute();
+    // Drain ticks every 30s on the backend; mirror that here.
+    const t = setInterval(loadDistribute, 30_000);
+    return () => clearInterval(t);
+  }, [loadDistribute]);
 
   useEffect(() => {
     if (!state) return;
@@ -224,6 +245,129 @@ export default function OpsAdmin() {
           hour. Empty list = no scheduled runs (loop idles).
         </p>
       </section>
+
+      <DistributePanel dist={dist} onReload={loadDistribute} />
     </>
+  );
+}
+
+
+// ── Distribute panel ───────────────────────────────────────────────
+// MTA push wire visibility. Shows whether push is enabled, the
+// pending/dead counts, and the most recent dead-lettered rows with
+// their last error so the operator can read WHY a push died without
+// shelling into the SQLite volume.
+
+function DistributePanel({ dist, onReload }) {
+  if (!dist) {
+    return (
+      <section className="ops__section">
+        <h2 className="ops__section-title">Distribute · MTA push wire</h2>
+        <div className="ops__empty">loading…</div>
+      </section>
+    );
+  }
+
+  if (dist.error) {
+    return (
+      <section className="ops__section">
+        <h2 className="ops__section-title">Distribute · MTA push wire</h2>
+        <div className="ops__error">distribute read failed: {dist.error}</div>
+      </section>
+    );
+  }
+
+  const {
+    push_enabled, db_exists, pending_count, dead_count, recent_dead, db_path,
+  } = dist;
+
+  // Status pill rules:
+  //   off       → push_enabled=false
+  //   has-dead  → dead_count > 0 (most actionable, wins over backlog)
+  //   backlog   → pending_count > 0 (between sweeps or worker stalled)
+  //   healthy   → push on, no backlog, no dead
+  let pillClass = "ops__pill--source-static";
+  let pillLabel = "off";
+  if (push_enabled) {
+    if (dead_count > 0) {
+      pillClass = "ops__pill--fail";
+      pillLabel = "has dead-letters";
+    } else if (pending_count > 0) {
+      pillClass = "ops__pill--partial";
+      pillLabel = "backlog";
+    } else {
+      pillClass = "ops__pill--ok";
+      pillLabel = "healthy";
+    }
+  }
+
+  return (
+    <section className="ops__section">
+      <h2 className="ops__section-title">Distribute · MTA push wire</h2>
+
+      <div className="ops__distribute-row">
+        <span className={`ops__pill ${pillClass}`}>{pillLabel}</span>
+        <span className="ops__distribute-stat">
+          <span className="ops__distribute-stat-label">pending</span>
+          <span className="mono">{pending_count}</span>
+        </span>
+        <span className="ops__distribute-stat">
+          <span className="ops__distribute-stat-label">dead</span>
+          <span className={`mono ${dead_count > 0 ? "ops__distribute-stat--dead" : ""}`}>
+            {dead_count}
+          </span>
+        </span>
+        <button className="ops__reload" onClick={onReload}>Reload</button>
+      </div>
+
+      {!db_exists && (
+        <p className="ops__note">
+          No outbox DB yet at <code className="mono">{db_path}</code> —
+          will appear on the first match enqueue.
+        </p>
+      )}
+
+      {dead_count > 0 && (
+        <>
+          <h3 className="ops__distribute-deads-title">Recent dead-letters</h3>
+          <ul className="ops__distribute-deads">
+            {recent_dead.map((r) => (
+              <li key={r.id} className="ops__distribute-dead">
+                <div className="ops__distribute-dead-head">
+                  <span className="mono">{r.match_id}</span>
+                  <span className="ops__distribute-dead-meta">
+                    {r.attempts} attempt{r.attempts === 1 ? "" : "s"}
+                    {" · "}
+                    enqueued {fmtAgo(new Date(r.created_at * 1000).toISOString())}
+                  </span>
+                </div>
+                <div className="ops__distribute-dead-err mono">
+                  {r.last_error || "(no error recorded)"}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p className="ops__note">
+            Dead rows are preserved for inspection — never auto-retried.
+            Clear them with SQL on the volume once acknowledged.
+          </p>
+        </>
+      )}
+
+      {push_enabled && dead_count === 0 && pending_count === 0 && db_exists && (
+        <p className="ops__note">
+          All caught up — every enqueued match has been delivered to MTA
+          and 200'd.
+        </p>
+      )}
+
+      {!push_enabled && (
+        <p className="ops__note">
+          Push is off (<code className="mono">DESK_DISTRIBUTE_PUSH=0</code>).
+          Set to <code className="mono">1</code> on Railway to activate the
+          wire — runner already enqueues, drain loop will catch up.
+        </p>
+      )}
+    </section>
   );
 }

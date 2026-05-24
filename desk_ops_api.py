@@ -43,6 +43,14 @@ PUT /api/desk/ops/control  body: { enabled?, hours?: [int 0..23] }
     refresh tick fires (e.g. [6, 14, 22] = three runs per day). The
     refresh loop picks up changes on its next scheduling decision —
     no restart needed.
+
+GET /api/desk/ops/distribute?limit=25
+    Read-only view of the MTA push outbox (sqlite). Returns
+    push_enabled / pending_count / dead_count + the most recent dead
+    rows with last_error. Never 500s — a missing DB returns empty
+    counts. Owned by desk/desk/distribute/outbox.py; we read it
+    here with stdlib sqlite3 to preserve the no-imports-from-desk
+    invariant.
 """
 
 from __future__ import annotations
@@ -52,6 +60,7 @@ import logging
 import os
 import re
 import secrets
+import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -397,3 +406,114 @@ def put_control(payload: dict = Body(default_factory=dict)) -> dict:
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
     return _write_control(patch)
+
+
+# ── Distribute (MTA push wire) visibility ─────────────────────────────
+# Read-only view of the outbox owned by `desk/desk/distribute/`. The
+# project-root API never imports from `desk/` (see desk_api.py header),
+# so we read the SQLite file directly with stdlib. Schema is owned by
+# `desk/desk/distribute/outbox.py::_SCHEMA` — keep the column list in
+# sync if it ever changes.
+
+# Default DB path mirrors `desk.distribute.config._PACKAGE_DB_PATH`.
+_DEFAULT_DISTRIBUTE_DB = _PROJECT_ROOT / "desk" / "data" / "distribute.db"
+_DEAD_LIMIT_DEFAULT    = 25
+_DEAD_LIMIT_MAX        = 200
+
+
+def _distribute_db_path() -> Path:
+    env = os.getenv("DESK_DISTRIBUTE_DB_PATH")
+    return Path(env) if env else _DEFAULT_DISTRIBUTE_DB
+
+
+def _empty_distribute_state(*, db_path: Path) -> dict[str, Any]:
+    return {
+        "push_enabled":  os.getenv("DESK_DISTRIBUTE_PUSH", "0") == "1",
+        "db_path":       str(db_path),
+        "db_exists":     False,
+        "pending_count": 0,
+        "dead_count":    0,
+        "recent_dead":   [],
+    }
+
+
+def _read_distribute_state(*, dead_limit: int) -> dict[str, Any]:
+    """Open the outbox read-only, return counts + recent dead rows.
+
+    Resilient: a missing DB, an unreadable file, or a schema mismatch
+    all collapse to the empty state with `db_exists=False`. The endpoint
+    must not 500 just because push has never been enabled.
+    """
+    db_path = _distribute_db_path()
+    state = _empty_distribute_state(db_path=db_path)
+    if not db_path.is_file():
+        return state
+
+    state["db_exists"] = True
+    # `uri=True` + `mode=ro` opens read-only — guarantees we never
+    # take a write lock against the runner / drain process.
+    uri = f"file:{db_path}?mode=ro"
+    try:
+        conn = sqlite3.connect(uri, uri=True, timeout=2.0)
+    except sqlite3.Error as e:
+        log.warning("distribute db open failed: %s", e)
+        return state
+
+    try:
+        conn.row_factory = sqlite3.Row
+        try:
+            row = conn.execute(
+                "SELECT "
+                "  SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pending, "
+                "  SUM(CASE WHEN status = 'dead'    THEN 1 ELSE 0 END) AS dead "
+                "FROM push_queue"
+            ).fetchone()
+            state["pending_count"] = int(row["pending"] or 0)
+            state["dead_count"]    = int(row["dead"]    or 0)
+        except sqlite3.Error as e:
+            log.warning("distribute count query failed: %s", e)
+            return state
+
+        try:
+            dead_rows = conn.execute(
+                "SELECT id, match_id, updated_at, attempts, last_error, created_at "
+                "FROM push_queue WHERE status = 'dead' "
+                "ORDER BY id DESC LIMIT ?",
+                (dead_limit,),
+            ).fetchall()
+            state["recent_dead"] = [
+                {
+                    "id":         int(r["id"]),
+                    "match_id":   r["match_id"],
+                    "updated_at": r["updated_at"],
+                    "attempts":   int(r["attempts"] or 0),
+                    "last_error": r["last_error"] or "",
+                    "created_at": int(r["created_at"] or 0),
+                }
+                for r in dead_rows
+            ]
+        except sqlite3.Error as e:
+            log.warning("distribute dead query failed: %s", e)
+    finally:
+        conn.close()
+
+    return state
+
+
+@router.get("/distribute", dependencies=[Depends(_gate)])
+def get_distribute_state(
+    limit: int = Query(default=_DEAD_LIMIT_DEFAULT, ge=1, le=_DEAD_LIMIT_MAX),
+) -> dict[str, Any]:
+    """Read-only view of the MTA push outbox.
+
+    Surfaces:
+      * `push_enabled` — whether DESK_DISTRIBUTE_PUSH=1 right now (env
+        flip survives without a redeploy as the loop subprocess re-reads).
+      * `pending_count` / `dead_count` — at-a-glance health.
+      * `recent_dead` — newest-first list of dead-lettered rows with the
+        last error string, so the operator can read WHY they died
+        without `sqlite3` shelling into the volume.
+
+    Never 500s — a missing DB or unreadable file returns empty counts.
+    """
+    return _read_distribute_state(dead_limit=limit)
