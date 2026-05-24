@@ -26,7 +26,7 @@ from fastapi.staticfiles import StaticFiles
 
 import config
 from core.logger import get_portfolio_summary
-from desk_api import router as desk_router
+from desk_api import external_router as desk_external_router, router as desk_router
 from desk_ops_api import router as desk_ops_router
 from ledger import db as ledger_db
 from ledger.router import router as ledger_router
@@ -159,6 +159,12 @@ app.include_router(desk_router)
 # `app.get("/", ...)` etc.) so `/api/desk/ops/*` resolves to the API
 # adapter, not the React shell. Disabled-by-default — see desk_ops_api.
 app.include_router(desk_ops_router)
+# External (bearer-gated) GET endpoint for the MTA refresh-button path.
+# Only mounted when DESK_API_BEARER_TOKEN is set; without it the route
+# 404s rather than 401s, so an unconfigured deploy doesn't even
+# acknowledge that the surface exists.
+if os.getenv("DESK_API_BEARER_TOKEN"):
+    app.include_router(desk_external_router)
 app.include_router(signup_router)
 
 

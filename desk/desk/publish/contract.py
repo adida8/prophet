@@ -28,9 +28,15 @@ from pydantic import (
 # ── Enums ─────────────────────────────────────────────────────────────
 
 class VerdictState(str, Enum):
-    PICK  = "pick"
-    PASS  = "pass"
-    AVOID = "avoid"
+    PICK      = "pick"
+    PASS      = "pass"
+    AVOID     = "avoid"
+    # Lifecycle terminal state. Emitted exactly once when a previously-
+    # published match_id leaves the live universe (cancelled, postponed
+    # past slug date, de-listed by the source venue). Field semantics
+    # match pass/avoid — side/price/edge_pp/model_p/market_p all null.
+    # See desk/docs/adr/0001-withdrawn-verdict-state.md.
+    WITHDRAWN = "withdrawn"
 
 
 class MarketVenue(str, Enum):
@@ -89,6 +95,11 @@ class Verdict(BaseModel):
            most-negative side's edge. model_p / market_p null. Per ADR
            Phase A.4 the avoid framing is fixture-wide, not side-specific
            — exposing per-side numbers would be misleading.
+    Withdrawn: lifecycle terminal — match_id has left the live universe
+           (cancelled, postponed past slug date, de-listed). All
+           fields match the pass/avoid null-shape; the meaning is "we
+           previously published this and have now stopped". See ADR
+           0001 for detection + invariants.
     """
     model_config = ConfigDict(extra="forbid", use_enum_values=True)
 

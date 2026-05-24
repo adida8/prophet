@@ -8,7 +8,7 @@ others.
 |---|---|---|---|
 | **Prophet** | Paper-trading bot for prediction markets, plus the platform's market data engine and React dashboard | `prophet/` (or repo root for legacy code), `frontend/` | shipping; deployed to Railway |
 | **Ledger** | Connected portfolio tracker for Polymarket (Kalshi in Phase 1). Paste-a-wallet viewer at `/ledger`. | `ledger/`, `frontend/src/ledger/` | Phase 0 shipped; live on Railway |
-| **The Desk** | Verdict engine that evaluates every priced football match + the WC 2026 outright winner market | `desk/` | PRs 1–4 + backtest + 4.5 sanity + explainer stub + **optimization-spec Phase A** + **outright engine (parallel pipeline, live on Polymarket)** + **WC26-only ingest filter** + **per-team outright ladder UI** + **team-id collision fix + seed-Elo audit** + **news-signals PRs A–F all live in production** (12 trusted-core RSS → Haiku → `copy.editorial_citations` + bounded Elo nudges) + **PR 5 Haiku blurb-writer** (gated on `DESK_BLURB_HAIKU=1`, falls back to stub on any failure) all landed; PR 6 scheduler still outstanding |
+| **The Desk** | Verdict engine that evaluates every priced football match + the WC 2026 outright winner market | `desk/` | PRs 1–4 + backtest + 4.5 sanity + explainer stub + **optimization-spec Phase A** + **outright engine (parallel pipeline, live on Polymarket)** + **WC26-only ingest filter** + **per-team outright ladder UI** + **team-id collision fix + seed-Elo audit** + **news-signals PRs A–F all live in production** (12 trusted-core RSS → Haiku → `copy.editorial_citations` + bounded Elo nudges) + **PR 5 Haiku blurb-writer** (gated on `DESK_BLURB_HAIKU=1`, falls back to stub on any failure) + **distribute wire to Market Tips AI** (sqlite outbox + HMAC-signed push + bearer-gated GET safety net, gated on `DESK_DISTRIBUTE_PUSH=1` / `DESK_API_BEARER_TOKEN`) all landed; PR 6 scheduler still outstanding |
 | **Odds Primer site (React)** | Editorial front-of-house: home (`/`), about (`/about`), learn (`/learn` + 3 primers). Reuses the design system; hardcoded sample data — live wiring is a later workstream. Legacy Prophet trading dashboard moved to `/dashboard` (unlinked). | `frontend/src/op/` | shipped to staging 2026-05-13 (PR #27). **Route conflict at `/` with `site/generate.py`'s static site (`/`, `/matches`, `/outrights`) needs reconciling before prod promote.** |
 
 Build specs live alongside the code:
@@ -297,6 +297,14 @@ desk/
 │   │   ├── hard_track.py              # hard_signals_for() — track gate + recency
 │   │   ├── runtime.py                 # SignalsRuntime: opens cache, yields citations/hard signals per fixture
 │   │   └── data/sources_seed.csv      # the 21-row global seed (verified 2026-05-21)
+│   ├── distribute/                   # OUTBOUND wire to external consumers (MTA)
+│   │   ├── config.py                 # env reader; fail-loud on push=1 without URL/secret
+│   │   ├── signing.py                # HMAC-SHA256 over "{ts}.{body}"
+│   │   ├── outbox.py                 # SQLite durable queue (collapse by match_id)
+│   │   ├── client.py                 # httpx async client → Ok|Retryable|Permanent
+│   │   ├── worker.py                 # drain_once: token-bucketed dispatch + backoff
+│   │   ├── enqueue.py                # canonical_body + enqueue_match (runner-facing)
+│   │   └── withdrawn.py              # detect_and_emit: prior_index − current → withdrawn payloads
 │   ├── outrights/                    # PARALLEL pipeline for tournament-winner markets
 │   │   ├── ingest_polymarket.py      # gamma client for WC winner event
 │   │   ├── wc26_data.py              # bracket structure + Elo seed
@@ -312,9 +320,11 @@ desk/
 │   │   ├── writers/                  # xlsx + dashboard regenerators
 │   │   └── runner.py                 # run_backtest() orchestrator
 │   ├── runner.py                     # run_once() — full live pipeline
-│   ├── cli.py                        # `desk run / sports / match / outrights / backtest`
+│   ├── cli.py                        # `desk run / sports / match / outrights / backtest / distribute-drain / fetch-signals / extract-signals / signals validate`
 │   └── contract.schema.json          # generated; in-sync test enforces
-├── tests/                            # 172 green
+├── CONTRACT_CHANGELOG.md             # public contract changelog — additive-only by default, breaking changes require ADR
+├── docs/adr/                         # ADRs (0001 = withdrawn verdict state)
+├── tests/                            # 553 green
 └── data/
     ├── output/football/              # live per-match JSON + index.json (WC26-only by default)
     ├── output/outrights/              # live per-outright JSON + index.json
@@ -406,6 +416,15 @@ Override via `DESK_PICK_PP` / `DESK_PASS_PP` / `DESK_AVOID_PP` in `.env`.
 | `DESK_HARD_SIGNAL_WINDOW_DAYS` | `5` | Late-binding window. A hard signal only adjusts Elo when the fixture's kickoff is within this many days. Outside the window, the path is a no-op. |
 | `DESK_BLURB_HAIKU` | `0` | Set to `1` to route the explainer's title/summary/blurb through `desk/desk/explainer/haiku.py` (Haiku 4.5, system prompt sourced from `desk/VOICE.md`). Needs `ANTHROPIC_API_KEY`. Off by default — without it, the templated stub still ships. |
 | `DESK_BLURB_HAIKU_MODEL` | `claude-haiku-4-5` | Override the Haiku model id. Useful for pinning a specific haiku build. |
+| `DESK_DISTRIBUTE_PUSH` | `0` | Set to `1` to enable the push wire to Market Tips AI (see `desk/desk/distribute/`). Runner enqueues every `write_match` + every withdrawn payload; `desk_distribute_loop.py` drains every 30s via `python -m desk distribute-drain`. Off by default — a fresh deploy does not push until the operator opts in. |
+| `DESK_DISTRIBUTE_WEBHOOK_URL` | unset | MTA webhook URL — prod `https://markettipsai.com/api/webhooks/desk/publish`. Required when `DESK_DISTRIBUTE_PUSH=1`; `load_config()` fails loud at boot if either this or the secret is missing. |
+| `DESK_DISTRIBUTE_WEBHOOK_SECRET` | unset | HMAC-SHA256 shared key for the push wire. Coordinated with MTA via encrypted channel (no commits, no logs). |
+| `DESK_DISTRIBUTE_DB_PATH` | unset → `desk/data/distribute.db` | Outbox sqlite path. **Set this on Railway** to a mounted volume (e.g. `/data/distribute.db`) so in-flight rows survive deploys — without it, a redeploy mid-retry loses the row and MTA never sees the payload. |
+| `DESK_DISTRIBUTE_RATE_PER_MIN` | `50` | Token-bucket cap on outbound POSTs per sweep. Sits comfortably under MTA's 60-req/min/source-IP ceiling. |
+| `DESK_DISTRIBUTE_MAX_IN_FLIGHT` | `8` | Per-sweep concurrency cap. |
+| `DESK_DISTRIBUTE_MAX_BYTES` | `60000` | Pre-send body-size guard. Contract bounds put worst-case JSON at ~32KB; the guard exists to fail loudly on contract drift before a 413 round-trip. |
+| `DESK_DISTRIBUTE_TICK_SEC` | `30` | Drain-loop cadence (project-root async task). |
+| `DESK_API_BEARER_TOKEN` | unset | Token for the bearer-gated external GET at `/api/desk/external/match/{match_id}` (single-match safety-net read for MTA). Shape `dtk_<32-byte URL-safe>`. **Without it the route 404s** — server.py omits the mount entirely so unconfigured deploys don't acknowledge the surface. |
 
 ### Output contract (what the website consumes)
 

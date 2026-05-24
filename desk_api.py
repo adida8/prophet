@@ -30,21 +30,26 @@ GET /api/desk/outright/{outright_id}
 
 from __future__ import annotations
 
+import hmac
 import json
 import logging
+import os
 import re
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 
 log = logging.getLogger("desk_api")
 
 router = APIRouter(prefix="/api/desk", tags=["desk"])
+external_router = APIRouter(prefix="/api/desk/external", tags=["desk-external"])
 
-# desk/data/output/{sport}/ — `desk/` is a sibling of this file.
+# desk/data/output/{sport}/ — `desk/` is a sibling of this file. The
+# root is resolved at call time (not import time) so DESK_OUTPUT_DIR
+# can redirect reads, same convention as desk_ops_api._ops_root.
 _PROJECT_ROOT = Path(__file__).resolve().parent
-_OUTPUT_ROOT  = _PROJECT_ROOT / "desk" / "data" / "output"
+_DEFAULT_OUTPUT_ROOT = _PROJECT_ROOT / "desk" / "data" / "output"
 
 # Defence-in-depth: the writer guarantees this shape, but the API
 # never trusts the URL path to match it.
@@ -54,10 +59,15 @@ _SPORT_RE       = re.compile(r"^[a-z]{2,16}$")
 _OUTRIGHTS_DIR  = "outrights"
 
 
+def _output_root() -> Path:
+    env = os.getenv("DESK_OUTPUT_DIR")
+    return Path(env) if env else _DEFAULT_OUTPUT_ROOT
+
+
 def _sport_dir(sport: str) -> Path:
     if not _SPORT_RE.match(sport):
         raise HTTPException(status_code=400, detail="invalid sport")
-    return _OUTPUT_ROOT / sport
+    return _output_root() / sport
 
 
 def _load_match(sport_dir: Path, match_id: str) -> dict[str, Any]:
@@ -137,7 +147,7 @@ async def get_match(match_id: str, sport: str = "football") -> dict[str, Any]:
 # `index.json` in the same directory.
 
 def _outrights_dir() -> Path:
-    return _OUTPUT_ROOT / _OUTRIGHTS_DIR
+    return _output_root() / _OUTRIGHTS_DIR
 
 
 @router.get("/outrights")
@@ -157,3 +167,60 @@ async def get_outright(outright_id: str) -> dict[str, Any]:
     if not path.is_file():
         raise HTTPException(status_code=404, detail=f"outright not found: {outright_id}")
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+# ── External (bearer-gated) — single-match safety-net GET ─────────────
+# Mounted only when DESK_API_BEARER_TOKEN is set (server.py). Used by
+# external consumers (today: Market Tips AI) as a manual refresh path
+# alongside the push wire. Push covers normal traffic; this is the
+# operator-triggered fallback.
+#
+# The push wire and this route share the same on-disk artefact — the
+# returned JSON is byte-equivalent to what the wire delivered (modulo
+# httpx's encoding of whatever the writer wrote). See:
+# `desk/desk/distribute/` for the push side.
+
+
+def _expected_token() -> str | None:
+    """Read the token at call time so a runtime env flip is honoured.
+
+    Returns None when unset, which makes the dependency 503 — the route
+    shouldn't be reachable in that state (server.py guards the mount)
+    but defence-in-depth is cheap.
+    """
+    tok = os.getenv("DESK_API_BEARER_TOKEN")
+    return tok or None
+
+
+def _require_bearer(authorization: str | None = Header(default=None)) -> str:
+    """FastAPI dependency: validate `Authorization: Bearer <token>`.
+
+    Constant-time compare so timing leaks don't reveal the prefix. Returns
+    the validated token (caller can ignore).
+    """
+    expected = _expected_token()
+    if expected is None:
+        raise HTTPException(status_code=503, detail="bearer auth not configured")
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="missing bearer token")
+    presented = authorization[len("Bearer "):].strip()
+    if not hmac.compare_digest(presented, expected):
+        raise HTTPException(status_code=401, detail="invalid bearer token")
+    return presented
+
+
+@external_router.get(
+    "/match/{match_id}",
+    dependencies=[Depends(_require_bearer)],
+)
+async def external_get_match(
+    match_id: str,
+    sport: str = "football",
+) -> dict[str, Any]:
+    """Latest published payload for one match_id.
+
+    Returns the same JSON shape that the push wire delivers. 404 when
+    no match has ever been published under this slug. 401 on missing /
+    invalid bearer (handled by the dependency).
+    """
+    return _load_match(_sport_dir(sport), match_id)
