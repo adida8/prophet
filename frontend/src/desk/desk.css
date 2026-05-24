@@ -158,6 +158,29 @@
   font-style: italic;
 }
 
+/* ---------- option A: inline country flags ---------- */
+
+.op-desk__card-fixture--flagged {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.op-desk__card-fixture--flagged .op-desk__vs {
+  margin: 0 2px;
+}
+
+.op-desk__flag {
+  width: 24px;
+  height: 16px;
+  border-radius: 2px;
+  object-fit: cover;
+  /* hairline keeps light flags (Japan, white fields) from bleeding into paper */
+  box-shadow: 0 0 0 1px rgba(14, 34, 64, 0.12);
+  flex: none;
+  vertical-align: -2px;
+}
+
 .op-desk__card-verdictline {
   margin-top: auto;
   padding-top: var(--space-3);

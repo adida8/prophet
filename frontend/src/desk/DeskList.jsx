@@ -10,6 +10,33 @@
 // to take the reader.
 
 import { useEffect, useMemo, useState } from "react";
+import { TEAM_FLAG } from "./teamFlags";
+
+// Pull the two team short-codes out of a match_id:
+// fb-wc26-<a>-<b>-<yyyymmdd>  ->  [a, b]
+function teamCodes(matchId) {
+  const parts = (matchId || "").split("-");
+  if (parts.length < 5) return [null, null];
+  return [parts[2], parts[3]];
+}
+
+function flagSrc(code) {
+  const iso2 = code && TEAM_FLAG[code];
+  return `/flags/${iso2 || "_unknown"}.svg`;
+}
+
+function TeamFlag({ code, name }) {
+  return (
+    <img
+      className="op-desk__flag"
+      src={flagSrc(code)}
+      alt=""
+      aria-hidden="true"
+      loading="lazy"
+      onError={(e) => { e.currentTarget.src = "/flags/_unknown.svg"; }}
+    />
+  );
+}
 
 const FILTERS = [
   { id: "all",   label: "All" },
@@ -157,6 +184,7 @@ function MatchCard({ match, onSelect }) {
   // Verdict-first one-liner. The fixture name leads; the verdict line
   // tells the reader the call without asking them to open the page.
   const verdictLine = buildVerdictLine(state, v);
+  const [codeA, codeB] = teamCodes(match.match_id);
 
   return (
     <a
@@ -169,8 +197,12 @@ function MatchCard({ match, onSelect }) {
         <span className="op-desk__card-time">{fmtTime(match.kickoff_utc)}</span>
       </div>
 
-      <h3 className="op-desk__card-fixture">
-        {match.team_a} <span className="op-desk__vs">vs</span> {match.team_b}
+      <h3 className="op-desk__card-fixture op-desk__card-fixture--flagged">
+        <TeamFlag code={codeA} name={match.team_a} />
+        {match.team_a}
+        <span className="op-desk__vs">vs</span>
+        <TeamFlag code={codeB} name={match.team_b} />
+        {match.team_b}
       </h3>
 
       <p className={`op-desk__card-verdictline op-desk__card-verdictline--${state}`}>
