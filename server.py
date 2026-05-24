@@ -507,7 +507,11 @@ if FRONTEND_DIST.exists():
 
     @app.get("/desk/ops", include_in_schema=False, dependencies=[Depends(_desk_ops_gate)])
     @app.get("/desk/ops/", include_in_schema=False, dependencies=[Depends(_desk_ops_gate)])
-    async def desk_ops_spa():
+    @app.get("/desk/ops/{subpath:path}", include_in_schema=False, dependencies=[Depends(_desk_ops_gate)])
+    async def desk_ops_spa(subpath: str = ""):
+        # All paths under /desk/ops/* share the SPA shell — the React app
+        # (DeskApp → OpsShell) handles the sub-route. This catch-all carries
+        # the same Basic-auth gate so /desk/ops/admin is never unauthed.
         return FileResponse(FRONTEND_DIST / "index.html")
 
     # SPA fallback: serves the React app for /ledger, /desk, /dashboard

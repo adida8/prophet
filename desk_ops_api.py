@@ -2,8 +2,9 @@
 
 Mounted at /api/desk/ops/* by server.py. Read-mostly — serves the
 `RunReport` JSON the runner persists to `desk/data/output/ops/runs/`
-plus a small read/write `control.json` (enable/disable + interval)
-that the refresh loop polls on each scheduling decision.
+plus a small read/write `control.json` (enable/disable + a list of
+UTC hours at which to fire daily) that the refresh loop polls on each
+scheduling decision.
 
 This module lives at the project root next to `desk_api.py` for the
 same architectural reason: the server runs from project root and
@@ -35,11 +36,13 @@ GET /api/desk/ops/runs/{run_id}
     Full run report for one run. 400 on a malformed id, 404 if absent.
 
 GET /api/desk/ops/control
-    Current refresh-loop control state (enabled, interval_minutes).
+    Current refresh-loop control state (enabled, hours).
 
-PUT /api/desk/ops/control  body: { enabled?, interval_minutes? }
-    Update control state. The refresh loop picks up changes on its
-    next scheduling decision — no restart needed.
+PUT /api/desk/ops/control  body: { enabled?, hours?: [int 0..23] }
+    Update control state. `hours` is a list of UTC hours at which the
+    refresh tick fires (e.g. [6, 14, 22] = three runs per day). The
+    refresh loop picks up changes on its next scheduling decision —
+    no restart needed.
 """
 
 from __future__ import annotations
@@ -99,18 +102,40 @@ def _tick_totals_path() -> Path:
 # sync by hand because neither file can import from the other (the
 # loop runs in main.py's asyncio task, the API runs inside FastAPI;
 # both share the on-disk JSON file as the source of truth).
+#
+# Schema: { enabled: bool, hours: [int 0..23], updated_at: iso8601 }
+# `hours` is the list of UTC clock hours at which the refresh tick
+# fires once per day (e.g. [6, 14, 22] = three runs daily). Empty list
+# means "no scheduled runs"; the loop idles until the operator adds one.
 
-_DEFAULT_INTERVAL_MIN = 24 * 60          # daily
-_MIN_INTERVAL_MIN     = 5                # safety floor — don't let the UI ddos
-_MAX_INTERVAL_MIN     = 7 * 24 * 60      # one week
+_DEFAULT_HOURS = [6]      # fresh install fires daily at 06:00 UTC
 
 
 def _now_iso() -> str:
     return datetime.now(tz=timezone.utc).isoformat().replace("+00:00", "Z")
 
 
-def _clamp_interval(v: int) -> int:
-    return max(_MIN_INTERVAL_MIN, min(_MAX_INTERVAL_MIN, int(v)))
+def _normalise_hours(raw: Any) -> list[int]:
+    """Coerce input into a sorted, deduped list of valid UTC hours.
+
+    Accepts list of int / str / float. Drops anything outside 0..23.
+    Empty list is a valid state — means "schedule disabled" even when
+    enabled=true. Cap at 24 entries (one per hour) — defence in depth
+    against a runaway frontend.
+    """
+    if raw is None:
+        return list(_DEFAULT_HOURS)
+    if not isinstance(raw, (list, tuple)):
+        raise ValueError("hours must be a list of integers")
+    out: set[int] = set()
+    for v in raw:
+        try:
+            h = int(v)
+        except (TypeError, ValueError):
+            continue
+        if 0 <= h <= 23:
+            out.add(h)
+    return sorted(out)[:24]
 
 
 def _read_control() -> dict[str, Any]:
@@ -118,23 +143,27 @@ def _read_control() -> dict[str, Any]:
     path = _control_path()
     if not path.is_file():
         return {
-            "enabled":          True,
-            "interval_minutes": _DEFAULT_INTERVAL_MIN,
-            "updated_at":       None,
+            "enabled":    True,
+            "hours":      list(_DEFAULT_HOURS),
+            "updated_at": None,
         }
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as e:
         log.warning("control.json unreadable, returning defaults: %s", e)
         return {
-            "enabled":          True,
-            "interval_minutes": _DEFAULT_INTERVAL_MIN,
-            "updated_at":       None,
+            "enabled":    True,
+            "hours":      list(_DEFAULT_HOURS),
+            "updated_at": None,
         }
+    try:
+        hours = _normalise_hours(raw.get("hours"))
+    except ValueError:
+        hours = list(_DEFAULT_HOURS)
     return {
-        "enabled":          bool(raw.get("enabled", True)),
-        "interval_minutes": _clamp_interval(raw.get("interval_minutes", _DEFAULT_INTERVAL_MIN)),
-        "updated_at":       raw.get("updated_at"),
+        "enabled":    bool(raw.get("enabled", True)),
+        "hours":      hours,
+        "updated_at": raw.get("updated_at"),
     }
 
 
@@ -142,9 +171,9 @@ def _write_control(patch: dict[str, Any]) -> dict[str, Any]:
     """Persist a patched control state atomically."""
     current = _read_control()
     new = {
-        "enabled":          bool(patch.get("enabled", current["enabled"])),
-        "interval_minutes": _clamp_interval(patch.get("interval_minutes", current["interval_minutes"])),
-        "updated_at":       _now_iso(),
+        "enabled":    bool(patch.get("enabled", current["enabled"])),
+        "hours":      _normalise_hours(patch["hours"]) if "hours" in patch else current["hours"],
+        "updated_at": _now_iso(),
     }
     root = _ops_root()
     root.mkdir(parents=True, exist_ok=True)
@@ -357,15 +386,14 @@ def get_control() -> dict:
 
 @router.put("/control", dependencies=[Depends(_gate)])
 def put_control(payload: dict = Body(default_factory=dict)) -> dict:
-    # Validate keys we accept; ignore unknowns rather than 400 so a
-    # future UI revision can send extra fields without breaking older
-    # servers.
+    # Accept enabled + hours; ignore unknowns so a future UI revision
+    # can send extra fields without breaking older servers.
     patch: dict[str, Any] = {}
     if "enabled" in payload:
         patch["enabled"] = bool(payload["enabled"])
-    if "interval_minutes" in payload:
+    if "hours" in payload:
         try:
-            patch["interval_minutes"] = int(payload["interval_minutes"])
-        except (TypeError, ValueError):
-            raise HTTPException(status_code=400, detail="interval_minutes must be an integer")
+            patch["hours"] = _normalise_hours(payload["hours"])
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
     return _write_control(patch)

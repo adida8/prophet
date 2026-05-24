@@ -26,9 +26,15 @@ and append a `tick-totals.jsonl` row keyed by the matches RunReport's
 `run_id`. The ops API joins this onto the run history table so the
 dashboard shows a per-run cost column.
 
-Cadence + enable/disable are read from `{ops_root}/control.json`,
-which the ops dashboard's Control panel writes. No env vars needed —
-operators toggle the run on staging or prod via the UI.
+Cadence + enable/disable are read from `{ops_root}/control.json`, the
+file the Desk admin page writes. The schema is:
+
+    { "enabled": bool, "hours": [int 0..23], "updated_at": iso8601 }
+
+Each hour in `hours` is a UTC clock hour at which the loop fires
+exactly once per day. Empty list = no scheduled runs (loop idles).
+Operators add/remove hours via the UI; the loop polls control.json
+on every scheduling decision so changes land without a restart.
 
 `DESK_AUTORUN=0` is still respected as a hard kill switch (useful
 when the deployment platform needs to pause the loop without dashboard
@@ -44,14 +50,14 @@ import os
 import re
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
 log = logging.getLogger("desk.refresh_loop")
 
-INITIAL_DELAY_SEC    = int(os.getenv("DESK_INITIAL_DELAY_SEC", "60"))
-DISABLED_POLL_SEC    = 60   # how often we re-read control.json when paused
+INITIAL_DELAY_SEC = int(os.getenv("DESK_INITIAL_DELAY_SEC", "60"))
+IDLE_POLL_SEC     = 60   # how often we re-read control.json when paused or unscheduled
 
 ROOT     = Path(__file__).resolve().parent
 DESK_DIR = ROOT / "desk"
@@ -59,10 +65,8 @@ SITE_GEN = ROOT / "site" / "generate.py"
 
 _RUN_ID_RE = re.compile(r"^run-\d{8}T\d{6}Z$")
 
-# Default control state — must match desk_ops_api.py's defaults.
-_DEFAULT_INTERVAL_MIN = 24 * 60
-_MIN_INTERVAL_MIN     = 5
-_MAX_INTERVAL_MIN     = 7 * 24 * 60
+# Default schedule for a fresh install. Must match desk_ops_api.py.
+_DEFAULT_HOURS = [6]
 
 
 def _ops_root() -> Path:
@@ -75,22 +79,57 @@ def _ops_root() -> Path:
     return DESK_DIR / "data" / "output" / "ops"
 
 
+def _normalise_hours(raw: Any) -> list[int]:
+    """Coerce input into a sorted, deduped list of valid UTC hours."""
+    if not isinstance(raw, (list, tuple)):
+        return list(_DEFAULT_HOURS)
+    out: set[int] = set()
+    for v in raw:
+        try:
+            h = int(v)
+        except (TypeError, ValueError):
+            continue
+        if 0 <= h <= 23:
+            out.add(h)
+    return sorted(out)[:24]
+
+
 def _read_control() -> dict[str, Any]:
     """Return the persisted control state, or sane defaults."""
     path = _ops_root() / "control.json"
     if not path.is_file():
-        return {"enabled": True, "interval_minutes": _DEFAULT_INTERVAL_MIN}
+        return {"enabled": True, "hours": list(_DEFAULT_HOURS)}
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as e:
         log.warning("control.json unreadable, using defaults: %s", e)
-        return {"enabled": True, "interval_minutes": _DEFAULT_INTERVAL_MIN}
-    interval = int(raw.get("interval_minutes", _DEFAULT_INTERVAL_MIN))
-    interval = max(_MIN_INTERVAL_MIN, min(_MAX_INTERVAL_MIN, interval))
+        return {"enabled": True, "hours": list(_DEFAULT_HOURS)}
     return {
-        "enabled":          bool(raw.get("enabled", True)),
-        "interval_minutes": interval,
+        "enabled": bool(raw.get("enabled", True)),
+        "hours":   _normalise_hours(raw.get("hours")),
     }
+
+
+def _seconds_until_next_run(hours: list[int], now: datetime | None = None) -> int | None:
+    """Seconds from `now` (UTC) until the next scheduled run, or None.
+
+    Returns None when `hours` is empty — the caller idles. We fire on
+    the next *strictly later* matching hour boundary so a tick that
+    runs slightly past the top of the hour doesn't immediately retrigger.
+    """
+    hours = sorted(set(h for h in hours if 0 <= h <= 23))
+    if not hours:
+        return None
+    now = now or datetime.now(timezone.utc)
+    for h in hours:
+        target = now.replace(hour=h, minute=0, second=0, microsecond=0)
+        if target > now:
+            return int((target - now).total_seconds())
+    # Past today's last scheduled hour → tomorrow's earliest.
+    tomorrow = (now + timedelta(days=1)).replace(
+        hour=hours[0], minute=0, second=0, microsecond=0,
+    )
+    return int((tomorrow - now).total_seconds())
 
 
 def _now_iso() -> str:
@@ -270,32 +309,49 @@ async def run_desk_loop() -> None:
 
     log.info(
         "desk refresh loop online — control state via {ops_root}/control.json "
-        "(first run in %ds)", INITIAL_DELAY_SEC,
+        "(boot tick in %ds)", INITIAL_DELAY_SEC,
     )
     await asyncio.sleep(INITIAL_DELAY_SEC)
 
+    # Boot tick — only when the loop is enabled. This gives a fresh
+    # deploy current data without waiting for the next scheduled hour.
+    boot_control = _read_control()
+    if boot_control["enabled"] and boot_control["hours"]:
+        try:
+            await asyncio.to_thread(_tick)
+        except Exception:
+            log.exception("desk refresh tick failed (boot)")
+
     while True:
         control = _read_control()
+
         if not control["enabled"]:
             # Paused via the dashboard. Re-check periodically so the
             # operator's flip takes effect within ~1 minute.
-            log.info("desk refresh: paused via control.json — re-check in %ds", DISABLED_POLL_SEC)
-            await asyncio.sleep(DISABLED_POLL_SEC)
+            log.info("desk refresh: paused via control.json — re-check in %ds", IDLE_POLL_SEC)
+            await asyncio.sleep(IDLE_POLL_SEC)
             continue
+
+        sleep_for = _seconds_until_next_run(control["hours"])
+        if sleep_for is None:
+            # Enabled but no hours scheduled — idle.
+            log.info("desk refresh: no scheduled hours — re-check in %ds", IDLE_POLL_SEC)
+            await asyncio.sleep(IDLE_POLL_SEC)
+            continue
+
+        # Sleep in chunks no longer than ~5 min so a mid-day schedule
+        # edit (e.g. adding a closer hour) takes effect promptly. After
+        # each chunk we re-read control and re-compute the next target.
+        chunk = min(sleep_for, 300)
+        log.info(
+            "desk refresh: next run in %ds (hours=%s)",
+            sleep_for, control["hours"],
+        )
+        await asyncio.sleep(chunk)
+        if chunk < sleep_for:
+            continue   # not yet — recompute on next iteration
 
         try:
             await asyncio.to_thread(_tick)
         except Exception:
             log.exception("desk refresh tick failed")
-
-        # Re-read control state after the tick so a frequency change
-        # mid-tick lands on the next sleep, not the one after.
-        control = _read_control()
-        if not control["enabled"]:
-            continue
-        sleep_for = max(_MIN_INTERVAL_MIN, control["interval_minutes"]) * 60
-        log.info(
-            "desk refresh: next tick in %dm (interval %dm)",
-            sleep_for // 60, control["interval_minutes"],
-        )
-        await asyncio.sleep(sleep_for)

@@ -24,7 +24,9 @@ const MATCH_ID_RE = /^[a-z0-9]{2,8}-[a-z0-9]+(?:-[a-z0-9]+){2,}-\d{8}$/;
 
 function isOpsPath() {
   const p = window.location.pathname.replace(/\/+$/, "");
-  return p === "/desk/ops";
+  // /desk/ops and any sub-path (e.g. /desk/ops/admin) — OpsApp's
+  // internal router picks the view from the path.
+  return p === "/desk/ops" || p.startsWith("/desk/ops/");
 }
 
 function readMatchIdFromPath() {
