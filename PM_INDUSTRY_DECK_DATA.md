@@ -55,6 +55,18 @@
 - Business model: on-chain CLOB on Base; LMTS token launched Oct 2025 (Source: Coinlaunch, 2025)
 - Differentiator: short-term "fast" markets; crossed $1B monthly volume Q1 2026 (Source: BitcoinFoundation, 2026)
 
+### Azuro
+- Founded 2021; co-founders Paruyr Shahbazyan, Rossen Yordanov, Dmitry Globenko (Source: cryptotesters/DappRadar, 2026)
+- Raised ~$11M, incl. $3.5M seed Jan 2022 (Delphi Digital, Ethereal Ventures, Gnosis, Merit Circle, AllianceDAO) + $11M pre-launch round announced April 2024 (Source: CoinDesk, April 2024); Tracxn lists ~$18.5M across 4 rounds (Source: Tracxn, 2026)
+- Business model: B2B on-chain "predictions layer" — supplies concentrated-liquidity AMM pools + oracle/infra tooling so third parties build prediction & betting frontends on EVM chains (Polygon, Gnosis, Base) (Source: gem.azuro.org/DappRadar, 2026)
+- Differentiator: infrastructure/liquidity layer powering many frontends rather than a consumer venue itself; AMM-based (not orderbook), single concentrated pool; AZUR governance token, 1B supply, Azuro DAO (Source: cryptotesters/CoinMarketCap, 2026)
+
+### Hotaku (hotaku.fun)
+- Decentralized esports-only prediction market on Solana; positions bought/sold in USDC, LMSR pricing (Source: hotaku.fun, accessed May 2026)
+- Founding date / funding: no reliable source (not indexed by industry trackers or search as of May 2026)
+- Site self-reports ~$24.5M total volume across 50 active markets, but per-market volumes are tiny ($1–6) — read as early/niche (Source: hotaku.fun, accessed May 2026)
+- Differentiator: esports-native (CS2, League of Legends, VALORANT, Dota 2, Age of Empires, EA Sports FC) vs the politics/sports focus of the incumbents; winning shares pay $1.00, on-chain settlement, no intermediary (Source: hotaku.fun, accessed May 2026)
+
 ### Other >50K MAU
 - **ProphetX:** P2P sweepstakes sports exchange; "hundreds of thousands" of players (Source: ProphetX/Legal Sports Report, 2026) — pivoting to CFTC model
 - **DraftKings Predictions:** launched Dec 2025 via CME Group + Railbird acquisition ($50M + $200M earnout) (Source: GlobeNewswire/Sportico, 2025)
