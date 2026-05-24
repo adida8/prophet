@@ -40,8 +40,26 @@ function fmtClockUTC(iso) {
   return `${hh}:${mm}:${ss}Z`;
 }
 
-async function fetchJson(path) {
-  const r = await fetch(path, { credentials: "same-origin" });
+function fmtUSD(n) {
+  if (n === null || n === undefined) return "—";
+  if (n === 0) return "$0";
+  if (n < 0.01) return `$${n.toFixed(4)}`;
+  if (n < 1)    return `$${n.toFixed(3)}`;
+  return `$${n.toFixed(2)}`;
+}
+
+// Frequency presets — readable labels for the cadences operators actually want.
+const FREQ_PRESETS = [
+  { label: "Hourly",        minutes: 60 },
+  { label: "Every 6 hours", minutes: 360 },
+  { label: "Every 12 hours", minutes: 720 },
+  { label: "Daily",         minutes: 1440 },
+  { label: "Every 3 days",  minutes: 4320 },
+  { label: "Weekly",        minutes: 10080 },
+];
+
+async function fetchJson(path, options = {}) {
+  const r = await fetch(path, { credentials: "same-origin", ...options });
   if (!r.ok) {
     throw Object.assign(new Error(`${r.status} ${r.statusText}`), { status: r.status });
   }
@@ -102,6 +120,10 @@ export default function OpsApp() {
       </header>
 
       {error && <div className="ops__error">{error}</div>}
+
+      <Section title="Refresh control">
+        <Control />
+      </Section>
 
       <Section title={`Run history · last ${manifest.length}`}>
         <RunHistory
@@ -233,6 +255,7 @@ function RunHistory({ manifest, selectedRunId, onSelect }) {
           <th>Pub.</th>
           <th>Picks</th>
           <th>Δ</th>
+          <th>Cost</th>
         </tr>
       </thead>
       <tbody>
@@ -251,9 +274,145 @@ function RunHistory({ manifest, selectedRunId, onSelect }) {
             <td className="mono small">{row.published}</td>
             <td className="mono small">{row.picks}</td>
             <td className="mono small">{row.change_count}</td>
+            <td
+              className="mono small ops__cost"
+              title={row.cost_calls != null ? `${row.cost_calls} Haiku calls` : ""}
+            >
+              {fmtUSD(row.cost_usd)}
+            </td>
           </tr>
         ))}
       </tbody>
     </table>
+  );
+}
+
+// ── Control panel ──────────────────────────────────────────────────
+// Reads/writes /api/desk/ops/control. The refresh loop polls the same
+// file every iteration, so changes land on the next scheduling
+// decision — no server restart needed.
+
+function Control() {
+  const [state, setState]     = useState(null);
+  const [draft, setDraft]     = useState(null);
+  const [busy, setBusy]       = useState(false);
+  const [error, setError]     = useState(null);
+  const [savedAt, setSavedAt] = useState(null);
+
+  const load = useCallback(async () => {
+    try {
+      const c = await fetchJson("/api/desk/ops/control");
+      setState(c);
+      setDraft({ enabled: c.enabled, interval_minutes: c.interval_minutes });
+      setError(null);
+    } catch (e) {
+      setError(e.message);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  if (!draft) {
+    return <div className="ops__empty">{error || "loading control…"}</div>;
+  }
+
+  const dirty =
+    state &&
+    (draft.enabled !== state.enabled ||
+     draft.interval_minutes !== state.interval_minutes);
+
+  async function save() {
+    setBusy(true);
+    setError(null);
+    try {
+      const updated = await fetchJson("/api/desk/ops/control", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          enabled: draft.enabled,
+          interval_minutes: draft.interval_minutes,
+        }),
+      });
+      setState(updated);
+      setDraft({ enabled: updated.enabled, interval_minutes: updated.interval_minutes });
+      setSavedAt(updated.updated_at);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="ops__control">
+      <div className="ops__control-row">
+        <label className="ops__control-toggle">
+          <input
+            type="checkbox"
+            checked={draft.enabled}
+            onChange={(e) => setDraft({ ...draft, enabled: e.target.checked })}
+            disabled={busy}
+          />
+          <span>{draft.enabled ? "Loop enabled" : "Loop disabled"}</span>
+        </label>
+
+        <div className="ops__control-freq">
+          <label htmlFor="freq-select">Run every</label>
+          <select
+            id="freq-select"
+            value={
+              FREQ_PRESETS.find((p) => p.minutes === draft.interval_minutes)
+                ? String(draft.interval_minutes)
+                : "custom"
+            }
+            disabled={busy}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v !== "custom") {
+                setDraft({ ...draft, interval_minutes: parseInt(v, 10) });
+              }
+            }}
+          >
+            {FREQ_PRESETS.map((p) => (
+              <option key={p.minutes} value={p.minutes}>{p.label}</option>
+            ))}
+            <option value="custom">Custom…</option>
+          </select>
+          <input
+            type="number"
+            min="5"
+            max="10080"
+            step="1"
+            value={draft.interval_minutes}
+            disabled={busy}
+            onChange={(e) =>
+              setDraft({ ...draft, interval_minutes: Math.max(5, Math.min(10080, parseInt(e.target.value || "0", 10))) })
+            }
+            className="ops__control-num"
+          />
+          <span className="small">minutes</span>
+        </div>
+
+        <button
+          className="ops__reload"
+          onClick={save}
+          disabled={busy || !dirty}
+        >
+          {busy ? "Saving…" : "Save"}
+        </button>
+      </div>
+
+      <div className="ops__control-meta small">
+        {state && (
+          <>
+            Current: <strong>{state.enabled ? "enabled" : "paused"}</strong>
+            {" · "}every <strong>{state.interval_minutes}m</strong>
+            {state.updated_at && <> · last changed {fmtAgo(state.updated_at)}</>}
+          </>
+        )}
+        {savedAt && <span className="ops__control-saved"> · saved ✓</span>}
+        {error && <span className="ops__control-error"> · {error}</span>}
+      </div>
+    </div>
   );
 }

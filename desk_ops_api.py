@@ -1,13 +1,16 @@
 """Server-side adapter for The Desk's ops dashboard.
 
-Mounted at /api/desk/ops/* by server.py. Read-only — serves the
-`RunReport` JSON the runner persists to `desk/data/output/ops/runs/`.
+Mounted at /api/desk/ops/* by server.py. Read-mostly — serves the
+`RunReport` JSON the runner persists to `desk/data/output/ops/runs/`
+plus a small read/write `control.json` (enable/disable + interval)
+that the refresh loop polls on each scheduling decision.
 
 This module lives at the project root next to `desk_api.py` for the
 same architectural reason: the server runs from project root and
 `desk/` ships as an independent Python package that is NOT pip-
 installed in the Railway deploy. We therefore can't `from desk.* import …`
-from this file — both routers do pure filesystem reads.
+from this file — both routers do pure filesystem I/O against the same
+artefacts the desk subprocesses produce.
 
 Access is gated by HTTP Basic auth with credentials from env:
 
@@ -26,9 +29,17 @@ GET /api/desk/ops/latest
 
 GET /api/desk/ops/runs?limit=50
     Manifest of recent runs (newest first), one compact row per run.
+    Each row carries `cost_usd` joined from tick-totals.jsonl.
 
 GET /api/desk/ops/runs/{run_id}
     Full run report for one run. 400 on a malformed id, 404 if absent.
+
+GET /api/desk/ops/control
+    Current refresh-loop control state (enabled, interval_minutes).
+
+PUT /api/desk/ops/control  body: { enabled?, interval_minutes? }
+    Update control state. The refresh loop picks up changes on its
+    next scheduling decision — no restart needed.
 """
 
 from __future__ import annotations
@@ -42,7 +53,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 log = logging.getLogger("desk_ops_api")
@@ -73,6 +84,107 @@ def _runs_dir() -> Path:
 
 def _index_path() -> Path:
     return _ops_root() / "index.json"
+
+
+def _control_path() -> Path:
+    return _ops_root() / "control.json"
+
+
+def _tick_totals_path() -> Path:
+    return _ops_root() / "tick-totals.jsonl"
+
+
+# ── Control state ─────────────────────────────────────────────────────
+# Mirrors the helpers in desk_refresh_loop.py — we keep the two in
+# sync by hand because neither file can import from the other (the
+# loop runs in main.py's asyncio task, the API runs inside FastAPI;
+# both share the on-disk JSON file as the source of truth).
+
+_DEFAULT_INTERVAL_MIN = 24 * 60          # daily
+_MIN_INTERVAL_MIN     = 5                # safety floor — don't let the UI ddos
+_MAX_INTERVAL_MIN     = 7 * 24 * 60      # one week
+
+
+def _now_iso() -> str:
+    return datetime.now(tz=timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _clamp_interval(v: int) -> int:
+    return max(_MIN_INTERVAL_MIN, min(_MAX_INTERVAL_MIN, int(v)))
+
+
+def _read_control() -> dict[str, Any]:
+    """Return the persisted control state, or defaults if missing."""
+    path = _control_path()
+    if not path.is_file():
+        return {
+            "enabled":          True,
+            "interval_minutes": _DEFAULT_INTERVAL_MIN,
+            "updated_at":       None,
+        }
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        log.warning("control.json unreadable, returning defaults: %s", e)
+        return {
+            "enabled":          True,
+            "interval_minutes": _DEFAULT_INTERVAL_MIN,
+            "updated_at":       None,
+        }
+    return {
+        "enabled":          bool(raw.get("enabled", True)),
+        "interval_minutes": _clamp_interval(raw.get("interval_minutes", _DEFAULT_INTERVAL_MIN)),
+        "updated_at":       raw.get("updated_at"),
+    }
+
+
+def _write_control(patch: dict[str, Any]) -> dict[str, Any]:
+    """Persist a patched control state atomically."""
+    current = _read_control()
+    new = {
+        "enabled":          bool(patch.get("enabled", current["enabled"])),
+        "interval_minutes": _clamp_interval(patch.get("interval_minutes", current["interval_minutes"])),
+        "updated_at":       _now_iso(),
+    }
+    root = _ops_root()
+    root.mkdir(parents=True, exist_ok=True)
+    path = _control_path()
+    tmp  = path.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(new, indent=2), encoding="utf-8")
+    tmp.replace(path)
+    return new
+
+
+# ── Cost (tick totals join onto manifest by run_id) ───────────────────
+
+def _load_tick_totals_by_run_id() -> dict[str, dict[str, Any]]:
+    """Read tick-totals.jsonl into a {run_id: row} index.
+
+    Most-recent row wins if the same run_id appears more than once.
+    Missing / unreadable file → empty dict (cost column simply shows
+    nothing for those rows).
+    """
+    path = _tick_totals_path()
+    out: dict[str, dict[str, Any]] = {}
+    if not path.is_file():
+        return out
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                rid = row.get("run_id")
+                if rid:
+                    out[rid] = row
+    except OSError as e:
+        log.warning("tick-totals read failed: %s", e)
+    return out
+
 
 # Mirrors `desk/desk/ops/report.py:RUN_ID_RE`. Defence-in-depth: the
 # writer guarantees this shape, but the API never trusts the URL path
@@ -202,8 +314,21 @@ def get_latest() -> dict:
 def list_runs(limit: int = Query(default=50, ge=1, le=500)) -> dict:
     manifest = _load_manifest()
     runs = manifest.get("runs") or []
+    # Join cost from tick-totals.jsonl. The refresh loop writes one row
+    # per tick keyed by the matches RunReport's run_id, so this is an
+    # in-memory dict lookup — no scan per row.
+    costs = _load_tick_totals_by_run_id()
+    enriched = []
+    for row in runs[:limit]:
+        rid  = row.get("run_id")
+        cost = costs.get(rid) if rid else None
+        enriched.append({
+            **row,
+            "cost_usd":   (cost or {}).get("total_usd"),
+            "cost_calls": (cost or {}).get("calls"),
+        })
     return {
-        "runs":       runs[:limit],
+        "runs":       enriched,
         "updated_at": manifest.get("updated_at"),
     }
 
@@ -212,4 +337,35 @@ def list_runs(limit: int = Query(default=50, ge=1, le=500)) -> dict:
 def get_run(run_id: str) -> dict:
     if not _RUN_ID_RE.match(run_id):
         raise HTTPException(status_code=400, detail="malformed run_id")
-    return _read_run(run_id)
+    body = _read_run(run_id)
+    cost = _load_tick_totals_by_run_id().get(run_id)
+    if cost:
+        body["cost"] = {
+            "total_usd": cost.get("total_usd"),
+            "calls":     cost.get("calls"),
+            "breakdown": cost.get("breakdown") or {},
+        }
+    return body
+
+
+# ── Control: enable/disable + frequency ───────────────────────────────
+
+@router.get("/control", dependencies=[Depends(_gate)])
+def get_control() -> dict:
+    return _read_control()
+
+
+@router.put("/control", dependencies=[Depends(_gate)])
+def put_control(payload: dict = Body(default_factory=dict)) -> dict:
+    # Validate keys we accept; ignore unknowns rather than 400 so a
+    # future UI revision can send extra fields without breaking older
+    # servers.
+    patch: dict[str, Any] = {}
+    if "enabled" in payload:
+        patch["enabled"] = bool(payload["enabled"])
+    if "interval_minutes" in payload:
+        try:
+            patch["interval_minutes"] = int(payload["interval_minutes"])
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail="interval_minutes must be an integer")
+    return _write_control(patch)

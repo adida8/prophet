@@ -363,6 +363,12 @@ class AnthropicBlurbWriter:
         except Exception as e:  # noqa: BLE001 — any SDK / network error → fall back
             _LOG.warning("haiku blurb call failed: %s", e)
             return None
+        try:
+            from desk.ops.cost import log_call
+            log_call(model=self._model, usage=getattr(resp, "usage", None),
+                     caller="explainer.blurb")
+        except Exception:                                  # noqa: BLE001
+            pass
         return parse_tool_use(resp)
 
 

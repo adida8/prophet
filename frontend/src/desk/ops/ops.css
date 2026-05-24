@@ -291,3 +291,69 @@
 .ops__history tbody tr:hover { background: var(--paper-warm); }
 .ops__history tbody tr.is-selected { background: var(--paper-deep); }
 .ops__history th        { background: var(--paper-warm); }
+
+.ops__cost { text-align: right; color: var(--ink); }
+
+/* ---------- control panel ---------- */
+
+.ops__control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ops__control-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.ops__control-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  user-select: none;
+}
+.ops__control-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--ink);
+}
+
+.ops__control-freq {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.ops__control-freq label {
+  color: var(--graphite-soft);
+  font-size: var(--t-body-sm);
+}
+.ops__control-freq select {
+  font-family: var(--font-sans);
+  font-size: var(--t-body-sm);
+  padding: 4px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+}
+.ops__control-num {
+  font-family: var(--font-mono);
+  font-size: var(--t-body-sm);
+  width: 70px;
+  padding: 4px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  text-align: right;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.ops__control-meta {
+  color: var(--graphite-soft);
+}
+.ops__control-saved { color: #2F5230; }
+.ops__control-error { color: var(--flame-deep); }

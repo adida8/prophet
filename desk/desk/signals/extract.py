@@ -261,6 +261,12 @@ class AnthropicExtractor:
             tool_choice={"type": "tool", "name": _TOOL_NAME},
             messages=messages,
         )
+        try:
+            from desk.ops.cost import log_call
+            log_call(model=self._model, usage=getattr(resp, "usage", None),
+                     caller="signals.extract")
+        except Exception:                                  # noqa: BLE001
+            pass
         return parse_tool_use(resp)
 
 
