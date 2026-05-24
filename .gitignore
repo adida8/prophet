@@ -24,3 +24,13 @@ desk/data/output/ops/
 *.bak
 oddsprimer-v4-handover.zip
 zipzHiVJ
+*.rtf
+_preview.*
+
+# Local working docs (partner-shared, audits, research) — kept out of source
+# control by name so we don't accidentally hide tracked office files.
+OddsPrimer_x_MediaTroopers.docx
+OddsPrimer_x_MediaTroopers_Deck.pptx
+Odds_Primer_Affiliate_Landscape.xlsx
+Odds_Primer_SEO_Keyword_Map.xlsx
+Security_Audit_Prophet_2026-05-20.docx
