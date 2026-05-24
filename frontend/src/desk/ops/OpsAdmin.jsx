@@ -59,7 +59,12 @@ export default function OpsAdmin() {
   const [state, setState]   = useState(null);
   const [error, setError]   = useState(null);
   const [busy, setBusy]     = useState(false);
-  const [picker, setPicker] = useState(6);
+  // `picker` is the hour the dropdown currently shows. We default it to
+  // the first unscheduled hour so the Add button is enabled on load; if
+  // the operator manually picks an unscheduled hour, that choice sticks
+  // (the useEffect below only re-snaps when the current pick collides
+  // with an already-scheduled hour).
+  const [picker, setPicker] = useState(null);
 
   const load = useCallback(async () => {
     try {
@@ -72,6 +77,15 @@ export default function OpsAdmin() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!state) return;
+    const taken = new Set(state.hours || []);
+    if (picker == null || taken.has(picker)) {
+      const next = HOUR_OPTIONS.find((h) => !taken.has(h));
+      if (next != null) setPicker(next);
+    }
+  }, [state, picker]);
 
   // Save-on-change: any mutation immediately persists. Simpler than a
   // Save button + dirty tracking and matches the "feels like a settings
@@ -112,7 +126,7 @@ export default function OpsAdmin() {
   }
 
   const hours = state.hours || [];
-  const canAdd = !hours.includes(picker) && hours.length < 24;
+  const canAdd = picker != null && !hours.includes(picker) && hours.length < 24;
 
   async function addHour() {
     if (!canAdd) return;
@@ -182,9 +196,9 @@ export default function OpsAdmin() {
           <label htmlFor="hour-picker">Add run at</label>
           <select
             id="hour-picker"
-            value={picker}
+            value={picker ?? ""}
             onChange={(e) => setPicker(parseInt(e.target.value, 10))}
-            disabled={busy}
+            disabled={busy || hours.length >= 24}
           >
             {HOUR_OPTIONS.map((h) => (
               <option
