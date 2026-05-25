@@ -428,7 +428,7 @@ if (SITE_PUBLIC / "index.html").exists():
     # routed, so the SPA's LearnIndex + primer tree owns /learn end-to-end.
     _EDITORIAL_PAGES = (
         "about",
-        "method", "methodology",
+        "method", "methodology", "the-desk",
         "responsible-use", "affiliate-disclosure", "corrections",
         "terms", "privacy", "cookies",
         "404",
