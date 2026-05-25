@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pick card — clarity fix · Odds Primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:#FAF7F0; --paper-pure:#FFFFFF; --paper-deep:#E8E2D2;
+    --ink:#0E2240; --ink-soft:#2A3957; --graphite-soft:#6B7079;
+    --rule:#D9D2C0; --flame:#D9461C; --flame-deep:#A8341A; --flame-tint:#F7E4DA;
+    --dim:#A8A294; --card-rule:#E2C9BD;
+    --font-sans:'Inter Tight',system-ui,sans-serif;
+    --font-serif:'Source Serif 4',Georgia,serif;
+    --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; padding:0; background:var(--paper-deep); color:var(--ink); font-family:var(--font-sans); -webkit-font-smoothing:antialiased; }
+  .page { max-width:920px; margin:0 auto; padding:40px 24px 64px; }
+  .eyebrow { font-family:var(--font-sans); font-size:11px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--graphite-soft); margin-bottom:12px; }
+  h1 { font-family:var(--font-serif); font-size:30px; font-weight:600; color:var(--ink); margin:0 0 6px; letter-spacing:-0.01em; }
+  .sub { font-family:var(--font-serif); font-size:16px; font-style:italic; color:var(--graphite-soft); margin:0 0 32px; }
+
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:28px; align-items:start; }
+  @media (max-width:720px){ .cols { grid-template-columns:1fr; gap:36px; } }
+
+  .col-lbl { font-family:var(--font-mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--graphite-soft); margin:0 0 10px 2px; }
+  .col-lbl.now { color:var(--graphite-soft); }
+  .col-lbl.next { color:var(--flame-deep); }
+
+  /* Card shell */
+  .card { background:var(--flame-tint); border:1px solid var(--flame); border-left:4px solid var(--flame); padding:18px 18px 16px; }
+
+  .pick-row { display:flex; align-items:center; gap:9px; margin-bottom:10px; min-height:22px; }
+  .pick-eyebrow { font-family:var(--font-sans); font-size:11px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--flame); }
+  .pick-chip { font-family:var(--font-sans); font-size:11px; font-weight:700; letter-spacing:0.06em; color:var(--paper); background:var(--flame); padding:3px 9px; border-radius:2px; }
+
+  .match { font-family:var(--font-serif); font-size:22px; font-weight:600; color:var(--ink); line-height:1.2; margin:0 0 3px; letter-spacing:-0.01em; }
+  .match .v { color:var(--dim); font-style:italic; font-weight:400; padding:0 5px; }
+  .match .pickt { color:var(--ink); }
+  .match .othert { color:var(--ink); }
+  .match.after .othert { color:var(--dim); font-weight:500; }
+
+  .comp { font-family:var(--font-mono); font-size:10px; color:var(--graphite-soft); letter-spacing:0.04em; text-transform:uppercase; margin-bottom:12px; }
+  .blurb { font-family:var(--font-serif); font-size:14px; line-height:1.5; color:var(--ink-soft); margin:0 0 14px; }
+
+  .stat-lead { font-family:var(--font-sans); font-size:11px; font-weight:600; color:var(--ink); margin-bottom:5px; }
+  .stats { display:flex; align-items:baseline; gap:14px; font-family:var(--font-mono); font-size:13px; color:var(--ink); font-variant-numeric:tabular-nums; padding-bottom:14px; border-bottom:1px solid var(--card-rule); margin-bottom:14px; }
+  .stats .k { color:var(--graphite-soft); font-size:10px; letter-spacing:0.06em; text-transform:uppercase; }
+  .stats .edge { color:var(--flame-deep); font-weight:600; }
+
+  .btn { display:block; background:var(--ink); color:var(--paper); font-family:var(--font-sans); font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; text-align:center; padding:12px; margin-bottom:8px; }
+  .seelive { font-family:var(--font-sans); font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--graphite-soft); text-align:center; margin:8px 0; }
+  .readcase { font-family:var(--font-sans); font-size:12px; font-weight:600; color:var(--ink); letter-spacing:0.04em; margin-top:12px; }
+
+  .changes { margin-top:40px; border-top:2px solid var(--ink); padding-top:18px; }
+  .changes h2 { font-family:var(--font-sans); font-size:11px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink); margin:0 0 12px; }
+  .changes ol { font-family:var(--font-serif); font-size:14.5px; line-height:1.55; color:var(--ink-soft); margin:0; padding-left:20px; }
+  .changes li { margin:7px 0; }
+  .changes b { color:var(--flame-deep); font-weight:600; }
+  .footnote { font-family:var(--font-serif); font-size:13px; font-style:italic; color:var(--graphite-soft); margin-top:16px; line-height:1.5; }
+</style>
+</head>
+<body>
+  <main class="page">
+    <div class="eyebrow">design review · pick card</div>
+    <h1>Make the called side unmistakable</h1>
+    <p class="sub">Same card, same data — the recommendation just stops hiding in the blurb.</p>
+
+    <div class="cols">
+
+      <!-- CURRENT -->
+      <div>
+        <div class="col-lbl now">Current</div>
+        <div class="card">
+          <div class="pick-row"><span class="pick-eyebrow">▲ Pick</span></div>
+          <div class="match"><span class="pickt">Argentina</span><span class="v">v</span><span class="othert">Austria</span></div>
+          <div class="comp">FIFA World Cup 2026</div>
+          <div class="blurb">Argentina are favourites on the market at 57% — and the model thinks the market is still underrating them. Our prior reads 76%, a +18.9pp upgrade that crosses the Pick threshold comfortably.</div>
+          <div class="stats">
+            <span><span class="k">Model</span> 76%</span>
+            <span><span class="k">Market</span> 57%</span>
+            <span class="edge">+18.9pp</span>
+          </div>
+          <div class="btn">View live market on Polymarket ↗</div>
+          <div class="seelive">see live market</div>
+          <div class="btn">View live market on Kalshi ↗</div>
+          <div class="readcase">Read the case →</div>
+        </div>
+      </div>
+
+      <!-- PROPOSED -->
+      <div>
+        <div class="col-lbl next">Proposed</div>
+        <div class="card">
+          <div class="pick-row"><span class="pick-eyebrow">▲ Pick</span><span class="pick-chip">Argentina to win</span></div>
+          <div class="match after"><span class="pickt">Argentina</span><span class="v">v</span><span class="othert">Austria</span></div>
+          <div class="comp">FIFA World Cup 2026</div>
+          <div class="blurb">Argentina are favourites on the market at 57% — and the model thinks the market is still underrating them. Our prior reads 76%, a +18.9pp upgrade that crosses the Pick threshold comfortably.</div>
+          <div class="stat-lead">Argentina to win</div>
+          <div class="stats">
+            <span><span class="k">Model</span> 76%</span>
+            <span><span class="k">Market</span> 57%</span>
+            <span class="edge">+18.9pp</span>
+          </div>
+          <div class="btn">View live market on Polymarket ↗</div>
+          <div class="seelive">see live market</div>
+          <div class="btn">View live market on Kalshi ↗</div>
+          <div class="readcase">Read the case →</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="changes">
+      <h2>What changed</h2>
+      <ol>
+        <li><b>Called-side chip</b> next to the Pick label — "Argentina to win". This is the one element the current card is missing.</li>
+        <li><b>Austria dims back</b> in the matchup title, so the eye lands on the picked side first.</li>
+        <li><b>"Argentina to win" stat line</b> anchors the 76% / 57% / +18.9pp, so the numbers obviously belong to the pick — not the matchup in general.</li>
+      </ol>
+      <p class="footnote">Only fires on Picks, which carry a called side. Pass and Avoid have no side and keep their current treatment. Voice stays anti-hype — "Argentina to win", never "back Argentina".</p>
+    </div>
+  </main>
+</body>
+</html>
