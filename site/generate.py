@@ -362,6 +362,12 @@ a { color: inherit; }
 .lv-card .lv-when {
   font-family: var(--font-sans); font-size: 11px; color: var(--graphite-soft);
   letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-left: auto;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+  line-height: 1.2;
+}
+.lv-card .lv-fresh {
+  font-size: 10px; color: var(--graphite-soft); opacity: 0.72;
+  letter-spacing: 0.02em;
 }
 
 .lv-card .lv-teams {
@@ -2303,6 +2309,7 @@ def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = Tr
 
     href = f"/m/{match['match_id']}"
     when = fmt_kickoff_full(match["kickoff_utc"])
+    fresh_rel = _relative_updated(match.get("updated_at"))
     code_a, code_b = team_codes_from_match_id(match.get("match_id"))
 
     # Pick-only: which side did the engine call, and what's the chip label?
@@ -2343,7 +2350,10 @@ def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = Tr
         f'<span class="lv-glyph" aria-hidden="true">{GLYPHS[state]}</span>'
         f'<span class="lv-lab">{LABELS[state]}</span>'
         f'{chip_html}'
-        f'<span class="lv-when">{escape(when)}</span>'
+        f'<span class="lv-when">'
+        f'<span class="lv-when-row">{escape(when)}</span>'
+        f'<span class="lv-fresh">Last signal caught · {escape(fresh_rel)}</span>'
+        f'</span>'
     )
 
     vmeta = venue_meta(match)
@@ -2888,10 +2898,14 @@ def render_outright_card(outright: dict) -> str:
         candidate = label.split(" — ")[0].strip() or "Outright"
     summary = outright.get("copy", {}).get("summary") or ""
 
+    fresh_rel = _relative_updated(outright.get("updated_at"))
     head = (
         f'<span class="lv-glyph" aria-hidden="true">{GLYPHS.get(state, "—")}</span>'
         f'<span class="lv-lab">{LABELS.get(state, "Pass")}</span>'
-        f'<span class="lv-when">{escape(when)}</span>'
+        f'<span class="lv-when">'
+        f'<span class="lv-when-row">{escape(when)}</span>'
+        f'<span class="lv-fresh">Last signal caught · {escape(fresh_rel)}</span>'
+        f'</span>'
     )
 
     # The outright top-level carries market_url / market_venue; the
@@ -3075,8 +3089,8 @@ def filter_priced_upcoming(matches: list[dict], now_utc: datetime | None = None)
 
 # ── sitemap.xml + robots.txt ──────────────────────────────────────────────
 # Static, indexable pages that the server actually routes (see server.py's
-# _EDITORIAL_PAGES + explicit routes). /the-desk is intentionally absent —
-# the file exists but isn't routed, so it 404s and must stay out of the map.
+# _EDITORIAL_PAGES + explicit routes). /the-desk is routed but stays out
+# of the sitemap — it's a meta-refresh to /methodology, the canonical URL.
 # Outrights are hidden until a real verdict lands, so they're excluded too.
 _SITEMAP_STATIC = [
     # (url path, backing file under SITE_OUT, priority, changefreq)

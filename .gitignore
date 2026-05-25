@@ -34,3 +34,15 @@ OddsPrimer_x_MediaTroopers_Deck.pptx
 Odds_Primer_Affiliate_Landscape.xlsx
 Odds_Primer_SEO_Keyword_Map.xlsx
 Security_Audit_Prophet_2026-05-20.docx
+
+# Cowork business/scratch work — anything saved here stays out of git.
+# Save Cowork business deliverables in _cowork/ to keep them off this list.
+_cowork/
+html-previews/
+memory/
+flag-card-*.html
+sources_seed_global.*
+7-day-organic-launch-plan.md
+HANDOVER_pre_launch_fixes.md
+SECURITY_FIXES_BRIEF.md
+SEO_MATCH_PAGES_NOTE.md
