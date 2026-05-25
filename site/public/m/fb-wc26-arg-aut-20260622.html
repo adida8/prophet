@@ -51,6 +51,7 @@
   --flame:        #D9461C;
   --flame-deep:   #A8341A;
   --flame-tint:   #F7E4DA;
+  --dim:          #A8A294;
   --hairline:        1px solid var(--rule);
   --hairline-soft:   1px solid var(--rule-soft);
   --hairline-strong: 2px solid var(--ink);
@@ -329,6 +330,18 @@ a { color: inherit; }
   color: var(--ink); margin: 4px 0 0; text-wrap: balance;
 }
 .lv-card .lv-teams .vs { color: var(--graphite-soft); font-weight: 400; font-style: italic; margin: 0 6px; }
+.lv-card .lv-teams .lv-team.is-dim { color: var(--dim); font-weight: 500; }
+.lv-card .lv-pick-chip {
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em; color: var(--paper);
+  background: var(--flame); padding: 3px 9px; border-radius: 2px;
+  white-space: nowrap;
+}
+.lv-card .lv-stat-lead {
+  font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+  color: var(--ink); margin: 0 0 5px;
+}
+.lv-card .lv-reads-stack { display: flex; flex-direction: column; gap: 0; min-width: 0; }
 .lv-card .lv-flag {
   display: inline-block;
   width: 1.05em; height: 0.7em;       /* ≈3:2, scales with surrounding type */
@@ -1179,7 +1192,7 @@ body.op-noscroll { overflow: hidden; }
   <a href="/learn">Learn</a>
   <a href="/about">About</a>
 </nav>
-<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Argentina v Austria · the model leans Argentina</h1></section><section class="trust-strip" aria-label="Data freshness"><span class="ts-item"><span class="ts-lbl">Updated</span> 1 day ago</span><span class="ts-item"><span class="ts-lbl">Model refresh</span> 22:10 UTC</span><span class="ts-item"><span class="ts-lbl">Market snapshot</span> live</span></section><div class="lv-card is-pick is-lead"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when">Mon 22 Jun · 17:00 UTC</span></div><h3 class="lv-teams"><img class="lv-flag" src="/flags/ar.svg" alt="" aria-hidden="true" loading="lazy">Argentina <span class="vs">v</span> <img class="lv-flag" src="/flags/at.svg" alt="" aria-hidden="true" loading="lazy">Austria</h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">On every meaningful read, Argentina look stronger here than Kalshi has them. Model 76% vs market 56% — a +19.4pp gap on the favourite side.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">76%</span></span><span class="rp"><span class="k">Market</span><span class="v">56%</span></span><span class="edge">+19.4pp</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-arg-aut-2026-06-22" target="_blank" rel="nofollow noopener">View live market on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">See live market</span></span><span class="cta-stack"><a class="cta market-cta" href="https://kalshi.com/markets/kxwcgame/world-cup-game/kxwcgame-26jun22argaut?op_market_ticker=KXWCGAME-26JUN22ARGAUT-ARG&amp;op_side=BUY&amp;op_order_side=yes&amp;op_order_type=dollars" target="_blank" rel="nofollow noopener">View live market on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span></div></div></div><p class="event-disclaimer">Editorial analysis only. Odds Primer does not provide betting or financial advice.</p><div class="blurb"><p>A +19.4pp gap on the Argentina side. Argentina v Austria in FIFA World Cup 2026 is the match. The model has Argentina stronger than the market does — that&#x27;s the reason this fires as a Pick rather than a Pass.</p>
+<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Argentina v Austria · the model leans Argentina</h1></section><section class="trust-strip" aria-label="Data freshness"><span class="ts-item"><span class="ts-lbl">Updated</span> 2 days ago</span><span class="ts-item"><span class="ts-lbl">Model refresh</span> 22:10 UTC</span><span class="ts-item"><span class="ts-lbl">Market snapshot</span> live</span></section><div class="lv-card is-pick is-lead"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-pick-chip">Argentina to win</span><span class="lv-when">Mon 22 Jun · 17:00 UTC</span></div><h3 class="lv-teams"><span class="lv-team"><img class="lv-flag" src="/flags/ar.svg" alt="" aria-hidden="true" loading="lazy">Argentina</span> <span class="vs">v</span> <span class="lv-team is-dim"><img class="lv-flag" src="/flags/at.svg" alt="" aria-hidden="true" loading="lazy">Austria</span></h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">On every meaningful read, Argentina look stronger here than Kalshi has them. Model 76% vs market 56% — a +19.4pp gap on the favourite side.</p><div class="lv-foot"><div class="lv-reads-stack"><div class="lv-stat-lead">Argentina to win</div><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">76%</span></span><span class="rp"><span class="k">Market</span><span class="v">56%</span></span><span class="edge">+19.4pp</span></div></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-arg-aut-2026-06-22" target="_blank" rel="nofollow noopener">View live market on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">See live market</span></span><span class="cta-stack"><a class="cta market-cta" href="https://kalshi.com/markets/kxwcgame/world-cup-game/kxwcgame-26jun22argaut?op_market_ticker=KXWCGAME-26JUN22ARGAUT-ARG&amp;op_side=BUY&amp;op_order_side=yes&amp;op_order_type=dollars" target="_blank" rel="nofollow noopener">View live market on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span></div></div></div><p class="event-disclaimer">Editorial analysis only. Odds Primer does not provide betting or financial advice.</p><div class="blurb"><p>A +19.4pp gap on the Argentina side. Argentina v Austria in FIFA World Cup 2026 is the match. The model has Argentina stronger than the market does — that&#x27;s the reason this fires as a Pick rather than a Pass.</p>
 <p>Public Elo rates Argentina 310 points higher than the other side (Argentina 2140, Austria 1830). The match model&#x27;s logistic translates that Elo gap directly into a win-probability. Both Elo numbers are pulled live from the public Elo source. No host, home-ground, or altitude adjustments apply here; the prior reads straight from Elo.</p>
 <p>Three-way split from the model: Argentina to win at 76%, the draw at 11%, and Austria to win at 13%. The Desk publishes a three-way read against the same W/D/L resolution Polymarket and Kalshi settle on — not a scoreline guess. Argentina sits at 76% of the mass.</p>
 <p>On the same three-way, Kalshi: Argentina to win at 56%, the draw at 24%, and Austria to win at 17%. Kalshi has Argentina at 56%, which prices out at American odds of −130; the model has the same side at 76%. The +19.4pp gap across them is the disagreement we&#x27;re surfacing.</p>
@@ -1222,7 +1235,7 @@ body.op-noscroll { overflow: hidden; }
   </div>
   <div class="foot-row">
     <span class="left">Odds Primer · AI-assisted sports market intelligence</span>
-    <span>The Desk · v1.1 · 24 May 2026</span>
+    <span>The Desk · v1.1 · 25 May 2026</span>
   </div>
   <nav class="foot-nav" aria-label="Trust and editorial">
     <a href="/responsible-use">Responsible use</a>

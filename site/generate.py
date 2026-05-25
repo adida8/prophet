@@ -93,6 +93,7 @@ CSS = """\
   --flame:        #D9461C;
   --flame-deep:   #A8341A;
   --flame-tint:   #F7E4DA;
+  --dim:          #A8A294;
   --hairline:        1px solid var(--rule);
   --hairline-soft:   1px solid var(--rule-soft);
   --hairline-strong: 2px solid var(--ink);
@@ -371,6 +372,18 @@ a { color: inherit; }
   color: var(--ink); margin: 4px 0 0; text-wrap: balance;
 }
 .lv-card .lv-teams .vs { color: var(--graphite-soft); font-weight: 400; font-style: italic; margin: 0 6px; }
+.lv-card .lv-teams .lv-team.is-dim { color: var(--dim); font-weight: 500; }
+.lv-card .lv-pick-chip {
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em; color: var(--paper);
+  background: var(--flame); padding: 3px 9px; border-radius: 2px;
+  white-space: nowrap;
+}
+.lv-card .lv-stat-lead {
+  font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+  color: var(--ink); margin: 0 0 5px;
+}
+.lv-card .lv-reads-stack { display: flex; flex-direction: column; gap: 0; min-width: 0; }
 .lv-card .lv-flag {
   display: inline-block;
   width: 1.05em; height: 0.7em;       /* ≈3:2, scales with surrounding type */
@@ -2291,16 +2304,45 @@ def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = Tr
     href = f"/m/{match['match_id']}"
     when = fmt_kickoff_full(match["kickoff_utc"])
     code_a, code_b = team_codes_from_match_id(match.get("match_id"))
+
+    # Pick-only: which side did the engine call, and what's the chip label?
+    # `verdict.side` is the team display name or the string "draw"; null on
+    # Pass/Avoid. Treat anything outside {team_a, team_b, "draw"} as null so
+    # an unexpected string never silently dims the wrong team.
+    pick_side = v.get("side") if state == "pick" else None
+    side_a = pick_side is not None and pick_side == match["team_a"]
+    side_b = pick_side is not None and pick_side == match["team_b"]
+    side_draw = pick_side == "draw"
+    if pick_side is not None and not (side_a or side_b or side_draw):
+        pick_side = None
+
+    chip_label = None
+    if pick_side == "draw":
+        chip_label = "Draw"
+    elif pick_side is not None:
+        chip_label = f"{pick_side} to win"
+
+    def _team_span(name: str, code: str, is_picked: bool) -> str:
+        cls = "lv-team"
+        if pick_side and not side_draw and not is_picked:
+            cls += " is-dim"
+        return f'<span class="{cls}">{_team_flag_img(code)}{escape(name)}</span>'
+
     title = (
-        f'{_team_flag_img(code_a)}{escape(match["team_a"])}'
+        f'{_team_span(match["team_a"], code_a, side_a)}'
         f' <span class="vs">v</span> '
-        f'{_team_flag_img(code_b)}{escape(match["team_b"])}'
+        f'{_team_span(match["team_b"], code_b, side_b)}'
     )
 
     # Header
+    chip_html = (
+        f'<span class="lv-pick-chip">{escape(chip_label)}</span>'
+        if chip_label else ""
+    )
     head = (
         f'<span class="lv-glyph" aria-hidden="true">{GLYPHS[state]}</span>'
         f'<span class="lv-lab">{LABELS[state]}</span>'
+        f'{chip_html}'
         f'<span class="lv-when">{escape(when)}</span>'
     )
 
@@ -2346,9 +2388,16 @@ def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = Tr
 
         action_bits = market_cta(v, price=v.get("price"), **cta_kwargs)
 
+        stat_lead_html = (
+            f'<div class="lv-stat-lead">{escape(chip_label)}</div>'
+            if chip_label else ""
+        )
         foot = (
             '<div class="lv-foot">'
+            '<div class="lv-reads-stack">'
+            f'{stat_lead_html}'
             f'<div class="lv-reads">{reads}</div>'
+            '</div>'
             f'<div class="lv-action">{action_bits}</div>'
             '</div>'
         )
