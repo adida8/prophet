@@ -9,7 +9,6 @@ import FooterSignup from "./FooterSignup";
 const FOOT_LINKS = {
   read: [
     { label: "Matches", href: "/matches", kind: "external" },
-    { label: "Learn",   href: "/learn",   kind: "internal" },
   ],
   about: [
     { label: "How it works",         href: "/methodology",                  kind: "external" },

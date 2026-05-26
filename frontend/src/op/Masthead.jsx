@@ -10,7 +10,6 @@ const NAV_ITEMS = [
   { label: "Today",        href: "/#today",       external: false, matchPath: "/" },
   { label: "World Cup",    href: "/world-cup",    external: false, matchPath: "/world-cup" },
   { label: "How it works", href: "/methodology",  external: true,  matchPath: "/methodology" },
-  { label: "Learn",        href: "/learn",        external: false, matchPath: "/learn" },
   { label: "About",        href: "/about",        external: false, matchPath: "/about" },
 ];
 

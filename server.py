@@ -461,6 +461,17 @@ if (SITE_PUBLIC / "index.html").exists():
         _mh.__name__ = f"site_redirect_method_{_mp.replace('/', '_').replace('.', '_')}"
         app.get(_mp, include_in_schema=False)(_mh)
 
+    # /learn* → 301 /methodology (Learn SPA not ready for launch)
+    @app.get("/learn", include_in_schema=False)
+    @app.get("/learn/", include_in_schema=False)
+    @app.get("/learn.html", include_in_schema=False)
+    async def learn_redirect():
+        return RedirectResponse(url="/methodology", status_code=301)
+
+    @app.get("/learn/{rest:path}", include_in_schema=False)
+    async def learn_sub_redirect(rest: str):  # noqa: ARG001
+        return RedirectResponse(url="/methodology", status_code=301)
+
     @app.get("/colors_and_type.css", include_in_schema=False)
     async def site_colors_css():
         return FileResponse(SITE_PUBLIC / "colors_and_type.css", media_type="text/css")

@@ -35,13 +35,13 @@ const ARTICLE_BY_SLUG = {
 // see SEO_MATCH_PAGES_NOTE.md for the prerender/SSR gap that fully unlocks it.
 const DEFAULT_TITLE = "Odds Primer — read the market, then read us";
 const DEFAULT_DESC =
-  "Odds Primer compares prediction-market and sportsbook odds as one probability, then publishes a Pick, Pass, or Avoid verdict on each — with the reasoning.";
+  "Odds Primer compares prediction-market prices against an independent model and publishes a Pick, Pass, or Avoid verdict on each — with the reasoning.";
 
 const META = {
   home: { title: DEFAULT_TITLE, desc: DEFAULT_DESC },
   about: {
     title: "About Odds Primer — the verdict, explained",
-    desc: "Who we are and how the verdict works: an independent model run against live prediction-market and sportsbook prices, published as Pick, Pass, or Avoid.",
+    desc: "Who we are and how the verdict works: an independent model run against live Kalshi and Polymarket prices, published as Pick, Pass, or Avoid.",
   },
   "learn-index": {
     title: "Learn prediction markets — six short primers | Odds Primer",
@@ -49,7 +49,7 @@ const META = {
   },
   "world-cup": {
     title: "World Cup 2026 odds & prediction markets | Odds Primer",
-    desc: "World Cup 2026 odds across Polymarket, Kalshi, and the sportsbooks — standardised to one probability, with a Pick / Pass / Avoid verdict on the winner market and every priced match.",
+    desc: "World Cup 2026 odds on Polymarket and Kalshi — standardised to one probability, with a Pick / Pass / Avoid verdict on the winner market and every priced match.",
   },
   "learn/what-is-a-prediction-market": {
     title: "What is a prediction market? | Odds Primer",

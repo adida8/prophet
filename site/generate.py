@@ -1386,7 +1386,7 @@ def newsletter_footer_block() -> str:
   <div class="op-news__inner">
     <p class="op-news__eyebrow">New to prediction markets?</p>
     <h2 class="op-news__title" id="op-news-title">Start with the weekly primer.</h2>
-    <p class="op-news__lede">Plain-English notes on prediction markets, sportsbooks, and World Cup prices before you read the verdicts.</p>
+    <p class="op-news__lede">Plain-English notes on prediction markets and World Cup prices before you read the verdicts.</p>
     <form class="op-news__form" id="op-news-form" novalidate>
       <label class="visually-hidden" for="op-news-email">Email address</label>
       <input type="email" name="EMAIL" id="op-news-email" placeholder="you@email.com" required autocomplete="email">
@@ -1423,7 +1423,7 @@ def newsletter_popup_block() -> str:
       </button>
       <p class="op-popup__eyebrow">The newsletter</p>
       <h2 class="op-popup__title" id="op-popup-title">Read World Cup odds before the verdicts arrive.</h2>
-      <p class="op-popup__lede">One weekly primer on prediction markets, sportsbooks, and how to understand a price. No betting advice. No hype.</p>
+      <p class="op-popup__lede">One weekly primer on prediction markets and how to understand a price. No betting advice. No hype.</p>
       <form class="op-popup__form" id="op-popup-form" novalidate>
         <label class="op-popup__field-label" for="op-popup-email">Email address</label>
         <input class="op-popup__input" type="email" name="EMAIL" id="op-popup-email" placeholder="you@email.com" required autocomplete="email">
@@ -1702,7 +1702,6 @@ def patch_editorial_pages(log=print) -> None:
         '\n          <li><a href="/">Home</a></li>'
         '\n          <li><a href="/matches/">Upcoming matches</a></li>'
         '\n          <li><a href="/methodology">How it works</a></li>'
-        '\n          <li><a href="/learn">Learn</a></li>'
         '\n          <li><a href="/about">About</a></li>'
         '\n        '
     )
@@ -1710,7 +1709,6 @@ def patch_editorial_pages(log=print) -> None:
         '\n          <li><a href="/">Home</a></li>'
         '\n          <li><a href="/matches/">Upcoming matches</a></li>'
         '\n          <li><a href="/methodology">How it works</a></li>'
-        '\n          <li><a href="/learn">Learn</a></li>'
         '\n          <li><a href="/about">About</a></li>'
         '\n          <li><a href="/responsible-use">Responsible use</a></li>'
         '\n          <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>'
@@ -1727,7 +1725,6 @@ def patch_editorial_pages(log=print) -> None:
             f'\n      <a href="/"{attr("home")}>Home</a>'
             f'\n      <a href="/matches/"{attr("matches")}>Matches</a>'
             f'\n      <a href="/methodology"{attr("methodology")}>How it works</a>'
-            f'\n      <a href="/learn"{attr("learn")}>Learn</a>'
             f'\n      <a href="/about"{attr("about")}>About</a>'
             f'\n    '
         )
@@ -2557,13 +2554,10 @@ def render_home(matches: list[dict], outrights: list[dict]) -> str:
 
     hero_html = (
         '<section class="hero">'
-        '<h1>The 2026 World Cup, priced.</h1>'
-        '<p class="standfirst">Odds Primer compares live prediction-market prices against an '
-        'independent football model and publishes a <em class="vlead">Pick</em>, '
-        '<em class="vlead">Pass</em>, or <em class="vlead">Avoid</em> verdict on every major '
-        'World Cup market.</p>'
-        '<p class="standfirst-secondary">Built for readers who want to understand the price — '
-        'not just follow it.</p>'
+        '<h1>Every 2026 World Cup price, read by The Desk.</h1>'
+        '<p class="standfirst">Odds Primer compares live Kalshi and Polymarket prices, runs its '
+        'own model, and explains whether each price is a Pick, a Pass, or one to Avoid. '
+        'Free. Editorial. No tips, no hype.</p>'
         '</section>'
     )
 
