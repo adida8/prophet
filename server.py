@@ -504,6 +504,14 @@ if FRONTEND_DIST.exists():
     if assets_dir.exists():
         app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
 
+    # Ledger SPA routes — explicit so /ledger and /ledger/{addr} are never
+    # caught by the static-site 404 path before the catch-all fires.
+    @app.get("/ledger", include_in_schema=False)
+    @app.get("/ledger/", include_in_schema=False)
+    @app.get("/ledger/{rest:path}", include_in_schema=False)
+    async def ledger_spa(rest: str = ""):
+        return FileResponse(FRONTEND_DIST / "index.html")
+
     # Ops dashboard SPA route — gated by the same HTTP Basic dependency
     # the /api/desk/ops/* endpoints use, so the page itself doesn't
     # render unauthed (spec §9). When the env vars are unset, the gate
