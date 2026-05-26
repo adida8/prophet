@@ -1333,7 +1333,6 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
         <li><a href="/"{cur('home')}>Home</a></li>
         <li><a href="/matches/"{cur('matches')}>Upcoming matches</a></li>
         <li><a href="/methodology"{cur('methodology')}>How it works</a></li>
-        <li><a href="/learn"{cur('learn')}>Learn</a></li>
         <li><a href="/about"{cur('about')}>About</a></li>
       </ul>
     </nav>
@@ -1350,7 +1349,6 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
         <li><a href="/"{cur('home')}>Home</a></li>
         <li><a href="/matches/"{cur('matches')}>Upcoming matches</a></li>
         <li><a href="/methodology"{cur('methodology')}>How it works</a></li>
-        <li><a href="/learn"{cur('learn')}>Learn</a></li>
         <li><a href="/about"{cur('about')}>About</a></li>
         <li><a href="/responsible-use">Responsible use</a></li>
         <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>
@@ -1369,7 +1367,6 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
   <a href="/"{cur('home')}>Home</a>
   <a href="/matches/"{cur('matches')}>Matches</a>
   <a href="/methodology"{cur('methodology')}>How it works</a>
-  <a href="/learn"{cur('learn')}>Learn</a>
   <a href="/about"{cur('about')}>About</a>
 </nav>
 """
