@@ -1772,6 +1772,23 @@ def patch_editorial_pages(log=print) -> None:
         r'\n\s*<li><a href="/outrights/?">Outright winners</a></li>',
     )
 
+    # Normalise the brand-lock tagline + aria-label across every editorial
+    # page. The legacy hand-written pages shipped with "The AI sports desk
+    # for market edge"; the new locked lockup uses "Independent football
+    # market analysis". Without this rewrite, /responsible-use, /privacy,
+    # /terms etc. keep showing the old tagline while /, /matches and
+    # /methodology show the new one — exactly the inconsistency the
+    # operator flagged on 2026-05-26.
+    _BRAND_TAGLINE_RE = re.compile(
+        r'(<span class="tag">)(.*?)(</span>\s*</a>)',
+        flags=re.DOTALL,
+    )
+    canonical_tagline_inner = "Independent football market analysis"
+    _BRAND_ARIA_RE = re.compile(
+        r'(<a class="brand-lock"[^>]*\baria-label=")[^"]*(")',
+    )
+    canonical_brand_aria = "Odds Primer home"
+
     # CSS override block — re-styles the legacy pill-nav + edition-strip
     # so they match the new chrome's pill outline + dot indicator. The
     # legacy inline CSS still defines the masthead/brand; this block only
@@ -1854,6 +1871,15 @@ def patch_editorial_pages(log=print) -> None:
             html, count=1,
         )
         html = _FOOT_OUTRIGHT_RE.sub("", html)
+        # Normalise tagline + aria-label on the brand-lock.
+        html = _BRAND_TAGLINE_RE.sub(
+            lambda m: m.group(1) + canonical_tagline_inner + m.group(3),
+            html, count=1,
+        )
+        html = _BRAND_ARIA_RE.sub(
+            lambda m: m.group(1) + canonical_brand_aria + m.group(2),
+            html, count=1,
+        )
 
         # Always strip any previous injection so re-runs don't double up.
         html = strip_between(html, css_start,  css_end)
