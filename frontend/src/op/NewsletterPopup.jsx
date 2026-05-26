@@ -52,12 +52,7 @@ function writeStored(status, days) {
   }
 }
 
-// Disabled for launch. Footer signup is the only capture point.
 export default function NewsletterPopup() {
-  return null;
-}
-
-function _NewsletterPopupUnused() {
   const [open, setOpen]     = useState(false);
   const [email, setEmail]   = useState("");
   const dialogRef           = useRef(null);
