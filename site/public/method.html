@@ -372,6 +372,22 @@
   background: var(--flame, #d9461c);
   margin-right: 8px; vertical-align: 1px;
 }
+/* Wordmark — switch from Inter Tight to Source Serif 4 to match the
+   new locked lockup (2026-05-26). Re-sized to keep optical parity. */
+.brand-lock .wm {
+  font-family: "Source Serif 4", Charter, Georgia, serif !important;
+  font-weight: 700 !important;
+  font-size: 24px !important;
+  letter-spacing: -0.01em !important;
+}
+/* Hide the desktop burger above 820px so legacy pages match the
+   canonical chrome (home/matches/m/*). Without this the legacy
+   inline CSS leaves the burger visible at desktop widths. */
+@media (min-width: 820px) { .burger { display: none !important; } }
+/* Drop the baseline rule under the glyph bars — the new locked
+   lockup (2026-05-26) ships without it. The legacy inline SVG
+   still renders the <line>; hide it visually. */
+.brand-lock svg line { display: none !important; }
 </style>
 <!-- op-chrome-override-end -->
 
@@ -601,7 +617,7 @@ body.op-noscroll { overflow: hidden; }
         <ul>
           <li><a href="/">Home</a></li>
           <li><a href="/matches/">Upcoming matches</a></li>
-          <li><a href="/methodology">How it works</a></li>
+          <li><a href="/methodology" aria-current="page">How it works</a></li>
           <li><a href="/about">About</a></li>
         </ul>
       </nav>
@@ -616,7 +632,7 @@ body.op-noscroll { overflow: hidden; }
         <ul class="burger-menu">
           <li><a href="/">Home</a></li>
           <li><a href="/matches/">Upcoming matches</a></li>
-          <li><a href="/methodology">How it works</a></li>
+          <li><a href="/methodology" aria-current="page">How it works</a></li>
           <li><a href="/about">About</a></li>
           <li><a href="/responsible-use">Responsible use</a></li>
           <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>

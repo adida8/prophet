@@ -62,7 +62,6 @@ export function BarsGlyph({ size = 38, ink = "#0E2240", flame = "#D9461C" }) {
   const h = Math.round((size * 34) / 38);
   return (
     <svg viewBox="0 0 38 34" width={size} height={h} aria-hidden="true">
-      <line x1="0"  y1="34" x2="38" y2="34" stroke={ink} strokeWidth="1" />
       <rect x="2"  y="24" width="6" height="10" fill={ink}   />
       <rect x="11" y="18" width="6" height="16" fill={ink}   />
       <rect x="20" y="6"  width="6" height="28" fill={flame} />

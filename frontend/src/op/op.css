@@ -38,8 +38,8 @@
 }
 .op-site .brand-lock svg { display: block; }
 .op-site .brand-lock .wm {
-  font-family: var(--font-sans); font-weight: 700; font-size: 22px;
-  color: var(--ink); letter-spacing: -0.022em; line-height: 1;
+  font-family: var(--font-serif); font-weight: 700; font-size: 24px;
+  color: var(--ink); letter-spacing: -0.01em; line-height: 1;
 }
 .op-site .brand-lock--minimal { align-items: center; gap: 11px; }
 

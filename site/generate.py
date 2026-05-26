@@ -126,7 +126,7 @@ a { color: inherit; }
 .brand-lock { display: inline-flex; flex-direction: column; gap: 4px; text-decoration: none; }
 .brand-lock svg { display: block; }
 .brand-lock .wm-row { display: flex; align-items: baseline; gap: 12px; }
-.brand-lock .wm { font-family: var(--font-sans); font-weight: 700; font-size: 22px; color: var(--ink); letter-spacing: -0.022em; line-height: 1; }
+.brand-lock .wm { font-family: var(--font-serif); font-weight: 700; font-size: 24px; color: var(--ink); letter-spacing: -0.01em; line-height: 1; }
 .brand-lock .tag { font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: 12px; line-height: 1.3; color: var(--graphite); }
 .brand-lock .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
 
@@ -1317,7 +1317,6 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
     <a class="brand-lock" href="/" aria-label="Odds Primer home">
       <span class="wm-row">
         <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
-          <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
           <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
           <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
           <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
@@ -1694,23 +1693,30 @@ def patch_editorial_pages(log=print) -> None:
     # Canonical nav contents (must match chrome_masthead order). We rewrite
     # the legacy editorial pages' inline nav blocks to these so the pill
     # nav + burger menu + primary nav all stay in sync with the live chrome.
-    legacy_site_nav_ul = (
-        '\n          <li><a href="/">Home</a></li>'
-        '\n          <li><a href="/matches/">Upcoming matches</a></li>'
-        '\n          <li><a href="/methodology">How it works</a></li>'
-        '\n          <li><a href="/about">About</a></li>'
-        '\n        '
-    )
-    legacy_burger_ul = (
-        '\n          <li><a href="/">Home</a></li>'
-        '\n          <li><a href="/matches/">Upcoming matches</a></li>'
-        '\n          <li><a href="/methodology">How it works</a></li>'
-        '\n          <li><a href="/about">About</a></li>'
-        '\n          <li><a href="/responsible-use">Responsible use</a></li>'
-        '\n          <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>'
-        '\n          <li><a href="/corrections">Corrections</a></li>'
-        '\n        '
-    )
+    def _legacy_site_nav_ul_for(slug: str) -> str:
+        def attr(s: str) -> str:
+            return ' aria-current="page"' if s == slug else ""
+        return (
+            f'\n          <li><a href="/"{attr("home")}>Home</a></li>'
+            f'\n          <li><a href="/matches/"{attr("matches")}>Upcoming matches</a></li>'
+            f'\n          <li><a href="/methodology"{attr("methodology")}>How it works</a></li>'
+            f'\n          <li><a href="/about"{attr("about")}>About</a></li>'
+            f'\n        '
+        )
+
+    def _legacy_burger_ul_for(slug: str) -> str:
+        def attr(s: str) -> str:
+            return ' aria-current="page"' if s == slug else ""
+        return (
+            f'\n          <li><a href="/"{attr("home")}>Home</a></li>'
+            f'\n          <li><a href="/matches/"{attr("matches")}>Upcoming matches</a></li>'
+            f'\n          <li><a href="/methodology"{attr("methodology")}>How it works</a></li>'
+            f'\n          <li><a href="/about"{attr("about")}>About</a></li>'
+            f'\n          <li><a href="/responsible-use">Responsible use</a></li>'
+            f'\n          <li><a href="/affiliate-disclosure">Affiliate disclosure</a></li>'
+            f'\n          <li><a href="/corrections">Corrections</a></li>'
+            f'\n        '
+        )
     # Page-level pill-nav builder. Marks the current page as aria-current
     # so the active pill (Matches / The Desk / etc.) renders filled. The
     # legacy editorial pages map onto these slugs via _CURRENT_PILL_FOR.
@@ -1798,6 +1804,22 @@ def patch_editorial_pages(log=print) -> None:
         "  background: var(--flame, #d9461c);\n"
         "  margin-right: 8px; vertical-align: 1px;\n"
         "}\n"
+        "/* Wordmark — switch from Inter Tight to Source Serif 4 to match the\n"
+        "   new locked lockup (2026-05-26). Re-sized to keep optical parity. */\n"
+        ".brand-lock .wm {\n"
+        "  font-family: \"Source Serif 4\", Charter, Georgia, serif !important;\n"
+        "  font-weight: 700 !important;\n"
+        "  font-size: 24px !important;\n"
+        "  letter-spacing: -0.01em !important;\n"
+        "}\n"
+        "/* Hide the desktop burger above 820px so legacy pages match the\n"
+        "   canonical chrome (home/matches/m/*). Without this the legacy\n"
+        "   inline CSS leaves the burger visible at desktop widths. */\n"
+        "@media (min-width: 820px) { .burger { display: none !important; } }\n"
+        "/* Drop the baseline rule under the glyph bars — the new locked\n"
+        "   lockup (2026-05-26) ships without it. The legacy inline SVG\n"
+        "   still renders the <line>; hide it visually. */\n"
+        ".brand-lock svg line { display: none !important; }\n"
         "</style>\n"
         + chrome_override_end + "\n"
     )
@@ -1813,12 +1835,14 @@ def patch_editorial_pages(log=print) -> None:
         # Rewrite the legacy nav blocks to match chrome_masthead.
         active_slug = _CURRENT_PILL_FOR.get(name, "")
         pill_inner = _legacy_pill_inner_for(active_slug)
+        site_nav_ul = _legacy_site_nav_ul_for(active_slug)
+        burger_ul = _legacy_burger_ul_for(active_slug)
         html = _SITE_NAV_RE.sub(
-            lambda m: m.group(1) + legacy_site_nav_ul + m.group(3),
+            lambda m: m.group(1) + site_nav_ul + m.group(3),
             html, count=1,
         )
         html = _BURGER_RE.sub(
-            lambda m: m.group(1) + legacy_burger_ul + m.group(3),
+            lambda m: m.group(1) + burger_ul + m.group(3),
             html, count=1,
         )
         html = _PILL_RE.sub(
