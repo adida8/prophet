@@ -1701,7 +1701,7 @@ def patch_editorial_pages(log=print) -> None:
     legacy_site_nav_ul = (
         '\n          <li><a href="/">Home</a></li>'
         '\n          <li><a href="/matches/">Upcoming matches</a></li>'
-        '\n          <li><a href="/methodology">The Desk</a></li>'
+        '\n          <li><a href="/methodology">How it works</a></li>'
         '\n          <li><a href="/learn">Learn</a></li>'
         '\n          <li><a href="/about">About</a></li>'
         '\n        '
@@ -1709,7 +1709,7 @@ def patch_editorial_pages(log=print) -> None:
     legacy_burger_ul = (
         '\n          <li><a href="/">Home</a></li>'
         '\n          <li><a href="/matches/">Upcoming matches</a></li>'
-        '\n          <li><a href="/methodology">The Desk</a></li>'
+        '\n          <li><a href="/methodology">How it works</a></li>'
         '\n          <li><a href="/learn">Learn</a></li>'
         '\n          <li><a href="/about">About</a></li>'
         '\n          <li><a href="/responsible-use">Responsible use</a></li>'
@@ -1726,7 +1726,7 @@ def patch_editorial_pages(log=print) -> None:
         return (
             f'\n      <a href="/"{attr("home")}>Home</a>'
             f'\n      <a href="/matches/"{attr("matches")}>Matches</a>'
-            f'\n      <a href="/methodology"{attr("methodology")}>The Desk</a>'
+            f'\n      <a href="/methodology"{attr("methodology")}>How it works</a>'
             f'\n      <a href="/learn"{attr("learn")}>Learn</a>'
             f'\n      <a href="/about"{attr("about")}>About</a>'
             f'\n    '
