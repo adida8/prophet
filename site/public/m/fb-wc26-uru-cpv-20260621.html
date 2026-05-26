@@ -54,7 +54,7 @@
   --dim:          #A8A294;
   --hairline:        1px solid var(--rule);
   --hairline-soft:   1px solid var(--rule-soft);
-  --hairline-strong: 2px solid var(--ink);
+  --hairline-strong: 1px solid var(--ink);
   --font-sans:    'Inter Tight', 'Söhne', 'Inter', system-ui, sans-serif;
   --font-serif:   'Source Serif 4', 'Charter', 'Georgia', serif;
   --font-mono:    'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
@@ -71,18 +71,19 @@ body { font-family: var(--font-sans); font-size: 15px; line-height: 1.5; }
 a { color: inherit; }
 
 /* MASTHEAD */
-.masthead { border-top: var(--hairline-strong); background: var(--paper); }
-.masthead .inner {
+.site-masthead { border-bottom: var(--hairline); background: var(--paper); }
+.site-masthead .inner {
   max-width: 1180px; margin: 0 auto;
   padding: 14px var(--gutter) 12px;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  border-top: var(--hairline-strong);
 }
-.brand { display: inline-flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--ink); }
-.brand svg { display: block; }
-.brand .wm-row { display: flex; align-items: baseline; gap: 12px; }
-.brand .wm { font-family: var(--font-sans); font-weight: 700; font-size: 22px; letter-spacing: -0.022em; line-height: 1; }
-.brand .tag { font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: 12px; line-height: 1.3; color: var(--graphite); }
-.brand .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+.brand-lock { display: inline-flex; flex-direction: column; gap: 4px; text-decoration: none; }
+.brand-lock svg { display: block; }
+.brand-lock .wm-row { display: flex; align-items: baseline; gap: 12px; }
+.brand-lock .wm { font-family: var(--font-sans); font-weight: 700; font-size: 22px; color: var(--ink); letter-spacing: -0.022em; line-height: 1; }
+.brand-lock .tag { font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: 12px; line-height: 1.3; color: var(--graphite); }
+.brand-lock .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
 
 .site-nav { display: none; }
 @media (min-width: 820px) { .site-nav { display: block; } }
@@ -108,7 +109,7 @@ a { color: inherit; }
 .burger-btn {
   list-style: none; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
-  width: 44px; height: 44px;
+  width: 36px; height: 36px;
   border: var(--hairline); background: var(--paper-pure);
   color: var(--ink); border-radius: 2px;
 }
@@ -117,46 +118,43 @@ a { color: inherit; }
 .burger-btn:hover { color: var(--flame-deep); }
 .burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
 .burger-menu {
-  position: fixed; right: 0; top: calc(env(safe-area-inset-top, 0px) + 60px);
-  width: min(280px, 100vw); max-width: 100vw;
+  position: absolute; right: 0; top: calc(100% + 8px);
+  min-width: 220px;
   background: var(--paper-pure); border: var(--hairline);
   list-style: none; margin: 0; padding: 6px 0;
   box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08); z-index: 50;
 }
 .burger-menu li { padding: 0; margin: 0; list-style: none; }
 .burger-menu a {
-  display: block; padding: 14px 20px; min-height: 44px;
+  display: block; padding: 10px 18px;
   font-family: var(--font-sans); font-size: 14px; font-weight: 600;
   letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
 }
 .burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
-.burger-menu a[aria-current="page"] { color: var(--flame-deep); border-left: 3px solid var(--flame); padding-left: 17px; }
+.burger-menu a[aria-current="page"] { color: var(--flame-deep); border-left: 3px solid var(--flame); padding-left: 15px; }
 @media (min-width: 820px) { .burger { display: none; } }
 
 /* Mobile pill-nav — visible primary links beneath the masthead on small
    screens. Hidden on desktop where the full .site-nav is shown. */
 .pill-nav {
   display: flex; gap: 6px; align-items: center;
-  padding: 10px var(--gutter) 12px;
+  padding: 12px var(--gutter);
   border-bottom: var(--hairline); background: var(--paper);
   overflow-x: auto; scrollbar-width: none;
 }
 .pill-nav::-webkit-scrollbar { display: none; }
 .pill-nav a {
-  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  font-family: var(--font-sans); font-size: 15px; font-weight: 600;
   letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
-  padding: 11px 16px; min-height: 44px;
-  display: inline-flex; align-items: center;
-  border-radius: 999px; white-space: nowrap;
-  border: var(--hairline);
+  padding: 10px 18px; border-radius: 999px; white-space: nowrap;
   transition: background var(--dur-fast) var(--ease-standard),
               color var(--dur-fast) var(--ease-standard);
 }
-.pill-nav a[aria-current="page"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-.pill-nav a:not([aria-current="page"]):hover { color: var(--flame-deep); border-color: var(--flame); }
+.pill-nav a[aria-current="page"] { background: var(--ink); color: var(--paper); }
+.pill-nav a:not([aria-current="page"]):hover { color: var(--flame-deep); }
 @media (min-width: 820px) { .pill-nav { display: none; } }
 
-.edition-strip { border-top: var(--hairline-soft); border-bottom: var(--hairline); background: var(--paper); }
+.edition-strip { border-top: var(--hairline-soft); background: var(--paper); }
 .edition-strip .inner {
   max-width: 1180px; margin: 0 auto;
   padding: 8px var(--gutter);
@@ -1140,9 +1138,9 @@ body.op-noscroll { overflow: hidden; }
 </style>
 </head>
 <body>
-<header class="masthead">
+<header class="site-masthead">
   <div class="inner">
-    <a class="brand" href="/" aria-label="Odds Primer home">
+    <a class="brand-lock" href="/" aria-label="Odds Primer home">
       <span class="wm-row">
         <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
           <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
@@ -1183,19 +1181,19 @@ body.op-noscroll { overflow: hidden; }
       </ul>
     </details>
   </div>
-</header>
-<div class="edition-strip">
-  <div class="inner">
-    <span class="vol">Vol. 1 · World Cup 2026</span>
-    <span class="live">Markets live</span>
+  <div class="edition-strip">
+    <div class="inner">
+      <span class="vol">Vol. 1 · World Cup 2026</span>
+      <span class="live">Markets live</span>
+    </div>
   </div>
-</div>
-<nav class="pill-nav" aria-label="Primary (mobile)">
-  <a href="/">Home</a>
-  <a href="/matches/" aria-current="page">Matches</a>
-  <a href="/methodology">How it works</a>
-  <a href="/about">About</a>
-</nav>
+  <nav class="pill-nav" aria-label="Primary (mobile)">
+    <a href="/">Home</a>
+    <a href="/matches/" aria-current="page">Matches</a>
+    <a href="/methodology">How it works</a>
+    <a href="/about">About</a>
+  </nav>
+</header>
 <main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Uruguay v Cabo Verde · two reads, one answer</h1></section><section class="trust-strip" aria-label="Data freshness"><span class="ts-item"><span class="ts-lbl">Updated</span> 5 hrs ago</span><span class="ts-item"><span class="ts-lbl">Model refresh</span> 13:43 UTC</span><span class="ts-item"><span class="ts-lbl">Market snapshot</span> live</span></section><div class="lv-card is-pass is-lead"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">—</span><span class="lv-lab">Pass</span><span class="lv-when"><span class="lv-when-row">Sun 21 Jun · 22:00 UTC</span><span class="lv-fresh">Last updated ·5 hrs ago</span></span></div><h3 class="lv-teams"><span class="lv-team"><img class="lv-flag" src="/flags/uy.svg" alt="" aria-hidden="true" loading="lazy">Uruguay</span> <span class="vs">v</span> <span class="lv-team"><img class="lv-flag" src="/flags/cv.svg" alt="" aria-hidden="true" loading="lazy">Cabo Verde</span></h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">The line on Uruguay v Cabo Verde is doing its job: the price is already absorbing the same reads the model is using. Pass.</p><div class="lv-foot"><span class="lv-flat-msg">The market and our model agree — no clear edge.</span><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-ury-cvi-2026-06-21" target="_blank" rel="nofollow noopener">See price on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">See live market</span></span><span class="cta-stack"><a class="cta market-cta" href="https://kalshi.com/markets/kxwcgame/world-cup-game/kxwcgame-26jun21urucpv" target="_blank" rel="nofollow noopener">See price on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span></div></div></div><p class="event-disclaimer">Editorial analysis only. Odds Primer does not provide betting or financial advice.</p><div class="blurb"><p>Nothing in the lead-up to Uruguay versus Cabo Verde has pulled the price meaningfully off the model. Team news has been quiet, no shock injury or suspension has landed, and the market&#x27;s three-way (68% / 20% / 10%) tracks the model&#x27;s read (76% / 11% / 13%). Pass holds in a quiet week. The engine republishes as news moves the prior; a confirmed XI surprise is the most likely thing to turn this into a Pick.</p></div><div class="cta-row"><a class="open-market" href="https://polymarket.com/event/fifwc-ury-cvi-2026-06-21" rel="nofollow noopener" target="_blank">See price on <span class="venue-name">the source</span> <span class="arr">↗</span></a><span class="meta-note">Affiliate link. Odds Primer may earn a commission. Editorial verdicts are independent.</span></div><section class="drivers"><h2>The drivers</h2><ol><li>Model puts Uruguay at 76%, the draw at 11%, Cabo Verde at 13% — close to the market on each side.</li>
 <li>No side runs more than a couple of points clear of the model on this fixture.</li>
 <li>Team news, weather, and the confirmed XI feed back into the prior as kickoff approaches.</li></ol></section><aside class="voice"><h3>How to read this</h3><p>The Desk compares its <em>model probability</em> against the <em>best available market probability</em>. A <em>Pick</em> means the model rates a side three or more percentage points higher than the market. <em>Pass</em> means the line is doing its job. <em>Avoid</em> means every side looks overpriced.</p></aside></main><section class="op-news" aria-labelledby="op-news-title">

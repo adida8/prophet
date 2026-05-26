@@ -99,7 +99,7 @@ CSS = """\
   --dim:          #A8A294;
   --hairline:        1px solid var(--rule);
   --hairline-soft:   1px solid var(--rule-soft);
-  --hairline-strong: 2px solid var(--ink);
+  --hairline-strong: 1px solid var(--ink);
   --font-sans:    'Inter Tight', 'Söhne', 'Inter', system-ui, sans-serif;
   --font-serif:   'Source Serif 4', 'Charter', 'Georgia', serif;
   --font-mono:    'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
@@ -116,18 +116,19 @@ body { font-family: var(--font-sans); font-size: 15px; line-height: 1.5; }
 a { color: inherit; }
 
 /* MASTHEAD */
-.masthead { border-top: var(--hairline-strong); background: var(--paper); }
-.masthead .inner {
+.site-masthead { border-bottom: var(--hairline); background: var(--paper); }
+.site-masthead .inner {
   max-width: 1180px; margin: 0 auto;
   padding: 14px var(--gutter) 12px;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  border-top: var(--hairline-strong);
 }
-.brand { display: inline-flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--ink); }
-.brand svg { display: block; }
-.brand .wm-row { display: flex; align-items: baseline; gap: 12px; }
-.brand .wm { font-family: var(--font-sans); font-weight: 700; font-size: 22px; letter-spacing: -0.022em; line-height: 1; }
-.brand .tag { font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: 12px; line-height: 1.3; color: var(--graphite); }
-.brand .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+.brand-lock { display: inline-flex; flex-direction: column; gap: 4px; text-decoration: none; }
+.brand-lock svg { display: block; }
+.brand-lock .wm-row { display: flex; align-items: baseline; gap: 12px; }
+.brand-lock .wm { font-family: var(--font-sans); font-weight: 700; font-size: 22px; color: var(--ink); letter-spacing: -0.022em; line-height: 1; }
+.brand-lock .tag { font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: 12px; line-height: 1.3; color: var(--graphite); }
+.brand-lock .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
 
 .site-nav { display: none; }
 @media (min-width: 820px) { .site-nav { display: block; } }
@@ -153,7 +154,7 @@ a { color: inherit; }
 .burger-btn {
   list-style: none; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
-  width: 44px; height: 44px;
+  width: 36px; height: 36px;
   border: var(--hairline); background: var(--paper-pure);
   color: var(--ink); border-radius: 2px;
 }
@@ -162,46 +163,43 @@ a { color: inherit; }
 .burger-btn:hover { color: var(--flame-deep); }
 .burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
 .burger-menu {
-  position: fixed; right: 0; top: calc(env(safe-area-inset-top, 0px) + 60px);
-  width: min(280px, 100vw); max-width: 100vw;
+  position: absolute; right: 0; top: calc(100% + 8px);
+  min-width: 220px;
   background: var(--paper-pure); border: var(--hairline);
   list-style: none; margin: 0; padding: 6px 0;
   box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08); z-index: 50;
 }
 .burger-menu li { padding: 0; margin: 0; list-style: none; }
 .burger-menu a {
-  display: block; padding: 14px 20px; min-height: 44px;
+  display: block; padding: 10px 18px;
   font-family: var(--font-sans); font-size: 14px; font-weight: 600;
   letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
 }
 .burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
-.burger-menu a[aria-current="page"] { color: var(--flame-deep); border-left: 3px solid var(--flame); padding-left: 17px; }
+.burger-menu a[aria-current="page"] { color: var(--flame-deep); border-left: 3px solid var(--flame); padding-left: 15px; }
 @media (min-width: 820px) { .burger { display: none; } }
 
 /* Mobile pill-nav — visible primary links beneath the masthead on small
    screens. Hidden on desktop where the full .site-nav is shown. */
 .pill-nav {
   display: flex; gap: 6px; align-items: center;
-  padding: 10px var(--gutter) 12px;
+  padding: 12px var(--gutter);
   border-bottom: var(--hairline); background: var(--paper);
   overflow-x: auto; scrollbar-width: none;
 }
 .pill-nav::-webkit-scrollbar { display: none; }
 .pill-nav a {
-  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  font-family: var(--font-sans); font-size: 15px; font-weight: 600;
   letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
-  padding: 11px 16px; min-height: 44px;
-  display: inline-flex; align-items: center;
-  border-radius: 999px; white-space: nowrap;
-  border: var(--hairline);
+  padding: 10px 18px; border-radius: 999px; white-space: nowrap;
   transition: background var(--dur-fast) var(--ease-standard),
               color var(--dur-fast) var(--ease-standard);
 }
-.pill-nav a[aria-current="page"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-.pill-nav a:not([aria-current="page"]):hover { color: var(--flame-deep); border-color: var(--flame); }
+.pill-nav a[aria-current="page"] { background: var(--ink); color: var(--paper); }
+.pill-nav a:not([aria-current="page"]):hover { color: var(--flame-deep); }
 @media (min-width: 820px) { .pill-nav { display: none; } }
 
-.edition-strip { border-top: var(--hairline-soft); border-bottom: var(--hairline); background: var(--paper); }
+.edition-strip { border-top: var(--hairline-soft); background: var(--paper); }
 .edition-strip .inner {
   max-width: 1180px; margin: 0 auto;
   padding: 8px var(--gutter);
@@ -1314,9 +1312,9 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
         updated = last_run.strftime("Last refresh %H:%M UTC")
     else:
         updated = "Awaiting first refresh"
-    return f"""<header class="masthead">
+    return f"""<header class="site-masthead">
   <div class="inner">
-    <a class="brand" href="/" aria-label="Odds Primer home">
+    <a class="brand-lock" href="/" aria-label="Odds Primer home">
       <span class="wm-row">
         <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
           <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
@@ -1357,19 +1355,19 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
       </ul>
     </details>
   </div>
-</header>
-<div class="edition-strip">
-  <div class="inner">
-    <span class="vol">Vol. 1 · {escape(edition_label)}</span>
-    <span class="live">Markets live</span>
+  <div class="edition-strip">
+    <div class="inner">
+      <span class="vol">Vol. 1 · {escape(edition_label)}</span>
+      <span class="live">Markets live</span>
+    </div>
   </div>
-</div>
-<nav class="pill-nav" aria-label="Primary (mobile)">
-  <a href="/"{cur('home')}>Home</a>
-  <a href="/matches/"{cur('matches')}>Matches</a>
-  <a href="/methodology"{cur('methodology')}>How it works</a>
-  <a href="/about"{cur('about')}>About</a>
-</nav>
+  <nav class="pill-nav" aria-label="Primary (mobile)">
+    <a href="/"{cur('home')}>Home</a>
+    <a href="/matches/"{cur('matches')}>Matches</a>
+    <a href="/methodology"{cur('methodology')}>How it works</a>
+    <a href="/about"{cur('about')}>About</a>
+  </nav>
+</header>
 """
 
 

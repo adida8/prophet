@@ -54,7 +54,7 @@
   --dim:          #A8A294;
   --hairline:        1px solid var(--rule);
   --hairline-soft:   1px solid var(--rule-soft);
-  --hairline-strong: 2px solid var(--ink);
+  --hairline-strong: 1px solid var(--ink);
   --font-sans:    'Inter Tight', 'Söhne', 'Inter', system-ui, sans-serif;
   --font-serif:   'Source Serif 4', 'Charter', 'Georgia', serif;
   --font-mono:    'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
@@ -71,18 +71,19 @@ body { font-family: var(--font-sans); font-size: 15px; line-height: 1.5; }
 a { color: inherit; }
 
 /* MASTHEAD */
-.masthead { border-top: var(--hairline-strong); background: var(--paper); }
-.masthead .inner {
+.site-masthead { border-bottom: var(--hairline); background: var(--paper); }
+.site-masthead .inner {
   max-width: 1180px; margin: 0 auto;
   padding: 14px var(--gutter) 12px;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  border-top: var(--hairline-strong);
 }
-.brand { display: inline-flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--ink); }
-.brand svg { display: block; }
-.brand .wm-row { display: flex; align-items: baseline; gap: 12px; }
-.brand .wm { font-family: var(--font-sans); font-weight: 700; font-size: 22px; letter-spacing: -0.022em; line-height: 1; }
-.brand .tag { font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: 12px; line-height: 1.3; color: var(--graphite); }
-.brand .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
+.brand-lock { display: inline-flex; flex-direction: column; gap: 4px; text-decoration: none; }
+.brand-lock svg { display: block; }
+.brand-lock .wm-row { display: flex; align-items: baseline; gap: 12px; }
+.brand-lock .wm { font-family: var(--font-sans); font-weight: 700; font-size: 22px; color: var(--ink); letter-spacing: -0.022em; line-height: 1; }
+.brand-lock .tag { font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: 12px; line-height: 1.3; color: var(--graphite); }
+.brand-lock .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
 
 .site-nav { display: none; }
 @media (min-width: 820px) { .site-nav { display: block; } }
@@ -108,7 +109,7 @@ a { color: inherit; }
 .burger-btn {
   list-style: none; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
-  width: 44px; height: 44px;
+  width: 36px; height: 36px;
   border: var(--hairline); background: var(--paper-pure);
   color: var(--ink); border-radius: 2px;
 }
@@ -117,46 +118,43 @@ a { color: inherit; }
 .burger-btn:hover { color: var(--flame-deep); }
 .burger[open] .burger-btn { background: var(--ink); color: var(--paper); }
 .burger-menu {
-  position: fixed; right: 0; top: calc(env(safe-area-inset-top, 0px) + 60px);
-  width: min(280px, 100vw); max-width: 100vw;
+  position: absolute; right: 0; top: calc(100% + 8px);
+  min-width: 220px;
   background: var(--paper-pure); border: var(--hairline);
   list-style: none; margin: 0; padding: 6px 0;
   box-shadow: 0 8px 24px rgba(14, 34, 64, 0.08); z-index: 50;
 }
 .burger-menu li { padding: 0; margin: 0; list-style: none; }
 .burger-menu a {
-  display: block; padding: 14px 20px; min-height: 44px;
+  display: block; padding: 10px 18px;
   font-family: var(--font-sans); font-size: 14px; font-weight: 600;
   letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
 }
 .burger-menu a:hover { background: var(--paper-warm); color: var(--flame-deep); }
-.burger-menu a[aria-current="page"] { color: var(--flame-deep); border-left: 3px solid var(--flame); padding-left: 17px; }
+.burger-menu a[aria-current="page"] { color: var(--flame-deep); border-left: 3px solid var(--flame); padding-left: 15px; }
 @media (min-width: 820px) { .burger { display: none; } }
 
 /* Mobile pill-nav — visible primary links beneath the masthead on small
    screens. Hidden on desktop where the full .site-nav is shown. */
 .pill-nav {
   display: flex; gap: 6px; align-items: center;
-  padding: 10px var(--gutter) 12px;
+  padding: 12px var(--gutter);
   border-bottom: var(--hairline); background: var(--paper);
   overflow-x: auto; scrollbar-width: none;
 }
 .pill-nav::-webkit-scrollbar { display: none; }
 .pill-nav a {
-  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  font-family: var(--font-sans); font-size: 15px; font-weight: 600;
   letter-spacing: -0.005em; color: var(--ink); text-decoration: none;
-  padding: 11px 16px; min-height: 44px;
-  display: inline-flex; align-items: center;
-  border-radius: 999px; white-space: nowrap;
-  border: var(--hairline);
+  padding: 10px 18px; border-radius: 999px; white-space: nowrap;
   transition: background var(--dur-fast) var(--ease-standard),
               color var(--dur-fast) var(--ease-standard);
 }
-.pill-nav a[aria-current="page"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-.pill-nav a:not([aria-current="page"]):hover { color: var(--flame-deep); border-color: var(--flame); }
+.pill-nav a[aria-current="page"] { background: var(--ink); color: var(--paper); }
+.pill-nav a:not([aria-current="page"]):hover { color: var(--flame-deep); }
 @media (min-width: 820px) { .pill-nav { display: none; } }
 
-.edition-strip { border-top: var(--hairline-soft); border-bottom: var(--hairline); background: var(--paper); }
+.edition-strip { border-top: var(--hairline-soft); background: var(--paper); }
 .edition-strip .inner {
   max-width: 1180px; margin: 0 auto;
   padding: 8px var(--gutter);
@@ -1140,9 +1138,9 @@ body.op-noscroll { overflow: hidden; }
 </style>
 </head>
 <body>
-<header class="masthead">
+<header class="site-masthead">
   <div class="inner">
-    <a class="brand" href="/" aria-label="Odds Primer home">
+    <a class="brand-lock" href="/" aria-label="Odds Primer home">
       <span class="wm-row">
         <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
           <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
@@ -1183,19 +1181,19 @@ body.op-noscroll { overflow: hidden; }
       </ul>
     </details>
   </div>
-</header>
-<div class="edition-strip">
-  <div class="inner">
-    <span class="vol">Vol. 1 · World Cup 2026</span>
-    <span class="live">Markets live</span>
+  <div class="edition-strip">
+    <div class="inner">
+      <span class="vol">Vol. 1 · World Cup 2026</span>
+      <span class="live">Markets live</span>
+    </div>
   </div>
-</div>
-<nav class="pill-nav" aria-label="Primary (mobile)">
-  <a href="/">Home</a>
-  <a href="/matches/" aria-current="page">Matches</a>
-  <a href="/methodology">How it works</a>
-  <a href="/about">About</a>
-</nav>
+  <nav class="pill-nav" aria-label="Primary (mobile)">
+    <a href="/">Home</a>
+    <a href="/matches/" aria-current="page">Matches</a>
+    <a href="/methodology">How it works</a>
+    <a href="/about">About</a>
+  </nav>
+</header>
 <main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>Belgium v Egypt · the model leans Egypt</h1></section><section class="trust-strip" aria-label="Data freshness"><span class="ts-item"><span class="ts-lbl">Updated</span> 5 hrs ago</span><span class="ts-item"><span class="ts-lbl">Model refresh</span> 13:43 UTC</span><span class="ts-item"><span class="ts-lbl">Market snapshot</span> live</span></section><div class="lv-card is-pick is-lead"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-pick-chip">Egypt to win</span><span class="lv-when"><span class="lv-when-row">Mon 15 Jun · 19:00 UTC</span><span class="lv-fresh">Last updated ·5 hrs ago</span></span></div><h3 class="lv-teams"><span class="lv-team is-dim"><img class="lv-flag" src="/flags/be.svg" alt="" aria-hidden="true" loading="lazy">Belgium</span> <span class="vs">v</span> <span class="lv-team"><img class="lv-flag" src="/flags/eg.svg" alt="" aria-hidden="true" loading="lazy">Egypt</span></h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">On Egypt, the model is +9.9 pts out from Polymarket. Our number reads 27%; the market reads 18%. That gap is the basis for the Pick.</p><div class="lv-foot"><div class="lv-reads-stack"><div class="lv-stat-lead">Egypt to win</div><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">27%</span></span><span class="rp"><span class="k">Market</span><span class="v">18%</span></span><span class="edge">+9.9 pts</span></div></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-bel-egy-2026-06-15" target="_blank" rel="nofollow noopener">See price on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +471</span></span><span class="cta-stack"><a class="cta market-cta" href="https://kalshi.com/markets/kxwcgame/world-cup-game/kxwcgame-26jun15belegy?op_market_ticker=KXWCGAME-26JUN15BELEGY-EGY&amp;op_side=BUY&amp;op_order_side=yes&amp;op_order_type=dollars" target="_blank" rel="nofollow noopener">See price on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span></div></div></div><p class="event-disclaimer">Editorial analysis only. Odds Primer does not provide betting or financial advice.</p><div class="blurb"><p>Monday 15 June 2026 at 19:00 UTC. Belgium and Egypt on the card. On the Egypt side, the engine&#x27;s number sits +9.9 pts clear of the market — a substantive gap this far out from kickoff.</p>
 <p>On Elo, Belgium comes in 100 points ahead — Belgium at 1860, Egypt at 1760. Both Elo numbers are pulled live from the public Elo source. The adjustment layer is quiet on this fixture — no host bonus, no home-ground correction, no altitude folding in. The Elo numbers above are what the model uses.</p>
 <p>Three-way split from the model: Belgium to win at 49%, the draw at 24%, and Egypt to win at 27%. Draw share decays with Elo gap; on a fixture this evenly matched the draw carries more probability than a casual reader might guess. Egypt on the win side reads 27%.</p>
