@@ -29,6 +29,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -67,6 +68,8 @@ NEWSLETTER_HONEYPOT_NAME = "op_company"
 # The forms always render — config now lives on the backend, so there is
 # no client-side credential to gate on.
 NEWSLETTER_CONFIGURED = True
+# Set True to suppress the pop-up modal for launch; footer signup is unaffected.
+NEWSLETTER_POPUP_DISABLED = True
 
 # Populated at the start of main() — see `_load_kalshi_event_index`.
 # Maps (kickoff_date, frozenset({iso3_a, iso3_b})) → event_ticker (str).
@@ -1323,13 +1326,13 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
         <span class="glyph" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
         <span class="wm">Odds Primer</span>
       </span>
-      <span class="tag">The <span class="flame">AI</span> sports desk for <span class="flame">market edge</span></span>
+      <span class="tag">Independent football market analysis</span>
     </a>
     <nav class="site-nav" aria-label="Primary">
       <ul>
         <li><a href="/"{cur('home')}>Home</a></li>
         <li><a href="/matches/"{cur('matches')}>Upcoming matches</a></li>
-        <li><a href="/methodology"{cur('methodology')}>The Desk</a></li>
+        <li><a href="/methodology"{cur('methodology')}>How it works</a></li>
         <li><a href="/learn"{cur('learn')}>Learn</a></li>
         <li><a href="/about"{cur('about')}>About</a></li>
       </ul>
@@ -1346,7 +1349,7 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
       <ul class="burger-menu">
         <li><a href="/"{cur('home')}>Home</a></li>
         <li><a href="/matches/"{cur('matches')}>Upcoming matches</a></li>
-        <li><a href="/methodology"{cur('methodology')}>The Desk</a></li>
+        <li><a href="/methodology"{cur('methodology')}>How it works</a></li>
         <li><a href="/learn"{cur('learn')}>Learn</a></li>
         <li><a href="/about"{cur('about')}>About</a></li>
         <li><a href="/responsible-use">Responsible use</a></li>
@@ -1365,7 +1368,7 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
 <nav class="pill-nav" aria-label="Primary (mobile)">
   <a href="/"{cur('home')}>Home</a>
   <a href="/matches/"{cur('matches')}>Matches</a>
-  <a href="/methodology"{cur('methodology')}>The Desk</a>
+  <a href="/methodology"{cur('methodology')}>How it works</a>
   <a href="/learn"{cur('learn')}>Learn</a>
   <a href="/about"{cur('about')}>About</a>
 </nav>
@@ -1406,7 +1409,7 @@ def newsletter_popup_block() -> str:
     Mirrors the React NewsletterPopup component verbatim in behaviour:
     50s timer (15s on high-intent paths), 50% scroll trigger, suppress on
     /learn, dismissals 10d / subscribers 365d in localStorage."""
-    if not NEWSLETTER_CONFIGURED:
+    if not NEWSLETTER_CONFIGURED or NEWSLETTER_POPUP_DISABLED:
         return ""
     hp_attr     = escape(NEWSLETTER_HONEYPOT_NAME)
     endpoint_js = json.dumps(SUBSCRIBE_ENDPOINT)
@@ -1895,7 +1898,7 @@ def chrome_footer() -> str:
     </p>
   </div>
   <div class="foot-row">
-    <span class="left">Odds Primer · AI-assisted sports market intelligence</span>
+    <span class="left">Odds Primer · Independent editorial</span>
     <span>The Desk · v1.1 · {today}</span>
   </div>
   <nav class="foot-nav" aria-label="Trust and editorial">
@@ -1922,7 +1925,42 @@ def fmt_pct(p):
 def fmt_edge(edge_pp):
     if edge_pp is None: return None
     sign = "+" if edge_pp >= 0 else "−"
-    return f"{sign}{abs(edge_pp):.1f}pp"
+    return f"{sign}{abs(edge_pp):.1f} pts"
+
+def _sanitize_copy(text: str | None) -> str:
+    """Replace internal jargon in editorial copy with plain English.
+    Applied at render time so the source JSON files stay untouched."""
+    if not text:
+        return text or ""
+    # "Our prior reads X%" → "Our model projects X%"
+    text = re.sub(r"\bOur prior reads\b", "Our model projects", text)
+    # "Our Elo prior" → "Our model"
+    text = re.sub(r"\bOur Elo prior\b", "Our model", text)
+    # "Elo prior" standalone → "model estimate"
+    text = re.sub(r"\bElo prior\b", "model estimate", text)
+    # ", a +Xpp upgrade that crosses the Pick threshold comfortably" → " — making this a Pick"
+    text = re.sub(
+        r",\s*a \+[\d.]+pp upgrade that crosses the Pick threshold comfortably",
+        " — making this a Pick",
+        text,
+    )
+    # "crosses the Pick threshold" (any remaining) → "makes this a Pick"
+    text = re.sub(r"\bcrosses the Pick threshold\b", "makes this a Pick", text)
+    # "The +Xpp gap calls a Pick" → "That gap makes this a Pick"
+    text = re.sub(r"The \+[\d.]+ pts gap calls a Pick", "That gap makes this a Pick", text)
+    text = re.sub(r"The \+([\d.]+)pp gap calls a Pick", r"That +\1 pts gap makes this a Pick", text)
+    # "The +Xpp gap is the Pick" → "That gap is a Pick"
+    text = re.sub(r"The \+([\d.]+)pp gap is the Pick", r"That +\1 pts gap is a Pick", text)
+    # "A +Xpp gap across" → "A X pts gap across"
+    text = re.sub(r"A \+([\d.]+)pp gap\b", r"A \1 pts gap", text)
+    # all remaining "+Xpp" → "+X pts"
+    text = re.sub(r"\+([\d.]+)pp\b", r"+\1 pts", text)
+    # remaining "Xpp" → "X pts"
+    text = re.sub(r"\b([\d.]+)pp\b", r"\1 pts", text)
+    # "threshold comfortably" → trim trailing adverb
+    text = re.sub(r"\s+comfortably\.", ".", text)
+    return text
+
 
 def fmt_kickoff_short(iso: str) -> str:
     """'Fri · 19:00 UTC'"""
@@ -2178,7 +2216,7 @@ def _read_case_link(detail_href: str) -> str:
     """
     return (
         f'<a class="cta-secondary read-case" href="{escape(detail_href)}">'
-        f'Read the case <span class="arr">→</span>'
+        f'Read the full case <span class="arr">→</span>'
         f'</a>'
     )
 
@@ -2251,11 +2289,11 @@ def market_cta(
         poly_caption, poly_kind = "See live market", "live"
 
     poly_pill = _cta_pill(
-        "View live market on Polymarket", poly_url,
+        "See price on Polymarket", poly_url,
         caption=poly_caption, caption_kind=poly_kind,
     )
     kalshi_pill = _cta_pill(
-        "View live market on Kalshi", kalshi_url, placeholder=not kalshi_is_live,
+        "See price on Kalshi", kalshi_url, placeholder=not kalshi_is_live,
         caption=kalshi_caption, caption_kind=kalshi_kind,
     )
     secondary = _read_case_link(detail_href) if detail_href else ""
@@ -2352,12 +2390,12 @@ def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = Tr
         f'{chip_html}'
         f'<span class="lv-when">'
         f'<span class="lv-when-row">{escape(when)}</span>'
-        f'<span class="lv-fresh">Last signal caught · {escape(fresh_rel)}</span>'
+        f'<span class="lv-fresh">Last updated ·{escape(fresh_rel)}</span>'
         f'</span>'
     )
 
     vmeta = venue_meta(match)
-    thesis = escape(match["copy"]["summary"] or "")
+    thesis = escape(_sanitize_copy(match["copy"]["summary"] or ""))
 
     # Search-fallback key for Kalshi (no live ingest yet) and for
     # Polymarket if market_url is missing.
@@ -2376,7 +2414,7 @@ def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = Tr
         cta_html = market_cta(v, **cta_kwargs)
         foot = (
             '<div class="lv-foot">'
-            f'<span class="lv-flat-msg">Markets agree — within 1pp on every side.</span>'
+            f'<span class="lv-flat-msg">The market and our model agree — no clear edge.</span>'
             f'<div class="lv-action">{cta_html}</div>'
             '</div>'
         )
@@ -2417,7 +2455,7 @@ def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = Tr
     # link that goes to the match detail page; the venue CTA sits above
     # it (z-index) so a click on the pill opens the market instead.
     overlay_link = (
-        f'<a class="lv-card-link" href="{href}" aria-label="Read the case"></a>'
+        f'<a class="lv-card-link" href="{href}" aria-label="Read the full case"></a>'
         if show_read_case else ""
     )
     return (
@@ -2521,7 +2559,7 @@ def render_home(matches: list[dict], outrights: list[dict]) -> str:
         '<section class="hero">'
         '<h1>The 2026 World Cup, priced.</h1>'
         '<p class="standfirst">Odds Primer compares live prediction-market prices against an '
-        'independent AI football model and publishes a <em class="vlead">Pick</em>, '
+        'independent football model and publishes a <em class="vlead">Pick</em>, '
         '<em class="vlead">Pass</em>, or <em class="vlead">Avoid</em> verdict on every major '
         'World Cup market.</p>'
         '<p class="standfirst-secondary">Built for readers who want to understand the price — '
@@ -2555,7 +2593,7 @@ def render_home(matches: list[dict], outrights: list[dict]) -> str:
         '<section class="the-desk-block" aria-labelledby="the-desk-title">'
         '<p class="td-eyebrow">The Desk</p>'
         '<h2 id="the-desk-title" class="td-title">'
-        'An AI-assisted sports market intelligence engine.'
+        'Comparing prediction-market prices against an independent football model.'
         '</h2>'
         '<p class="td-lede">'
         'The Desk compares live prediction-market pricing against an independent football '
@@ -2571,10 +2609,10 @@ def render_home(matches: list[dict], outrights: list[dict]) -> str:
 
     return (
         chrome_head(
-            "Odds Primer · AI-assisted sports market intelligence",
+            "Odds Primer · World Cup 2026 prices",
             description=(
-                "Odds Primer compares live prediction-market prices against an independent "
-                "AI football model and publishes Pick, Pass, or Avoid verdicts on every "
+                "Odds Primer compares live Kalshi and Polymarket prices against an independent "
+                "football model and publishes Pick, Pass, or Avoid verdicts on every "
                 "major World Cup market."
             ),
             path="/",
@@ -2756,7 +2794,7 @@ def render_match_page(match: dict) -> str:
     """Per-match page: header + lead card + blurb + drivers + sources."""
     title = match["copy"].get("title") or f"{match['team_a']} v {match['team_b']}"
     summary = match["copy"].get("summary") or ""
-    blurb = match["copy"].get("blurb") or ""
+    blurb = _sanitize_copy(match["copy"].get("blurb") or "")
     drivers = match["copy"].get("drivers") or []
     citations = match["copy"].get("editorial_citations") or []
     adjustments = match.get("hard_signal_adjustments") or []
@@ -2805,8 +2843,8 @@ def render_match_page(match: dict) -> str:
         cta_row = (
             '<div class="cta-row">'
             f'<a class="open-market" href="{escape(market_url)}" rel="nofollow noopener" target="_blank">'
-            f'View live market on <span class="venue-name">{escape(venue_name) if venue_name else "the source"}</span> <span class="arr">↗</span></a>'
-            '<span class="meta-note">Editorial citation only. Odds Primer does not place trades.</span>'
+            f'See price on <span class="venue-name">{escape(venue_name) if venue_name else "the source"}</span> <span class="arr">↗</span></a>'
+            '<span class="meta-note">Affiliate link. Odds Primer may earn a commission. Editorial verdicts are independent.</span>'
             '</div>'
         )
 
@@ -2904,7 +2942,7 @@ def render_outright_card(outright: dict) -> str:
         f'<span class="lv-lab">{LABELS.get(state, "Pass")}</span>'
         f'<span class="lv-when">'
         f'<span class="lv-when-row">{escape(when)}</span>'
-        f'<span class="lv-fresh">Last signal caught · {escape(fresh_rel)}</span>'
+        f'<span class="lv-fresh">Last updated ·{escape(fresh_rel)}</span>'
         f'</span>'
     )
 
@@ -2942,7 +2980,7 @@ def render_outright_card(outright: dict) -> str:
 
     return (
         f'<div class="lv-card {state_class}">'
-        f'<a class="lv-card-link" href="{href}" aria-label="Read the case"></a>'
+        f'<a class="lv-card-link" href="{href}" aria-label="Read the full case"></a>'
         '<span class="lv-bar" aria-hidden="true"></span>'
         f'<div class="lv-head">{head}</div>'
         f'<h3 class="lv-teams">{escape(candidate)}</h3>'
@@ -3013,8 +3051,8 @@ def render_outright_page(outright: dict) -> str:
         cta_row = (
             '<div class="cta-row">'
             f'<a class="open-market" href="{escape(market_url)}" rel="nofollow noopener" target="_blank">'
-            f'View live market on <span class="venue-name">{escape(venue_name) if venue_name else "the source"}</span> <span class="arr">↗</span></a>'
-            '<span class="meta-note">Editorial citation only. Odds Primer does not place trades.</span>'
+            f'See price on <span class="venue-name">{escape(venue_name) if venue_name else "the source"}</span> <span class="arr">↗</span></a>'
+            '<span class="meta-note">Affiliate link. Odds Primer may earn a commission. Editorial verdicts are independent.</span>'
             '</div>'
         )
 

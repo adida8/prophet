@@ -21,7 +21,7 @@ from typing import Any, Optional
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 import config
@@ -428,7 +428,7 @@ if (SITE_PUBLIC / "index.html").exists():
     # routed, so the SPA's LearnIndex + primer tree owns /learn end-to-end.
     _EDITORIAL_PAGES = (
         "about",
-        "method", "methodology", "the-desk",
+        "methodology", "the-desk",
         "responsible-use", "affiliate-disclosure", "corrections",
         "terms", "privacy", "cookies",
         "404",
@@ -440,11 +440,26 @@ if (SITE_PUBLIC / "index.html").exists():
         handler.__name__ = f"site_editorial_{name.replace('-', '_')}"
         return handler
 
+    def _make_redirect(target: str):
+        async def handler():
+            return RedirectResponse(url=target, status_code=301)
+        return handler
+
     for _name in _EDITORIAL_PAGES:
         _h = _make_editorial_route(_name)
-        app.get(f"/{_name}",       include_in_schema=False)(_h)
-        app.get(f"/{_name}/",      include_in_schema=False)(_h)
-        app.get(f"/{_name}.html",  include_in_schema=False)(_h)
+        # Clean URL + trailing slash → serve content
+        app.get(f"/{_name}",      include_in_schema=False)(_h)
+        app.get(f"/{_name}/",     include_in_schema=False)(_h)
+        # .html version → 301 to clean URL (no .html in canonical URLs)
+        _rh = _make_redirect(f"/{_name}")
+        _rh.__name__ = f"site_redirect_{_name.replace('-', '_')}_html"
+        app.get(f"/{_name}.html", include_in_schema=False)(_rh)
+
+    # /method and /method.html → 301 /methodology (consolidate naming)
+    for _mp in ("/method", "/method/", "/method.html"):
+        _mh = _make_redirect("/methodology")
+        _mh.__name__ = f"site_redirect_method_{_mp.replace('/', '_').replace('.', '_')}"
+        app.get(_mp, include_in_schema=False)(_mh)
 
     @app.get("/colors_and_type.css", include_in_schema=False)
     async def site_colors_css():
