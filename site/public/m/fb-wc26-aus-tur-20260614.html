@@ -78,14 +78,9 @@ a { color: inherit; }
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
 .brand { display: inline-flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--ink); }
-.brand .wm-row { display: flex; align-items: baseline; gap: 10px; }
-.brand .glyph { display: inline-flex; align-items: flex-end; gap: 2px; height: 22px; }
-.brand .glyph span { display: block; width: 4px; background: var(--ink); border-radius: 0.5px; }
-.brand .glyph span:nth-child(1) { height: 22%; }
-.brand .glyph span:nth-child(2) { height: 38%; }
-.brand .glyph span:nth-child(3) { height: 65%; background: var(--flame); }
-.brand .glyph span:nth-child(4) { height: 30%; }
-.brand .wm { font-family: var(--font-serif); font-weight: 800; font-size: 22px; letter-spacing: -0.02em; line-height: 1; }
+.brand svg { display: block; }
+.brand .wm-row { display: flex; align-items: baseline; gap: 12px; }
+.brand .wm { font-family: var(--font-sans); font-weight: 700; font-size: 22px; letter-spacing: -0.022em; line-height: 1; }
 .brand .tag { font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: 12px; line-height: 1.3; color: var(--graphite); }
 .brand .tag .flame { color: var(--flame-deep); font-style: normal; font-weight: 600; }
 
@@ -1149,7 +1144,13 @@ body.op-noscroll { overflow: hidden; }
   <div class="inner">
     <a class="brand" href="/" aria-label="Odds Primer home">
       <span class="wm-row">
-        <span class="glyph" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+        <svg viewBox="0 0 38 34" width="38" height="34" aria-hidden="true">
+          <line x1="0" y1="34" x2="38" y2="34" stroke="#0E2240" stroke-width="1"/>
+          <rect x="2"  y="24" width="6" height="10" fill="#0E2240"/>
+          <rect x="11" y="18" width="6" height="16" fill="#0E2240"/>
+          <rect x="20" y="6"  width="6" height="28" fill="#D9461C"/>
+          <rect x="29" y="20" width="6" height="14" fill="#0E2240"/>
+        </svg>
         <span class="wm">Odds Primer</span>
       </span>
       <span class="tag">Independent football market analysis</span>
