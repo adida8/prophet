@@ -1246,6 +1246,7 @@ def chrome_head(title: str, description: str = "", *, path: str = "/", extra_hea
 <meta name="twitter:image" content="{escape(og_image)}">
 {FAVICON_LINKS}
 {GA_SNIPPET}
+<script src="/js/activity.js" defer></script>
 {extra_head}
 <style>{CSS}</style>
 </head>
@@ -2501,18 +2502,17 @@ def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = Tr
         f'<a class="lv-card-link" href="{href}" aria-label="Read the full case"></a>'
         if show_read_case else ""
     )
-    # Activity slot — only on the detail page (show_read_case=False).
-    # Rendered OUTSIDE the `.lv-card` so the card's internal grid/flex
-    # rules don't squeeze the widget, and so card-level click overlays
-    # don't swallow chip clicks. Populated client-side by /js/activity.js.
-    activity_slot = ""
-    if not show_read_case:
-        activity_slot = (
-            f'<div class="op-activity" '
-            f'data-match-id="{escape(match.get("match_id") or "")}" '
-            f'data-verdict-state="{escape(state)}" '
-            f'data-pick-side="{escape(pick_side or "")}"></div>'
-        )
+    # Activity slot — emitted on every card (home, matches index, detail).
+    # Lives INSIDE the .lv-card grid; CSS in activity.js places it at
+    # grid-column: 1 / -1 with pointer-events: auto so it spans the
+    # full card width and chip clicks don't fall through to the card
+    # overlay link.
+    activity_slot = (
+        f'<div class="op-activity" '
+        f'data-match-id="{escape(match.get("match_id") or "")}" '
+        f'data-verdict-state="{escape(state)}" '
+        f'data-pick-side="{escape(pick_side or "")}"></div>'
+    )
     return (
         f'<div class="lv-card {state_class}">'
         f'{overlay_link}'
@@ -2522,8 +2522,8 @@ def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = Tr
         f'<p class="lv-venue-meta">{vmeta}</p>'
         f'<p class="lv-thesis">{thesis}</p>'
         f'{foot}'
-        '</div>'
         f'{activity_slot}'
+        '</div>'
     )
 
 
@@ -2888,8 +2888,6 @@ def render_match_page(match: dict) -> str:
         and (blurb or summary)
     )
     extra_head = "" if has_real_verdict else '<meta name="robots" content="noindex">'
-    # Activity island — JS + CSS self-contained, defer so chrome paints first.
-    extra_head += '<script src="/js/activity.js" defer></script>'
 
     market_url = v.get("market_url")
     venue_name = (v.get("market_venue") or "").title()
