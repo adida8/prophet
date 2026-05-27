@@ -35,6 +35,25 @@ BOOTSTRAP_SIMS: int = 1_000
 ELO_PERTURB: float = 50.0
 BASE_SEED: int = 42
 
+# ── Knockout-tie resolution parameters ───────────────────────────────
+# Three-stage resolution for KO ties: 90 minutes → extra time → pens.
+# Tuned to roughly match World Cup KO outcomes 1986–2022:
+#
+#   ET_SETTLED_SHARE       — of post-90' draws, fraction resolved in
+#                            extra time. Historical WC KO ET-resolution
+#                            rate is close to 50%; the rest go to pens.
+#   PENS_ELO_SENSITIVITY   — per-Elo tilt added to 0.5 for the higher
+#                            -Elo side in a shootout. 0.00025 means a
+#                            200-Elo gap → ~55/45 for the favourite,
+#                            roughly matching empirical pens results.
+#   PENS_TILT_CAP          — max deviation from 50/50 in either
+#                            direction. Pens are noisy; even Brazil vs
+#                            Saudi Arabia in a shootout is closer to a
+#                            coin flip than the regulation gap suggests.
+ET_SETTLED_SHARE:     float = 0.50
+PENS_ELO_SENSITIVITY: float = 0.00025
+PENS_TILT_CAP:        float = 0.10
+
 # How qualifying teams pass from the group stage into the knockout
 # bracket. WC 2026 takes top-2 of each group + the 8 best third-place
 # finishers (12 × 2 + 8 = 32 → R32). WC 2022 took only top-2 (8 × 2
@@ -78,23 +97,51 @@ class OutrightModelOutput:
 def _sample_match(rng: random.Random, elo_a: float, elo_b: float, *, allow_draw: bool) -> int:
     """Return 0 if A wins, 1 if B wins, -1 if draw (group stage only).
 
-    For knockouts, we redistribute the draw mass proportionally to the
-    two winning sides (Elo-weighted coin flip — stronger side wins
-    extra-time / penalties more often than 50/50, which roughly matches
-    historical results).
+    Group stage uses the full 3-outcome distribution. Knockouts use a
+    separate 3-stage resolution (90' → extra time → pens) — see
+    `_sample_knockout`. We keep this wrapper so callers can express
+    intent via `allow_draw`.
     """
-    p_a, p_d, p_b = _probs_from_elos(elo_a, elo_b)
     if allow_draw:
+        p_a, p_d, p_b = _probs_from_elos(elo_a, elo_b)
         r = rng.random()
         if r < p_a:           return 0
         if r < p_a + p_d:     return -1
         return 1
+    return _sample_knockout(rng, elo_a, elo_b)
 
-    # Knockout — re-normalise over the two winning sides.
-    total = p_a + p_b
-    if total <= 0:
-        return 0 if rng.random() < 0.5 else 1
-    return 0 if rng.random() < (p_a / total) else 1
+
+def _sample_knockout(rng: random.Random, elo_a: float, elo_b: float) -> int:
+    """Resolve a knockout tie in three stages: 90 minutes → extra time
+    → penalty shootout. Returns 0 if A advances, 1 if B advances.
+
+    Why three stages instead of a single re-normalised Elo flip: the
+    previous model gave the full Elo advantage to the favourite for
+    *every* drawn tie, including the ~half that go to penalties.
+    Empirically pens are much closer to 50/50 than the teams' general
+    skill gap would predict — a coin flip with a small skill tilt.
+    Modelling pens separately corrects this without changing the
+    regulation-time behaviour.
+    """
+    p_a, p_d, p_b = _probs_from_elos(elo_a, elo_b)
+    r = rng.random()
+    if r < p_a:           return 0          # A wins in 90'
+    if r >= p_a + p_d:    return 1          # B wins in 90'
+
+    # Drawn at 90'. Split into ET-settled vs pens.
+    if rng.random() < ET_SETTLED_SHARE:
+        # Extra time — re-normalise over winning sides (favours the
+        # stronger team about as much as regulation does).
+        total = p_a + p_b
+        if total <= 0:
+            return 0 if rng.random() < 0.5 else 1
+        return 0 if rng.random() < (p_a / total) else 1
+
+    # Penalty shootout — flat 50/50 with a small Elo tilt, capped.
+    elo_diff = elo_a - elo_b
+    p_a_pens = 0.5 + PENS_ELO_SENSITIVITY * elo_diff
+    p_a_pens = max(0.5 - PENS_TILT_CAP, min(0.5 + PENS_TILT_CAP, p_a_pens))
+    return 0 if rng.random() < p_a_pens else 1
 
 
 def _simulate_group(
