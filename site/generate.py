@@ -2502,8 +2502,9 @@ def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = Tr
         if show_read_case else ""
     )
     # Activity slot — only on the detail page (show_read_case=False).
-    # Populated client-side by /js/activity.js. Data-attrs are the only
-    # info the JS needs to hit the API + pick a render branch.
+    # Rendered OUTSIDE the `.lv-card` so the card's internal grid/flex
+    # rules don't squeeze the widget, and so card-level click overlays
+    # don't swallow chip clicks. Populated client-side by /js/activity.js.
     activity_slot = ""
     if not show_read_case:
         activity_slot = (
@@ -2521,8 +2522,8 @@ def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = Tr
         f'<p class="lv-venue-meta">{vmeta}</p>'
         f'<p class="lv-thesis">{thesis}</p>'
         f'{foot}'
-        f'{activity_slot}'
         '</div>'
+        f'{activity_slot}'
     )
 
 
