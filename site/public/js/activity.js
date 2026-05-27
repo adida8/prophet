@@ -236,7 +236,11 @@
             }
             state.data.your_vote = next;
             render(root, state);
-            refresh(root, state);
+            // Intentionally NOT calling refresh() here. The 60s aggregator
+            // hasn't caught up yet, so a refresh would return stale counts
+            // and wipe out the optimistic bump above. The next interval
+            // poll (90s) runs after the aggregator has caught up, and
+            // reconcile() guards against any remaining drift.
           }
           // 409 / 429 are silent — the next refresh pulls true state.
         } catch (_e) {
@@ -246,6 +250,22 @@
         }
       });
     });
+  }
+
+  // -------------------- reconciliation --------------------
+
+  // The aggregator job runs every 60s; in that window the GET response's
+  // `by_reaction` counts are stale w.r.t. recent votes. `your_vote` is
+  // read live and is always fresh — so we treat it as the source of truth
+  // and patch counts back up locally when they conflict.
+  function reconcile(data) {
+    if (!data) return data;
+    data.by_reaction = data.by_reaction || {};
+    if (data.your_vote && !data.by_reaction[data.your_vote]) {
+      data.by_reaction[data.your_vote] = 1;
+      data.votes_total = Math.max(data.votes_total || 0, 1);
+    }
+    return data;
   }
 
   // -------------------- network ----------------------------
@@ -267,7 +287,7 @@
         credentials: "same-origin",
       });
       if (!res.ok) return;
-      state.data = await res.json();
+      state.data = reconcile(await res.json());
       render(root, state);
     } catch (_e) { /* non-fatal */ }
   }
