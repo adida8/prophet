@@ -122,21 +122,28 @@ def _read_settings() -> dict:
 async def lifespan(app: FastAPI):
     # Ledger: initialise SQLite tables on boot
     await ledger_db.init_db()
-    # Activity signals: open Postgres pool if DATABASE_URL is set. Skipping
-    # silently when unset means local dev without a DB still boots — the
-    # activity routes will 500 on first hit, which is the loudness we want.
+    # Activity signals: open Postgres pool if DATABASE_URL is set. Wrapped
+    # in try/except so a misconfigured DATABASE_URL (unreachable host,
+    # invalid DSN, missing tables, etc.) never crashes the whole app —
+    # only the activity routes 500. Other surfaces stay live.
     activity_pool_opened = False
     if os.getenv("DATABASE_URL"):
-        from activity.db import open_pool as open_activity_pool
-        await open_activity_pool()
-        activity_pool_opened = True
+        try:
+            from activity.db import open_pool as open_activity_pool
+            await open_activity_pool()
+            activity_pool_opened = True
+        except Exception as e:  # noqa: BLE001
+            log.warning("activity: failed to open Postgres pool: %r", e)
     # Periodic heartbeat for legacy dashboard
     task = asyncio.create_task(_heartbeat_loop())
     yield
     task.cancel()
     if activity_pool_opened:
-        from activity.db import close_pool as close_activity_pool
-        await close_activity_pool()
+        try:
+            from activity.db import close_pool as close_activity_pool
+            await close_activity_pool()
+        except Exception:  # noqa: BLE001
+            pass
 
 
 async def _heartbeat_loop():

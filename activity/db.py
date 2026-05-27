@@ -37,10 +37,15 @@ def _database_url() -> str:
 async def open_pool() -> asyncpg.Pool:
     global _pool
     if _pool is None:
+        # `timeout=5.0` is the per-connection-attempt timeout (asyncpg's
+        # default is None — wait forever). Without this, a misconfigured
+        # DATABASE_URL hangs FastAPI's lifespan indefinitely and the whole
+        # site goes dark instead of just the activity routes.
         _pool = await asyncpg.create_pool(
             dsn=_database_url(),
             min_size=1,
             max_size=int(os.getenv("ACTIVITY_DB_POOL_MAX", "10")),
+            timeout=5.0,
             command_timeout=5.0,
         )
     return _pool

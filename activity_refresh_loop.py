@@ -56,7 +56,14 @@ async def run_activity_loop() -> None:
 
     # Open the pool here so the loop is self-contained; the server lifespan
     # also opens it (idempotent) so HTTP routes don't depend on this loop.
-    await open_pool()
+    # Wrapped so a misconfigured DATABASE_URL doesn't crash main.py via
+    # asyncio.gather — let the rest of the app (scheduler, server, etc.)
+    # keep running.
+    try:
+        await open_pool()
+    except Exception:  # noqa: BLE001
+        log.exception("activity loop: failed to open Postgres pool, exiting")
+        return
     await asyncio.sleep(_INITIAL_DELAY_SEC)
 
     seed_enabled = os.getenv("ACTIVITY_SEED_ENABLED", "1") == "1"
