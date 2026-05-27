@@ -122,10 +122,21 @@ def _read_settings() -> dict:
 async def lifespan(app: FastAPI):
     # Ledger: initialise SQLite tables on boot
     await ledger_db.init_db()
+    # Activity signals: open Postgres pool if DATABASE_URL is set. Skipping
+    # silently when unset means local dev without a DB still boots — the
+    # activity routes will 500 on first hit, which is the loudness we want.
+    activity_pool_opened = False
+    if os.getenv("DATABASE_URL"):
+        from activity.db import open_pool as open_activity_pool
+        await open_activity_pool()
+        activity_pool_opened = True
     # Periodic heartbeat for legacy dashboard
     task = asyncio.create_task(_heartbeat_loop())
     yield
     task.cancel()
+    if activity_pool_opened:
+        from activity.db import close_pool as close_activity_pool
+        await close_activity_pool()
 
 
 async def _heartbeat_loop():
@@ -155,6 +166,11 @@ app.add_middleware(
 
 app.include_router(ledger_router)
 app.include_router(desk_router)
+# Activity signals (anon views + reactions). Mounted unconditionally —
+# routes 500 cleanly if DATABASE_URL isn't configured, which is the
+# correct loudness for a deploy that forgot to wire Postgres.
+from activity.router import router as activity_router  # noqa: E402
+app.include_router(activity_router)
 # Ops router goes before the SPA catch-all (which is registered later via
 # `app.get("/", ...)` etc.) so `/api/desk/ops/*` resolves to the API
 # adapter, not the React shell. Disabled-by-default — see desk_ops_api.
@@ -475,6 +491,13 @@ if (SITE_PUBLIC / "index.html").exists():
     @app.get("/colors_and_type.css", include_in_schema=False)
     async def site_colors_css():
         return FileResponse(SITE_PUBLIC / "colors_and_type.css", media_type="text/css")
+
+    @app.get("/js/{name}", include_in_schema=False)
+    async def site_js(name: str):
+        p = _safe_path(SITE_PUBLIC / "js", name)
+        if p is None or not p.is_file() or p.suffix != ".js":
+            return _site_not_found()
+        return FileResponse(p, media_type="application/javascript")
 
     @app.get("/favicon.svg", include_in_schema=False)
     async def site_favicon_svg():

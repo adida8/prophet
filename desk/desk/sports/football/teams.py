@@ -203,6 +203,8 @@ _NAME_TO_ISO3: dict[str, str] = {
     "Ireland":                 "irl",
     "Northern Ireland":        "nir",
     "Finland":                 "fin",
+    "El Salvador":             "slv",
+    "Trinidad and Tobago":     "tto",
 }
 
 
