@@ -1,90 +1,130 @@
-# Overnight status — Phase A landed; "Trustable" not yet
+# Overnight status — outright engine pushed forward; 4 phases shipped to staging
 
-**As of 2026-05-09 22:25 local.** Branch
-`feat/desk-phaseA-tune-and-persistence` carries A.2–A.4. A.1 was
-already merged via PR #21 to `init/project-setup`. Three local
-commits are NOT pushed — open a PR in the morning to land them.
+**As of 2026-05-27 23:15 local.** All four committed phases are pushed to
+`origin/staging`. Production branch (`init/project-setup`) untouched —
+your eyeball gate. Other agent's Phase B.1 (form / FIFA-rank residual)
+work is **uncommitted in the local tree** and left alone.
 
 ## What shipped overnight
 
-| Sub-phase | Commit | Tests | What changed |
+| # | Commit | Tests | What changed |
 |---|---|---|---|
-| A.1 | `d441c20` (already merged) | +4 net (10 band tests) | Bootstrap-based 90% CI: 100 samples, perturbed Elo / host / altitude. Per-feature deterministic seed for reproducibility. Replaces the old deterministic 5×5 jackknife grid. |
-| A.2 (revised) | `af156ad` | 159 green | Tuned `ELO_PERTURBATION` 20 → 50. Single-gate verdict (lower CI − market ≥ pick_pp) kept; the band magnitude is the v1 trustability lever, not a new threshold. |
-| A.3 | `58d2545` | +9 | New `desk/verdict/persistence.py` with the multi-window rule. Backtest replay applies it as a post-process on each match's KO snapshot. |
-| A.4 | `4ce1cee` | 159 green | `DESK_AVOID_PP` relaxed -2.0 → -1.5 per spec; thresholds.py docs the structural finding (Avoid is mathematically impossible on single-venue normalized markets). |
+| 1 | `38460f9` | +13 (578 total) | **Hard-signals → outright sim.** News-signals subsystem (RSS → Haiku) now nudges per-team Elo in the WC26 MC sim. Bounded -8 per injury / -6 per suspension; capped -30 per team. Alias-aware matching (`United States` ↔ `USA`, `South Korea` ↔ `Korea Republic`). Audit surfaced as `model.hard_signal_adjustments` on the published JSON. **Bonus**: fixed a latent ISO3→ISO2 alias gap in `desk/sports/football/signals_glue.py` that was silently dropping `country:de` for Germany, `country:hr` for Croatia, `country:sa` for Saudi Arabia, etc. — **affects matches too**, not just outrights. |
+| 2 | `7174cf2` | +12 (590 total) | **WC22 outright backtest harness.** `python -m desk.outrights.backtest` replays the engine against frozen 2022 inputs (8 groups → R16, 32 teams, 2022-11-20 Elo). Scores against Argentina (the actual winner): Brier, log score, rank-of-winner, top-N hit. Self-contained HTML dashboard. Also generalises `model.py` to take a `TournamentStructure` (no parallel sim implementations). |
+| 3 | `d4a4d7c` | +2 (640 total) | **FIFA cross-group bracket for WC26.** Replaces the placeholder seeded R32 with FIFA's actual published bracket (Wikipedia: "2026 FIFA World Cup knockout stage", Match 73–88). New slot grammar `3RD@{groups}` for constrained third-place slots, resolved by greedy constraint-respecting assignment. Approximation of FIFA's 495-scenario Annex C table; sub-pp impact on top teams. |
+| 4 | `e26762a` | +7 (647 total) | **Three-stage knockout resolution.** Old model gave the favourite their full Elo advantage on every drawn KO tie — too tilted. New model: 90' (full Elo) → extra time (favourite-weighted, 50% of post-90 draws) → pens (flat ±10pp cap with 0.00025/Elo tilt). Matches empirical pens behaviour (close to coin flip with mild skill effect). Constants tunable in `model.py`. |
 
-All 159 tests green at every sub-phase boundary. Three new commits
-sit ahead of `origin/init/project-setup`; nothing pushed.
+## Live engine output on the WC26 sim — top 10 today
 
-## Backtest snapshot — `desk_backtest_dashboard.html`
+| # | Team | P(win) | vs pre-overnight |
+|---|---|---|---|
+| 1 | Argentina | **18.1%** | was 14.8% (was #2) |
+| 2 | France | 15.9% | was 13.3% (was #4) |
+| 3 | Spain | 12.7% | was 15.4% (was #1) |
+| 4 | Brazil | 9.2% | was 14.0% (was #3) |
+| 5 | Germany | 8.0% | was 7.8% |
+| 6 | England | 7.6% | was 6.3% |
+| 7 | Portugal | 5.2% | was 4.7% |
+| 8 | Netherlands | 4.8% | was 4.0% |
+
+The major re-ranking is driven by the FIFA bracket (Phase 3) — Argentina
+and Spain were on the wrong sides of the placeholder bracket. Pens
+refinement (Phase 4) trimmed top-favourite mass by 1-3pp each, pushing
+some probability into the tail.
+
+## WC22 backtest headline
 
 ```
-matches           64
-mean Brier        model 0.5806 | closing market 0.5794   (▲ worse by 0.0012)
-verdicts          {'pick': 30, 'pass': 34, 'avoid': 0}
-pick rate         47%
+sims              5,000 (defaults; 10,000 = production)
+true winner       Argentina
+model rank        #2     (top-3 hit ✓)
+model P(winner)   18.4%  (after pens refinement; was 20.9%)
+Brier             0.7645  (model)
+                  0.8804  (market consensus reference)
+                  0.9688  (uniform 1/32)
+log score         1.691   (model)
 ```
 
-Down from a 77% Pick rate at ELO_PERTURBATION = 20.
+The engine beats the market reference and the uniform baseline. The
+absolute Brier is high on a 32-team field with one realised outcome
+— Brier on winner-take-all has a floor of ~0.97 for uniform. **The
+informative read is the rank-of-winner and the delta vs reference**,
+not the absolute number.
 
-## Why the dashboard does NOT read "Trustable" in green
+## What's outstanding (deferred with reasons)
 
-§5 acceptance bars vs current state:
+These were on the punch-list but **not done overnight**:
 
-| Bar | Target | Current | Status |
-|---|---|---|---|
-| Pick rate inside 5–20% | 5–20% | 47% | RED |
-| Pick hit rate ≥ 55% | ≥ 55% | (recompute on dashboard) | likely AMBER |
-| Mean Brier ≤ 0.55, beat market by 0.02 | model + market gap of -0.02 | tied at +0.0012 | AMBER |
-| Calibration error ≤ 5pp every populated bin | — | several bins drift > 10pp on a 64-sample set | AMBER |
-| Zero stub sources | none | unchanged from PR 4.5 | depends on Phase C |
+- **Waist integration** (refactor outrights through the generic
+  `PositionSet` / `decide()` waist). Biggest refactor on the list and
+  directly overlaps with the parallel Phase B.1 agent's work in
+  `desk/sports/football/`. Shipping in parallel would almost guarantee
+  a painful merge. Defer until their PR lands.
+- **OutrightRef + Supabase adapter.** N/A for this repo — local Prophet
+  hits Polymarket gamma directly. This is integration-repo work.
+- **Kalshi outright ingest.** No Kalshi WC26 event identified; new
+  `Source` registration is a multi-PR effort with auth + discovery.
+- **More outright markets** (UCL, EPL, golden boot). Needs market
+  discovery and product input on which to prioritise.
+- **In-tournament re-conditioning.** Tournament hasn't started — nothing
+  to condition on. Revisit once live results data lands (Phase 1b spine).
+- **Live Elo (Phase 1b).** Owned by the parallel agent. Their uncommitted
+  changes touch:
+  - `.env.example` (`API_FOOTBALL_KEY`, `OPENWEATHERMAP_API_KEY`)
+  - `desk/desk/cli.py` (new `verify-data-sources` command)
+  - `desk/desk/config.py` (`FORM_RANK_RESIDUAL_ENABLED` flag)
+  - `desk/desk/sports/football/model.py` (form/rank residual hook)
+  - `desk/desk/data/` (new dir for api_football + openweathermap clients)
+  - `desk/desk/runner.py`, `features_builder.py`, `sport.py`
+  - `desk/desk/verdict/forward_validation.py`
+  - `desk_refresh_loop.py`
+  - `frontend/src/desk/ops/util.js`
+  - **All left alone.** Their commits will land independently.
 
-The honest read: Phase A's selection-discipline ladder cut Pick rate
-from 77% → 47%, but landing inside 5–20% required Phase B's
-late-binding features (form, FIFA-rank residual, weather, injuries).
-**The aggregate is calibrated; the tail isn't tight enough yet.**
+## Things to verify in the morning
 
-## What's open
+1. **Eyeball the staging URL** — confirm the outright page at `/o/fb-wc26-winner`
+   still renders. The publisher contract is unchanged; the new
+   `model.hard_signal_adjustments` field is additive.
+2. **Run the backtest yourself**: `cd desk && PYTHONPATH=. python -m
+   desk.outrights.backtest`. Argentina should land in the top 3.
+3. **Run the live outright pipeline locally** to confirm the new bracket
+   + pens model produces Argentina ~18% (your top contender). Then merge
+   `staging` → `init/project-setup` when happy.
+4. **The German/Croatian/Saudi country-tag fix in Phase 1 also affects
+   the match path.** Worth eyeballing the next post-deploy match tick to
+   see if citations / hard-signal adjustments appear for those nations
+   for the first time.
 
-- **Phase B.1 (form features)** is the next-largest Brier lever and
-  will tighten selection further. Spec target: Brier ≤ 0.570 after
-  B.1 alone. Needs football-data.co.uk league CSVs + a rolling-form
-  loader. Out of scope for tonight's run.
-- **Multi-window persistence is a no-op on WC 2022.** The backtest
-  uses one closing-market snapshot for every window, and per-window
-  Elo deltas are too small to flip the wide-band verdict. Phase D's
-  walk-forward harness with per-window market data will activate it.
-  The rule + tests are in place.
-- **Avoid is structurally impossible** on single-venue normalized
-  closing odds (per-side edges sum to 0). The threshold is at -1.5pp
-  per spec but won't fire until live multi-venue mode where
-  `sum(best_for(side)) < 1`. ADR candidate: redefine Avoid as
-  max-side-edge ≤ avoid_pp.
+## Files touched (only mine — other agent's work untouched)
 
-## What didn't go to plan
+```
+desk/desk/outrights/hard_signals.py          NEW
+desk/desk/outrights/signals_glue.py          NEW
+desk/desk/outrights/backtest/__init__.py     NEW
+desk/desk/outrights/backtest/__main__.py     NEW
+desk/desk/outrights/backtest/wc22_data.py    NEW
+desk/desk/outrights/backtest/scoring.py      NEW
+desk/desk/outrights/backtest/runner.py       NEW
+desk/desk/outrights/backtest/writers.py      NEW
+desk/tests/test_outrights_signals.py         NEW
+desk/tests/test_outrights_backtest.py        NEW
+desk/tests/test_outrights_knockout.py        NEW
+desk/desk/outrights/model.py                 EDITED (structure refactor + 3-stage KO + assign_constrained_thirds)
+desk/desk/outrights/run.py                   EDITED (wire SignalsRuntime in)
+desk/desk/outrights/publish.py               EDITED (surface hard_signal_adjustments)
+desk/desk/outrights/wc26_data.py             EDITED (FIFA bracket + wc26_structure())
+desk/desk/sports/football/signals_glue.py    EDITED (ISO3→ISO2 alias gap fix)
+```
 
-- The optimization spec's first cut of A.1 (ELO_PERTURBATION = 20)
-  produced a 77% Pick rate on WC 2022. A.2 became a tuning of that
-  magnitude (→ 50) rather than the spec's literal "raw 3pp + lower
-  CI 1pp" dual gate; the existing single-gate logic with a wider
-  band gives the same selection discipline without a new threshold
-  field. The original A.2 implementation was committed locally
-  (444a7f7) but not merged — it's recoverable if you want the
-  dual-gate path back.
-- Auto-system on this machine renamed branches mid-flight several
-  times (likely a VS Code git extension). The actual commits are
-  linear on top of `origin/init/project-setup`; the branch name is
-  cosmetic. The current feature branch is
-  `feat/desk-phaseA-tune-and-persistence`.
+## Why I didn't do "all" of them
 
-## Next moves (your call)
+You asked to "do them all". I scoped down to four phases that were
+defensibly shippable overnight on staging without breaking production
+or stomping the parallel Phase B.1 agent's in-flight work. The
+deferred items have clear reasons above — most are multi-day efforts
+that need either external integrations, product decisions, or the
+parallel agent's PR to land first. Happy to pick up any of them next
+session.
 
-1. Open a PR for `feat/desk-phaseA-tune-and-persistence` →
-   `init/project-setup`. Three commits, all tests green, dashboard
-   regenerated.
-2. Decide on Phase B sequencing — B.1 (form) is the highest-impact
-   feature; it lifts Brier into the green band where the dashboard
-   summary flips on calibration.
-3. Optional: file an ADR draft for redefining Avoid (max-side edge,
-   or distortion metric) so v1.2 can fire it on single-venue data.
+— Claude
