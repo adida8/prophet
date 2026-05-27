@@ -1,9 +1,10 @@
-# Overnight status — outright engine pushed forward; 4 phases shipped to staging
+# Overnight status — outright engine pushed forward; 4 phases on staging (plus the other agent's Phase B.1)
 
-**As of 2026-05-27 23:15 local.** All four committed phases are pushed to
-`origin/staging`. Production branch (`init/project-setup`) untouched —
-your eyeball gate. Other agent's Phase B.1 (form / FIFA-rank residual)
-work is **uncommitted in the local tree** and left alone.
+**As of 2026-05-27 23:20 local.** All four of my committed phases are
+pushed to `origin/staging`. The parallel Phase B.1 agent also shipped
+their form-residual hook + API-Football data path tonight (`fad936e`),
+landing between my third and fourth phase. Production branch
+(`init/project-setup`) untouched — your eyeball gate.
 
 ## What shipped overnight
 
@@ -68,18 +69,16 @@ These were on the punch-list but **not done overnight**:
   discovery and product input on which to prioritise.
 - **In-tournament re-conditioning.** Tournament hasn't started — nothing
   to condition on. Revisit once live results data lands (Phase 1b spine).
-- **Live Elo (Phase 1b).** Owned by the parallel agent. Their uncommitted
-  changes touch:
-  - `.env.example` (`API_FOOTBALL_KEY`, `OPENWEATHERMAP_API_KEY`)
-  - `desk/desk/cli.py` (new `verify-data-sources` command)
-  - `desk/desk/config.py` (`FORM_RANK_RESIDUAL_ENABLED` flag)
-  - `desk/desk/sports/football/model.py` (form/rank residual hook)
-  - `desk/desk/data/` (new dir for api_football + openweathermap clients)
-  - `desk/desk/runner.py`, `features_builder.py`, `sport.py`
-  - `desk/desk/verdict/forward_validation.py`
-  - `desk_refresh_loop.py`
-  - `frontend/src/desk/ops/util.js`
-  - **All left alone.** Their commits will land independently.
+- **Live Elo (Phase 1b).** Owned by the parallel agent. They shipped
+  `fad936e desk/B.1: form-residual hook + api-football data path
+  (Shadow)` to staging tonight — Shadow-mode behind
+  `DESK_FORM_RANK_RESIDUAL=0` by default. Their changes touch
+  `desk/cli.py`, `config.py`, `sports/football/model.py`, `runner.py`,
+  `features_builder.py`, `sport.py`, `verdict/forward_validation.py`,
+  `desk/data/` (new dir for api_football + openweathermap clients),
+  `desk_refresh_loop.py`, `frontend/src/desk/ops/util.js`, and
+  `.env.example`. **Not touched by me.** Read their commit message
+  for the activation plan.
 
 ## Things to verify in the morning
 
