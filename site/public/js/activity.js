@@ -150,7 +150,11 @@
     const r = state.data || {};
     const byReaction = r.by_reaction || {};
     const showViews = (r.views_24h || 0) >= VIEW_DISPLAY_MIN;
-    const showVotes = (r.votes_total || 0) >= VOTE_DISPLAY_MIN;
+    // Treat "this reader has voted" as enough to unlock the counts row,
+    // even if the aggregator hasn't republished match_aggregates yet
+    // (aggregator runs every 60s; the user expects their click to land
+    // visibly faster than that).
+    const showVotes = (r.votes_total || 0) >= VOTE_DISPLAY_MIN || !!r.your_vote;
 
     // Top strip — only render rows whose data crosses display thresholds.
     const stripRows = [];
@@ -213,7 +217,24 @@
           if (res.ok) {
             const body = await res.json();
             state.data = state.data || {};
-            state.data.your_vote = body.your_vote;
+            // Optimistic local bump so the count shows the user's own
+            // vote before the 60s aggregator catches up. Reconciled by
+            // the next refresh() below (or by interval poll).
+            const prev = state.data.your_vote;
+            const next = body.your_vote;
+            state.data.by_reaction = state.data.by_reaction || {};
+            if (prev && prev !== next) {
+              state.data.by_reaction[prev] = Math.max(
+                0, (state.data.by_reaction[prev] || 0) - 1
+              );
+            }
+            if (next && prev !== next) {
+              state.data.by_reaction[next] = (state.data.by_reaction[next] || 0) + 1;
+              if (!prev) {
+                state.data.votes_total = (state.data.votes_total || 0) + 1;
+              }
+            }
+            state.data.your_vote = next;
             render(root, state);
             refresh(root, state);
           }
