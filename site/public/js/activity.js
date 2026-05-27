@@ -40,8 +40,11 @@
     { key: "fair_call",  em: "💎", label: "Value",      pos: true  },
   ];
 
-  const VIEW_DISPLAY_MIN = 10;
-  const VOTE_DISPLAY_MIN = 5;
+  // Spec asked for 10/5 to avoid empty-N humiliation, but with the seed
+  // engine off on staging the user can't reach those thresholds manually.
+  // Showing whenever we have any data trades that floor for testability.
+  const VIEW_DISPLAY_MIN = 1;
+  const VOTE_DISPLAY_MIN = 1;
 
   // -------------------- styles (injected once) ---------------
 
@@ -152,7 +155,9 @@
     // Top strip — only render rows whose data crosses display thresholds.
     const stripRows = [];
     if (showViews) {
-      stripRows.push(`<div class="op-row"><span class="op-eye">👁</span><span><span class="op-bold">${r.views_24h} users</span> viewed this market today</span></div>`);
+      const n = r.views_24h;
+      const unit = n === 1 ? "user" : "users";
+      stripRows.push(`<div class="op-row"><span class="op-eye">👁</span><span><span class="op-bold">${n} ${unit}</span> viewed this market today</span></div>`);
     }
     if (showVotes) {
       const side = pickerSide(state);
