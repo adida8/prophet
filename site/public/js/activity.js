@@ -24,20 +24,28 @@
   const VIEW_DISPLAY_MIN = 10;
   const VOTE_DISPLAY_MIN = 5;
 
+  // Labels are picked by (design × verdict_state). For Pass/Avoid both
+  // designs converge on neutral "agree/disagree" vocabulary — the Literal
+  // set ("Bullish / Trap line") truly only makes sense when the Desk has
+  // called a side, and Editorial's "Sharp call" implies a Pick exists.
   const LABELS = {
     editorial: {
-      sharp_call: "Sharp call",
-      fair_call: "Fair call",
-      off_mark: "Off the mark",
-      wait_see: "Wait and see",
+      pick:  { sharp_call: "Sharp call", fair_call: "Fair call",
+               off_mark: "Off the mark", wait_see: "Wait and see" },
+      other: { sharp_call: "Agree",      fair_call: "Lean agree",
+               off_mark: "Disagree",     wait_see: "Wait and see" },
     },
     literal: {
-      sharp_call: "Bullish",
-      fair_call: "Value",
-      off_mark: "Trap line",
-      wait_see: "Overpriced",
+      pick:  { sharp_call: "Bullish",    fair_call: "Value",
+               off_mark: "Trap line",    wait_see: "Overpriced" },
+      other: { sharp_call: "Agree",      fair_call: "Lean agree",
+               off_mark: "Disagree",     wait_see: "Wait and see" },
     },
   };
+
+  function labelsFor(design, verdict) {
+    return LABELS[design][verdict === "pick" ? "pick" : "other"];
+  }
 
   const EMOJI = {
     sharp_call: "🐂",
@@ -56,7 +64,7 @@
       return q;
     }
     const m = document.cookie.match(/(?:^|;\s*)op_design=(literal|editorial)/);
-    return m ? m[1] : "editorial";
+    return m ? m[1] : "literal";
   }
 
   function writeDesignCookie(d) {
@@ -126,7 +134,7 @@
 
   function renderEditorial(state) {
     const r = state.data || {};
-    const labels = LABELS.editorial;
+    const labels = labelsFor("editorial", state.verdict);
     const showViews = (r.views_24h || 0) >= VIEW_DISPLAY_MIN;
     const showVotes = (r.votes_total || 0) >= VOTE_DISPLAY_MIN;
     const aligned = r.aligned_pct == null ? null : r.aligned_pct;
@@ -166,7 +174,11 @@
 
   function renderLiteral(state) {
     const r = state.data || {};
-    const labels = LABELS.literal;
+    const labels = labelsFor("literal", state.verdict);
+    // Emoji only render on Pick verdicts — they're tied to the directional
+    // vocabulary ("Bullish 🐂"); on Pass/Avoid we use neutral labels with
+    // no emoji to match.
+    const useEmoji = state.verdict === "pick";
     const showViews = (r.views_24h || 0) >= VIEW_DISPLAY_MIN;
     const showVotes = (r.votes_total || 0) >= VOTE_DISPLAY_MIN;
 
@@ -193,7 +205,8 @@
       const count = (r.by_reaction || {})[k] || 0;
       const isOn = r.your_vote === k;
       const showCount = showVotes ? `<span class="op-count">${count}</span>` : "";
-      return `<button class="op-chip${isOn ? " is-on" : ""}" data-reaction="${k}"><span class="op-em">${EMOJI[k]}</span> ${labels[k]} ${showCount}</button>`;
+      const em = useEmoji ? `<span class="op-em">${EMOJI[k]}</span> ` : "";
+      return `<button class="op-chip${isOn ? " is-on" : ""}" data-reaction="${k}">${em}${labels[k]} ${showCount}</button>`;
     }).join("");
 
     return `
