@@ -17,6 +17,7 @@ from pathlib import Path
 
 from desk.outrights.decide import OutrightVerdict, american_for
 from desk.outrights.explainer import OutrightCopy
+from desk.outrights.hard_signals import OutrightHardSignalAdjustment
 from desk.outrights.ingest_polymarket import OutrightSnapshot
 from desk.outrights.model import OutrightModelOutput
 
@@ -113,13 +114,39 @@ def _ladder_dict(verdict: OutrightVerdict, model: OutrightModelOutput) -> list[d
     return rows
 
 
+def _hard_signal_dict(adj: OutrightHardSignalAdjustment) -> dict:
+    return {
+        "team":         adj.team,
+        "delta_elo":    round(adj.delta_elo, 1),
+        "capped":       adj.capped,
+        "reason":       adj.reason,
+        "signal_type":  adj.signal_type,
+        "signal_url":   adj.signal_url,
+        "source_id":    adj.source_id,
+        "source_name":  adj.source_name,
+        "published_at": adj.published_at.isoformat().replace("+00:00", "Z")
+                        if adj.published_at else None,
+    }
+
+
 def build_payload(
     snapshot: OutrightSnapshot,
     model: OutrightModelOutput,
     verdict: OutrightVerdict,
     copy: OutrightCopy,
+    hard_signal_adjustments: list[OutrightHardSignalAdjustment] | None = None,
 ) -> dict:
     oid = _outright_id(snapshot)
+    model_block: dict = {
+        "sims":              model.sims,
+        "bootstrap_samples": 100,
+        "seed":              model.seed,
+        "overround_pp":      round(snapshot.overround * 100, 2),
+    }
+    if hard_signal_adjustments:
+        model_block["hard_signal_adjustments"] = [
+            _hard_signal_dict(a) for a in hard_signal_adjustments
+        ]
     return {
         "outright_id":    oid,
         "sport":          "football",
@@ -141,12 +168,7 @@ def build_payload(
             "blurb":   copy.blurb,
             "drivers": list(copy.drivers),
         },
-        "model": {
-            "sims":              model.sims,
-            "bootstrap_samples": 100,
-            "seed":              model.seed,
-            "overround_pp":      round(snapshot.overround * 100, 2),
-        },
+        "model":  model_block,
         "ladder": _ladder_dict(verdict, model),
         "updated_at": datetime.now(tz=timezone.utc).isoformat().replace("+00:00", "Z"),
     }
@@ -158,11 +180,13 @@ def write(
     model: OutrightModelOutput,
     verdict: OutrightVerdict,
     copy: OutrightCopy,
+    hard_signal_adjustments: list[OutrightHardSignalAdjustment] | None = None,
 ) -> Path:
     """Write `<outright_id>.json` + a sibling `.etag` (SHA-256 of the
     canonical JSON). Returns the JSON path.
     """
-    payload = build_payload(snapshot, model, verdict, copy)
+    payload = build_payload(snapshot, model, verdict, copy,
+                            hard_signal_adjustments=hard_signal_adjustments)
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 

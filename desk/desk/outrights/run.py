@@ -1,6 +1,7 @@
 """End-to-end orchestrator for outright winners.
 
-Ingest → model → decide → explain → publish. Used by the CLI:
+Ingest → (hard signals →) model → decide → explain → publish. Used by
+the CLI:
 
     python -m desk outrights run
 
@@ -17,6 +18,10 @@ from pathlib import Path
 from desk.config import OUTPUT_DIR
 from desk.outrights.decide import decide
 from desk.outrights.explainer import build_copy
+from desk.outrights.hard_signals import (
+    OutrightHardSignalAdjustment,
+    apply_hard_signals,
+)
 from desk.outrights.ingest_polymarket import fetch_snapshot
 from desk.outrights.model import (
     BASE_SEED,
@@ -26,9 +31,42 @@ from desk.outrights.model import (
     run as run_model,
 )
 from desk.outrights.publish import write, write_index
+from desk.outrights.signals_glue import tags_for_outright
 from desk.outrights.wc26_data import elo_is_stub
+from desk.signals.cache import SignalsCache
+from desk.signals.hard_track import hard_signals_for
+from desk.signals.registry import Registry
+from desk.signals.runtime import default_cache_path
 
 log = logging.getLogger("desk.outrights.run")
+
+
+def _collect_hard_signals(
+    field: tuple[str, ...],
+) -> tuple[dict[str, float], list[OutrightHardSignalAdjustment]]:
+    """Open the signals cache (if present), pull hard-track signals
+    covering any team in the field, apply bounded Elo adjustments.
+
+    Returns ``({}, [])`` when the cache file doesn't exist — same
+    posture as `SignalsRuntime.for_sport`: news-signals are *additive*,
+    a fresh clone with no cache still runs the outright pipeline.
+    """
+    path = default_cache_path()
+    if not path.exists():
+        log.debug("outrights: no signals cache at %s — skipping hard signals", path)
+        return {}, []
+    tags = tags_for_outright(field)
+    cache = SignalsCache(path)
+    try:
+        registry = Registry.from_csv()
+        pairs = hard_signals_for(
+            fixture_tags=tags,
+            cache=cache,
+            registry=registry,
+        )
+    finally:
+        cache.close()
+    return apply_hard_signals(field, signals=pairs)
 
 
 def run_once(
@@ -55,6 +93,20 @@ def run_once(
     if stub_count:
         log.info("outrights: %d/%d teams using stub Elo", stub_count, len(field))
 
+    elo_overrides, hard_audit = _collect_hard_signals(field)
+    if hard_audit:
+        teams_touched = len({a.team for a in hard_audit})
+        total_delta   = sum(a.delta_elo for a in hard_audit)
+        log.info(
+            "outrights: applied %d hard-signal adjustments across %d teams "
+            "(net Elo %+.1f)", len(hard_audit), teams_touched, total_delta,
+        )
+        for adj in hard_audit:
+            log.info(
+                "outrights: %s %+0.1f Elo (%s, %s)",
+                adj.team, adj.delta_elo, adj.signal_type, adj.source_id,
+            )
+
     log.info(
         "outrights: running MC sim — %d sims + %d×%d bootstrap",
         sims, bootstrap_samples, bootstrap_sims,
@@ -65,6 +117,7 @@ def run_once(
         bootstrap_samples=bootstrap_samples,
         bootstrap_sims=bootstrap_sims,
         seed=seed,
+        elo_overrides=elo_overrides,
     )
 
     verdict = decide(snapshot, model)
@@ -76,7 +129,8 @@ def run_once(
         verdict.candidate.label if verdict.candidate else "—",
     )
 
-    json_path = write(out, snapshot, model, verdict, copy)
+    json_path = write(out, snapshot, model, verdict, copy,
+                     hard_signal_adjustments=hard_audit)
 
     # Index — for now just one outright; the manifest shape stays
     # forward-compatible with adding group winners / golden boot.

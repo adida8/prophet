@@ -229,11 +229,19 @@ def run(
     bootstrap_sims: int = BOOTSTRAP_SIMS,
     perturb: float = ELO_PERTURB,
     seed: int = BASE_SEED,
+    elo_overrides: dict[str, float] | None = None,
 ) -> OutrightModelOutput:
     """Run the point estimate + the bootstrap band. Returns one
     `OutrightModelOutput` covering every team in the field.
+
+    `elo_overrides` lets the caller nudge per-team Elo before the sim —
+    used by `run.run_once` to apply bounded hard-signal adjustments
+    (injuries / suspensions). Unknown teams in the override dict are
+    ignored. The bootstrap's ±perturb is applied on top of the adjusted
+    base, so a nudged team still gets its full uncertainty band.
     """
-    elo_lookup: dict[str, float] = {t: elo(t) for t in field}
+    overrides = elo_overrides or {}
+    elo_lookup: dict[str, float] = {t: elo(t) + overrides.get(t, 0.0) for t in field}
 
     p_win, p_groupwin = _point_estimate(elo_lookup, sims, seed)
     lower, upper = _bootstrap_band(

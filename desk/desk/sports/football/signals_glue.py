@@ -21,6 +21,12 @@ from desk.sports.football.teams import is_international_competition, iso3_for_na
 # extend this. Don't reach for `pycountry` — the seed registry is
 # small and a typo in one place is easier to spot than a stack of
 # transitive dependencies.
+#
+# `iso3_for_name` (in `teams.py`) returns FIFA-style 3-letter codes
+# (e.g. `ger` for Germany, `cro` for Croatia, `ksa` for Saudi Arabia)
+# rather than ISO 3166-1 alpha-3. Both forms are listed here so a
+# lookup against either succeeds — without these aliases, news tagged
+# `country:de` never resolved to Germany matches.
 _ISO3_TO_ISO2: dict[str, str] = {
     # WC26 nations (qualified + plausible play-offs)
     "arg": "ar", "aus": "au", "aut": "at", "bel": "be", "bih": "ba",
@@ -38,6 +44,27 @@ _ISO3_TO_ISO2: dict[str, str] = {
     "hrv": "hr", "hun": "hu",
     "cuw": "cw",  # Curaçao — separate from KOR per the team-id collision fix
     "nir": "gb",
+    # FIFA-style aliases used by `iso3_for_name` — added to align the
+    # name→iso3 and iso3→iso2 paths so the full WC26 field gets tagged.
+    "ger": "de",  # Germany (alongside deu)
+    "cro": "hr",  # Croatia (alongside hrv)
+    "alg": "dz",  # Algeria
+    "ksa": "sa",  # Saudi Arabia (alongside sau)
+    "hai": "ht",  # Haiti
+    "cpv": "cv",  # Cabo Verde
+    "cod": "cd",  # DR Congo
+    "den": "dk",  # Denmark (alongside dnk)
+    "irq": "iq",  # Iraq
+    "uzb": "uz",  # Uzbekistan
+    "jor": "jo",  # Jordan
+    "chi": "cl",  # Chile
+    "isl": "is",  # Iceland
+    "rou": "ro",  # already present; keep
+    "hon": "hn",  # Honduras
+    "slv": "sv",  # El Salvador
+    "tto": "tt",  # Trinidad and Tobago
+    "jam": "jm",  # Jamaica
+    "mli": "ml",  # Mali
 }
 
 
