@@ -150,7 +150,7 @@ Six-step pipeline, each independently replaceable:
 - ✅ News-signals PRs A–F (per `THE_DESK_NEWS_SIGNALS_SPEC.md`) — 21-source global registry (13 RSS active + 8 trust-only / `feed_type=none` reserved for licensed APIs), `desk fetch-signals` populates `desk/data/signals.db`, `desk extract-signals` runs Haiku with prompt caching + tool-use schema (cost ~$0.003/article, content-hash dedupe makes steady-state nearly free), `copy.editorial_citations` filled by `build_citations` with team binding to the participating sides + ≥2-org consensus detector for plural attribution, hard-track injury/suspension Signals from `can_feed_model` sources nudge each team's Elo within the 5-day late-binding window (bounded -8 injury / -6 suspension, capped -30 total per team). Wired into `desk_refresh_loop.py` so the daily tick fetches + extracts + republishes JSON.
 - ✅ PR 5 — explainer Haiku replacement. `desk/desk/explainer/haiku.py` is the blurb-writer (`claude-haiku-4-5`, forced tool-use, system prompt loads `desk/VOICE.md` verbatim + cache_control ephemeral so a single run amortises across 70+ matches). `desk/desk/explainer/__init__.py` dispatches: when `DESK_BLURB_HAIKU=1` + `ANTHROPIC_API_KEY` set, Haiku writes title/summary/blurb; stub still produces `drivers` + the merged Copy is voice-checked one more time. Falls back to the templated stub on any failure (no key, network/timeout, voice-rule violation, blurb outside [80, 220] words, attribution to an outlet not in `editorial_citations`).
 - ⬜ PR 6 — scheduler + CLI + serve
-- 🟡 Phase B.1 — form / FIFA-rank residual **hook scaffold landed in Shadow**. `FootballFeatures` carries optional `team_*_form_delta` + `team_*_rank_residual`; `_adjusted_elos` applies `FORM_WEIGHT * form_delta + RANK_WEIGHT * rank_residual` (Elo, additive on top of base prior) when `DESK_FORM_RANK_RESIDUAL=1`; per-team `Driver` fires once a contribution clears ±15 Elo. Default off; absent fields contribute zero even when on. WC-2022 backtest is byte-identical with the flag off (Brier 0.5806 / 0.5794 market, 30 pick / 34 pass / 0 avoid). **The coupled unit isn't *done* until data-layer Phase 2 (API-Football rank + form) populates real values and forward-validation clears** — Phase 2 needs operator sign-off on the $19/mo API-Football spine per `THE_DESK_DATA_LAYER_SPEC.md` §4 + §8.
+- 🟡 Phase B.1 — form / FIFA-rank residual. **Hook scaffold + data path both shipped in Shadow.** `FootballFeatures` carries optional `team_*_form_delta` + `team_*_rank_residual`; `_adjusted_elos` applies `FORM_WEIGHT * form_delta + RANK_WEIGHT * rank_residual` (Elo, additive on top of base prior) when `DESK_FORM_RANK_RESIDUAL=1`; per-team `Driver` fires once a contribution clears ±15 Elo. Data side (`desk/desk/data/api_football/`): WC26 national-team registry → `/teams?search=` resolves canonical ISO3 ↔ numeric `team_id`; `/fixtures?team=X&last=10` populates a sqlite cache; `compute_form_delta` produces a weighted-PPG-vs-baseline scalar per team that `features_builder.build_features(fx, form_source=runtime)` threads onto each WC26 fixture. Run nightly via `desk fetch-rank-form` (gated on `DESK_RANK_FORM_FETCH=1`). **`rank_residual` deferred** — api-football's `/teams` endpoint doesn't expose FIFA world rank directly; chasing it requires a separate provider (or paid api-sports rank add-on). Status: data flows end-to-end but `DESK_FORM_RANK_RESIDUAL` stays `0` in prod until forward-validation clears (≥100 resolved fixtures, Brier no worse than Phase A's 0.5806, sane directional behaviour per spec §1.4). Forward-validation logger schema lives at `desk/desk/verdict/forward_validation.py`; wiring it into the runner is a follow-up. WC-2022 backtest stays byte-identical with the flag off (30 pick / 34 pass / 0 avoid).
 - ⬜ Phase B.2 (weather) + B.3 (injuries) per optimization spec
 - ⬜ Phase C–F per optimization spec
 - ⬜ Data Layer Phase 1b — live Elo ingest. **Match Picks are not real betting signals until this lands** (the seed audit gets them defensible but not validated).
@@ -246,6 +246,8 @@ python -m desk extract-signals --limit 25    # cap items per source per run (cos
 
 # External data layer (Phase 2+ — needs API_FOOTBALL_KEY / OPENWEATHERMAP_API_KEY)
 python -m desk verify-data-sources            # smoke-test both keys + report api-football tier (guardrail 4)
+python -m desk fetch-rank-form                # refresh form_delta for every WC26 team (1 /teams + 1 /fixtures per team)
+python -m desk fetch-rank-form --iso3 fra --iso3 bra  # smoke-test on a subset
 ```
 
 ### Layout
@@ -306,10 +308,20 @@ desk/
 │   ├── data/                          # EXTERNAL data layer (Phase 2+ providers)
 │   │   ├── api_football/              # api-football.com v3 — RANK + FORM (B.1) and INJURIES + LINEUP (B.3)
 │   │   │   ├── client.py              # async httpx wrapper, auth header, error buckets
-│   │   │   └── status.py              # /status probe → plan tier + daily quota
-│   │   └── openweathermap/            # OpenWeatherMap One Call 3.0 — WEATHER (B.2)
+│   │   │   ├── status.py              # /status probe → plan tier + daily quota
+│   │   │   ├── cache.py               # sqlite — team_resolution + fixture_results + form_deltas
+│   │   │   ├── wc26_registry.py       # canonical ISO3 → /teams?search= display name
+│   │   │   ├── teams.py               # resolve_team_id — bootstrap canonical ↔ api-football team_id
+│   │   │   ├── fixtures.py            # fetch_recent_fixtures — last-N normalised per team
+│   │   │   ├── form.py                # compute_form_delta — weighted PPG vs LONG_RUN_BASELINE_PPG
+│   │   │   ├── refresh.py             # refresh_all — orchestrator the CLI + loop call into
+│   │   │   └── runtime.py             # APIFootballRuntime — read-only hot path over cache
+│   │   └── openweathermap/            # OpenWeatherMap One Call 3.0 — WEATHER (B.2; deferred)
 │   │       ├── client.py              # async httpx wrapper, appid query auth
 │   │       └── status.py              # cheapest-call probe → key works + sample temp
+│   ├── verdict/
+│   │   ├── ...
+│   │   └── forward_validation.py      # Phase B Shadow-mode prediction logger (sqlite)
 │   ├── distribute/                   # OUTBOUND wire to external consumers (MTA)
 │   │   ├── config.py                 # env reader; fail-loud on push=1 without URL/secret
 │   │   ├── signing.py                # HMAC-SHA256 over "{ts}.{body}"
@@ -432,6 +444,9 @@ Override via `DESK_PICK_PP` / `DESK_PASS_PP` / `DESK_AVOID_PP` in `.env`.
 | `DESK_FORM_RANK_RESIDUAL` | `0` | Set to `1` to activate the Phase B.1 form / FIFA-rank residual on the Elo prior (per `THE_DESK_OPTIMIZATION_SPEC.md` §4.B.1). Off by default — the hook lives in Shadow until data-layer Phase 2 populates `FootballFeatures.team_*_form_delta` + `team_*_rank_residual` with real values via API-Football. With the flag off (or with all residual fields None), `_adjusted_elos` is byte-identical to pre-B.1; the regression gate is the WC-2022 backtest. |
 | `API_FOOTBALL_KEY` | unset | api-football.com v3 key (direct `api-sports.io` endpoint, header `x-apisports-key`). Phase 2 spine: RANK + FORM (B.1) and INJURIES + LINEUP (B.3). Spec's $19/mo "Pro" tier = 7,500 req/day; smoke-test the live account with `python -m desk verify-data-sources`. |
 | `OPENWEATHERMAP_API_KEY` | unset | OpenWeatherMap One Call 3.0 key for Phase 3 weather (B.2). Free tier ≈ 1,000 calls/day; overage capped at ≈ $1/mo per `THE_DESK_DATA_LAYER_SPEC.md` §4.1. Same smoke-test command verifies it. |
+| `DESK_RANK_FORM_FETCH` | `0` | Set to `1` in `desk_refresh_loop.py` to run `desk fetch-rank-form` once per tick. Needs `API_FOOTBALL_KEY` (logs a warning + skips if unset). Cost: ~70 calls/tick (1 per WC26 team), well under the 7,500/day Pro cap. Off by default — a fresh deploy doesn't burn api-football quota until you opt in. |
+| `DESK_API_FOOTBALL_DB_PATH` | unset → `desk/data/api_football.db` | Override the api-football cache path. **Set this on Railway** to a mounted volume (e.g. `/data/api_football.db`) so cached team_ids + fixture history + form_delta values survive deploys. Without it, every redeploy wipes the cache and the first post-deploy tick burns ~70 calls re-resolving everything. |
+| `DESK_FORWARD_VALIDATION_DB_PATH` | unset → `desk/data/forward_validation.db` | Override the forward-validation logger's sqlite path. Should sit on the same mounted volume as `DESK_API_FOOTBALL_DB_PATH` so the accumulated Shadow-mode prediction sample persists across deploys — without it the ≥100-fixture forward-validation threshold resets every time. |
 | `DESK_DISTRIBUTE_PUSH` | `0` | Set to `1` to enable the push wire to Market Tips AI (see `desk/desk/distribute/`). Runner enqueues every `write_match` + every withdrawn payload; `desk_distribute_loop.py` drains every 30s via `python -m desk distribute-drain`. Off by default — a fresh deploy does not push until the operator opts in. |
 | `DESK_DISTRIBUTE_WEBHOOK_URL` | unset | MTA webhook URL — prod `https://markettipsai.com/api/webhooks/desk/publish`. Required when `DESK_DISTRIBUTE_PUSH=1`; `load_config()` fails loud at boot if either this or the secret is missing. |
 | `DESK_DISTRIBUTE_WEBHOOK_SECRET` | unset | HMAC-SHA256 shared key for the push wire. Coordinated with MTA via encrypted channel (no commits, no logs). |

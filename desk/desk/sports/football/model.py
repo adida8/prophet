@@ -35,6 +35,7 @@ import random
 from dataclasses import dataclass
 from typing import Optional
 
+from desk import config
 from desk.sports.football.drivers import Driver
 
 # ── Tunable constants (locked at PR 3 defaults; threshold spec §10) ─────
@@ -49,6 +50,22 @@ ALTITUDE_THRESHOLD_M:        float = 1000.0
 DRAW_PEAK:  float = 0.30
 DRAW_FLOOR: float = 0.10
 DRAW_DECAY_PER_ELO: float = 0.0006   # 100 Elo diff → −0.06 draw share
+
+
+# ── Phase B.1 — form / FIFA-rank residual on the Elo prior ────────────
+#
+# Initial estimates from THE_DESK_OPTIMIZATION_SPEC §4.B.1:
+#   FORM_WEIGHT  ≈ 20 Elo per point of weighted form-delta
+#   RANK_WEIGHT  ≈ 10 Elo per rank-residual position
+# Both will be re-tuned once the coupled (Phase 2 data, B.1 hook) unit
+# has a forward-validation sample. Residual contributions are added on
+# top of base Elo before the host / home / altitude bonuses fire.
+FORM_WEIGHT: float = 20.0
+RANK_WEIGHT: float = 10.0
+
+# Drivers attribution fires only when the residual is meaningful — per
+# §4.B.1 the threshold is ≥ 15 Elo to either side.
+RESIDUAL_DRIVER_THRESHOLD_ELO: float = 15.0
 
 
 # ── Phase A.1 bootstrap parameters (THE_DESK_OPTIMIZATION_SPEC §3) ─────
@@ -113,6 +130,15 @@ class FootballFeatures:
     # stop emitting "stub" and the verdict-step gate becomes inert.
     team_a_elo_source: str = "wiki"
     team_b_elo_source: str = "wiki"
+
+    # Phase B.1 — form / rank residual hooks. None = absent (no
+    # contribution). Real values arrive when data-layer Phase 2 wires
+    # API-Football rank + form into the feature builder; until then
+    # these stay None and the hook is a no-op even when the flag is on.
+    team_a_form_delta:    Optional[float] = None
+    team_b_form_delta:    Optional[float] = None
+    team_a_rank_residual: Optional[float] = None
+    team_b_rank_residual: Optional[float] = None
 
 
 @dataclass(frozen=True)
@@ -186,6 +212,28 @@ def _adjusted_elos(
     """
     elo_a, elo_b = base_elo_a, base_elo_b
 
+    # Phase B.1 — form / rank residual. Off by default; absent fields
+    # contribute zero. Applied before venue bonuses so the host /
+    # home / altitude logic operates on a form-corrected prior.
+    if config.FORM_RANK_RESIDUAL_ENABLED:
+        form_a = features.team_a_form_delta or 0.0
+        form_b = features.team_b_form_delta or 0.0
+        rank_a = features.team_a_rank_residual or 0.0
+        rank_b = features.team_b_rank_residual or 0.0
+
+        contrib_a = FORM_WEIGHT * form_a + RANK_WEIGHT * rank_a
+        contrib_b = FORM_WEIGHT * form_b + RANK_WEIGHT * rank_b
+        elo_a += contrib_a
+        elo_b += contrib_b
+
+        if record_drivers is not None:
+            _record_residual_drivers(
+                features,
+                form_a=form_a, form_b=form_b,
+                rank_a=rank_a, rank_b=rank_b,
+                record_drivers=record_drivers,
+            )
+
     if features.is_international:
         host = features.venue_host_iso3
         if host:
@@ -224,6 +272,31 @@ def _adjusted_elos(
     return elo_a, elo_b
 
 
+def _record_residual_drivers(
+    features: FootballFeatures,
+    *,
+    form_a: float, form_b: float,
+    rank_a: float, rank_b: float,
+    record_drivers: list[Driver],
+) -> None:
+    """Emit form / rank drivers per spec §4.B.1 (threshold ±15 Elo).
+
+    Form and rank fire as separate drivers per team so the explainer
+    can quote them independently (the spec example reads "Brazil's
+    last-10 form is +1.4 points/match above season norm").
+    """
+    for team_name, side, form, rank in (
+        (features.team_a_name, "a", form_a, rank_a),
+        (features.team_b_name, "b", form_b, rank_b),
+    ):
+        form_contrib = FORM_WEIGHT * form
+        if abs(form_contrib) >= RESIDUAL_DRIVER_THRESHOLD_ELO:
+            record_drivers.append(Driver(f"{team_name} form", form_contrib, side))
+        rank_contrib = RANK_WEIGHT * rank
+        if abs(rank_contrib) >= RESIDUAL_DRIVER_THRESHOLD_ELO:
+            record_drivers.append(Driver(f"{team_name} rank residual", rank_contrib, side))
+
+
 def _probs_from_elos(elo_a: float, elo_b: float) -> tuple[float, float, float]:
     """Pure-maths probability triplet for adjusted Elo, no bonuses."""
     diff = elo_a - elo_b
@@ -245,7 +318,7 @@ def _seed_for_features(features: FootballFeatures) -> int:
     the verdict step deterministic and the backtest's xlsx output
     diffable across regenerations.
     """
-    key = "|".join(str(x) for x in (
+    parts: list[str] = [str(x) for x in (
         features.team_a_name, features.team_b_name,
         features.team_a_elo, features.team_b_elo,
         features.team_a_iso3, features.team_b_iso3,
@@ -254,7 +327,16 @@ def _seed_for_features(features: FootballFeatures) -> int:
         features.team_a_home_ground, features.team_b_home_ground,
         features.team_a_altitude_acclimatised, features.team_b_altitude_acclimatised,
         features.is_international,
-    ))
+    )]
+    # Phase B.1 residual fields are appended only when they carry
+    # values, so today's all-None fixtures keep their pre-B.1 seed.
+    residuals = (
+        features.team_a_form_delta, features.team_b_form_delta,
+        features.team_a_rank_residual, features.team_b_rank_residual,
+    )
+    if any(r is not None for r in residuals):
+        parts.extend(str(r) for r in residuals)
+    key = "|".join(parts)
     digest = hashlib.md5(key.encode("utf-8")).digest()
     return int.from_bytes(digest[:8], "big")
 

@@ -283,6 +283,18 @@ def _tick() -> None:
             _run(extract_cmd, cwd=DESK_DIR, timeout=600,
                  label="desk extract-signals", extra_env=sub_env)
 
+    # Phase B.1 data side — refresh api-football form_delta values.
+    # Gated on the operator: a fresh deploy won't burn the api-football
+    # daily quota until they opt in. Cost: ~70 calls per tick, well
+    # under the 7,500/day Pro cap.
+    if os.getenv("DESK_RANK_FORM_FETCH", "0") == "1":
+        if not os.getenv("API_FOOTBALL_KEY"):
+            log.warning("desk fetch-rank-form: API_FOOTBALL_KEY unset, skipping")
+        else:
+            _run([py, "-m", "desk", "fetch-rank-form"],
+                 cwd=DESK_DIR, timeout=300,
+                 label="desk fetch-rank-form", extra_env=sub_env)
+
     # Persist this tick's cost summary so the dashboard can show it.
     # Linking by `run_id` lets the dashboard join one row of the run
     # history table with one row of tick-totals. When matches failed

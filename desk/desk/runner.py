@@ -193,6 +193,17 @@ def run_once(
     # it. If it doesn't, we publish exactly what we did before.
     signals_runtime_factory = SignalsRuntime.for_sport
 
+    # api-football form-delta cache. If `desk fetch-rank-form` has been
+    # run, this carries last-10 weighted points-per-game for every WC26
+    # team and the features-builder threads it onto each fixture. With
+    # the B.1 hook flag off (default), populated values are inert —
+    # they're recorded so the forward-validation logger can score the
+    # lever against the published verdicts.
+    from desk.data.api_football import APIFootballRuntime, default_cache_path
+    api_football_runtime: APIFootballRuntime | None = None
+    if default_cache_path().exists():
+        api_football_runtime = APIFootballRuntime()
+
     for sport in active_sports():
         any_sport_ran = True
         # Snapshot the prior per-sport index BEFORE write_index overwrites
@@ -255,10 +266,19 @@ def run_once(
                         # hard-signal Elo adjustments before the model.
                         try:
                             result = sport.decide_and_explain(
-                                fx, snapshot, signals_runtime=signals_runtime,
+                                fx, snapshot,
+                                signals_runtime=signals_runtime,
+                                api_football_runtime=api_football_runtime,
                             )
                         except TypeError:
-                            result = sport.decide_and_explain(fx, snapshot)
+                            # Older sport adapters may not accept either
+                            # runtime kwarg. Fall back stepwise.
+                            try:
+                                result = sport.decide_and_explain(
+                                    fx, snapshot, signals_runtime=signals_runtime,
+                                )
+                            except TypeError:
+                                result = sport.decide_and_explain(fx, snapshot)
                         # decide_and_explain may return (v, copy),
                         # (v, copy, DecisionMeta), or
                         # (v, copy, DecisionMeta, hard_signal_adjustments).
@@ -440,6 +460,12 @@ def run_once(
             distribute_outbox.close()
         except Exception as e:                          # noqa: BLE001
             log.warning("distribute outbox close failed: %s", e)
+
+    if api_football_runtime is not None:
+        try:
+            api_football_runtime.close()
+        except Exception as e:                          # noqa: BLE001
+            log.warning("api-football runtime close failed: %s", e)
 
     return written
 

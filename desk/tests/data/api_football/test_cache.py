@@ -1,0 +1,112 @@
+"""APIFootballCache — schema + idempotent upserts.
+
+Sqlite cache for api-football responses. Tests cover team resolution,
+fixture-results upsert, recent_fixtures filter on status FT, and
+form_delta read/write.
+"""
+
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+
+import pytest
+
+from desk.data.api_football.cache import (
+    APIFootballCache, FixtureResult,
+)
+
+
+@pytest.fixture
+def cache(tmp_path):
+    return APIFootballCache(tmp_path / "api_football.db")
+
+
+def _fx(team_id: int, fixture_id: int, hours_ago: int,
+        goals_for: int, goals_against: int, status: str = "FT") -> FixtureResult:
+    return FixtureResult(
+        api_football_team_id=team_id,
+        fixture_id=fixture_id,
+        played_at=datetime.now(tz=timezone.utc) - timedelta(hours=hours_ago),
+        opponent_team_id=999,
+        team_goals=goals_for,
+        opponent_goals=goals_against,
+        status_short=status,
+    )
+
+
+def test_team_resolution_upsert_then_lookup(cache):
+    cache.upsert_team_resolution("fra", 2, source_label="test")
+    assert cache.team_id_for_iso3("fra") == 2
+
+    # Idempotent — second upsert overwrites.
+    cache.upsert_team_resolution("fra", 3, source_label="test-2")
+    assert cache.team_id_for_iso3("fra") == 3
+
+
+def test_team_resolution_iso3_case_insensitive(cache):
+    cache.upsert_team_resolution("FRA", 2, source_label="test")
+    assert cache.team_id_for_iso3("fra") == 2
+    assert cache.team_id_for_iso3("FRA") == 2
+
+
+def test_team_resolution_missing_returns_none(cache):
+    assert cache.team_id_for_iso3("xyz") is None
+
+
+def test_recent_fixtures_filters_to_ft_and_orders_desc(cache):
+    cache.upsert_fixture_results([
+        _fx(7, 100, hours_ago=72, goals_for=1, goals_against=2),  # loss, oldest
+        _fx(7, 101, hours_ago=48, goals_for=2, goals_against=2),  # draw
+        _fx(7, 102, hours_ago=24, goals_for=3, goals_against=0),  # win, newest
+        _fx(7, 103, hours_ago=12, goals_for=0, goals_against=0, status="POST"),  # postponed
+    ])
+    rows = cache.recent_fixtures(7, limit=10)
+    # POST excluded; FT ordered desc by played_at.
+    assert [r.fixture_id for r in rows] == [102, 101, 100]
+
+
+def test_fixture_results_upsert_is_idempotent(cache):
+    f = _fx(7, 100, hours_ago=24, goals_for=2, goals_against=1)
+    cache.upsert_fixture_results([f, f])
+    assert len(cache.recent_fixtures(7)) == 1
+
+
+def test_form_delta_read_write(cache):
+    cache.upsert_form_delta("bra", form_delta=0.7, sample_size=10)
+    fd = cache.form_delta_for_iso3("bra")
+    assert fd is not None
+    assert fd.iso3 == "bra"
+    assert fd.form_delta == pytest.approx(0.7)
+    assert fd.sample_size == 10
+
+
+def test_form_delta_missing_returns_none(cache):
+    assert cache.form_delta_for_iso3("zzz") is None
+
+
+def test_form_delta_upsert_overwrites(cache):
+    cache.upsert_form_delta("bra", form_delta=0.7, sample_size=10)
+    cache.upsert_form_delta("bra", form_delta=-0.3, sample_size=8)
+    fd = cache.form_delta_for_iso3("bra")
+    assert fd.form_delta == pytest.approx(-0.3)
+    assert fd.sample_size == 8
+
+
+def test_points_property_on_fixture_result(cache):
+    win = _fx(7, 1, hours_ago=1, goals_for=3, goals_against=0)
+    draw = _fx(7, 2, hours_ago=1, goals_for=1, goals_against=1)
+    loss = _fx(7, 3, hours_ago=1, goals_for=0, goals_against=2)
+    nogoals = _fx(7, 4, hours_ago=1, goals_for=0, goals_against=0, status="POST")
+    # status POST is unrelated to points calculation — those are
+    # filtered elsewhere; here we just check the points math.
+    assert win.points == 3
+    assert draw.points == 1
+    assert loss.points == 0
+    # Missing goals (None) = no points credited.
+    blank = FixtureResult(
+        api_football_team_id=7, fixture_id=99,
+        played_at=datetime.now(tz=timezone.utc),
+        opponent_team_id=None, team_goals=None, opponent_goals=None,
+        status_short="FT",
+    )
+    assert blank.points == 0

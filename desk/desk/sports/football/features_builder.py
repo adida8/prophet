@@ -17,6 +17,8 @@ unlock those bonuses for the launch wedge.
 
 from __future__ import annotations
 
+from typing import Protocol
+
 from desk.sport import FixtureRef
 from desk.sports.football.data.elo_seed import (
     club_elo,
@@ -32,6 +34,14 @@ from desk.sports.football.metadata.fifa import (
 )
 from desk.sports.football.model import FootballFeatures
 from desk.sports.football.teams import is_international_competition
+
+
+class _FormSource(Protocol):
+    """Minimal read interface — anything that can look up form_delta
+    for a national ISO3. `APIFootballRuntime` satisfies this without
+    being imported (decouples the features-builder from the data
+    layer's concrete deps)."""
+    def form_delta_for_iso3(self, iso3: str) -> float | None: ...
 
 
 def _team_iso3_from_match_id(match_id: str, *, position: int) -> str | None:
@@ -54,7 +64,23 @@ def _club_id_from_match_id(match_id: str, *, position: int) -> str | None:
     return None  # TODO(PR 4.5): join Polymarket club codes → spec club IDs.
 
 
-def build_features(fx: FixtureRef) -> FootballFeatures:
+def build_features(
+    fx: FixtureRef,
+    *,
+    form_source: _FormSource | None = None,
+) -> FootballFeatures:
+    """Build a `FootballFeatures` row for a fixture.
+
+    When `form_source` is provided (typically an `APIFootballRuntime`
+    bound to the api-football cache), each national side's form_delta
+    is looked up by ISO3 and threaded onto the features. Missing
+    entries stay None — the model hook treats absent as zero
+    contribution per Phase B.1 spec.
+
+    The hook in `_adjusted_elos` is still gated on
+    `DESK_FORM_RANK_RESIDUAL=1`, so populating form_delta here is a
+    Shadow-mode no-op until the operator flips that flag.
+    """
     international = is_international_competition(fx.competition_code)
 
     # ── Elo prior + source provenance (PR 4.5) ────────────────────
@@ -114,6 +140,18 @@ def build_features(fx: FixtureRef) -> FootballFeatures:
             if g:
                 b_home_ground = g.stadium
 
+    # ── Phase B.1 — form_delta from api-football cache ──────────
+    # Internationals only in v1 (the WC26 registry is national-side
+    # only; clubs land in a later phase). rank_residual stays None —
+    # api-football doesn't expose FIFA world rank directly without
+    # the FIFA-ranking-only paid plan, so we defer that to a follow-up.
+    a_form = b_form = None
+    if international and form_source is not None:
+        if a_iso:
+            a_form = form_source.form_delta_for_iso3(a_iso)
+        if b_iso:
+            b_form = form_source.form_delta_for_iso3(b_iso)
+
     return FootballFeatures(
         team_a_name=fx.team_a, team_b_name=fx.team_b,
         team_a_elo=a_elo,      team_b_elo=b_elo,
@@ -128,4 +166,6 @@ def build_features(fx: FixtureRef) -> FootballFeatures:
         team_b_altitude_acclimatised=bool(b_iso) and is_altitude_acclimatised(b_iso),
         team_a_elo_source=a_src,
         team_b_elo_source=b_src,
+        team_a_form_delta=a_form,
+        team_b_form_delta=b_form,
     )

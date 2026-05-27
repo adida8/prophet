@@ -33,6 +33,13 @@ def _setup_logging(verbose: bool) -> None:
         datefmt="%H:%M:%S",
         handlers=[logging.StreamHandler(sys.stdout)],
     )
+    # httpx INFO-level logs every request URL including query params,
+    # which leaks any key passed as a query string (e.g. OpenWeatherMap's
+    # `appid`). Squelch to WARNING unless --verbose is on — operators
+    # opt into the leak when they're debugging, not by default.
+    if not verbose:
+        logging.getLogger("httpx").setLevel(logging.WARNING)
+        logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 
 def _cmd_run(args: argparse.Namespace) -> int:
@@ -276,6 +283,144 @@ def _cmd_signals_validate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_fetch_rank_form(args: argparse.Namespace) -> int:
+    """Refresh api-football form_delta values for every WC26 team.
+
+    Per-team cost: 1 call to `/teams?search=` on first run (cached
+    forever), 1 call to `/fixtures?team=...&last=10` per run. Across
+    ~70 WC26 teams that's ≈70 calls/day — well under api-football
+    Pro's 7,500/day cap.
+
+    Designed to be idempotent and rerunnable: on retry, cached team_ids
+    skip the resolution call, and the fixtures upsert is keyed on
+    (team_id, fixture_id) so re-fetching the same window is a no-op.
+    """
+    import asyncio
+
+    from desk import config
+
+    if not config.API_FOOTBALL_KEY:
+        print("API_FOOTBALL_KEY not set — see .env.example", file=sys.stderr)
+        return 2
+
+    from desk.data.api_football import (
+        APIFootballCache, APIFootballClient, default_cache_path, refresh_all,
+    )
+
+    db_path = Path(args.db) if args.db else default_cache_path()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+
+    iso3s = args.iso3 or None
+
+    async def _run() -> tuple[int, list, int]:
+        async with APIFootballClient(config.API_FOOTBALL_KEY) as client:
+            with APIFootballCache(db_path) as cache:
+                outcomes = await refresh_all(
+                    client=client, cache=cache, iso3s=iso3s,
+                )
+        # Sum the surface-level counters the caller cares about.
+        ok = sum(1 for o in outcomes if o.status in ("ok", "resolved_then_ok"))
+        return ok, outcomes, len(outcomes)
+
+    ok, outcomes, total = asyncio.run(_run())
+
+    by_status: dict[str, int] = {}
+    for o in outcomes:
+        by_status[o.status] = by_status.get(o.status, 0) + 1
+        if o.error:
+            print(f"  {o.iso3:5s}  {o.status:18s}  err={o.error}")
+        else:
+            fd = (f"form_delta={o.form_delta:+.3f}"
+                  if o.form_delta is not None else "(no form_delta)")
+            print(f"  {o.iso3:5s}  {o.status:18s}  team_id={o.team_id}  "
+                  f"sample={o.sample_size:2d}  {fd}")
+    print()
+    for status, n in sorted(by_status.items()):
+        print(f"  {status:18s}  {n}")
+    print()
+    print(f"  total: {total}  ok: {ok}  (db: {db_path})")
+    return 0 if ok > 0 else 2
+
+
+def _cmd_verify_data_sources(args: argparse.Namespace) -> int:
+    """Smoke-test the external data layer keys.
+
+    Closes guardrail 4 of `THE_DESK_DATA_LAYER_SPEC.md` — "API-Football,
+    OpenWeatherMap, and Railway assumptions in §4 / §3.4 are verified
+    against current vendor terms before any code is written." Hits the
+    cheapest endpoint each provider exposes and reports the plan tier +
+    quota so the operator can confirm the keys match the spec's spine.
+
+    Exit codes:
+      0 — both providers usable AND api-football tier clears Pro (≥1000 req/day)
+      1 — keys work but api-football tier is below Pro (only B.1 smoke OK)
+      2 — at least one provider's key failed
+    """
+    import asyncio
+
+    from desk import config
+
+    async def _run() -> tuple[int, list[str]]:
+        lines: list[str] = []
+        rc = 0
+
+        # ── api-football ───────────────────────────────────────────
+        if not config.API_FOOTBALL_KEY:
+            lines.append("api-football · SKIP — API_FOOTBALL_KEY not set")
+            rc = max(rc, 2)
+        else:
+            from desk.data.api_football import (
+                APIFootballClient, APIFootballError, fetch_status,
+            )
+            try:
+                async with APIFootballClient(config.API_FOOTBALL_KEY) as c:
+                    status = await fetch_status(c)
+            except APIFootballError as e:
+                lines.append(f"api-football · FAIL ({e.kind}) — {e}")
+                rc = max(rc, 2)
+            else:
+                lines.append(status.headline())
+                if status.email:
+                    lines.append(f"  account: {status.email}")
+                if status.plan_end:
+                    lines.append(f"  plan ends: {status.plan_end}")
+                if not status.plan_active:
+                    lines.append("  WARNING: subscription marked INACTIVE")
+                    rc = max(rc, 2)
+                elif not status.is_pro_or_higher:
+                    lines.append(
+                        "  WARNING: daily limit below 1000 — only B.1 smoke "
+                        "tests will fit; B.3 (injuries + lineups) needs Pro+."
+                    )
+                    rc = max(rc, 1)
+
+        # ── openweathermap ─────────────────────────────────────────
+        if not config.OPENWEATHERMAP_API_KEY:
+            lines.append("openweathermap · SKIP — OPENWEATHERMAP_API_KEY not set")
+            rc = max(rc, 2)
+        else:
+            from desk.data.openweathermap import (
+                OpenWeatherClient, OpenWeatherError, probe_status,
+            )
+            try:
+                async with OpenWeatherClient(config.OPENWEATHERMAP_API_KEY) as c:
+                    ow = await probe_status(c)
+            except OpenWeatherError as e:
+                lines.append(f"openweathermap · FAIL ({e.kind}) — {e}")
+                rc = max(rc, 2)
+            else:
+                lines.append(ow.headline())
+                if not ow.ok:
+                    rc = max(rc, 2)
+
+        return rc, lines
+
+    rc, lines = asyncio.run(_run())
+    for line in lines:
+        print(line)
+    return rc
+
+
 def _cmd_backtest(args: argparse.Namespace) -> int:
     """Run the historical backtest harness.
 
@@ -389,6 +534,21 @@ def build_parser() -> argparse.ArgumentParser:
     dd = sub.add_parser("distribute-drain",
                         help="drain pending outbox rows to MTA (one sweep)")
     dd.set_defaults(func=_cmd_distribute_drain)
+
+    vd = sub.add_parser(
+        "verify-data-sources",
+        help="smoke-test API_FOOTBALL_KEY + OPENWEATHERMAP_API_KEY (closes guardrail 4)",
+    )
+    vd.set_defaults(func=_cmd_verify_data_sources)
+
+    fr = sub.add_parser(
+        "fetch-rank-form",
+        help="refresh api-football form_delta values into the cache (Phase B.1 data side)",
+    )
+    fr.add_argument("--db", help="override cache path (default: desk/data/api_football.db)")
+    fr.add_argument("--iso3", action="append",
+                    help="restrict to ISO3(s) (repeatable); default = WC26 registry")
+    fr.set_defaults(func=_cmd_fetch_rank_form)
 
     # `desk signals <subcommand>` — nested subparser. `validate` is the
     # only entry for now; future ops (list, stats, …) plug in here.

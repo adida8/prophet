@@ -34,6 +34,14 @@ AVOID_PP_THRESHOLD: float = float(os.getenv("DESK_AVOID_PP", "-2.0"))
 # ── LLM ───────────────────────────────────────────────────────────────
 ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
 
+# ── External data layer (data-layer spec §4 + §6) ────────────────────
+# Phase 2 spine — RANK + FORM (B.1) and INJURIES + LINEUP (B.3). Empty
+# string when unset; data-layer modules treat empty as "unconfigured"
+# and skip their fetch with a clean error.
+API_FOOTBALL_KEY:        str = os.getenv("API_FOOTBALL_KEY", "")
+# Phase 3 weather (B.2). OpenWeatherMap One Call 3.0.
+OPENWEATHERMAP_API_KEY:  str = os.getenv("OPENWEATHERMAP_API_KEY", "")
+
 # ── Sport registry default ────────────────────────────────────────────
 # v1 ships football only. Sports config in v2 reads sources.yaml.
 DEFAULT_ACTIVE_SPORTS: tuple[str, ...] = ("football",)
@@ -53,3 +61,10 @@ def _parse_competitions(raw: str) -> frozenset[str] | None:
 COMPETITION_ALLOWLIST: frozenset[str] | None = _parse_competitions(
     os.getenv("DESK_COMPETITIONS", "wc26")
 )
+
+# ── Phase B.1 — form / FIFA-rank residual on the Elo prior ───────────
+# Off by default — the model hook lives in Shadow until data-layer
+# Phase 2 (API-Football rank + form) populates FootballFeatures with
+# real values. Flip to 1 once the coupled unit clears forward-validation
+# per THE_DESK_OPTIMIZATION_SPEC §4.B.1.
+FORM_RANK_RESIDUAL_ENABLED: bool = os.getenv("DESK_FORM_RANK_RESIDUAL", "0") == "1"
