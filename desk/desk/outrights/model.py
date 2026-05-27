@@ -1,8 +1,14 @@
-"""Monte Carlo tournament simulator for the WC 2026 winner market.
+"""Monte Carlo tournament simulator for outright winner markets.
 
 Reuses the existing match model's `_probs_from_elos` primitive verbatim
 (same Elo logistic, same draw curve, same constants) so the outright
 model and the match model never disagree on the same fixture.
+
+The sim takes a `TournamentStructure` (groups + initial knockout ties +
+qualifier strategy) and an Elo lookup, then runs N tournaments to
+produce per-team P(win). This generalisation lets the same simulator
+score WC 2026 live (12 groups → R32) and WC 2022 in the backtest
+(8 groups → R16) without parallel implementations.
 
 Outputs per team:
   - `p_win` — point estimate from 10k sims
@@ -12,25 +18,48 @@ Outputs per team:
 
 The lower bound is what the verdict step uses for the Pick gate:
     pick when (p_win_lower - market_yes) >= pick_pp.
-
-This is a pre-tournament, frozen-input sim. Live mid-tournament
-re-conditioning is out of scope per the spec.
 """
 
 from __future__ import annotations
 
 import random
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, Literal
 
+from desk.outrights.wc26_data import elo
 from desk.sports.football.model import _probs_from_elos
-from desk.outrights.wc26_data import GROUPS, R32_TIES, elo
 
 SIMS: int = 10_000
 BOOTSTRAP_SAMPLES: int = 100
 BOOTSTRAP_SIMS: int = 1_000
 ELO_PERTURB: float = 50.0
 BASE_SEED: int = 42
+
+# How qualifying teams pass from the group stage into the knockout
+# bracket. WC 2026 takes top-2 of each group + the 8 best third-place
+# finishers (12 × 2 + 8 = 32 → R32). WC 2022 took only top-2 (8 × 2
+# = 16 → R16). Add a new value here when adding a tournament shape.
+QualifierStrategy = Literal["top2_plus_8_thirds", "top2"]
+
+
+@dataclass(frozen=True)
+class TournamentStructure:
+    """Generic tournament shape the MC sim runs against.
+
+    `groups`            — group letter → ordered tuple of team names.
+    `knockout_seeds`    — initial knockout ties as pairs of slot codes.
+                          Each slot code is either `{letter}{1|2}` for
+                          a group winner/runner-up, or `3RD-{n}` for an
+                          n-th-best third-place team.
+    `qualifier_strategy`— how slots are filled from group standings.
+
+    The rest of the bracket (R16 → QF → SF → Final after the initial
+    knockout round) is standard single-elimination — `_resolve_knockout`
+    just pairs winners 0-vs-1, 2-vs-3, …
+    """
+    groups:             dict[str, tuple[str, ...]]
+    knockout_seeds:     tuple[tuple[str, str], ...]
+    qualifier_strategy: QualifierStrategy
 
 
 @dataclass(frozen=True)
@@ -73,7 +102,7 @@ def _simulate_group(
     teams: tuple[str, ...],
     elo_lookup: dict[str, float],
 ) -> list[tuple[str, int, float]]:
-    """Run a group's 6 round-robin matches. Returns teams sorted by
+    """Run a group's round-robin matches. Returns teams sorted by
     standings — (team, points, elo_tiebreak).
 
     Points: 3 W / 1 D / 0 L. Tiebreaks: points, then Elo (a stand-in
@@ -100,19 +129,18 @@ def _resolve_knockout(
     rng: random.Random,
     slots: dict[str, str],
     elo_lookup: dict[str, float],
+    knockout_seeds: tuple[tuple[str, str], ...],
 ) -> str:
-    """Run R32 → R16 → QF → SF → Final on the resolved slot map. Returns
-    the champion team name.
+    """Run initial knockout round (per `knockout_seeds`) then standard
+    single-elim bracket through to the Final. Returns the champion.
     """
-    # R32
-    r16_winners: list[str] = []
-    for left, right in R32_TIES:
+    next_round: list[str] = []
+    for left, right in knockout_seeds:
         a, b = slots[left], slots[right]
         r = _sample_match(rng, elo_lookup[a], elo_lookup[b], allow_draw=False)
-        r16_winners.append(a if r == 0 else b)
+        next_round.append(a if r == 0 else b)
 
-    # R16 → QF → SF → Final. Standard bracket pairing: tie 0 vs 1, 2 vs 3, ...
-    current = r16_winners
+    current = next_round
     while len(current) > 1:
         nxt: list[str] = []
         for i in range(0, len(current), 2):
@@ -126,6 +154,7 @@ def _resolve_knockout(
 def _simulate_tournament(
     rng: random.Random,
     elo_lookup: dict[str, float],
+    structure: TournamentStructure,
 ) -> tuple[str, dict[str, list[int]]]:
     """One full tournament sim. Returns (champion, per-team position
     counters) — the latter feeds the diagnostic `p_groupwin`.
@@ -136,34 +165,36 @@ def _simulate_tournament(
 
     pos_counters: dict[str, list[int]] = {}
 
-    for letter, teams in GROUPS.items():
+    for letter, teams in structure.groups.items():
         ranked = _simulate_group(rng, teams, elo_lookup)
         group_winners[letter] = ranked[0][0]
         group_runners[letter] = ranked[1][0]
-        # Track 3rd-place — (team, pts, elo) — for cross-group ranking
-        third = ranked[2]
-        thirds_with_pts.append(third)
-        # Diagnostic — per-team P(top of group)
+        if len(ranked) >= 3:
+            thirds_with_pts.append(ranked[2])
+        # Diagnostic — per-team P(top of group). 4-team groups keep
+        # a 4-slot counter; smaller groups would shrink it.
         for rank, (t, _, _) in enumerate(ranked):
-            pos_counters.setdefault(t, [0, 0, 0, 0])[rank] += 1
-
-    # Best 8 of 12 third-placed teams advance, ranked by points then Elo.
-    thirds_with_pts.sort(key=lambda x: (-x[1], -x[2]))
-    best_thirds = [t for (t, _, _) in thirds_with_pts[:8]]
+            pos_counters.setdefault(t, [0] * len(teams))[rank] += 1
 
     slots: dict[str, str] = {}
-    for letter in GROUPS:
+    for letter in structure.groups:
         slots[f"{letter}1"] = group_winners[letter]
         slots[f"{letter}2"] = group_runners[letter]
-    for i, t in enumerate(best_thirds, start=1):
-        slots[f"3RD-{i}"] = t
 
-    champion = _resolve_knockout(rng, slots, elo_lookup)
+    if structure.qualifier_strategy == "top2_plus_8_thirds":
+        thirds_with_pts.sort(key=lambda x: (-x[1], -x[2]))
+        best_thirds = [t for (t, _, _) in thirds_with_pts[:8]]
+        for i, t in enumerate(best_thirds, start=1):
+            slots[f"3RD-{i}"] = t
+    # `top2`: no extra slots needed.
+
+    champion = _resolve_knockout(rng, slots, elo_lookup, structure.knockout_seeds)
     return champion, pos_counters
 
 
 def _point_estimate(
     elo_lookup: dict[str, float],
+    structure: TournamentStructure,
     sims: int,
     seed: int,
 ) -> tuple[dict[str, float], dict[str, float]]:
@@ -172,7 +203,7 @@ def _point_estimate(
     tally: dict[str, int] = {t: 0 for t in elo_lookup}
     group_top_tally: dict[str, int] = {t: 0 for t in elo_lookup}
     for _ in range(sims):
-        champ, pos = _simulate_tournament(rng, elo_lookup)
+        champ, pos = _simulate_tournament(rng, elo_lookup, structure)
         tally[champ] += 1
         for t, counters in pos.items():
             group_top_tally[t] += counters[0]
@@ -183,6 +214,7 @@ def _point_estimate(
 
 def _bootstrap_band(
     elo_lookup: dict[str, float],
+    structure: TournamentStructure,
     samples: int,
     sims_per_sample: int,
     perturb: float,
@@ -202,7 +234,7 @@ def _bootstrap_band(
         rng_sim = random.Random(seed * 1000 + s + 7)
         tally: dict[str, int] = {t: 0 for t in elo_lookup}
         for _ in range(sims_per_sample):
-            champ, _ = _simulate_tournament(rng_sim, perturbed)
+            champ, _ = _simulate_tournament(rng_sim, perturbed, structure)
             tally[champ] += 1
         for t, n in tally.items():
             per_team[t].append(n / sims_per_sample)
@@ -221,31 +253,27 @@ def _bootstrap_band(
     return lower, upper
 
 
-def run(
-    field: Iterable[str],
+def run_sim(
+    structure: TournamentStructure,
+    elo_lookup: dict[str, float],
     *,
     sims: int = SIMS,
     bootstrap_samples: int = BOOTSTRAP_SAMPLES,
     bootstrap_sims: int = BOOTSTRAP_SIMS,
     perturb: float = ELO_PERTURB,
     seed: int = BASE_SEED,
-    elo_overrides: dict[str, float] | None = None,
 ) -> OutrightModelOutput:
-    """Run the point estimate + the bootstrap band. Returns one
-    `OutrightModelOutput` covering every team in the field.
+    """Lower-level entry — run the point estimate + bootstrap band on
+    an arbitrary tournament shape. `elo_lookup` must cover every team
+    referenced by `structure.groups`.
 
-    `elo_overrides` lets the caller nudge per-team Elo before the sim —
-    used by `run.run_once` to apply bounded hard-signal adjustments
-    (injuries / suspensions). Unknown teams in the override dict are
-    ignored. The bootstrap's ±perturb is applied on top of the adjusted
-    base, so a nudged team still gets its full uncertainty band.
+    Used by the backtest harness (which builds its own elo_lookup from
+    a frozen historical snapshot). Live runs use the `run()` wrapper.
     """
-    overrides = elo_overrides or {}
-    elo_lookup: dict[str, float] = {t: elo(t) + overrides.get(t, 0.0) for t in field}
-
-    p_win, p_groupwin = _point_estimate(elo_lookup, sims, seed)
+    p_win, p_groupwin = _point_estimate(elo_lookup, structure, sims, seed)
     lower, upper = _bootstrap_band(
         elo_lookup,
+        structure,
         samples=bootstrap_samples,
         sims_per_sample=bootstrap_sims,
         perturb=perturb,
@@ -257,5 +285,41 @@ def run(
         p_win_upper=upper,
         p_groupwin=p_groupwin,
         sims=sims,
+        seed=seed,
+    )
+
+
+def run(
+    field: Iterable[str],
+    *,
+    sims: int = SIMS,
+    bootstrap_samples: int = BOOTSTRAP_SAMPLES,
+    bootstrap_sims: int = BOOTSTRAP_SIMS,
+    perturb: float = ELO_PERTURB,
+    seed: int = BASE_SEED,
+    elo_overrides: dict[str, float] | None = None,
+) -> OutrightModelOutput:
+    """Convenience wrapper for the live WC 2026 winner market.
+
+    Builds an Elo lookup from `wc26_data.elo` (plus optional per-team
+    `elo_overrides` for bounded hard-signal nudges), then delegates to
+    `run_sim` with the WC26 tournament structure.
+
+    `elo_overrides` lets the caller nudge per-team Elo before the sim —
+    used by `outrights.run.run_once` to apply bounded hard-signal
+    adjustments (injuries / suspensions). Unknown teams in the override
+    dict are ignored. The bootstrap's ±perturb is applied on top of
+    the adjusted base, so a nudged team still gets its full band.
+    """
+    from desk.outrights.wc26_data import wc26_structure
+    overrides = elo_overrides or {}
+    elo_lookup: dict[str, float] = {t: elo(t) + overrides.get(t, 0.0) for t in field}
+    return run_sim(
+        wc26_structure(),
+        elo_lookup,
+        sims=sims,
+        bootstrap_samples=bootstrap_samples,
+        bootstrap_sims=bootstrap_sims,
+        perturb=perturb,
         seed=seed,
     )

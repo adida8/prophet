@@ -111,6 +111,24 @@ def elo_is_stub(team: str) -> bool:
     return team not in TEAM_ELO
 
 
+def wc26_structure():
+    """Build the WC 2026 `TournamentStructure` from this module's data.
+
+    Lives here (not in `model.py`) so the WC26 tournament shape is
+    co-located with its groups + bracket constants. The backtest
+    package has its own equivalent for WC 2022.
+
+    Imported lazily by the caller to avoid an import cycle
+    (model.py imports from this module).
+    """
+    from desk.outrights.model import TournamentStructure
+    return TournamentStructure(
+        groups=GROUPS,
+        knockout_seeds=R32_TIES,
+        qualifier_strategy="top2_plus_8_thirds",
+    )
+
+
 # Knockout bracket — Round of 32 seeding for the 48-team format.
 # Top 2 from each group + the 8 best third-placed teams qualify. Without
 # the official FIFA cross-group bracket encoded, v1 uses a plausible
