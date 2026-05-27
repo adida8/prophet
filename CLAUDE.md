@@ -9,7 +9,8 @@ others.
 | **Prophet** | Paper-trading bot for prediction markets, plus the platform's market data engine and React dashboard | `prophet/` (or repo root for legacy code), `frontend/` | shipping; deployed to Railway |
 | **Ledger** | Connected portfolio tracker for Polymarket (Kalshi in Phase 1). Paste-a-wallet viewer at `/ledger`. | `ledger/`, `frontend/src/ledger/` | Phase 0 shipped; live on Railway |
 | **The Desk** | Verdict engine that evaluates every priced football match + the WC 2026 outright winner market | `desk/` | PRs 1–4 + backtest + 4.5 sanity + explainer stub + **optimization-spec Phase A** + **outright engine (parallel pipeline, live on Polymarket)** + **WC26-only ingest filter** + **per-team outright ladder UI** + **team-id collision fix + seed-Elo audit** + **news-signals PRs A–F all live in production** (12 trusted-core RSS → Haiku → `copy.editorial_citations` + bounded Elo nudges) + **PR 5 Haiku blurb-writer** (gated on `DESK_BLURB_HAIKU=1`, falls back to stub on any failure) + **distribute wire to Market Tips AI** (sqlite outbox + HMAC-signed push + bearer-gated GET safety net, gated on `DESK_DISTRIBUTE_PUSH=1` / `DESK_API_BEARER_TOKEN`) all landed; PR 6 scheduler still outstanding |
-| **Odds Primer site (React)** | Editorial front-of-house: home (`/`), about (`/about`), learn (`/learn` + 3 primers). Reuses the design system; hardcoded sample data — live wiring is a later workstream. Legacy Prophet trading dashboard moved to `/dashboard` (unlinked). | `frontend/src/op/` | shipped to staging 2026-05-13 (PR #27). **Route conflict at `/` with `site/generate.py`'s static site (`/`, `/matches`, `/outrights`) needs reconciling before prod promote.** |
+| **Odds Primer site (React)** | Editorial front-of-house: home (`/`), about (`/about`), learn (`/learn` + 3 primers). Reuses the design system; hardcoded sample data — live wiring is a later workstream. Legacy Prophet trading dashboard moved to `/dashboard` (unlinked). | `frontend/src/op/` | shipped to staging 2026-05-13 (PR #27). **Route conflict at `/` with `site/generate.py`'s static site (`/`, `/matches`, `/outrights`) needs reconciling before prod promote. |
+| **Activity signals** | Anonymous views + four-way reaction chips on every match card. Top "activity strip" (N users · Most picked · Community leaning) + chip row (🐂 Bullish · 💸 Overpriced · 🪤 Trap line · 💎 Value). Vanilla-JS island injected by `site/generate.py`; backend is FastAPI + Railway Postgres (the only Postgres-backed domain in this repo — everything else is sqlite). | `activity/`, `activity_refresh_loop.py`, `migrations/`, `site/public/js/activity.js`, `tests/activity/` | **staging: live + working end-to-end (2026-05-27).** Prod: code merged in `2753d6c` but prod Postgres + `DATABASE_URL` reference not yet wired; widget renders, every POST 500s silently until that's done. Lifespan is hardened (asyncpg 5s connect timeout + try/except) so a missing DB no longer bricks the rest of the site. |
 
 Build specs live alongside the code:
 
@@ -21,6 +22,7 @@ Build specs live alongside the code:
 - `THE_DESK_OUTRIGHTS_SPEC.md` — outright winner build spec; v0.2 supersedes earlier drafts. Note: v0.2 wants outrights folded through the position-list waist, but **the parallel-pipeline implementation in `desk/outrights/` shipped first** — it predates the waist refactor and runs live on Polymarket today.
 - `THE_DESK_DATA_LAYER_SPEC.md` — data layer spec; Phase 1b (live Elo from eloratings.net / clubelo.com) is the credibility-load-bearing piece the match-Pick page needs before its Picks become real signals
 - `THE_DESK_NEWS_SIGNALS_SPEC.md` — news & editorial signals spec (v0.1 draft). PRs A–F **all shipped** as of 2026-05-21 — sport-agnostic source registry + resolver, RSS fetcher + cache, Haiku extractor, editorial track → `copy.editorial_citations`, GDELT aggregator path, hard-track Elo adjustments. Live on Railway behind `DESK_SIGNALS_FETCH=1` + `DESK_SIGNALS_EXTRACT=1` (needs `ANTHROPIC_API_KEY`).
+- `ACTIVITY_SIGNALS_SPEC.md` — v1.0.1, locked. Anonymous views + four-way reactions on every match card. Schema in Railway Postgres (`migrations/20260527_activity_signals.sql`), FastAPI router at `/api/activity/*`, three background jobs in `activity_refresh_loop.py` (aggregator 60s / seeder 8 min / prune daily), vanilla-JS island at `site/public/js/activity.js`. Live on staging; prod awaits Postgres provisioning + `DATABASE_URL` wiring.
 - `desk/VOICE.md` — **canonical editorial voice for all Desk-generated copy** (V1: dry wit with a spine; 120–180-word blurbs, every blurb has a point + is sourced, never invent a citation). PR 5's Haiku blurb-writer prompt MUST point here. Hard "never" rules are enforced in `desk/desk/explainer/voice.py`; brand-level prose lives in `Odds Primer Design System/README.md`.
 - `STATUS.md` — overnight-run briefing (refreshed when an autonomous run lands work; check it in the morning)
 - `ledger-phase-0-brief.md` — Phase 0 brief for Ledger
@@ -148,7 +150,8 @@ Six-step pipeline, each independently replaceable:
 - ✅ News-signals PRs A–F (per `THE_DESK_NEWS_SIGNALS_SPEC.md`) — 21-source global registry (13 RSS active + 8 trust-only / `feed_type=none` reserved for licensed APIs), `desk fetch-signals` populates `desk/data/signals.db`, `desk extract-signals` runs Haiku with prompt caching + tool-use schema (cost ~$0.003/article, content-hash dedupe makes steady-state nearly free), `copy.editorial_citations` filled by `build_citations` with team binding to the participating sides + ≥2-org consensus detector for plural attribution, hard-track injury/suspension Signals from `can_feed_model` sources nudge each team's Elo within the 5-day late-binding window (bounded -8 injury / -6 suspension, capped -30 total per team). Wired into `desk_refresh_loop.py` so the daily tick fetches + extracts + republishes JSON.
 - ✅ PR 5 — explainer Haiku replacement. `desk/desk/explainer/haiku.py` is the blurb-writer (`claude-haiku-4-5`, forced tool-use, system prompt loads `desk/VOICE.md` verbatim + cache_control ephemeral so a single run amortises across 70+ matches). `desk/desk/explainer/__init__.py` dispatches: when `DESK_BLURB_HAIKU=1` + `ANTHROPIC_API_KEY` set, Haiku writes title/summary/blurb; stub still produces `drivers` + the merged Copy is voice-checked one more time. Falls back to the templated stub on any failure (no key, network/timeout, voice-rule violation, blurb outside [80, 220] words, attribution to an outlet not in `editorial_citations`).
 - ⬜ PR 6 — scheduler + CLI + serve
-- ⬜ Phase B (form / FIFA-rank residual / weather / injuries) — biggest Brier lever
+- 🟡 Phase B.1 — form / FIFA-rank residual **hook scaffold landed in Shadow**. `FootballFeatures` carries optional `team_*_form_delta` + `team_*_rank_residual`; `_adjusted_elos` applies `FORM_WEIGHT * form_delta + RANK_WEIGHT * rank_residual` (Elo, additive on top of base prior) when `DESK_FORM_RANK_RESIDUAL=1`; per-team `Driver` fires once a contribution clears ±15 Elo. Default off; absent fields contribute zero even when on. WC-2022 backtest is byte-identical with the flag off (Brier 0.5806 / 0.5794 market, 30 pick / 34 pass / 0 avoid). **The coupled unit isn't *done* until data-layer Phase 2 (API-Football rank + form) populates real values and forward-validation clears** — Phase 2 needs operator sign-off on the $19/mo API-Football spine per `THE_DESK_DATA_LAYER_SPEC.md` §4 + §8.
+- ⬜ Phase B.2 (weather) + B.3 (injuries) per optimization spec
 - ⬜ Phase C–F per optimization spec
 - ⬜ Data Layer Phase 1b — live Elo ingest. **Match Picks are not real betting signals until this lands** (the seed audit gets them defensible but not validated).
 
@@ -240,6 +243,9 @@ python -m desk fetch-signals                 # 13 RSS feeds → desk/data/signal
 python -m desk fetch-signals --include-long-tail  # also pull GDELT (paid: external API)
 python -m desk extract-signals               # Haiku reads cached items → Signals (needs ANTHROPIC_API_KEY)
 python -m desk extract-signals --limit 25    # cap items per source per run (cost guard)
+
+# External data layer (Phase 2+ — needs API_FOOTBALL_KEY / OPENWEATHERMAP_API_KEY)
+python -m desk verify-data-sources            # smoke-test both keys + report api-football tier (guardrail 4)
 ```
 
 ### Layout
@@ -297,6 +303,13 @@ desk/
 │   │   ├── hard_track.py              # hard_signals_for() — track gate + recency
 │   │   ├── runtime.py                 # SignalsRuntime: opens cache, yields citations/hard signals per fixture
 │   │   └── data/sources_seed.csv      # the 21-row global seed (verified 2026-05-21)
+│   ├── data/                          # EXTERNAL data layer (Phase 2+ providers)
+│   │   ├── api_football/              # api-football.com v3 — RANK + FORM (B.1) and INJURIES + LINEUP (B.3)
+│   │   │   ├── client.py              # async httpx wrapper, auth header, error buckets
+│   │   │   └── status.py              # /status probe → plan tier + daily quota
+│   │   └── openweathermap/            # OpenWeatherMap One Call 3.0 — WEATHER (B.2)
+│   │       ├── client.py              # async httpx wrapper, appid query auth
+│   │       └── status.py              # cheapest-call probe → key works + sample temp
 │   ├── distribute/                   # OUTBOUND wire to external consumers (MTA)
 │   │   ├── config.py                 # env reader; fail-loud on push=1 without URL/secret
 │   │   ├── signing.py                # HMAC-SHA256 over "{ts}.{body}"
@@ -416,6 +429,9 @@ Override via `DESK_PICK_PP` / `DESK_PASS_PP` / `DESK_AVOID_PP` in `.env`.
 | `DESK_HARD_SIGNAL_WINDOW_DAYS` | `5` | Late-binding window. A hard signal only adjusts Elo when the fixture's kickoff is within this many days. Outside the window, the path is a no-op. |
 | `DESK_BLURB_HAIKU` | `0` | Set to `1` to route the explainer's title/summary/blurb through `desk/desk/explainer/haiku.py` (Haiku 4.5, system prompt sourced from `desk/VOICE.md`). Needs `ANTHROPIC_API_KEY`. Off by default — without it, the templated stub still ships. |
 | `DESK_BLURB_HAIKU_MODEL` | `claude-haiku-4-5` | Override the Haiku model id. Useful for pinning a specific haiku build. |
+| `DESK_FORM_RANK_RESIDUAL` | `0` | Set to `1` to activate the Phase B.1 form / FIFA-rank residual on the Elo prior (per `THE_DESK_OPTIMIZATION_SPEC.md` §4.B.1). Off by default — the hook lives in Shadow until data-layer Phase 2 populates `FootballFeatures.team_*_form_delta` + `team_*_rank_residual` with real values via API-Football. With the flag off (or with all residual fields None), `_adjusted_elos` is byte-identical to pre-B.1; the regression gate is the WC-2022 backtest. |
+| `API_FOOTBALL_KEY` | unset | api-football.com v3 key (direct `api-sports.io` endpoint, header `x-apisports-key`). Phase 2 spine: RANK + FORM (B.1) and INJURIES + LINEUP (B.3). Spec's $19/mo "Pro" tier = 7,500 req/day; smoke-test the live account with `python -m desk verify-data-sources`. |
+| `OPENWEATHERMAP_API_KEY` | unset | OpenWeatherMap One Call 3.0 key for Phase 3 weather (B.2). Free tier ≈ 1,000 calls/day; overage capped at ≈ $1/mo per `THE_DESK_DATA_LAYER_SPEC.md` §4.1. Same smoke-test command verifies it. |
 | `DESK_DISTRIBUTE_PUSH` | `0` | Set to `1` to enable the push wire to Market Tips AI (see `desk/desk/distribute/`). Runner enqueues every `write_match` + every withdrawn payload; `desk_distribute_loop.py` drains every 30s via `python -m desk distribute-drain`. Off by default — a fresh deploy does not push until the operator opts in. |
 | `DESK_DISTRIBUTE_WEBHOOK_URL` | unset | MTA webhook URL — prod `https://markettipsai.com/api/webhooks/desk/publish`. Required when `DESK_DISTRIBUTE_PUSH=1`; `load_config()` fails loud at boot if either this or the secret is missing. |
 | `DESK_DISTRIBUTE_WEBHOOK_SECRET` | unset | HMAC-SHA256 shared key for the push wire. Coordinated with MTA via encrypted channel (no commits, no logs). |
@@ -471,9 +487,90 @@ Internals (`p_a/p_draw/p_b`, drivers, raw market prices, raw `Signal` objects, t
 
 ---
 
+## Activity signals — anonymous views + reactions
+
+Anonymous reader engagement on every match card. Built 2026-05-27. The widget renders:
+
+- **Top activity strip** (only when there's data): "N users viewed this market today" · "Most picked: \<side\>" · "Community leaning: PICK/PASS/AVOID".
+- **Reaction chips:** 🐂 Bullish · 💸 Overpriced · 🪤 Trap line · 💎 Value. Cookie-tracked per anon, one vote per match per anon, mutable for 24h then locked.
+- **Italic hint:** "Anonymous · one click · no account".
+
+Lives inside the `.lv-card` CSS grid with `grid-column: 1 / -1` and `pointer-events: auto` (overriding the card's overlay-link cascade). Chip clicks call `stopPropagation` so voting on a listing card doesn't navigate to `/m/{id}`.
+
+### Layout
+
+```
+activity/
+├── __init__.py
+├── db.py                      # asyncpg pool (timeout=5s — see "asyncpg lifespan" below)
+├── anon.py                    # op_anon cookie + daily-salted IP hash
+├── router.py                  # POST /view, POST /vote, GET /{match_id}
+└── jobs.py                    # aggregator, seeder, prune
+activity_refresh_loop.py       # project-root async loop, sibling to desk_refresh_loop.py
+migrations/
+├── README.md
+└── 20260527_activity_signals.sql
+site/public/js/activity.js     # vanilla-JS island (CSS inline, scoped under .lv-card)
+tests/activity/
+├── test_api.py                # 16 router tests with a faked asyncpg pool
+└── test_jobs_helpers.py       # 16 stage/popularity/distribution unit tests
+```
+
+### Why Postgres (the only Postgres-backed domain)
+
+Ledger / signals / distribute / prophet all use sqlite. Activity broke that pattern because every match-page load fires `POST /view` from many concurrent readers — sqlite's single-writer model would push lock errors under launch traffic. Railway Postgres add-on handles concurrent writes natively; the connection is **DATABASE_URL** (private network), never `DATABASE_PUBLIC_URL` (egress fees).
+
+### asyncpg lifespan — must stay defensive
+
+`activity/db.py:open_pool()` passes `timeout=5.0` to `asyncpg.create_pool(...)`. **Do not remove this.** asyncpg's default `timeout` is `None` (wait forever). Without the explicit timeout, a misconfigured `DATABASE_URL` hangs FastAPI's lifespan startup indefinitely — uvicorn never accepts connections, every route on the site goes dark, and Railway serves edge 404s. This actually took prod down on 2026-05-27 before the timeout was added. Both `server.py` lifespan and `activity_refresh_loop.py` wrap `open_pool()` in `try/except` so a pool failure only takes activity routes offline, not the whole app.
+
+### Background jobs
+
+| Job | Cadence | Body |
+|---|---|---|
+| `aggregate_match_activity` | 60s | One SQL UPSERT — recomputes `match_aggregates` from `match_views` + `match_reactions` for every match with any rows. |
+| `seed_match_activity` | 8 min | Inserts popularity-weighted seed rows toward stage targets (Tier 1–4 × popularity × time-of-day × verdict-state distribution). Auto-decays per match when real views ≥ 60 AND real votes ≥ 25. Capped at 450 views/day · 70 votes lifetime. |
+| `prune_old_views` | daily | `DELETE FROM match_views WHERE viewed_at < now() - 7 days`. Aggregate counts preserved. |
+
+### Frontend race-condition fix worth remembering
+
+The aggregator runs every 60s, so a `GET /api/activity/{id}` issued within that window after a vote returns stale `by_reaction` counts even though `your_vote` is correct (it's read live from `match_reactions`, not the aggregate). Two guards in `activity.js`:
+1. After a successful vote, optimistic local bump of `by_reaction[next] += 1` (and decrement of the old vote on a flip).
+2. `reconcile(data)` runs at the end of every refresh — if `data.your_vote` is set but `data.by_reaction[your_vote]` is 0, force it to 1.
+3. **No immediate `refresh()` after a vote** — it would race the optimistic state. Wait for the next 90s interval poll.
+
+### Design decisions
+
+| Decision | Source |
+|---|---|
+| Top-level `activity/` package, not under `desk/` | Cross-cutting concern, mirrors `ledger/` |
+| Vanilla-JS island in `site/generate.py`, not React | The `/m/{id}` surface is static HTML, not the React app |
+| Lazy 24h vote lock — no daily sweep job | The 409 on next vote enforces it; sparse `locked_at` is harmless |
+| Same 4 reaction values in DB across all designs | UI relabels per design + verdict state; no schema churn during A/B |
+| `DATABASE_URL` referenced into the Prophet app (not typed) | Private network, zero egress, single source of truth |
+
+### Env vars
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `DATABASE_URL` | unset | Required. Reference (not type) from the Postgres service into the Prophet app. App lifespan opens the asyncpg pool on boot if this is set. |
+| `ACTIVITY_DB_POOL_MAX` | `10` | asyncpg pool max connections. Hobby-tier Postgres has a low ceiling — keep tiny. |
+| `ACTIVITY_SEED_ENABLED` | `1` | Set to `0` to disable the seeder loop entirely (used on staging during UX testing so the operator's own clicks are the only data). |
+| `ACTIVITY_AGGREGATE_SEC` | `60` | Aggregator job cadence. |
+| `ACTIVITY_SEED_SEC` | `480` | Seeder job cadence (8 min). |
+| `ACTIVITY_PRUNE_SEC` | `86400` | Prune job cadence (daily). |
+| `ACTIVITY_INITIAL_DELAY_SEC` | `30` | Delay before the first post-boot tick of any activity job. |
+| `ACTIVITY_IP_SALT` | unset → process-local random | Per-deployment secret prepended to the IP hash. Without it the salt resets on every restart (acceptable — hash is only used for same-day rate-limit buckets). |
+
+### Spec + design history
+
+`ACTIVITY_SIGNALS_SPEC.md` v1.0.1 is the locked spec. The user iterated through several designs in one afternoon: Editorial / Literal A/B → Literal only → Market Pulse v2 (incorporating the review doc) → back to v1 Literal. The shipped widget is v1 Literal with emoji chips. Untracked working-tree files left as design history: `activity_signals_mockup.html` (v1), `activity-signals-mockup-v2.html` (Market Pulse), `activity-signals-review.md` (critique arguing against the whole feature in favour of market-movement + "Track this Pick").
+
+---
+
 ## Tech stack
 
-**Backend** Python 3.11+, httpx, websockets, cryptography, pandas, FastAPI, uvicorn, Pydantic v2, aiosqlite, APScheduler (PR 6+), Anthropic SDK (Haiku for news-signals extraction + future PR 5 blurb generation — listed in root `requirements.txt` so the Railway image installs it; `desk/pyproject.toml` is **not** pip-installed in production, the package runs as a subprocess via PYTHONPATH).
+**Backend** Python 3.11+, httpx, websockets, cryptography, pandas, FastAPI, uvicorn, Pydantic v2, aiosqlite, asyncpg (activity signals only — Railway Postgres add-on), APScheduler (PR 6+), Anthropic SDK (Haiku for news-signals extraction + future PR 5 blurb generation — listed in root `requirements.txt` so the Railway image installs it; `desk/pyproject.toml` is **not** pip-installed in production, the package runs as a subprocess via PYTHONPATH).
 
 **Frontend** React 19, Vite, Recharts, Lucide React. The editorial site (`frontend/src/op/`), Ledger (`frontend/src/ledger/`), and Desk page (`frontend/src/desk/`) all use the Odds Primer Design System (`Odds Primer Design System/`) — Source Serif 4 (body), Inter Tight (wordmark + chrome), JetBrains Mono (numerics). All three share the locked tokens at `frontend/src/ledger/op-tokens.css`. The legacy Prophet trading dashboard at `/dashboard` still uses its older dark-theme tokens.
 
@@ -484,6 +581,8 @@ Internals (`p_a/p_draw/p_b`, drivers, raw market prices, raw `Signal` objects, t
 - **Work on `staging` by default.** Commit, push, check the staging URL. Feature branches are optional and only worth the overhead when two unrelated things are in flight at once.
 - **`init/project-setup` is production.** Only receives merges from `staging` once changes have been eyeballed. Never push half-finished work straight to it.
 - **Never commit `data/*.db`.** Already in `.gitignore` (covers root `data/*.db` AND `desk/data/*.db`). The news-signals cache lives at `desk/data/signals.db` locally; on Railway the path is overridden via `DESK_SIGNALS_DB_PATH` to a file on the mounted `/data` volume so the cache survives container restarts and deploys.
+- **Postgres is activity-signals only; everything else is sqlite.** New domains should default to sqlite unless the access pattern requires concurrent writers (which is what pushed activity onto Postgres). One Railway Postgres add-on per environment (staging / prod). The Prophet app reads `DATABASE_URL` (Railway private network, free egress) referenced *from* the Postgres service; `DATABASE_PUBLIC_URL` is operator-only — never let it leak into the app or a committed file (it bills egress per byte).
+- **Migrations are plain SQL applied by hand** via Railway → Postgres → Data → Query. Files in `migrations/YYYYMMDD_short_name.sql`, each wrapped in `BEGIN; … COMMIT;` with `IF NOT EXISTS` on every statement so re-applies are safe. No migration framework — the directory is the audit trail. Add Alembic only when a second Postgres-backed domain shows up.
 - **`desk_refresh_loop.py` runs on a schedule of UTC clock hours controlled by the Ops dashboard.** Each entry in the schedule fires one tick per day at the top of that hour. Operators add/remove hours and toggle the master enable flag at `/desk/ops/admin` → **Desk admin**; changes land on the loop's next scheduling decision (no restart). State persists at `{ops_root}/control.json` (`{ enabled, hours: [int 0..23] }`) so prod and staging each carry their own schedule. Default on a fresh install: `hours: [6]` (one run daily at 06:00 UTC). `DESK_AUTORUN=0` is the deploy-time kill switch (use it only when the dashboard isn't reachable). Each tick runs `desk run --once` (timeout 600s) → `desk outrights` → `site/generate.py` → `desk fetch-signals` (if `DESK_SIGNALS_FETCH=1`) → `desk extract-signals` (if `DESK_SIGNALS_EXTRACT=1` + `ANTHROPIC_API_KEY` set). **Matches runs first** so the dashboard-critical artifacts always land before signals work can eat the time budget — signals enrich the *next* tick's matches (one-tick lag is fine; missing matches is not). Set `DESK_SIGNALS_EXTRACT_LIMIT=25` on prod to keep Haiku extraction inside its 600s timeout and cost predictable.
 - **Ops dashboard has two views** at `/desk/ops`: a left-sidebar nav with **The Desk** (read-only run history + sources + news signals + per-run cost) and **Desk admin** (master enable toggle + a list of scheduled UTC hours with Add/Remove). Both share the same HTTP Basic auth gate (`DESK_OPS_USER` / `DESK_OPS_PASS`); `server.py` wraps the SPA catch-all under `/desk/ops/*` with that gate so `/desk/ops/admin` can never be reached unauthed. The admin page writes `control.json` directly — the loop polls it on every scheduling decision.
 - **Per-tick Anthropic cost is captured for the dashboard.** Each Haiku call (`desk/desk/signals/extract.py`, `desk/desk/explainer/haiku.py`) appends one row to `{ops_root}/costs.jsonl` tagged with the loop's `DESK_TICK_ID`. After all subprocesses for a tick complete, the refresh loop sums those rows and appends a `tick-totals.jsonl` entry keyed by the matches RunReport's `run_id`. The ops API joins this onto the run history table so `/desk/ops` shows a per-run **Cost** column. Pricing constants (Haiku 4.5 input $1/Mtok, output $5/Mtok, cache read $0.10/Mtok, cache write $1.25/Mtok) live in `desk/desk/ops/cost.py:_PRICING`; bump them when Anthropic updates the public price list.
