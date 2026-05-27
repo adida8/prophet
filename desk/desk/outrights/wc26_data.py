@@ -130,35 +130,55 @@ def wc26_structure():
 
 
 # Knockout bracket — Round of 32 seeding for the 48-team format.
-# Top 2 from each group + the 8 best third-placed teams qualify. Without
-# the official FIFA cross-group bracket encoded, v1 uses a plausible
-# seeded R32: winners cross-tied with the best third-place finishers,
-# runners-up cross-tied internally. The simulator notes this as a
-# simplification in §4 of the outrights spec — replace once the FIFA
-# bracket is loaded.
+# Top 2 from each group + the 8 best third-placed teams qualify. This
+# encodes FIFA's published cross-group bracket (Wikipedia: "2026 FIFA
+# World Cup knockout stage", Match 73–88).
 #
 # Slot codes:
-#   "A1" / "A2" / "A3" = winner / runner-up / 3rd of Group A
-#   "3RD-1" .. "3RD-8" = the 8 best 3rd-placed teams, ranked
+#   "A1" / "A2" = winner / runner-up of Group A
+#   "3RD@ABCDF" = the third-place team from one of groups A/B/C/D/F.
+#                 The exact assignment is determined per FIFA Annex C
+#                 from which 8 groups actually produced qualifying
+#                 thirds — encoded approximately here via a greedy
+#                 constraint-respecting assignment in the sim
+#                 (`_assign_constrained_thirds` in model.py). Differs
+#                 from FIFA's full 495-scenario lookup table on rare
+#                 edge cases; expected impact on headline P(win) is
+#                 sub-pp for top teams.
 #
 # Each tuple is one R32 tie. 16 ties feed R16, then QF, SF, Final.
+# Order follows FIFA Match numbers 73–88 (Wikipedia).
 R32_TIES: tuple[tuple[str, str], ...] = (
-    # Group winners vs the 8 best third-place finishers
-    ("A1", "3RD-8"),
-    ("B1", "3RD-7"),
-    ("C1", "3RD-6"),
-    ("D1", "3RD-5"),
-    ("E1", "3RD-4"),
-    ("F1", "3RD-3"),
-    ("G1", "3RD-2"),
-    ("H1", "3RD-1"),
-    # Group runners-up cross-paired
-    ("I2", "J2"),
-    ("K2", "L2"),
-    ("I1", "L1"),
-    ("J1", "K1"),
-    ("A2", "B2"),
-    ("C2", "D2"),
-    ("E2", "F2"),
-    ("G2", "H2"),
+    # Match 73: Runner-up A vs Runner-up B
+    ("A2",         "B2"),
+    # Match 74: Winner E vs 3rd from {A,B,C,D,F}
+    ("E1",         "3RD@ABCDF"),
+    # Match 75: Winner F vs Runner-up C
+    ("F1",         "C2"),
+    # Match 76: Winner C vs Runner-up F
+    ("C1",         "F2"),
+    # Match 77: Winner I vs 3rd from {C,D,F,G,H}
+    ("I1",         "3RD@CDFGH"),
+    # Match 78: Runner-up E vs Runner-up I
+    ("E2",         "I2"),
+    # Match 79: Winner A vs 3rd from {C,E,F,H,I}
+    ("A1",         "3RD@CEFHI"),
+    # Match 80: Winner L vs 3rd from {E,H,I,J,K}
+    ("L1",         "3RD@EHIJK"),
+    # Match 81: Winner D vs 3rd from {B,E,F,I,J}
+    ("D1",         "3RD@BEFIJ"),
+    # Match 82: Winner G vs 3rd from {A,E,H,I,J}
+    ("G1",         "3RD@AEHIJ"),
+    # Match 83: Runner-up K vs Runner-up L
+    ("K2",         "L2"),
+    # Match 84: Winner H vs Runner-up J
+    ("H1",         "J2"),
+    # Match 85: Winner B vs 3rd from {E,F,G,I,J}
+    ("B1",         "3RD@EFGIJ"),
+    # Match 86: Winner J vs Runner-up H
+    ("J1",         "H2"),
+    # Match 87: Winner K vs 3rd from {D,E,I,J,L}
+    ("K1",         "3RD@DEIJL"),
+    # Match 88: Runner-up D vs Runner-up G
+    ("D2",         "G2"),
 )

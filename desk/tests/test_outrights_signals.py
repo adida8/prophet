@@ -261,6 +261,37 @@ def test_build_payload_surfaces_hard_signal_adjustments() -> None:
     assert rows[0]["source_id"] == "reuters-sport"
 
 
+def test_constrained_third_assignment_respects_allowed_groups() -> None:
+    """3RD@{groups} slots should only get thirds from one of the
+    allowed source groups when one is available."""
+    from desk.outrights.model import _assign_constrained_thirds
+    # 8 thirds, one per group A-H. The R32 has a "3RD@CDFGH" slot —
+    # it should pick the highest-ranked among C/D/F/G/H, not from A or B.
+    thirds = [
+        ("TeamA", "A"), ("TeamB", "B"), ("TeamC", "C"), ("TeamD", "D"),
+        ("TeamE", "E"), ("TeamF", "F"), ("TeamG", "G"), ("TeamH", "H"),
+    ]
+    seeds = (
+        ("A1", "3RD@CDFGH"),
+        ("B1", "3RD@AB"),    # constrained to A/B specifically
+    )
+    assigned = _assign_constrained_thirds(thirds, seeds)
+    # First slot prefers thirds from {C,D,F,G,H} — TeamC is highest ranked.
+    assert assigned["3RD@CDFGH"] == "TeamC"
+    # Second slot can only take A or B — TeamA is highest available.
+    assert assigned["3RD@AB"] == "TeamA"
+
+
+def test_constrained_third_assignment_fallback_when_no_eligible() -> None:
+    """When no remaining third matches the constraint, fall back to
+    the highest-ranked unassigned team rather than crashing."""
+    from desk.outrights.model import _assign_constrained_thirds
+    thirds = [("TeamA", "A"), ("TeamB", "B")]
+    seeds = (("X1", "3RD@CDEFG"),)  # no eligible team — fallback to A
+    assigned = _assign_constrained_thirds(thirds, seeds)
+    assert assigned["3RD@CDEFG"] == "TeamA"
+
+
 def test_build_payload_omits_adjustments_when_empty() -> None:
     snap = _fake_snapshot()
     model = run_model(field(), sims=500, bootstrap_samples=2, bootstrap_sims=50)

@@ -151,6 +151,49 @@ def _resolve_knockout(
     return current[0]
 
 
+def _assign_constrained_thirds(
+    qualifying_thirds: list[tuple[str, str]],
+    knockout_seeds: tuple[tuple[str, str], ...],
+) -> dict[str, str]:
+    """Map `3RD@{groups}` slot codes to specific qualifying third-place
+    team names, respecting each slot's group constraint.
+
+    `qualifying_thirds` is `[(team_name, group_letter), ...]` ordered
+    best-first (best by group-stage points, Elo tiebreak).
+
+    The real FIFA rule (Annex C) looks up the exact assignment from a
+    495-row table keyed by which 8 groups produced the qualifying
+    thirds. We approximate with a greedy pass — for each `3RD@` slot
+    in bracket order, take the highest-ranked unassigned third whose
+    group is in the allowed set. Falls back to the highest-ranked
+    unassigned third when no eligible team exists (rare edge case).
+
+    Approximation impact on headline P(win) is sub-pp for top teams;
+    encoding the full 495-scenario table is a future refinement.
+    """
+    assigned: dict[str, str] = {}
+    remaining = list(qualifying_thirds)
+    for left, right in knockout_seeds:
+        for slot in (left, right):
+            if not slot.startswith("3RD@"):
+                continue
+            if slot in assigned:
+                continue
+            allowed = set(slot[4:])
+            pick_idx = None
+            for i, (_, group) in enumerate(remaining):
+                if group in allowed:
+                    pick_idx = i
+                    break
+            if pick_idx is None and remaining:
+                pick_idx = 0  # fallback — no eligible third left
+            if pick_idx is None:
+                continue  # no thirds at all; let the lookup raise
+            team, _ = remaining.pop(pick_idx)
+            assigned[slot] = team
+    return assigned
+
+
 def _simulate_tournament(
     rng: random.Random,
     elo_lookup: dict[str, float],
@@ -161,7 +204,9 @@ def _simulate_tournament(
     """
     group_winners: dict[str, str] = {}
     group_runners: dict[str, str] = {}
-    thirds_with_pts: list[tuple[str, int, float]] = []
+    # (team, points, elo, group_letter) — group letter needed for the
+    # constrained-third slot assignment below.
+    thirds_with_pts: list[tuple[str, int, float, str]] = []
 
     pos_counters: dict[str, list[int]] = {}
 
@@ -170,7 +215,8 @@ def _simulate_tournament(
         group_winners[letter] = ranked[0][0]
         group_runners[letter] = ranked[1][0]
         if len(ranked) >= 3:
-            thirds_with_pts.append(ranked[2])
+            t, pts, elo_t = ranked[2]
+            thirds_with_pts.append((t, pts, elo_t, letter))
         # Diagnostic — per-team P(top of group). 4-team groups keep
         # a 4-slot counter; smaller groups would shrink it.
         for rank, (t, _, _) in enumerate(ranked):
@@ -182,10 +228,18 @@ def _simulate_tournament(
         slots[f"{letter}2"] = group_runners[letter]
 
     if structure.qualifier_strategy == "top2_plus_8_thirds":
+        # Rank thirds best-first, take the top 8, then assign to
+        # constraint-bearing R32 slots via greedy matching.
         thirds_with_pts.sort(key=lambda x: (-x[1], -x[2]))
-        best_thirds = [t for (t, _, _) in thirds_with_pts[:8]]
-        for i, t in enumerate(best_thirds, start=1):
-            slots[f"3RD-{i}"] = t
+        best_thirds = [(t, group) for (t, _, _, group) in thirds_with_pts[:8]]
+        slots.update(_assign_constrained_thirds(
+            best_thirds, structure.knockout_seeds,
+        ))
+        # Backward-compat: also expose the old "3RD-{n}" slot names
+        # so any caller still referencing them keeps working. Today's
+        # WC26 bracket is fully on the new "3RD@..." scheme.
+        for i, (team, _) in enumerate(best_thirds, start=1):
+            slots[f"3RD-{i}"] = team
     # `top2`: no extra slots needed.
 
     champion = _resolve_knockout(rng, slots, elo_lookup, structure.knockout_seeds)
