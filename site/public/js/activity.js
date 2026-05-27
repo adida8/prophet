@@ -1,18 +1,28 @@
-/* Activity signals — Editorial design, per activity_signals_mockup.html.
+/* Activity signals — Literal design, per activity_signals_mockup.html.
  *
  * Renders inside every match card. Layout:
- *   • "Readers" strip — paper-warm box. "Read today · N" always (when N ≥ 10);
- *     "Aligned with the Pick · X%" + sentiment bar are Pick-only.
- *   • "Your read on the call" — four chip buttons (Sharp call · Fair call ·
- *     Off the mark · Wait and see) for Pick verdicts; neutral labels on
- *     Pass/Avoid (Agree · Lean agree · Disagree · Wait and see).
- *   • Italic hint line: "One click · anonymous · no account".
+ *   • Top activity strip (3 lines):
+ *       - "N users viewed this market today" (when N ≥ 10)
+ *       - "Most picked: <side>"                (when votes ≥ 5 and side known)
+ *       - "Community leaning: <PICK/PASS/AVOID>" (when votes ≥ 5)
+ *   • Reaction chips: 🐂 Bullish · 💸 Overpriced · 🪤 Trap line · 💎 Value.
+ *   • Italic hint: "Anonymous · one click · no account".
  *
- * The widget lives INSIDE the .lv-card CSS grid with grid-column: 1 / -1 so
- * it spans the full card width edge-to-edge, and pointer-events: auto so it
- * captures its own clicks instead of falling through to the card overlay link
- * that makes the whole card clickable on listing pages. Chip clicks call
- * stopPropagation so voting never accidentally navigates to /m/{id}.
+ * The widget lives INSIDE the .lv-card CSS grid (grid-column: 1 / -1) so
+ * it spans the full card width edge-to-edge. The card's own CSS sets
+ * pointer-events: none on every child via `.lv-card > *:not(.lv-card-link)`,
+ * which has (0, 2, 0) specificity — to beat it we need a selector with
+ * at least the same specificity that comes later in cascade order, hence
+ * `.lv-card .op-activity { pointer-events: auto }`.
+ *
+ * Chip clicks call stopPropagation so voting on a listing card never
+ * triggers the whole-card overlay-link navigation.
+ *
+ * Chip labels (DB key → Literal display):
+ *   sharp_call → 🐂 Bullish   (positive — agrees with Pick)
+ *   wait_see   → 💸 Overpriced (negative — side is overpriced)
+ *   off_mark   → 🪤 Trap line  (negative — line is wrong)
+ *   fair_call  → 💎 Value      (positive — sees value)
  */
 
 (function () {
@@ -21,19 +31,14 @@
   const POLL_MS = 90_000;
   const API = "/api/activity";
 
-  const REACTION_KEYS = ["sharp_call", "fair_call", "off_mark", "wait_see"];
-  const PICK_LABELS = {
-    sharp_call: "Sharp call",
-    fair_call: "Fair call",
-    off_mark: "Off the mark",
-    wait_see: "Wait and see",
-  };
-  const PASS_AVOID_LABELS = {
-    sharp_call: "Agree",
-    fair_call: "Lean agree",
-    off_mark: "Disagree",
-    wait_see: "Wait and see",
-  };
+  // Chip order matches the v1 Literal mockup. The DB key on the right
+  // stays the same as PR-3 (no schema change).
+  const CHIPS = [
+    { key: "sharp_call", em: "🐂", label: "Bullish",    pos: true  },
+    { key: "wait_see",   em: "💸", label: "Overpriced", pos: false },
+    { key: "off_mark",   em: "🪤", label: "Trap line",  pos: false },
+    { key: "fair_call",  em: "💎", label: "Value",      pos: true  },
+  ];
 
   const VIEW_DISPLAY_MIN = 10;
   const VOTE_DISPLAY_MIN = 5;
@@ -42,86 +47,68 @@
 
   const STYLE_ID = "op-activity-style";
 
+  // Selectors are scoped under `.lv-card` so they beat the card's own
+  // `.lv-card > *:not(.lv-card-link)` rules (same specificity, later in
+  // cascade wins).
   const CSS = `
-.op-activity {
+.lv-card .op-activity {
   grid-column: 1 / -1;
   margin-top: 14px;
-  padding: 14px 26px 16px 28px;   /* aligns with the card's content column */
-  border-top: 1px solid var(--card-rule, #E2C9BD);
+  padding: 0 26px 16px 28px;
   pointer-events: auto;
   position: relative;
   z-index: 3;
   font-family: 'Inter Tight', system-ui, sans-serif;
   color: var(--ink, #0E2240);
 }
-.lv-card.is-pick .op-activity { border-top-color: rgba(216, 70, 28, 0.32); }
 
-.op-readers {
-  padding: 12px 14px;
-  background: var(--paper-warm, #F0ECE2);
-  border-left: 2px solid var(--rule, #D9D2C0);
+.lv-card .op-strip {
+  padding: 12px 0;
+  border-top: 1px dashed var(--card-rule, #E2C9BD);
+  border-bottom: 1px dashed var(--card-rule, #E2C9BD);
   margin-bottom: 14px;
 }
-.op-readers .op-lbl {
-  font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--graphite-soft, #6B7079);
-  margin-bottom: 8px;
+.lv-card .op-strip .op-row {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: var(--ink-soft, #2A3957);
+  line-height: 1.5;
 }
-.op-readers-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 12px 18px; align-items: baseline;
-}
-.op-readers .op-k {
-  font-family: 'Source Serif 4', Georgia, serif;
-  font-size: 13px; color: var(--ink-soft, #2A3957); font-style: italic;
-}
-.op-readers .op-v {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 13px; color: var(--ink, #0E2240);
-  font-weight: 500; text-align: right; font-variant-numeric: tabular-nums;
-}
-.op-readers .op-sentiment {
-  grid-column: 1 / -1;
-  height: 6px; background: #fff; border: 1px solid var(--rule, #D9D2C0);
-  position: relative; margin-top: 6px;
-}
-.op-readers .op-sb-fill { position: absolute; inset: 0 auto 0 0; background: var(--ink, #0E2240); transition: width 250ms ease; }
-.op-readers .op-sb-mark { position: absolute; top: -3px; bottom: -3px; left: 50%; width: 0; border-left: 2px solid var(--flame, #D9461C); }
-.op-readers .op-sb-cap {
-  grid-column: 1 / -1;
-  display: flex; justify-content: space-between;
-  margin-top: 4px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10px; color: var(--graphite-soft, #6B7079);
-  letter-spacing: 0.04em; text-transform: uppercase;
-}
+.lv-card .op-strip .op-row + .op-row { margin-top: 4px; }
+.lv-card .op-strip .op-bold { color: var(--ink, #0E2240); font-weight: 600; }
+.lv-card .op-strip .op-eye { font-size: 15px; line-height: 1; }
 
-.op-react .op-lbl {
+.lv-card .op-react-label {
   font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
   text-transform: uppercase; color: var(--graphite-soft, #6B7079);
   margin-bottom: 8px;
 }
-.op-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-.op-chip {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 9px 12px;
+.lv-card .op-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.lv-card .op-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
   background: #fff;
   border: 1px solid var(--rule, #D9D2C0);
+  border-radius: 999px;
   font-family: 'Inter Tight', system-ui, sans-serif;
-  font-size: 12.5px; color: var(--ink, #0E2240);
+  font-size: 13px;
+  color: var(--ink, #0E2240);
   cursor: pointer;
   transition: background 120ms, border-color 120ms;
 }
-.op-chip:hover { border-color: var(--ink, #0E2240); }
-.op-chip[disabled] { opacity: 0.6; cursor: not-allowed; }
-.op-chip .op-count {
+.lv-card .op-chip:hover { border-color: var(--ink, #0E2240); }
+.lv-card .op-chip[disabled] { opacity: 0.6; cursor: not-allowed; }
+.lv-card .op-chip .op-em { font-size: 15px; line-height: 1; }
+.lv-card .op-chip .op-count {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px; color: var(--graphite-soft, #6B7079);
 }
-.op-chip.is-on { background: var(--paper-warm, #F0ECE2); border-color: var(--ink, #0E2240); }
-.op-chip.is-on .op-count { color: var(--ink, #0E2240); }
+.lv-card .op-chip.is-on {
+  background: var(--flame-tint, #F7E4DA);
+  border-color: var(--flame, #D9461C);
+}
+.lv-card .op-chip.is-on .op-count { color: var(--flame-deep, #A8341A); }
 
-.op-voted-hint {
+.lv-card .op-voted-hint {
   font-family: 'Source Serif 4', Georgia, serif;
   font-style: italic; font-size: 11.5px;
   color: var(--graphite-soft, #6B7079);
@@ -137,55 +124,63 @@
     document.head.appendChild(s);
   }
 
-  // -------------------- rendering ---------------------------
+  // -------------------- derived strings --------------------
 
-  function labelsFor(verdict) {
-    return verdict === "pick" ? PICK_LABELS : PASS_AVOID_LABELS;
+  function pickerSide(state) {
+    // The Desk's pick side is supplied by render_card via data-pick-side.
+    // Falls back to nothing if no pick — Most picked line hides.
+    return state.pickSide || null;
   }
+
+  function communityLeaning(byReaction) {
+    const positive = (byReaction.sharp_call || 0) + (byReaction.fair_call || 0);
+    const negative = (byReaction.off_mark || 0) + (byReaction.wait_see || 0);
+    if (positive === 0 && negative === 0) return null;
+    if (positive > negative * 1.2) return "PICK";
+    if (negative > positive * 1.2) return "AVOID";
+    return "PASS";
+  }
+
+  // -------------------- rendering --------------------------
 
   function render(root, state) {
     const r = state.data || {};
-    const isPick = state.verdict === "pick";
-    const labels = labelsFor(state.verdict);
+    const byReaction = r.by_reaction || {};
     const showViews = (r.views_24h || 0) >= VIEW_DISPLAY_MIN;
     const showVotes = (r.votes_total || 0) >= VOTE_DISPLAY_MIN;
-    const aligned = isPick && r.aligned_pct != null ? r.aligned_pct : null;
 
-    // Readers strip — render whenever we have any displayable data so the
-    // box isn't an empty rectangle on a fresh match page.
-    let readers = "";
-    if (showViews || (showVotes && aligned != null)) {
-      const rows = [];
-      if (showViews) {
-        rows.push(`<div class="op-k">Read today</div><div class="op-v">${r.views_24h}</div>`);
-      }
-      if (showVotes && aligned != null) {
-        rows.push(`<div class="op-k">Aligned with the Pick</div><div class="op-v">${aligned}%</div>`);
-        rows.push(`<div class="op-sentiment"><span class="op-sb-fill" style="width:${aligned}%"></span><span class="op-sb-mark"></span></div>`);
-        rows.push(`<div class="op-sb-cap"><span>Disagree</span><span>Mid</span><span>Agree</span></div>`);
-      }
-      readers = `
-        <div class="op-readers">
-          <div class="op-lbl">Readers</div>
-          <div class="op-readers-grid">${rows.join("")}</div>
-        </div>
-      `;
+    // Top strip — only render rows whose data crosses display thresholds.
+    const stripRows = [];
+    if (showViews) {
+      stripRows.push(`<div class="op-row"><span class="op-eye">👁</span><span><span class="op-bold">${r.views_24h} users</span> viewed this market today</span></div>`);
     }
+    if (showVotes) {
+      const side = pickerSide(state);
+      if (side) {
+        stripRows.push(`<div class="op-row"><span>Most picked: <span class="op-bold">${side}</span></span></div>`);
+      }
+      const leaning = communityLeaning(byReaction);
+      if (leaning) {
+        stripRows.push(`<div class="op-row"><span>Community leaning: <span class="op-bold">${leaning}</span></span></div>`);
+      }
+    }
+    const strip = stripRows.length
+      ? `<div class="op-strip">${stripRows.join("")}</div>`
+      : "";
 
-    const chips = REACTION_KEYS.map((k) => {
-      const count = (r.by_reaction || {})[k] || 0;
-      const isOn = r.your_vote === k;
-      const countHtml = showVotes ? `<span class="op-count">${count}</span>` : "";
-      return `<button class="op-chip${isOn ? " is-on" : ""}" data-reaction="${k}" type="button">${labels[k]} ${countHtml}</button>`;
+    // Chips — always rendered (without counts until threshold hit).
+    const chips = CHIPS.map((c) => {
+      const n = byReaction[c.key] || 0;
+      const isOn = r.your_vote === c.key;
+      const count = showVotes ? `<span class="op-count">${n}</span>` : "";
+      return `<button class="op-chip${isOn ? " is-on" : ""}" data-reaction="${c.key}" type="button"><span class="op-em">${c.em}</span> ${c.label} ${count}</button>`;
     }).join("");
 
     root.innerHTML = `
-      ${readers}
-      <div class="op-react">
-        <div class="op-lbl">${isPick ? "Your read on the call" : "Your read on the market"}</div>
-        <div class="op-chips">${chips}</div>
-        <div class="op-voted-hint">One click · anonymous · no account</div>
-      </div>
+      ${strip}
+      <div class="op-react-label">React to this market</div>
+      <div class="op-chips">${chips}</div>
+      <div class="op-voted-hint">Anonymous · one click · no account</div>
     `;
     wireChips(root, state);
   }
@@ -196,8 +191,7 @@
     const chips = root.querySelectorAll(".op-chip");
     chips.forEach((c) => {
       c.addEventListener("click", async (ev) => {
-        // Listing pages put an overlay link over the whole card; without
-        // this we'd vote AND navigate to /m/{id}.
+        // Stop the click bubbling to the card's overlay <a> (listing pages).
         ev.stopPropagation();
         ev.preventDefault();
         chips.forEach((x) => (x.disabled = true));
@@ -261,6 +255,7 @@
       const state = {
         matchId,
         verdict: root.dataset.verdictState || "pass",
+        pickSide: root.dataset.pickSide || null,
         data: null,
       };
       render(root, state);
