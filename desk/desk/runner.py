@@ -204,6 +204,15 @@ def run_once(
     if default_cache_path().exists():
         api_football_runtime = APIFootballRuntime()
 
+    # Live-Elo runtime (Phase 1b). Reads eloratings.net + clubelo
+    # values populated by `desk fetch-elo`. When the cache file
+    # doesn't exist, the runtime falls back to the static seed for
+    # every lookup — pre-Phase-1b behaviour is preserved byte-for-byte.
+    from desk.data.elo import EloRuntime, default_cache_path as _elo_default_path
+    elo_runtime: EloRuntime | None = None
+    if _elo_default_path().exists():
+        elo_runtime = EloRuntime()
+
     # Forward-validation logger (Phase B.1 Shadow). Open once per run
     # so per-fixture inserts don't re-open the sqlite file. The logger
     # writes BOTH the published prediction (residual off, today's path)
@@ -296,16 +305,24 @@ def run_once(
                                 fx, snapshot,
                                 signals_runtime=signals_runtime,
                                 api_football_runtime=api_football_runtime,
+                                elo_runtime=elo_runtime,
                             )
                         except TypeError:
-                            # Older sport adapters may not accept either
-                            # runtime kwarg. Fall back stepwise.
+                            # Older sport adapters may not accept all
+                            # runtime kwargs. Fall back stepwise.
                             try:
                                 result = sport.decide_and_explain(
-                                    fx, snapshot, signals_runtime=signals_runtime,
+                                    fx, snapshot,
+                                    signals_runtime=signals_runtime,
+                                    api_football_runtime=api_football_runtime,
                                 )
                             except TypeError:
-                                result = sport.decide_and_explain(fx, snapshot)
+                                try:
+                                    result = sport.decide_and_explain(
+                                        fx, snapshot, signals_runtime=signals_runtime,
+                                    )
+                                except TypeError:
+                                    result = sport.decide_and_explain(fx, snapshot)
                         # decide_and_explain may return (v, copy),
                         # (v, copy, DecisionMeta), or
                         # (v, copy, DecisionMeta, hard_signal_adjustments).
@@ -507,6 +524,12 @@ def run_once(
             api_football_runtime.close()
         except Exception as e:                          # noqa: BLE001
             log.warning("api-football runtime close failed: %s", e)
+
+    if elo_runtime is not None:
+        try:
+            elo_runtime.close()
+        except Exception as e:                          # noqa: BLE001
+            log.warning("elo runtime close failed: %s", e)
 
     if forward_validation_log is not None:
         try:

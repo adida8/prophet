@@ -44,6 +44,18 @@ class _FormSource(Protocol):
     def form_delta_for_iso3(self, iso3: str) -> float | None: ...
 
 
+class _EloSource(Protocol):
+    """Live-Elo read interface. `EloRuntime` satisfies this. When
+    omitted, the features-builder reads only the static seed —
+    preserving the pre-Phase-1b path byte-for-byte (the regression
+    gate for Phase 1b is the WC-2022 backtest, which never wires
+    `elo_source`)."""
+    def national_elo(self, iso3: str) -> float: ...
+    def national_elo_source(self, iso3: str) -> str: ...
+    def club_elo(self, club_id: str) -> float: ...
+    def club_elo_source(self, club_id: str) -> str: ...
+
+
 def _team_iso3_from_match_id(match_id: str, *, position: int) -> str | None:
     """Extract the home or away team slug from a `fb-{comp}-{home}-{away}-{date}`
     match_id. Useful only for international fixtures, where the slug fragment IS
@@ -68,6 +80,7 @@ def build_features(
     fx: FixtureRef,
     *,
     form_source: _FormSource | None = None,
+    elo_source:  _EloSource  | None = None,
 ) -> FootballFeatures:
     """Build a `FootballFeatures` row for a fixture.
 
@@ -77,28 +90,49 @@ def build_features(
     entries stay None — the model hook treats absent as zero
     contribution per Phase B.1 spec.
 
+    When `elo_source` is provided (typically an `EloRuntime` bound to
+    the live-Elo cache), national + club Elo + their source labels
+    flow from the live ingest. Missing entries fall back to the
+    static seed via the runtime — so the source label stays accurate
+    ("eloratings" / "clubelo" for live; "wiki" / "stub" for seed).
+    When `elo_source` is None, the static seed is read directly,
+    preserving the pre-Phase-1b behaviour byte-for-byte (the regression
+    gate is the WC-2022 backtest, which never wires elo_source).
+
     The hook in `_adjusted_elos` is still gated on
     `DESK_FORM_RANK_RESIDUAL=1`, so populating form_delta here is a
     Shadow-mode no-op until the operator flips that flag.
     """
     international = is_international_competition(fx.competition_code)
 
-    # ── Elo prior + source provenance (PR 4.5) ────────────────────
+    # ── Elo prior + source provenance (PR 4.5; Phase 1b live layer) ─
     if international:
         a_iso = _team_iso3_from_match_id(fx.match_id, position=0)
         b_iso = _team_iso3_from_match_id(fx.match_id, position=1)
-        a_elo = national_elo(a_iso) if a_iso else 1500.0
-        b_elo = national_elo(b_iso) if b_iso else 1500.0
-        a_src = national_elo_source(a_iso) if a_iso else "stub"
-        b_src = national_elo_source(b_iso) if b_iso else "stub"
+        if elo_source is not None:
+            a_elo = elo_source.national_elo(a_iso) if a_iso else 1500.0
+            b_elo = elo_source.national_elo(b_iso) if b_iso else 1500.0
+            a_src = elo_source.national_elo_source(a_iso) if a_iso else "stub"
+            b_src = elo_source.national_elo_source(b_iso) if b_iso else "stub"
+        else:
+            a_elo = national_elo(a_iso) if a_iso else 1500.0
+            b_elo = national_elo(b_iso) if b_iso else 1500.0
+            a_src = national_elo_source(a_iso) if a_iso else "stub"
+            b_src = national_elo_source(b_iso) if b_iso else "stub"
     else:
         a_id = _club_id_from_match_id(fx.match_id, position=0)
         b_id = _club_id_from_match_id(fx.match_id, position=1)
         a_iso = b_iso = None
-        a_elo = club_elo(a_id) if a_id else 1500.0
-        b_elo = club_elo(b_id) if b_id else 1500.0
-        a_src = club_elo_source(a_id) if a_id else "stub"
-        b_src = club_elo_source(b_id) if b_id else "stub"
+        if elo_source is not None:
+            a_elo = elo_source.club_elo(a_id) if a_id else 1500.0
+            b_elo = elo_source.club_elo(b_id) if b_id else 1500.0
+            a_src = elo_source.club_elo_source(a_id) if a_id else "stub"
+            b_src = elo_source.club_elo_source(b_id) if b_id else "stub"
+        else:
+            a_elo = club_elo(a_id) if a_id else 1500.0
+            b_elo = club_elo(b_id) if b_id else 1500.0
+            a_src = club_elo_source(a_id) if a_id else "stub"
+            b_src = club_elo_source(b_id) if b_id else "stub"
 
     # ── Venue + altitude ───────────────────────────────────────────
     venue_host_iso3:    str | None   = None

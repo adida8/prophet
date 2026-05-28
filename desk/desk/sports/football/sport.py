@@ -168,6 +168,7 @@ class FootballSport:
         *,
         signals_runtime=None,
         api_football_runtime=None,
+        elo_runtime=None,
     ) -> tuple[Verdict, Copy, DecisionMeta, list[ContractHardSignalAdjustment]]:
         """Compute the verdict, the editorial copy, the decision meta,
         and the per-match hard-signal audit list in one pass.
@@ -191,7 +192,11 @@ class FootballSport:
         published JSON carries enough to answer 'did this signal change
         the verdict?'. Empty list when no adjustments fired.
         """
-        features = build_features(fx, form_source=api_football_runtime)
+        features = build_features(
+            fx,
+            form_source=api_football_runtime,
+            elo_source=elo_runtime,
+        )
         hard_adjustments: list[HardSignalAdjustment] = []
         if signals_runtime is not None:
             try:

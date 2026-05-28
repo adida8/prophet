@@ -295,6 +295,23 @@ def _tick() -> None:
                  cwd=DESK_DIR, timeout=300,
                  label="desk fetch-rank-form", extra_env=sub_env)
 
+    # Phase 1b data side — refresh live Elo (eloratings.net + clubelo).
+    # Free providers; no vendor key required. Gated so a fresh deploy
+    # doesn't start fetching until the operator opts in.
+    if os.getenv("DESK_ELO_FETCH", "0") == "1":
+        _run([py, "-m", "desk", "fetch-elo"],
+             cwd=DESK_DIR, timeout=300,
+             label="desk fetch-elo", extra_env=sub_env)
+
+    # Phase B.1 measurement loop — ingest resolved match outcomes so
+    # the forward-validation report can score them. Piggy-backs on
+    # the form-fetch flag because both need the same api-football key.
+    if (os.getenv("DESK_RANK_FORM_FETCH", "0") == "1"
+            and os.getenv("API_FOOTBALL_KEY")):
+        _run([py, "-m", "desk", "fv-ingest-outcomes"],
+             cwd=DESK_DIR, timeout=300,
+             label="desk fv-ingest-outcomes", extra_env=sub_env)
+
     # Persist this tick's cost summary so the dashboard can show it.
     # Linking by `run_id` lets the dashboard join one row of the run
     # history table with one row of tick-totals. When matches failed

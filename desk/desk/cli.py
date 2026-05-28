@@ -342,6 +342,62 @@ def _cmd_fetch_rank_form(args: argparse.Namespace) -> int:
     return 0 if ok > 0 else 2
 
 
+def _cmd_fetch_elo(args: argparse.Namespace) -> int:
+    """Refresh live Elo values (national + club) into the cache.
+
+    No external API key needed — both providers are free:
+      * eloratings.net  — World.tsv (parser-hardened; bad parse keeps last-good)
+      * api.clubelo.com — per-club CSV (top-5 league + WC26 club starter set)
+
+    Default behaviour fetches both; --skip-national / --skip-club let
+    you scope the refresh during smoke tests.
+    """
+    import asyncio
+
+    from desk.data.elo import EloCache, default_cache_path
+
+    db_path = Path(args.db) if args.db else default_cache_path()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+
+    async def _run() -> tuple[int, int, int, int]:
+        n_nat = n_club_ok = n_club_skipped = n_club_err = 0
+        with EloCache(db_path) as cache:
+            if not args.skip_national:
+                from desk.data.elo.eloratings import refresh_nationals
+                parsed = await refresh_nationals(cache=cache)
+                if parsed.ok:
+                    n_nat = len(parsed.rows)
+                    print(f"  eloratings · ok · wrote {n_nat} nationals")
+                else:
+                    print(f"  eloratings · FAIL · {parsed.error}",
+                          file=sys.stderr)
+            if not args.skip_club:
+                from desk.data.elo.clubelo import (
+                    CLUB_ID_TO_CLUBELO_NAME, refresh_clubs,
+                )
+                club_ids = args.club or list(CLUB_ID_TO_CLUBELO_NAME)
+                outcomes = await refresh_clubs(club_ids, cache=cache)
+                for o in outcomes:
+                    if o.status == "ok":
+                        n_club_ok += 1
+                        print(f"  clubelo · {o.club_id:18s}  ok  "
+                              f"elo={o.elo:.1f}  rows={o.rows_parsed}")
+                    elif o.status == "no_history":
+                        n_club_skipped += 1
+                    else:
+                        n_club_err += 1
+                        print(f"  clubelo · {o.club_id:18s}  {o.status}  "
+                              f"{o.error or ''}", file=sys.stderr)
+        return n_nat, n_club_ok, n_club_skipped, n_club_err
+
+    n_nat, n_ok, n_skip, n_err = asyncio.run(_run())
+    print()
+    print(f"  totals: nationals={n_nat}  "
+          f"clubs ok={n_ok} skipped={n_skip} err={n_err}  "
+          f"(db: {db_path})")
+    return 0 if (n_nat > 0 or n_ok > 0) else 2
+
+
 def _cmd_fv_ingest_outcomes(args: argparse.Namespace) -> int:
     """Ingest resolved match outcomes into forward_validation.db.
 
@@ -729,6 +785,19 @@ def build_parser() -> argparse.ArgumentParser:
     rb.add_argument("--daily-cap", type=int, default=7500,
                     help="api-football Pro cap (default 7500)")
     rb.set_defaults(func=_cmd_rate_budget)
+
+    fe = sub.add_parser(
+        "fetch-elo",
+        help="refresh live Elo (eloratings.net + api.clubelo.com) into desk/data/elo.db",
+    )
+    fe.add_argument("--db", help="override elo cache path (default: desk/data/elo.db)")
+    fe.add_argument("--skip-national", action="store_true",
+                    help="don't fetch eloratings.net")
+    fe.add_argument("--skip-club", action="store_true",
+                    help="don't fetch api.clubelo.com")
+    fe.add_argument("--club", action="append",
+                    help="restrict club fetch to id(s) (repeatable)")
+    fe.set_defaults(func=_cmd_fetch_elo)
 
     fvi = sub.add_parser(
         "fv-ingest-outcomes",
