@@ -32,6 +32,9 @@ from desk.outrights.model import (
 )
 from desk.outrights.publish import write, write_index
 from desk.outrights.signals_glue import tags_for_outright
+from desk.outrights.live_elo import (
+    live_elo_overrides_for_field, merge_elo_overrides,
+)
 from desk.outrights.wc26_data import elo_is_stub
 from desk.signals.cache import SignalsCache
 from desk.signals.hard_track import hard_signals_for
@@ -94,6 +97,24 @@ def run_once(
         log.info("outrights: %d/%d teams using stub Elo", stub_count, len(field))
 
     elo_overrides, hard_audit = _collect_hard_signals(field)
+
+    # Phase 1b — fold live-Elo deltas in alongside hard-signal nudges.
+    # When the live cache is absent the adapter returns {} and the
+    # behaviour is byte-identical to pre-1b (same gate the per-match
+    # path uses for EloRuntime).
+    from desk.data.elo import EloRuntime, default_cache_path as _elo_default_path
+    if _elo_default_path().exists():
+        with EloRuntime() as elo_rt:
+            live_overrides = live_elo_overrides_for_field(field, runtime=elo_rt)
+        if live_overrides:
+            teams_touched = len(live_overrides)
+            net = sum(live_overrides.values())
+            log.info(
+                "outrights: applied live-Elo deltas for %d teams (net Elo %+.1f)",
+                teams_touched, net,
+            )
+            elo_overrides = merge_elo_overrides(elo_overrides, live_overrides)
+
     if hard_audit:
         teams_touched = len({a.team for a in hard_audit})
         total_delta   = sum(a.delta_elo for a in hard_audit)
