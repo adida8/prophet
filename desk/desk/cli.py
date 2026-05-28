@@ -342,6 +342,51 @@ def _cmd_fetch_rank_form(args: argparse.Namespace) -> int:
     return 0 if ok > 0 else 2
 
 
+def _cmd_schedule(args: argparse.Namespace) -> int:
+    """Run the refresh loop (PR 6).
+
+    Folds the project-root `desk_refresh_loop.py` into the unified
+    `desk` CLI surface. Same control file (Ops dashboard
+    `/desk/ops/admin`), same env-var-gated steps (fetch-signals /
+    extract-signals / fetch-rank-form / fetch-injuries / fetch-elo /
+    fv-ingest-outcomes), same cost ledger and tick-totals.
+
+    `--once` runs a single tick and exits — useful for cron-style
+    invocations + smoke tests. Without `--once` the loop runs forever,
+    sleeping until each scheduled UTC hour.
+    """
+    import asyncio
+    import importlib.util
+    import os
+
+    # Find the loop script — sits at the project root, two levels up
+    # from desk/desk/cli.py.
+    here = Path(__file__).resolve()
+    project_root = here.parents[2]
+    loop_path = project_root / "desk_refresh_loop.py"
+    if not loop_path.exists():
+        print(f"desk_refresh_loop.py not found at {loop_path}",
+              file=sys.stderr)
+        return 2
+
+    spec = importlib.util.spec_from_file_location(
+        "desk_refresh_loop", str(loop_path),
+    )
+    assert spec is not None and spec.loader is not None
+    loop_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(loop_mod)
+
+    if args.once:
+        # _tick is the per-iteration body that the loop calls inside
+        # its sleep cycle. Run it once + exit.
+        loop_mod._tick()
+        return 0
+
+    # Multi-iteration mode — defer to the loop's existing async
+    # entry-point. It honours the control file + the autorun env.
+    return asyncio.run(loop_mod.run_desk_loop()) or 0
+
+
 def _cmd_b3_audit(args: argparse.Namespace) -> int:
     """Run the Phase B.3 source audit against api-football.
 
@@ -888,6 +933,14 @@ def build_parser() -> argparse.ArgumentParser:
     rb.add_argument("--daily-cap", type=int, default=7500,
                     help="api-football Pro cap (default 7500)")
     rb.set_defaults(func=_cmd_rate_budget)
+
+    sc = sub.add_parser(
+        "schedule",
+        help="run the refresh loop (PR 6 — folds desk_refresh_loop.py into the CLI)",
+    )
+    sc.add_argument("--once", action="store_true",
+                    help="run a single tick and exit")
+    sc.set_defaults(func=_cmd_schedule)
 
     ba = sub.add_parser(
         "b3-audit",
