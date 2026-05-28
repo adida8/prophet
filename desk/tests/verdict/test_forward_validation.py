@@ -62,3 +62,45 @@ def test_record_outcome_upserts(tmp_path):
         log.record_outcome("fb-wc26-fra-mex-20260612", "a")
         log.record_outcome("fb-wc26-fra-mex-20260612", "b")  # correction
         assert log.resolved_count() == 1
+
+
+def test_pending_match_ids_returns_unresolved(tmp_path):
+    with ForwardValidationLog(tmp_path / "fv.db") as log:
+        log.log_prediction(_row("fb-wc26-fra-mex-20260612"))
+        log.log_prediction(_row("fb-wc26-bra-eng-20260620"))
+        log.log_prediction(_row("fb-wc26-arg-ger-20260625"))
+        log.record_outcome("fb-wc26-bra-eng-20260620", "a")
+        pending = log.pending_match_ids()
+        assert pending == [
+            "fb-wc26-arg-ger-20260625",
+            "fb-wc26-fra-mex-20260612",
+        ]
+
+
+def test_resolved_prediction_pairs_inner_join(tmp_path):
+    with ForwardValidationLog(tmp_path / "fv.db") as log:
+        log.log_prediction(_row("fb-wc26-fra-mex-20260612"))
+        log.log_prediction(_row("fb-wc26-bra-eng-20260620"))
+        log.record_outcome("fb-wc26-fra-mex-20260612", "a")
+        triples = log.resolved_prediction_pairs()
+        assert len(triples) == 1
+        match_id, outcome, pred = triples[0]
+        assert match_id == "fb-wc26-fra-mex-20260612"
+        assert outcome == "a"
+        assert pred.phase == "B.1.form"
+
+
+def test_resolved_prediction_pairs_takes_latest_asof(tmp_path):
+    with ForwardValidationLog(tmp_path / "fv.db") as log:
+        log.log_prediction(_row(match_id="m1", asof="2026-06-12T17:00:00Z"))
+        log.log_prediction(PredictionRow(**{
+            **_row(match_id="m1", asof="2026-06-12T17:00:00Z").__dict__,
+            "asof_iso": "2026-06-12T20:00:00Z",
+            "p_a_with_residual": 0.99,
+        }))
+        log.record_outcome("m1", "a")
+        triples = log.resolved_prediction_pairs()
+        assert len(triples) == 1
+        _, _, pred = triples[0]
+        # Latest asof wins → p_a_with_residual is 0.99 not 0.50.
+        assert pred.p_a_with_residual == 0.99

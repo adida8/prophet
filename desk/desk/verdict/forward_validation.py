@@ -139,6 +139,48 @@ class ForwardValidationLog:
         row = self._conn.execute("SELECT COUNT(*) AS c FROM outcomes").fetchone()
         return int(row["c"])
 
+    def pending_match_ids(self) -> list[str]:
+        """match_ids that have at least one prediction but no outcome
+        recorded yet. Outcomes-ingest CLI calls this to know what to
+        ask api-football about."""
+        rows = self._conn.execute(
+            "SELECT DISTINCT p.match_id FROM predictions p "
+            "LEFT JOIN outcomes o ON o.match_id = p.match_id "
+            "WHERE o.match_id IS NULL "
+            "ORDER BY p.match_id"
+        ).fetchall()
+        return [r["match_id"] for r in rows]
+
+    def resolved_prediction_pairs(
+        self, *, phase: str = "B.1.form",
+    ) -> list[tuple[str, str, PredictionRow]]:
+        """Inner join — for each resolved match in `phase`, return
+        (match_id, outcome, PredictionRow). When multiple predictions
+        exist per match (across asof points), the most recent asof
+        wins — it's the published-tick prediction closest to the
+        outcome."""
+        rows = self._conn.execute(
+            "SELECT o.match_id AS oid, o.outcome AS outcome, p.* "
+            "FROM outcomes o "
+            "JOIN predictions p ON p.match_id = o.match_id "
+            "WHERE p.phase = ? "
+            "ORDER BY o.match_id, p.asof_iso DESC",
+            (phase,),
+        ).fetchall()
+        seen: set[str] = set()
+        out: list[tuple[str, str, PredictionRow]] = []
+        for r in rows:
+            mid = r["oid"]
+            if mid in seen:
+                continue
+            seen.add(mid)
+            # Pop the join columns before kw-expanding into PredictionRow.
+            data = dict(r)
+            data.pop("oid")
+            outcome = data.pop("outcome")
+            out.append((mid, outcome, PredictionRow(**data)))
+        return out
+
 
 def default_log_path() -> Path:
     """Path to the forward-validation sqlite log. Honours

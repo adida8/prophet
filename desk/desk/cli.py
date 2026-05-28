@@ -342,6 +342,148 @@ def _cmd_fetch_rank_form(args: argparse.Namespace) -> int:
     return 0 if ok > 0 else 2
 
 
+def _cmd_fv_ingest_outcomes(args: argparse.Namespace) -> int:
+    """Ingest resolved match outcomes into forward_validation.db.
+
+    Reads pending match_ids (predictions logged, no outcome yet),
+    hits api-football for each, writes (match_id, outcome) when the
+    fixture has settled. Idempotent — already-resolved matches skip
+    the network entirely.
+    """
+    import asyncio
+
+    from desk import config
+    from desk.data.api_football import APIFootballCache
+    from desk.data.api_football.client import APIFootballClient
+    from desk.data.api_football.runtime import default_cache_path as af_default
+    from desk.verdict.forward_validation import (
+        ForwardValidationLog, default_log_path as fv_default,
+    )
+    from desk.verdict.outcomes_ingest import ingest_pending
+
+    if not config.API_FOOTBALL_KEY:
+        print("API_FOOTBALL_KEY not set — see .env.example", file=sys.stderr)
+        return 2
+
+    fv_path = Path(args.fv_db) if args.fv_db else fv_default()
+    af_path = Path(args.af_db) if args.af_db else af_default()
+    if not fv_path.exists():
+        print(f"forward-validation db not found at {fv_path}", file=sys.stderr)
+        return 2
+    if not af_path.exists():
+        print(f"api-football cache not found at {af_path}", file=sys.stderr)
+        return 2
+
+    async def _run():
+        async with APIFootballClient(config.API_FOOTBALL_KEY) as client:
+            with APIFootballCache(af_path) as af_cache, \
+                 ForwardValidationLog(fv_path) as fv_log:
+                pending = fv_log.pending_match_ids()
+                if args.limit is not None:
+                    pending = pending[: args.limit]
+                outcomes = await ingest_pending(
+                    pending, client=client, af_cache=af_cache,
+                )
+                n_ok = 0
+                for o in outcomes:
+                    if o.status == "ok" and o.outcome:
+                        fv_log.record_outcome(o.match_id, o.outcome)
+                        n_ok += 1
+                return n_ok, outcomes
+
+    n_ok, outcomes = asyncio.run(_run())
+    by_status: dict[str, int] = {}
+    for o in outcomes:
+        by_status[o.status] = by_status.get(o.status, 0) + 1
+        if o.status == "ok":
+            print(f"  {o.match_id:42s}  resolved → {o.outcome}")
+        else:
+            print(f"  {o.match_id:42s}  {o.status:22s}  {o.error or ''}")
+    print()
+    for status, n in sorted(by_status.items()):
+        print(f"  {status:22s}  {n}")
+    print()
+    print(f"  resolved this run: {n_ok}")
+    return 0
+
+
+def _cmd_fv_report(args: argparse.Namespace) -> int:
+    """Forward-validation calibration report (Phase B.1).
+
+    Joins resolved predictions × outcomes from `forward_validation.db`
+    and reports:
+      * mean Brier without_residual vs with_residual
+      * Brier delta + §1.4 gate verdict
+      * directional sanity check
+      * reliability-bin breakdown for the with-residual probabilities
+        on the team_a side (diagnostic)
+    Exits 0 if the gate clears, 1 if not yet (sample too small or
+    Brier regressed).
+    """
+    from desk.verdict.forward_validation import (
+        ForwardValidationLog, default_log_path as fv_default,
+    )
+    from desk.verdict.scoring import (
+        BrierPair, aggregate_calibration, brier_3way,
+        directional_sanity, reliability_bins,
+    )
+
+    fv_path = Path(args.fv_db) if args.fv_db else fv_default()
+    if not fv_path.exists():
+        print(f"forward-validation db not found at {fv_path}", file=sys.stderr)
+        return 2
+
+    with ForwardValidationLog(fv_path) as fv_log:
+        triples = fv_log.resolved_prediction_pairs(phase=args.phase)
+
+    if not triples:
+        print(f"no resolved predictions in phase {args.phase!r} yet")
+        return 1
+
+    pairs: list[BrierPair] = []
+    reliability_samples: list[tuple[float, bool]] = []
+    for match_id, outcome, pred in triples:
+        b_without = brier_3way(
+            pred.p_a_without_residual, pred.p_draw_without_residual,
+            pred.p_b_without_residual, outcome,
+        )
+        b_with = brier_3way(
+            pred.p_a_with_residual, pred.p_draw_with_residual,
+            pred.p_b_with_residual, outcome,
+        )
+        pairs.append(BrierPair(
+            match_id=match_id,
+            without_residual=b_without, with_residual=b_with,
+        ))
+        reliability_samples.append((pred.p_a_with_residual, outcome == "a"))
+
+    report = aggregate_calibration(
+        pairs, tolerance=args.tolerance, min_sample_size=args.min_sample,
+    )
+    sane = directional_sanity(pairs)
+
+    print()
+    print(report.headline())
+    print(f"  sample-size gate: {'✓' if report.sample_size_cleared else '✗'} "
+          f"({report.sample_size} / {report.min_sample_size})")
+    print(f"  no-regression gate: {'✓' if report.no_regression else '✗'} "
+          f"(Δ {report.brier_delta:+.4f} ≤ {report.tolerance:+.4f})")
+    print(f"  directional sanity: {'✓' if sane else '✗'} "
+          f"(with-residual wins ≥45% of differing rows)")
+    print()
+    print("  reliability bins (with-residual p_a vs observed team_a hit rate):")
+    print(f"    {'bin':>14s}  {'n':>4s}  {'mean_p':>7s}  {'observed':>9s}  {'gap':>7s}")
+    for b in reliability_bins(reliability_samples, n_bins=10):
+        print(f"    [{b.lower_pct:.2f}, {b.upper_pct:.2f})  "
+              f"{b.n:>4d}  {b.mean_p:>7.3f}  {b.observed_rate:>9.3f}  {b.gap:>+7.3f}")
+    print()
+    if report.gate_cleared and sane:
+        print("  → §1.4 gate cleared + direction sane. Safe to flip "
+              "DESK_FORM_RANK_RESIDUAL=1.")
+        return 0
+    return 1
+
+
 def _cmd_rate_budget(args: argparse.Namespace) -> int:
     """Print the api-football daily-call budget vs the Pro cap.
 
@@ -587,6 +729,29 @@ def build_parser() -> argparse.ArgumentParser:
     rb.add_argument("--daily-cap", type=int, default=7500,
                     help="api-football Pro cap (default 7500)")
     rb.set_defaults(func=_cmd_rate_budget)
+
+    fvi = sub.add_parser(
+        "fv-ingest-outcomes",
+        help="ingest resolved match outcomes into forward_validation.db",
+    )
+    fvi.add_argument("--fv-db", help="override fv db path")
+    fvi.add_argument("--af-db", help="override api-football cache path")
+    fvi.add_argument("--limit", type=int, default=None,
+                     help="process at most N pending match_ids")
+    fvi.set_defaults(func=_cmd_fv_ingest_outcomes)
+
+    fvr = sub.add_parser(
+        "fv-report",
+        help="forward-validation calibration report (closes spec §1.4 gate)",
+    )
+    fvr.add_argument("--fv-db", help="override fv db path")
+    fvr.add_argument("--phase", default="B.1.form",
+                     help="phase label to score (default B.1.form)")
+    fvr.add_argument("--tolerance", type=float, default=0.005,
+                     help="Brier tolerance for the no-regression gate")
+    fvr.add_argument("--min-sample", type=int, default=100,
+                     help="minimum resolved-fixture sample (default 100)")
+    fvr.set_defaults(func=_cmd_fv_report)
 
     # `desk signals <subcommand>` — nested subparser. `validate` is the
     # only entry for now; future ops (list, stats, …) plug in here.
