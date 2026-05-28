@@ -22,12 +22,14 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--tournament", default="wc-2022",
-        help="Tournament key. Today only 'wc-2022' is wired.",
+        choices=["wc-2022", "euro-2024", "copa-2024"],
+        help="Which historical tournament to replay (default: wc-2022).",
     )
     parser.add_argument(
         "--dashboard",
-        default="desk_outrights_backtest_dashboard.html",
-        help="HTML dashboard output path (default: cwd).",
+        default=None,
+        help="HTML dashboard output path "
+             "(default: desk_outrights_backtest_{tournament}.html).",
     )
     parser.add_argument(
         "--sims", type=int, default=5000,
@@ -50,9 +52,14 @@ def main(argv: list[str] | None = None) -> int:
         datefmt="%H:%M:%S",
     )
 
+    dashboard_path = Path(
+        args.dashboard
+        or f"desk_outrights_backtest_{args.tournament}.html"
+    )
+
     summary = run_backtest(
         tournament_key=args.tournament,
-        dashboard_path=Path(args.dashboard),
+        dashboard_path=dashboard_path,
         sims=args.sims,
         bootstrap_samples=args.bootstrap_samples,
         bootstrap_sims=args.bootstrap_sims,

@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "asof":   "2024-06-19",
+    "source": "Approximated from World Football Elo Ratings (eloratings.net) snapshot circa 2024-06-19, the day before CONMEBOL Copa América 2024 kickoff. Frozen for backtest reproducibility.",
+    "note":   "Covers the 16-team Copa América 2024 field. Replace with live Wikipedia revision pull when the elo loader's HTTP path is wired (TODO in historical/elo.py)."
+  },
+  "elo": {
+    "arg": 2149,
+    "bra": 2055,
+    "uru": 1908,
+    "col": 1875,
+    "ecu": 1823,
+    "mex": 1820,
+    "usa": 1818,
+    "chi": 1810,
+    "per": 1782,
+    "par": 1735,
+    "ven": 1700,
+    "can": 1730,
+    "pan": 1640,
+    "cri": 1625,
+    "jam": 1620,
+    "bol": 1583
+  }
+}

@@ -18,7 +18,7 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 
-from desk.outrights.backtest.runner import WC22BacktestResult
+from desk.outrights.backtest.runner import OutrightBacktestResult
 from desk.outrights.backtest.scoring import ScoreBundle
 
 log = logging.getLogger("desk.outrights.backtest.writers")
@@ -55,7 +55,7 @@ def _score_row(s: ScoreBundle) -> str:
 
 
 def write_dashboard(
-    result: WC22BacktestResult,
+    result: OutrightBacktestResult,
     *,
     dashboard_path: Path,
 ) -> Path:
@@ -122,6 +122,7 @@ def write_dashboard(
 
     html_str = _TEMPLATE.format(
         now=_h(now),
+        tournament_name=_h(result.tournament_name),
         verdict=_h(verdict),
         verdict_cls=verdict_cls,
         kpis=kpis_html,
@@ -133,7 +134,8 @@ def write_dashboard(
     )
 
     dashboard_path.write_text(html_str, encoding="utf-8")
-    log.info("wc22 backtest dashboard → %s", dashboard_path)
+    log.info("%s backtest dashboard → %s",
+             result.tournament_key, dashboard_path)
     return dashboard_path
 
 
@@ -141,7 +143,7 @@ _TEMPLATE = """<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Outright backtest · WC 2022</title>
+  <title>Outright backtest · {tournament_name}</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     :root {{
@@ -226,7 +228,7 @@ _TEMPLATE = """<!doctype html>
 </head>
 <body>
   <div class="wrap">
-    <h1>Outright backtest · WC 2022</h1>
+    <h1>Outright backtest · {tournament_name}</h1>
     <p class="sub">The Desk · MC sim against frozen pre-tournament Elo</p>
 
     <div class="verdict {verdict_cls}">{verdict}</div>
@@ -284,8 +286,8 @@ _TEMPLATE = """<!doctype html>
     </div>
 
     <div class="meta">
-      Generated {now}. Inputs: WC 2022 group draw + R16 bracket +
-      pre-tournament Elo snapshot (2022-11-20). True winner: {winner}.
+      Generated {now}. {tournament_name} group draw + knockout bracket
+      + pre-tournament Elo snapshot. True winner: {winner}.
     </div>
   </div>
 </body>

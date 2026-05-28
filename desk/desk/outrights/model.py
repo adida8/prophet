@@ -55,10 +55,13 @@ PENS_ELO_SENSITIVITY: float = 0.00025
 PENS_TILT_CAP:        float = 0.10
 
 # How qualifying teams pass from the group stage into the knockout
-# bracket. WC 2026 takes top-2 of each group + the 8 best third-place
-# finishers (12 × 2 + 8 = 32 → R32). WC 2022 took only top-2 (8 × 2
-# = 16 → R16). Add a new value here when adding a tournament shape.
-QualifierStrategy = Literal["top2_plus_8_thirds", "top2"]
+# bracket:
+#   * `top2`                — top 2 of each group (WC 2022, Copa 2024)
+#   * `top2_plus_4_thirds`  — top 2 + 4 best 3rds (Euro 2024)
+#   * `top2_plus_8_thirds`  — top 2 + 8 best 3rds (WC 2026)
+# Add a new value here when adding a tournament shape with a different
+# qualifier rule.
+QualifierStrategy = Literal["top2", "top2_plus_4_thirds", "top2_plus_8_thirds"]
 
 
 @dataclass(frozen=True)
@@ -274,17 +277,18 @@ def _simulate_tournament(
         slots[f"{letter}1"] = group_winners[letter]
         slots[f"{letter}2"] = group_runners[letter]
 
-    if structure.qualifier_strategy == "top2_plus_8_thirds":
-        # Rank thirds best-first, take the top 8, then assign to
-        # constraint-bearing R32 slots via greedy matching.
+    if structure.qualifier_strategy in ("top2_plus_8_thirds", "top2_plus_4_thirds"):
+        # Rank thirds best-first, take the top N, then assign to
+        # constraint-bearing R32 / R16 slots via greedy matching.
         thirds_with_pts.sort(key=lambda x: (-x[1], -x[2]))
-        best_thirds = [(t, group) for (t, _, _, group) in thirds_with_pts[:8]]
+        n_thirds = 8 if structure.qualifier_strategy == "top2_plus_8_thirds" else 4
+        best_thirds = [(t, group) for (t, _, _, group) in thirds_with_pts[:n_thirds]]
         slots.update(_assign_constrained_thirds(
             best_thirds, structure.knockout_seeds,
         ))
         # Backward-compat: also expose the old "3RD-{n}" slot names
         # so any caller still referencing them keeps working. Today's
-        # WC26 bracket is fully on the new "3RD@..." scheme.
+        # bracket data is fully on the new "3RD@..." scheme.
         for i, (team, _) in enumerate(best_thirds, start=1):
             slots[f"3RD-{i}"] = team
     # `top2`: no extra slots needed.

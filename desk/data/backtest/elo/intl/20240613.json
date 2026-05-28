@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "asof":   "2024-06-13",
+    "source": "Approximated from World Football Elo Ratings (eloratings.net) snapshot circa 2024-06-13, the day before UEFA Euro 2024 kickoff. Frozen for backtest reproducibility.",
+    "note":   "Covers the 24-team Euro 2024 field. Replace with live Wikipedia revision pull when the elo loader's HTTP path is wired (TODO in historical/elo.py)."
+  },
+  "elo": {
+    "fra": 2046,
+    "eng": 2012,
+    "por": 1993,
+    "esp": 1981,
+    "ger": 1950,
+    "bel": 1936,
+    "ned": 1928,
+    "ita": 1920,
+    "cro": 1879,
+    "sui": 1864,
+    "den": 1841,
+    "aut": 1823,
+    "tur": 1814,
+    "ukr": 1797,
+    "hun": 1782,
+    "pol": 1775,
+    "srb": 1770,
+    "cze": 1768,
+    "svn": 1731,
+    "svk": 1722,
+    "rom": 1712,
+    "sco": 1700,
+    "alb": 1681,
+    "geo": 1623
+  }
+}
