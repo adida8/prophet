@@ -171,6 +171,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def apex_to_www_redirect(request, call_next):
+    # GoDaddy can't put a CNAME at the apex and its URL Forwarding strips
+    # the path. Once the apex A record points at Railway, every request
+    # lands here — bounce it to www with the path + query preserved so
+    # /ledger, /m/{id}, etc. don't get flattened to the homepage.
+    host = request.headers.get("host", "").lower().split(":")[0]
+    if host == "oddsprimer.com":
+        target = f"https://www.oddsprimer.com{request.url.path}"
+        if request.url.query:
+            target = f"{target}?{request.url.query}"
+        return RedirectResponse(url=target, status_code=301)
+    return await call_next(request)
+
+
 app.include_router(ledger_router)
 app.include_router(desk_router)
 # Activity signals (anon views + reactions). Mounted unconditionally —
