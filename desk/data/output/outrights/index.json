@@ -2,10 +2,10 @@
   "outrights": [
     {
       "outright_id": "fb-wc26-winner",
-      "verdict": "pass",
-      "candidate": null,
+      "verdict": "pick",
+      "candidate": "Argentina",
       "resolves_at": "2026-07-20T00:00:00Z"
     }
   ],
-  "updated_at": "2026-05-26T13:44:06.064716Z"
+  "updated_at": "2026-05-28T17:44:38.160318Z"
 }
