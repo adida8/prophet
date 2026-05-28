@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import logging
 import random
+import sys
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -26,6 +27,15 @@ from typing import Iterable, Optional
 from zoneinfo import ZoneInfo
 
 from .db import get_pool
+
+# `desk` is at `<repo>/desk/desk/`, normally invoked as a subprocess with
+# explicit PYTHONPATH=desk. The activity seeder imports
+# desk.sports.football.data.team_popularity from THIS process (FastAPI),
+# which doesn't have desk on sys.path on Railway — so the import fails
+# silently inside _safe_loop and the seeder has never run.
+_DESK_ROOT = Path(__file__).resolve().parent.parent / "desk"
+if _DESK_ROOT.is_dir() and str(_DESK_ROOT) not in sys.path:
+    sys.path.insert(0, str(_DESK_ROOT))
 
 log = logging.getLogger("activity.jobs")
 

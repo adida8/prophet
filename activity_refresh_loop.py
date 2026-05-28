@@ -66,7 +66,13 @@ async def run_activity_loop() -> None:
         return
     await asyncio.sleep(_INITIAL_DELAY_SEC)
 
-    seed_enabled = os.getenv("ACTIVITY_SEED_ENABLED", "1") == "1"
+    seed_raw = os.getenv("ACTIVITY_SEED_ENABLED", "1").strip().lower()
+    seed_enabled = seed_raw in {"1", "true", "yes", "on"}
+
+    log.info(
+        "activity loop: starting (seed_enabled=%s [%r], aggregate=%ds, seed=%ds, prune=%ds)",
+        seed_enabled, seed_raw, _AGGREGATE_INTERVAL_SEC, _SEED_INTERVAL_SEC, _PRUNE_INTERVAL_SEC,
+    )
 
     tasks = [
         asyncio.create_task(
@@ -84,6 +90,6 @@ async def run_activity_loop() -> None:
             name="activity:seed",
         ))
     else:
-        log.info("activity:seed disabled via ACTIVITY_SEED_ENABLED=0")
+        log.info("activity:seed disabled (ACTIVITY_SEED_ENABLED=%r)", seed_raw)
 
     await asyncio.gather(*tasks)
