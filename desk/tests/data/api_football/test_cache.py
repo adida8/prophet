@@ -92,6 +92,33 @@ def test_form_delta_upsert_overwrites(cache):
     assert fd.sample_size == 8
 
 
+def test_form_delta_carries_citation_provenance(cache):
+    """Per data-layer spec §3.5: every externally-derived datum carries
+    Citation (source_id, endpoint, fetched_at) + transform name."""
+    ts = datetime(2026, 5, 28, 12, tzinfo=timezone.utc)
+    cache.upsert_form_delta(
+        "fra", form_delta=0.4, sample_size=10,
+        source_endpoint="/fixtures?team=2&last=10",
+        source_fetched_at=ts,
+    )
+    fd = cache.form_delta_for_iso3("fra")
+    assert fd is not None
+    assert fd.source_id == "api_football"
+    assert fd.source_endpoint == "/fixtures?team=2&last=10"
+    assert fd.source_fetched_at == ts.isoformat()
+    assert fd.transform == "compute_form_delta"
+
+
+def test_form_delta_default_citation_fields_when_not_passed(cache):
+    """Old callers that don't pass citation kwargs still see populated
+    defaults — no migration needed."""
+    cache.upsert_form_delta("bra", form_delta=0.2, sample_size=5)
+    fd = cache.form_delta_for_iso3("bra")
+    assert fd.source_id == "api_football"
+    assert fd.transform == "compute_form_delta"
+    assert fd.source_endpoint == ""
+
+
 def test_points_property_on_fixture_result(cache):
     win = _fx(7, 1, hours_ago=1, goals_for=3, goals_against=0)
     draw = _fx(7, 2, hours_ago=1, goals_for=1, goals_against=1)

@@ -166,7 +166,36 @@ class ModelOutput:
 
 # ── Public entry point ──────────────────────────────────────────────────
 
-def compute(features: FootballFeatures) -> ModelOutput:
+def compute(
+    features: FootballFeatures,
+    *,
+    force_residual: bool | None = None,
+) -> ModelOutput:
+    """Compute the model's probability triplet + drivers + confidence band.
+
+    `force_residual` overrides the global `config.FORM_RANK_RESIDUAL_ENABLED`
+    flag for this single call. Used by the forward-validation harness to
+    produce a "with residual" Shadow prediction alongside the published
+    "without residual" prediction on the same tick. When `None`
+    (default), the global flag wins — preserving the live path's
+    behaviour byte-for-byte.
+
+    Thread safety: the override flips `config.FORM_RANK_RESIDUAL_ENABLED`
+    for the duration of the call. The desk runner is serial per fixture,
+    so this is fine in v1 — guard with a lock if concurrency arrives.
+    """
+    if force_residual is None:
+        return _compute_inner(features)
+
+    orig = config.FORM_RANK_RESIDUAL_ENABLED
+    config.FORM_RANK_RESIDUAL_ENABLED = bool(force_residual)
+    try:
+        return _compute_inner(features)
+    finally:
+        config.FORM_RANK_RESIDUAL_ENABLED = orig
+
+
+def _compute_inner(features: FootballFeatures) -> ModelOutput:
     drivers: list[Driver] = []
     elo_a, elo_b = _adjusted_elos(
         features,

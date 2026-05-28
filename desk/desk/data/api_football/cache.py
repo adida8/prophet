@@ -47,10 +47,18 @@ CREATE INDEX IF NOT EXISTS idx_fixture_results_team_played
     ON fixture_results(api_football_team_id, played_at DESC);
 
 CREATE TABLE IF NOT EXISTS form_deltas (
-    iso3         TEXT PRIMARY KEY,
-    form_delta   REAL NOT NULL,
-    sample_size  INTEGER NOT NULL,
-    computed_at  TEXT NOT NULL
+    iso3              TEXT PRIMARY KEY,
+    form_delta        REAL NOT NULL,
+    sample_size       INTEGER NOT NULL,
+    computed_at       TEXT NOT NULL,
+    -- Lineage / Citation per data-layer spec §3.5: every derived
+    -- feature carries the source(s) + transform it was computed from.
+    -- For form_delta: source is api-football's /fixtures endpoint for
+    -- this team_id; transform is `compute_form_delta`.
+    source_id         TEXT NOT NULL DEFAULT 'api_football',
+    source_endpoint   TEXT NOT NULL DEFAULT '',
+    source_fetched_at TEXT NOT NULL DEFAULT '',
+    transform         TEXT NOT NULL DEFAULT 'compute_form_delta'
 );
 
 CREATE TABLE IF NOT EXISTS api_fetches (
@@ -102,6 +110,13 @@ class FormDelta:
     form_delta:  float
     sample_size: int
     computed_at: str
+    # Citation / lineage — every externally-derived datum carries
+    # source provenance per data-layer spec §3.5. The transform is
+    # the function that computed the value from the source(s).
+    source_id:         str = "api_football"
+    source_endpoint:   str = ""
+    source_fetched_at: str = ""
+    transform:         str = "compute_form_delta"
 
 
 class APIFootballCache:
@@ -213,22 +228,37 @@ class APIFootballCache:
 
     def upsert_form_delta(
         self, iso3: str, form_delta: float, sample_size: int,
-        *, computed_at: datetime | None = None,
+        *,
+        computed_at:       datetime | None = None,
+        source_endpoint:   str = "",
+        source_fetched_at: datetime | str | None = None,
     ) -> None:
         ts = (computed_at or datetime.now(tz=timezone.utc)).isoformat()
+        fetched_at = source_fetched_at
+        if isinstance(fetched_at, datetime):
+            fetched_at = fetched_at.isoformat()
+        fetched_at = fetched_at or ""
         self._conn.execute(
-            "INSERT INTO form_deltas(iso3, form_delta, sample_size, computed_at) "
-            "VALUES (?, ?, ?, ?) "
+            "INSERT INTO form_deltas("
+            "  iso3, form_delta, sample_size, computed_at, "
+            "  source_id, source_endpoint, source_fetched_at, transform"
+            ") VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
             "ON CONFLICT(iso3) DO UPDATE SET "
             "  form_delta = excluded.form_delta, "
             "  sample_size = excluded.sample_size, "
-            "  computed_at = excluded.computed_at",
-            (iso3.lower(), form_delta, sample_size, ts),
+            "  computed_at = excluded.computed_at, "
+            "  source_endpoint = excluded.source_endpoint, "
+            "  source_fetched_at = excluded.source_fetched_at",
+            (
+                iso3.lower(), form_delta, sample_size, ts,
+                "api_football", source_endpoint, fetched_at, "compute_form_delta",
+            ),
         )
 
     def form_delta_for_iso3(self, iso3: str) -> FormDelta | None:
         row = self._conn.execute(
-            "SELECT iso3, form_delta, sample_size, computed_at "
+            "SELECT iso3, form_delta, sample_size, computed_at, "
+            "       source_id, source_endpoint, source_fetched_at, transform "
             "FROM form_deltas WHERE iso3 = ?",
             (iso3.lower(),),
         ).fetchone()
@@ -239,6 +269,10 @@ class APIFootballCache:
             form_delta=float(row["form_delta"]),
             sample_size=int(row["sample_size"]),
             computed_at=row["computed_at"],
+            source_id=row["source_id"] or "api_football",
+            source_endpoint=row["source_endpoint"] or "",
+            source_fetched_at=row["source_fetched_at"] or "",
+            transform=row["transform"] or "compute_form_delta",
         )
 
     # ── fetches log (so the loop can rate-limit on its own clock) ─

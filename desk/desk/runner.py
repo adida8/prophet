@@ -204,6 +204,24 @@ def run_once(
     if default_cache_path().exists():
         api_football_runtime = APIFootballRuntime()
 
+    # Forward-validation logger (Phase B.1 Shadow). Open once per run
+    # so per-fixture inserts don't re-open the sqlite file. The logger
+    # writes BOTH the published prediction (residual off, today's path)
+    # AND a shadow prediction (residual on, what would publish if the
+    # flag were flipped). Comparing Brier scores across the two
+    # columns at outcome resolution is what graduates the coupled unit
+    # Shadow → Live per data-layer spec §5.
+    from desk.verdict.forward_validation import (
+        ForwardValidationLog, PredictionRow, default_log_path as _fv_default_path,
+    )
+    forward_validation_log: ForwardValidationLog | None = None
+    if api_football_runtime is not None:
+        try:
+            forward_validation_log = ForwardValidationLog(_fv_default_path())
+        except Exception as e:                          # noqa: BLE001
+            log.warning("forward-validation log open failed: %s", e)
+            forward_validation_log = None
+
     for sport in active_sports():
         any_sport_ran = True
         # Snapshot the prior per-sport index BEFORE write_index overwrites
@@ -242,6 +260,15 @@ def run_once(
         if not pairs:
             written[sport.code] = []
             continue
+
+        # api-football coverage report (Phase 2 §3.3). Computed pre-
+        # publish so we get an early WARN when a competition's alias
+        # coverage falls below the floor. We don't BLOCK publication
+        # in v1 — fixtures with absent form_delta still ship (zero
+        # contribution per spec §3.6); but the warning is the
+        # discipline gate that drives onboarding work for new comps.
+        if api_football_runtime is not None and sport.code == "football":
+            _emit_coverage_warnings(api_football_runtime, pairs=pairs)
 
         matches: list[MatchOutput] = []
         paths: list[Path] = []
@@ -337,6 +364,20 @@ def run_once(
                 # canonical bytes go to disk + outbox; the receiver dedupes
                 # on (match_id, updated_at). No-op when push is disabled.
                 _try_enqueue(m, cfg=distribute_cfg, outbox=distribute_outbox)
+
+                # Forward-validation Shadow log. Dual prediction lives
+                # on `sport._last_model_outputs[match_id]`; runner reads
+                # + writes. Wrapped in try so a logger failure never
+                # blocks the publish.
+                if forward_validation_log is not None:
+                    try:
+                        _log_forward_validation(
+                            forward_validation_log,
+                            sport=sport, fx=fx, now=now,
+                        )
+                    except Exception as e:                  # noqa: BLE001
+                        log.warning("forward-validation log failed for %s: %s",
+                                    fx.match_id, e)
 
                 matches.append(m)
                 paths.append(path)
@@ -467,7 +508,102 @@ def run_once(
         except Exception as e:                          # noqa: BLE001
             log.warning("api-football runtime close failed: %s", e)
 
+    if forward_validation_log is not None:
+        try:
+            forward_validation_log.close()
+        except Exception as e:                          # noqa: BLE001
+            log.warning("forward-validation log close failed: %s", e)
+
     return written
+
+
+def _emit_coverage_warnings(runtime, *, pairs) -> None:
+    """Build a per-competition coverage report for the priced fixture
+    set and WARN when either floor isn't cleared. No-op when the cache
+    isn't open. Wrapped in try so a coverage failure never blocks the
+    publish."""
+    try:
+        cache = runtime._ensure()
+        if cache is None:
+            return
+        from desk.data.api_football.coverage import build_coverage_report
+        from desk.sports.football.teams import iso3_for_name
+
+        # Group fixtures by competition_code so each competition gets
+        # its own report — onboarding decisions are per-competition.
+        by_comp: dict[str, list[tuple[str, str, str]]] = {}
+        for fx, _snapshot in pairs:
+            iso_a = (iso3_for_name(fx.team_a) or "").lower()
+            iso_b = (iso3_for_name(fx.team_b) or "").lower()
+            by_comp.setdefault(fx.competition_code, []).append(
+                (fx.match_id, iso_a, iso_b)
+            )
+
+        for comp, triples in by_comp.items():
+            report = build_coverage_report(
+                cache=cache,
+                competition_code=comp,
+                priced_fixture_iso3_pairs=triples,
+            )
+            if report.fixtures_total == 0:
+                # Non-WC26 competition (clubs, friendlies); registry
+                # doesn't cover it, so no coverage to report.
+                continue
+            level = "info" if report.both_floors_cleared else "warning"
+            getattr(log, level)("%s", report.headline())
+            if not report.both_floors_cleared and report.teams_uncovered:
+                log.warning(
+                    "uncovered teams (first 10): %s",
+                    ", ".join(report.teams_uncovered[:10]),
+                )
+    except Exception as e:                                  # noqa: BLE001
+        log.warning("coverage report failed: %s", e)
+
+
+def _log_forward_validation(
+    log_handle, *, sport, fx, now: datetime,
+) -> None:
+    """Append one PredictionRow per fixture, only when residual data
+    actually changed the prediction. Reads dual outputs from
+    `sport._last_model_outputs[fx.match_id]`."""
+    import json
+
+    from desk.verdict.forward_validation import PredictionRow
+
+    outputs = getattr(sport, "_last_model_outputs", {}).get(fx.match_id)
+    features = getattr(sport, "_last_features", {}).get(fx.match_id)
+    if outputs is None or features is None:
+        return
+    published, shadow = outputs
+    # Skip when the residual didn't move anything — saves disk + keeps
+    # the table focused on rows where we actually have something to
+    # measure.
+    if (published.p_a == shadow.p_a
+            and published.p_draw == shadow.p_draw
+            and published.p_b == shadow.p_b):
+        return
+    feature_payload = {
+        "team_a_form_delta":  features.team_a_form_delta,
+        "team_b_form_delta":  features.team_b_form_delta,
+        "team_a_rank_residual": features.team_a_rank_residual,
+        "team_b_rank_residual": features.team_b_rank_residual,
+        "team_a_elo": features.team_a_elo,
+        "team_b_elo": features.team_b_elo,
+    }
+    asof_iso = now.replace(microsecond=0).isoformat()
+    log_handle.log_prediction(PredictionRow(
+        match_id=fx.match_id,
+        asof_iso=asof_iso,
+        phase="B.1.form",
+        p_a_without_residual=published.p_a,
+        p_draw_without_residual=published.p_draw,
+        p_b_without_residual=published.p_b,
+        p_a_with_residual=shadow.p_a,
+        p_draw_with_residual=shadow.p_draw,
+        p_b_with_residual=shadow.p_b,
+        feature_set=json.dumps(feature_payload, sort_keys=True),
+        logged_at=datetime.now(tz=timezone.utc).isoformat(),
+    ))
 
 
 def _open_distribute() -> tuple[DistributeConfig | None, Outbox | None]:

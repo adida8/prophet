@@ -342,6 +342,34 @@ def _cmd_fetch_rank_form(args: argparse.Namespace) -> int:
     return 0 if ok > 0 else 2
 
 
+def _cmd_rate_budget(args: argparse.Namespace) -> int:
+    """Print the api-football daily-call budget vs the Pro cap.
+
+    Walks the cadences declared in spec §3.6 + the refresh-loop
+    wire-up and prints a per-call-class breakdown. Closes data-layer
+    spec §4.1's instrumentation acceptance: "shown to fit inside
+    every source's cap with headroom for retries."
+    """
+    from desk.data.api_football.rate_budget import build_report
+
+    report = build_report(
+        fetch_ticks_per_day=max(1, args.ticks_per_day),
+        daily_cap=args.daily_cap,
+    )
+    print()
+    print(report.headline())
+    print()
+    print(f"  {'phase':18s} {'endpoint':38s} {'calls/day':>9s}  cadence")
+    print(f"  {'-'*18} {'-'*38} {'-'*9}  {'-'*40}")
+    for line in report.lines:
+        print(f"  {line.phase:18s} {line.endpoint:38s} "
+              f"{line.calls_per_day:>9d}  {line.cadence_desc}")
+    print()
+    print(f"  total                                                  "
+          f"{report.total_calls_per_day:>9d} / {report.daily_cap}")
+    return 0 if report.within_cap else 2
+
+
 def _cmd_verify_data_sources(args: argparse.Namespace) -> int:
     """Smoke-test the external data layer keys.
 
@@ -549,6 +577,16 @@ def build_parser() -> argparse.ArgumentParser:
     fr.add_argument("--iso3", action="append",
                     help="restrict to ISO3(s) (repeatable); default = WC26 registry")
     fr.set_defaults(func=_cmd_fetch_rank_form)
+
+    rb = sub.add_parser(
+        "rate-budget",
+        help="print api-football daily-call budget vs Pro cap (closes spec §4.1)",
+    )
+    rb.add_argument("--ticks-per-day", type=int, default=1,
+                    help="how many fetch ticks per 24h (default 1)")
+    rb.add_argument("--daily-cap", type=int, default=7500,
+                    help="api-football Pro cap (default 7500)")
+    rb.set_defaults(func=_cmd_rate_budget)
 
     # `desk signals <subcommand>` — nested subparser. `validate` is the
     # only entry for now; future ops (list, stats, …) plug in here.

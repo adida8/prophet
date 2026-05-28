@@ -28,6 +28,12 @@ from desk.data.api_football.cache import APIFootballCache
 from desk.data.api_football.client import APIFootballClient, APIFootballError
 from desk.data.api_football.fixtures import fetch_recent_fixtures
 from desk.data.api_football.form import compute_form_delta
+from desk.data.api_football.sanity import (
+    REASON_OK,
+    check_entity_match,
+    check_fixture,
+    check_form_delta_range,
+)
 from desk.data.api_football.teams import resolve_team_id
 from desk.data.api_football.wc26_registry import WC26_NATIONAL_REGISTRY
 
@@ -66,9 +72,27 @@ async def refresh_one(
             iso3, "fetch_failed", team_id=team_id, error=f"{e.kind}: {e}",
         )
 
-    # Persist whatever we got — even if the form computation later
-    # comes up short, the next run picks up where this left off.
-    cache.upsert_fixture_results(fixtures)
+    # Sanity-gate every fixture before it reaches the cache. Spec §3.7:
+    # fresh + cited + wrong is still wrong. Failures are logged loudly
+    # — they're a source-quality signal, not a routine miss.
+    sanitised: list = []
+    n_dropped = 0
+    for f in fixtures:
+        r = check_fixture(f)
+        if r != REASON_OK:
+            _LOG.warning("sanity-drop fixture %d (team %d, %s): %s",
+                         f.fixture_id, team_id, iso3, r)
+            n_dropped += 1
+            continue
+        r = check_entity_match(f, team_id)
+        if r != REASON_OK:
+            _LOG.warning("sanity-drop fixture %d (team %d, %s): %s",
+                         f.fixture_id, team_id, iso3, r)
+            n_dropped += 1
+            continue
+        sanitised.append(f)
+
+    cache.upsert_fixture_results(sanitised)
     cache.mark_fetch(f"/fixtures?team={team_id}&last=10", "ok")
 
     # 3. Compute form_delta from the cache (not the just-fetched list)
@@ -82,9 +106,24 @@ async def refresh_one(
                   "(need MIN_SAMPLE_SIZE)",
         )
     form_delta, sample_size = result
+
+    # Range-sanity on the derived value. Out-of-range = math bug or
+    # corrupt fixture set; absent the value rather than feed garbage.
+    range_check = check_form_delta_range(form_delta)
+    if range_check != REASON_OK:
+        _LOG.warning("sanity-drop form_delta=%.3f for %s (%d): %s",
+                     form_delta, iso3, team_id, range_check)
+        return RefreshOutcome(
+            iso3, "no_form_data", team_id=team_id,
+            error=f"failed_sanity: form_delta={form_delta:.3f} outside plausible range",
+        )
+
+    now = datetime.now(tz=timezone.utc)
     cache.upsert_form_delta(
         iso3, form_delta, sample_size,
-        computed_at=datetime.now(tz=timezone.utc),
+        computed_at=now,
+        source_endpoint=f"/fixtures?team={team_id}&last=10",
+        source_fetched_at=now,
     )
 
     status = "resolved_then_ok" if resolution.status == "resolved" else "ok"

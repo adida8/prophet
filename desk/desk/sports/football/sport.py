@@ -32,7 +32,7 @@ from desk.sports.football.hard_signals import (
     HardSignalAdjustment,
     apply_hard_signals,
 )
-from desk.sports.football.model import compute as compute_model
+from desk.sports.football.model import FootballFeatures, compute as compute_model
 from desk.sports.football.priced import list_priced_fixtures_with_stats
 from desk.sports.football.signals_glue import tags_for as _football_signals_tags
 from desk.verdict.compare import MarketSnapshot
@@ -44,10 +44,11 @@ log = logging.getLogger("desk.sports.football")
 def _market_url_for_fixture(fx: FixtureRef) -> str | None:
     """Build the venue-side deep link from the source slug.
 
-    Polymarket events resolve at `https://polymarket.com/event/{slug}`,
-    where `slug` is e.g. `fifwc-fra-mex-2026-06-12`. We strip the
-    optional `-more-markets` suffix Polymarket sometimes appends, then
-    front it with the canonical event URL.
+    Polymarket WC 2026 match events resolve at
+    `https://polymarket.com/sports/fifa-world-cup/{slug}` (slug e.g.
+    `fifwc-fra-mex-2026-06-12`). Other events still live under
+    `/event/{slug}`. We strip the optional `-more-markets` suffix
+    Polymarket sometimes appends, then front it with the right path.
 
     Returns None when we can't construct a clean URL — caller decides
     whether that downgrades a Pick to a Pass (see decide()).
@@ -58,6 +59,8 @@ def _market_url_for_fixture(fx: FixtureRef) -> str | None:
     if slug.endswith("-more-markets"):
         slug = slug[: -len("-more-markets")]
     if (fx.source_venue or "").lower() == "polymarket":
+        if slug.startswith("fifwc-"):
+            return f"https://polymarket.com/sports/fifa-world-cup/{slug}"
         return f"https://polymarket.com/event/{slug}"
     # Kalshi (and future venues) plug in here when their slug + URL
     # pattern is known. Until then we don't fabricate a URL.
@@ -91,6 +94,18 @@ class FootballSport:
         # cite them in copy. None when no adjustments — keep distinct
         # from "no signals applied" (= []) vs "this is a stale list".
         self._last_hard_signal_adjustments: list[HardSignalAdjustment] = []
+        # Forward-validation side channel — Phase B.1 Shadow. For each
+        # fixture in the most recent run, holds (published_output,
+        # shadow_output) where published_output is the model run with
+        # config.FORM_RANK_RESIDUAL_ENABLED's actual value, and
+        # shadow_output is the same features run with the flag forced
+        # ON. The runner reads this dict to dual-log into the
+        # forward_validation sqlite. Empty dict on fresh init.
+        self._last_model_outputs: dict[str, tuple] = {}
+        # Stash the features per fixture too — useful for the
+        # forward-validation feature_set payload (Brier comparison
+        # at scoring time needs to know which features were active).
+        self._last_features: dict[str, FootballFeatures] = {}
 
     def market_outcomes(self) -> tuple[MarketSide, ...]:
         return MARKET_OUTCOMES_3WAY
@@ -123,6 +138,8 @@ class FootballSport:
         )
         self._last_decisions = []
         self._last_hard_signal_adjustments = []
+        self._last_model_outputs = {}
+        self._last_features = {}
         return pairs
 
     def last_ingest_stats(self) -> IngestStats | None:
@@ -209,6 +226,21 @@ class FootballSport:
                             fx.match_id, e)
 
         out = compute_model(features)
+
+        # Forward-validation Shadow path — produce a second prediction
+        # with the residual forced ON, for offline Brier comparison
+        # against the published one. Only meaningful when at least one
+        # form_delta value is populated; otherwise the two outputs are
+        # identical and the runner skips the log row.
+        has_form = (features.team_a_form_delta is not None
+                    or features.team_b_form_delta is not None)
+        if has_form:
+            shadow_out = compute_model(features, force_residual=True)
+        else:
+            shadow_out = out
+        self._last_model_outputs[fx.match_id] = (out, shadow_out)
+        self._last_features[fx.match_id] = features
+
         market_url = _market_url_for_fixture(fx)
         verdict, meta = decide_verdict(
             model_p={"a": out.p_a, "draw": out.p_draw, "b": out.p_b},
