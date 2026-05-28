@@ -225,101 +225,119 @@ async def seed_match_activity(
 
     async with pool.acquire() as conn:
         for fx in fixtures:
-            mid = fx["match_id"]
-            ko = fx["kickoff_utc"]
-            days_to_ko = (ko - now).total_seconds() / 86400
+            mid = fx.get("match_id", "?")
+            try:
+                # Per-fixture try/except — before this guard, a single
+                # bad fixture (SQL error, missing field) bubbled out of
+                # the for-loop and killed the entire seed cycle. Then
+                # _safe_loop slept 8 minutes before the next attempt, so
+                # most matches went unseeded.
+                ko = fx["kickoff_utc"]
+                days_to_ko = (ko - now).total_seconds() / 86400
 
-            stage = _stage_for(days_to_ko)
-            if stage is None:
-                continue  # post-kickoff window not yet defined
-            views_range, votes_range = stage
+                stage = _stage_for(days_to_ko)
+                if stage is None:
+                    continue  # post-kickoff window not yet defined
+                views_range, votes_range = stage
 
-            # Skip + decay if real engagement crossed the threshold.
-            disabled = await conn.fetchval(
-                "SELECT seed_disabled FROM match_aggregates WHERE match_id = $1", mid,
-            )
-            if disabled:
-                continue
+                # Skip + decay if real engagement crossed the threshold.
+                disabled = await conn.fetchval(
+                    "SELECT seed_disabled FROM match_aggregates WHERE match_id = $1", mid,
+                )
+                if disabled:
+                    continue
 
-            real_views = await conn.fetchval(
-                "SELECT count(DISTINCT anon_id) FROM match_views "
-                "WHERE match_id = $1 AND seeded = false "
-                "AND viewed_at > now() - interval '1 day'",
-                mid,
-            ) or 0
-            real_votes = await conn.fetchval(
-                "SELECT count(*) FROM match_reactions "
-                "WHERE match_id = $1 AND seeded = false",
-                mid,
-            ) or 0
-            if real_views >= _AUTO_DECAY_REAL_VIEWS and real_votes >= _AUTO_DECAY_REAL_VOTES:
-                await conn.execute(
-                    "INSERT INTO match_aggregates (match_id, seed_disabled, refreshed_at) "
-                    "VALUES ($1, true, now()) "
-                    "ON CONFLICT (match_id) DO UPDATE SET seed_disabled = true",
+                real_views = await conn.fetchval(
+                    "SELECT count(DISTINCT anon_id) FROM match_views "
+                    "WHERE match_id = $1 AND seeded = false "
+                    "AND viewed_at > now() - interval '1 day'",
                     mid,
+                ) or 0
+                real_votes = await conn.fetchval(
+                    "SELECT count(*) FROM match_reactions "
+                    "WHERE match_id = $1 AND seeded = false",
+                    mid,
+                ) or 0
+                if real_views >= _AUTO_DECAY_REAL_VIEWS and real_votes >= _AUTO_DECAY_REAL_VOTES:
+                    await conn.execute(
+                        "INSERT INTO match_aggregates (match_id, seed_disabled, refreshed_at) "
+                        "VALUES ($1, true, now()) "
+                        "ON CONFLICT (match_id) DO UPDATE SET seed_disabled = true",
+                        mid,
+                    )
+                    decay_set += 1
+                    continue
+
+                mult = match_popularity_multiplier(fx["team_a"], fx["team_b"])
+
+                # ── views: maintain a daily rate ────────────────────────
+                view_target_day = min(
+                    int(random.uniform(*views_range) * mult),
+                    _HARD_CAP_VIEWS_DAY,
                 )
-                decay_set += 1
+                current_seeded_24h = await conn.fetchval(
+                    "SELECT count(*) FROM match_views "
+                    "WHERE match_id = $1 AND seeded = true "
+                    "AND viewed_at > now() - interval '1 day'",
+                    mid,
+                ) or 0
+                # Per-tick budget, modulated by TOD weight. The +1 noise
+                # floor keeps quiet hours from going to zero.
+                this_tick_views = max(
+                    0,
+                    int(round(view_target_day / _TICKS_PER_DAY * tod_weight + random.random())),
+                )
+                this_tick_views = min(this_tick_views, view_target_day - current_seeded_24h)
+
+                for _ in range(max(0, this_tick_views)):
+                    jitter_secs = int(random.uniform(0, 240))
+                    # Multiplication with an interval literal — the
+                    # version-agnostic form. `$N || ' seconds'` can throw
+                    # under some PG coercion rules.
+                    await conn.execute(
+                        "INSERT INTO match_views "
+                        "(match_id, anon_id, ip_hash, seeded, viewed_at) "
+                        "VALUES ($1, $2, $3, true, now() - ($4 * interval '1 second'))",
+                        mid, f"seed:{uuid.uuid4()}", "seed", jitter_secs,
+                    )
+                    views_inserted += 1
+
+                # ── votes: ramp toward lifetime target ──────────────────
+                vote_target_lifetime = min(
+                    int(random.uniform(*votes_range) * mult),
+                    _HARD_CAP_VOTES_LIFETIME,
+                )
+                current_seeded_votes = await conn.fetchval(
+                    "SELECT count(*) FROM match_reactions "
+                    "WHERE match_id = $1 AND seeded = true",
+                    mid,
+                ) or 0
+                gap = vote_target_lifetime - current_seeded_votes
+                if gap <= 0:
+                    continue
+                # Ramp over ~24h of ticks (180), at least 1/tick.
+                this_tick_votes = min(gap, max(1, gap // 60))
+
+                dist = _REACTION_DISTRIBUTION.get(
+                    fx["verdict_state"], _REACTION_DISTRIBUTION["pass"]
+                )
+                for _ in range(this_tick_votes):
+                    reaction = _weighted_reaction(dist)
+                    await conn.execute(
+                        "INSERT INTO match_reactions "
+                        "(match_id, anon_id, reaction, seeded, voted_at) "
+                        "VALUES ($1, $2, $3, true, now())",
+                        mid, f"seed:{uuid.uuid4()}", reaction,
+                    )
+                    votes_inserted += 1
+            except Exception:  # noqa: BLE001
+                log.exception("activity seed: skipping %s", mid)
                 continue
 
-            mult = match_popularity_multiplier(fx["team_a"], fx["team_b"])
-
-            # ── views: maintain a daily rate ────────────────────────────
-            view_target_day = min(
-                int(random.uniform(*views_range) * mult),
-                _HARD_CAP_VIEWS_DAY,
-            )
-            current_seeded_24h = await conn.fetchval(
-                "SELECT count(*) FROM match_views "
-                "WHERE match_id = $1 AND seeded = true "
-                "AND viewed_at > now() - interval '1 day'",
-                mid,
-            ) or 0
-            # Per-tick budget, modulated by TOD weight. The +1 noise floor
-            # keeps quiet hours from going to zero.
-            this_tick_views = max(
-                0,
-                int(round(view_target_day / _TICKS_PER_DAY * tod_weight + random.random())),
-            )
-            this_tick_views = min(this_tick_views, view_target_day - current_seeded_24h)
-
-            for _ in range(max(0, this_tick_views)):
-                jitter_secs = int(random.uniform(0, 240))  # in the last 4 minutes
-                await conn.execute(
-                    "INSERT INTO match_views "
-                    "(match_id, anon_id, ip_hash, seeded, viewed_at) "
-                    "VALUES ($1, $2, $3, true, now() - ($4 || ' seconds')::interval)",
-                    mid, f"seed:{uuid.uuid4()}", "seed", jitter_secs,
-                )
-                views_inserted += 1
-
-            # ── votes: ramp toward lifetime target ──────────────────────
-            vote_target_lifetime = min(
-                int(random.uniform(*votes_range) * mult),
-                _HARD_CAP_VOTES_LIFETIME,
-            )
-            current_seeded_votes = await conn.fetchval(
-                "SELECT count(*) FROM match_reactions "
-                "WHERE match_id = $1 AND seeded = true",
-                mid,
-            ) or 0
-            gap = vote_target_lifetime - current_seeded_votes
-            if gap <= 0:
-                continue
-            # Spread the ramp over ~24h of ticks (180), at least 1/tick.
-            this_tick_votes = min(gap, max(1, gap // 60))
-
-            dist = _REACTION_DISTRIBUTION.get(fx["verdict_state"], _REACTION_DISTRIBUTION["pass"])
-            for _ in range(this_tick_votes):
-                reaction = _weighted_reaction(dist)
-                await conn.execute(
-                    "INSERT INTO match_reactions "
-                    "(match_id, anon_id, reaction, seeded, voted_at) "
-                    "VALUES ($1, $2, $3, true, now())",
-                    mid, f"seed:{uuid.uuid4()}", reaction,
-                )
-                votes_inserted += 1
-
+    log.info(
+        "activity seed: matches=%d views_inserted=%d votes_inserted=%d decay=%d",
+        len(fixtures), views_inserted, votes_inserted, decay_set,
+    )
     return {
         "matches_seen": len(fixtures),
         "views_inserted": views_inserted,
