@@ -67,6 +67,10 @@ RANK_WEIGHT: float = 10.0
 # §4.B.1 the threshold is ≥ 15 Elo to either side.
 RESIDUAL_DRIVER_THRESHOLD_ELO: float = 15.0
 
+# Same threshold for Phase B.3 — a small injury list doesn't earn a
+# driver line; only a meaningful penalty does.
+INJURY_DRIVER_THRESHOLD_ELO: float = 15.0
+
 
 # ── Phase A.1 bootstrap parameters (THE_DESK_OPTIMIZATION_SPEC §3) ─────
 #
@@ -140,6 +144,12 @@ class FootballFeatures:
     team_a_rank_residual: Optional[float] = None
     team_b_rank_residual: Optional[float] = None
 
+    # Phase B.3 — bounded per-team injury Elo penalty (positive
+    # magnitude; subtracted from base Elo when the hook is on).
+    # None = absent → zero contribution.
+    team_a_injury_elo_penalty: Optional[float] = None
+    team_b_injury_elo_penalty: Optional[float] = None
+
 
 @dataclass(frozen=True)
 class ModelOutput:
@@ -169,30 +179,37 @@ class ModelOutput:
 def compute(
     features: FootballFeatures,
     *,
-    force_residual: bool | None = None,
+    force_residual:        bool | None = None,
+    force_injury_penalty:  bool | None = None,
 ) -> ModelOutput:
     """Compute the model's probability triplet + drivers + confidence band.
 
-    `force_residual` overrides the global `config.FORM_RANK_RESIDUAL_ENABLED`
-    flag for this single call. Used by the forward-validation harness to
-    produce a "with residual" Shadow prediction alongside the published
-    "without residual" prediction on the same tick. When `None`
-    (default), the global flag wins — preserving the live path's
-    behaviour byte-for-byte.
+    `force_residual` and `force_injury_penalty` override the global
+    `config.FORM_RANK_RESIDUAL_ENABLED` / `INJURY_PENALTY_ENABLED`
+    flags for this single call. Used by the forward-validation
+    harness to produce "with everything on" Shadow predictions
+    alongside the published prediction. When both are `None` (default),
+    the global flags win — preserving the live path's behaviour
+    byte-for-byte.
 
-    Thread safety: the override flips `config.FORM_RANK_RESIDUAL_ENABLED`
-    for the duration of the call. The desk runner is serial per fixture,
-    so this is fine in v1 — guard with a lock if concurrency arrives.
+    Thread safety: overrides flip module-level config flags for the
+    duration of the call. The desk runner is serial per fixture, so
+    this is fine in v1 — guard with a lock if concurrency arrives.
     """
-    if force_residual is None:
+    if force_residual is None and force_injury_penalty is None:
         return _compute_inner(features)
 
-    orig = config.FORM_RANK_RESIDUAL_ENABLED
-    config.FORM_RANK_RESIDUAL_ENABLED = bool(force_residual)
+    orig_residual = config.FORM_RANK_RESIDUAL_ENABLED
+    orig_injury   = config.INJURY_PENALTY_ENABLED
+    if force_residual is not None:
+        config.FORM_RANK_RESIDUAL_ENABLED = bool(force_residual)
+    if force_injury_penalty is not None:
+        config.INJURY_PENALTY_ENABLED = bool(force_injury_penalty)
     try:
         return _compute_inner(features)
     finally:
-        config.FORM_RANK_RESIDUAL_ENABLED = orig
+        config.FORM_RANK_RESIDUAL_ENABLED = orig_residual
+        config.INJURY_PENALTY_ENABLED = orig_injury
 
 
 def _compute_inner(features: FootballFeatures) -> ModelOutput:
@@ -261,6 +278,24 @@ def _adjusted_elos(
                 form_a=form_a, form_b=form_b,
                 rank_a=rank_a, rank_b=rank_b,
                 record_drivers=record_drivers,
+            )
+
+    # Phase B.3 — bounded injury penalty. Off by default; absent fields
+    # contribute zero. Applied after form residual + before venue
+    # bonuses (so home/altitude still fire on the injury-corrected
+    # prior). Penalty values are positive magnitudes; we subtract.
+    if config.INJURY_PENALTY_ENABLED:
+        pen_a = features.team_a_injury_elo_penalty or 0.0
+        pen_b = features.team_b_injury_elo_penalty or 0.0
+        elo_a -= pen_a
+        elo_b -= pen_b
+        if record_drivers is not None and pen_a >= INJURY_DRIVER_THRESHOLD_ELO:
+            record_drivers.append(
+                Driver(f"{features.team_a_name} injuries", -pen_a, "b"),
+            )
+        if record_drivers is not None and pen_b >= INJURY_DRIVER_THRESHOLD_ELO:
+            record_drivers.append(
+                Driver(f"{features.team_b_name} injuries", -pen_b, "a"),
             )
 
     if features.is_international:
@@ -365,6 +400,14 @@ def _seed_for_features(features: FootballFeatures) -> int:
     )
     if any(r is not None for r in residuals):
         parts.extend(str(r) for r in residuals)
+    # Phase B.3 injury-penalty fields, same append-only-when-populated
+    # rule so all-None fixtures keep their pre-B.3 seed.
+    penalties = (
+        features.team_a_injury_elo_penalty,
+        features.team_b_injury_elo_penalty,
+    )
+    if any(p is not None for p in penalties):
+        parts.extend(str(p) for p in penalties)
     key = "|".join(parts)
     digest = hashlib.md5(key.encode("utf-8")).digest()
     return int.from_bytes(digest[:8], "big")

@@ -342,6 +342,109 @@ def _cmd_fetch_rank_form(args: argparse.Namespace) -> int:
     return 0 if ok > 0 else 2
 
 
+def _cmd_b3_audit(args: argparse.Namespace) -> int:
+    """Run the Phase B.3 source audit against api-football.
+
+    Probes a fixed set of cached team_ids, hits /injuries for each,
+    measures coverage_rate + has_position_rate + has_type_rate per
+    spec §5 Phase 4. Operator reads the headline to decide whether
+    to flip DESK_INJURY_FETCH=1.
+
+    Spends ~N api-football calls (N = number of probed teams). Default
+    probes 8 teams ≈ 8 calls, well within the daily Pro cap.
+    """
+    import asyncio
+
+    from desk import config
+    from desk.data.api_football import APIFootballCache
+    from desk.data.api_football.client import APIFootballClient
+    from desk.data.api_football.injuries import run_source_audit
+    from desk.data.api_football.runtime import default_cache_path
+
+    if not config.API_FOOTBALL_KEY:
+        print("API_FOOTBALL_KEY not set", file=sys.stderr)
+        return 2
+
+    db_path = Path(args.af_db) if args.af_db else default_cache_path()
+    if not db_path.exists():
+        print(f"api-football cache not found at {db_path}", file=sys.stderr)
+        return 2
+
+    iso3s = args.iso3 or ["fra", "bra", "mex", "eng", "esp", "arg", "ger", "ita"]
+
+    async def _run():
+        async with APIFootballClient(config.API_FOOTBALL_KEY) as client:
+            with APIFootballCache(db_path) as cache:
+                team_ids: list[int] = []
+                for iso3 in iso3s:
+                    tid = cache.team_id_for_iso3(iso3)
+                    if tid is None:
+                        print(f"  skip {iso3}: not in team_resolution cache",
+                              file=sys.stderr)
+                        continue
+                    team_ids.append(tid)
+                if not team_ids:
+                    print("no probed teams resolved", file=sys.stderr)
+                    return None
+                return await run_source_audit(
+                    team_ids, season=args.season, client=client,
+                )
+
+    audit = asyncio.run(_run())
+    if audit is None:
+        return 2
+    print()
+    print(audit.headline())
+    print(f"  probed team_ids: {list(audit.probed_team_ids)}")
+    print(f"  rows seen:       {audit.rows_total}")
+    return 0 if audit.passes else 1
+
+
+def _cmd_fetch_injuries(args: argparse.Namespace) -> int:
+    """Refresh api-football injuries cache + recompute per-team Elo
+    penalty. Mirror of `desk fetch-rank-form` shape — same auth /
+    abort discipline, same writes to the api-football sqlite."""
+    import asyncio
+
+    from desk import config
+    from desk.data.api_football import APIFootballCache
+    from desk.data.api_football.client import APIFootballClient
+    from desk.data.api_football.injuries_refresh import refresh_injuries_all
+    from desk.data.api_football.runtime import default_cache_path
+
+    if not config.API_FOOTBALL_KEY:
+        print("API_FOOTBALL_KEY not set", file=sys.stderr)
+        return 2
+
+    db_path = Path(args.db) if args.db else default_cache_path()
+
+    async def _run():
+        async with APIFootballClient(config.API_FOOTBALL_KEY) as client:
+            with APIFootballCache(db_path) as cache:
+                return await refresh_injuries_all(
+                    season=args.season, client=client, cache=cache,
+                    iso3s=args.iso3 or None,
+                )
+
+    outcomes = asyncio.run(_run())
+    by_status: dict[str, int] = {}
+    for o in outcomes:
+        by_status[o.status] = by_status.get(o.status, 0) + 1
+        if o.error:
+            print(f"  {o.iso3:5s}  {o.status:14s}  err={o.error}")
+        else:
+            print(f"  {o.iso3:5s}  {o.status:14s}  "
+                  f"team_id={o.team_id}  n={o.n_players}  "
+                  f"penalty={o.elo_penalty:.1f}")
+    print()
+    for status, n in sorted(by_status.items()):
+        print(f"  {status:14s}  {n}")
+    print()
+    print(f"  total: {len(outcomes)}  (db: {db_path})")
+    n_ok = by_status.get("ok", 0)
+    return 0 if n_ok > 0 else 2
+
+
 def _cmd_fetch_elo(args: argparse.Namespace) -> int:
     """Refresh live Elo values (national + club) into the cache.
 
@@ -785,6 +888,27 @@ def build_parser() -> argparse.ArgumentParser:
     rb.add_argument("--daily-cap", type=int, default=7500,
                     help="api-football Pro cap (default 7500)")
     rb.set_defaults(func=_cmd_rate_budget)
+
+    ba = sub.add_parser(
+        "b3-audit",
+        help="source-audit api-football /injuries before flipping DESK_INJURY_FETCH (spec §5)",
+    )
+    ba.add_argument("--af-db", help="override api-football cache path")
+    ba.add_argument("--season", type=int, default=2026,
+                    help="season year (default 2026)")
+    ba.add_argument("--iso3", action="append",
+                    help="probe team(s) by iso3 (repeatable); default = top 8 sides")
+    ba.set_defaults(func=_cmd_b3_audit)
+
+    fi = sub.add_parser(
+        "fetch-injuries",
+        help="refresh api-football /injuries cache + per-team Elo penalty (Phase B.3 data side)",
+    )
+    fi.add_argument("--db", help="override api-football cache path")
+    fi.add_argument("--season", type=int, default=2026, help="season year (default 2026)")
+    fi.add_argument("--iso3", action="append",
+                    help="restrict to ISO3(s) (repeatable); default = WC26 registry")
+    fi.set_defaults(func=_cmd_fetch_injuries)
 
     fe = sub.add_parser(
         "fetch-elo",

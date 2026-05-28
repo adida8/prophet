@@ -295,6 +295,15 @@ def _tick() -> None:
                  cwd=DESK_DIR, timeout=300,
                  label="desk fetch-rank-form", extra_env=sub_env)
 
+    # Phase B.3 data side — refresh api-football /injuries cache +
+    # per-team Elo penalty. Off by default; flips on once the operator
+    # runs `desk b3-audit` and confirms api-football's coverage.
+    if (os.getenv("DESK_INJURY_FETCH", "0") == "1"
+            and os.getenv("API_FOOTBALL_KEY")):
+        _run([py, "-m", "desk", "fetch-injuries"],
+             cwd=DESK_DIR, timeout=300,
+             label="desk fetch-injuries", extra_env=sub_env)
+
     # Phase 1b data side — refresh live Elo (eloratings.net + clubelo).
     # Free providers; no vendor key required. Gated so a fresh deploy
     # doesn't start fetching until the operator opts in.

@@ -37,11 +37,12 @@ from desk.sports.football.teams import is_international_competition
 
 
 class _FormSource(Protocol):
-    """Minimal read interface — anything that can look up form_delta
-    for a national ISO3. `APIFootballRuntime` satisfies this without
-    being imported (decouples the features-builder from the data
-    layer's concrete deps)."""
+    """Minimal read interface — anything that can look up form_delta +
+    injury_penalty for a national ISO3. `APIFootballRuntime` satisfies
+    this without being imported (decouples the features-builder from
+    the data layer's concrete deps)."""
     def form_delta_for_iso3(self, iso3: str) -> float | None: ...
+    def injury_penalty_for_iso3(self, iso3: str) -> float | None: ...
 
 
 class _EloSource(Protocol):
@@ -180,11 +181,21 @@ def build_features(
     # api-football doesn't expose FIFA world rank directly without
     # the FIFA-ranking-only paid plan, so we defer that to a follow-up.
     a_form = b_form = None
+    a_inj = b_inj = None
     if international and form_source is not None:
+        # `injury_penalty_for_iso3` is a Phase-B.3 addition; older
+        # form_source implementations (and test doubles that predate
+        # B.3) may not expose it. Tolerate that — absent = zero
+        # contribution per spec §3.6.
+        get_inj = getattr(form_source, "injury_penalty_for_iso3", None)
         if a_iso:
             a_form = form_source.form_delta_for_iso3(a_iso)
+            if get_inj is not None:
+                a_inj = get_inj(a_iso)
         if b_iso:
             b_form = form_source.form_delta_for_iso3(b_iso)
+            if get_inj is not None:
+                b_inj = get_inj(b_iso)
 
     return FootballFeatures(
         team_a_name=fx.team_a, team_b_name=fx.team_b,
@@ -202,4 +213,6 @@ def build_features(
         team_b_elo_source=b_src,
         team_a_form_delta=a_form,
         team_b_form_delta=b_form,
+        team_a_injury_elo_penalty=a_inj,
+        team_b_injury_elo_penalty=b_inj,
     )

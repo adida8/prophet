@@ -66,6 +66,32 @@ CREATE TABLE IF NOT EXISTS api_fetches (
     last_fetched TEXT NOT NULL,
     last_status  TEXT NOT NULL
 );
+
+-- Phase B.3 injuries — one row per (team, player). Delete-then-insert
+-- per team per fetch so an absent player on refresh = recovered.
+CREATE TABLE IF NOT EXISTS injuries (
+    api_football_team_id  INTEGER NOT NULL,
+    player_id             INTEGER NOT NULL,
+    player_name           TEXT    NOT NULL,
+    type                  TEXT    NOT NULL,
+    reason                TEXT    NOT NULL,
+    position              TEXT,
+    fetched_at            TEXT    NOT NULL,
+    PRIMARY KEY (api_football_team_id, player_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_injuries_team
+    ON injuries(api_football_team_id);
+
+-- Derived per-team total Elo penalty for the hot path.
+CREATE TABLE IF NOT EXISTS injury_penalties (
+    iso3            TEXT PRIMARY KEY,
+    elo_penalty     REAL NOT NULL,
+    n_players       INTEGER NOT NULL,
+    computed_at     TEXT NOT NULL,
+    source_endpoint TEXT NOT NULL DEFAULT '',
+    transform       TEXT NOT NULL DEFAULT 'compute_injury_penalty'
+);
 """
 
 
@@ -102,6 +128,27 @@ class FixtureResult:
         if self.team_goals == self.opponent_goals:
             return 1
         return 0
+
+
+@dataclass(frozen=True)
+class InjuryRow:
+    api_football_team_id: int
+    player_id:            int
+    player_name:          str
+    type:                 str
+    reason:               str
+    position:             str | None
+    fetched_at:           str
+
+
+@dataclass(frozen=True)
+class InjuryPenalty:
+    iso3:            str
+    elo_penalty:     float
+    n_players:       int
+    computed_at:     str
+    source_endpoint: str
+    transform:       str
 
 
 @dataclass(frozen=True)
@@ -297,3 +344,86 @@ class APIFootballCache:
         if not row:
             return None
         return datetime.fromisoformat(row["last_fetched"]), row["last_status"]
+
+    # ── B.3 injuries ──────────────────────────────────────────────
+
+    def replace_injuries_for_team(
+        self,
+        api_football_team_id: int,
+        rows: list[InjuryRow],
+    ) -> int:
+        """Delete-then-insert all rows for a team. Empty `rows` means
+        the team has no current injuries (every previous row is
+        wiped — players have recovered)."""
+        self._conn.execute(
+            "DELETE FROM injuries WHERE api_football_team_id = ?",
+            (api_football_team_id,),
+        )
+        for r in rows:
+            self._conn.execute(
+                "INSERT INTO injuries("
+                "  api_football_team_id, player_id, player_name, type, reason, "
+                "  position, fetched_at"
+                ") VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (
+                    r.api_football_team_id, r.player_id, r.player_name,
+                    r.type, r.reason, r.position, r.fetched_at,
+                ),
+            )
+        return len(rows)
+
+    def injuries_for_team(
+        self, api_football_team_id: int,
+    ) -> list[InjuryRow]:
+        rows = self._conn.execute(
+            "SELECT api_football_team_id, player_id, player_name, type, "
+            "       reason, position, fetched_at "
+            "FROM injuries WHERE api_football_team_id = ? "
+            "ORDER BY player_id",
+            (api_football_team_id,),
+        ).fetchall()
+        return [InjuryRow(
+            api_football_team_id=int(r["api_football_team_id"]),
+            player_id=int(r["player_id"]),
+            player_name=r["player_name"], type=r["type"],
+            reason=r["reason"], position=r["position"],
+            fetched_at=r["fetched_at"],
+        ) for r in rows]
+
+    def upsert_injury_penalty(
+        self, iso3: str, elo_penalty: float, n_players: int,
+        *, computed_at: datetime | None = None,
+        source_endpoint: str = "",
+    ) -> None:
+        ts = (computed_at or datetime.now(tz=timezone.utc)).isoformat()
+        self._conn.execute(
+            "INSERT INTO injury_penalties("
+            "  iso3, elo_penalty, n_players, computed_at, "
+            "  source_endpoint, transform"
+            ") VALUES (?, ?, ?, ?, ?, ?) "
+            "ON CONFLICT(iso3) DO UPDATE SET "
+            "  elo_penalty = excluded.elo_penalty, "
+            "  n_players = excluded.n_players, "
+            "  computed_at = excluded.computed_at, "
+            "  source_endpoint = excluded.source_endpoint",
+            (iso3.lower(), elo_penalty, n_players, ts,
+             source_endpoint, "compute_injury_penalty"),
+        )
+
+    def injury_penalty_for_iso3(self, iso3: str) -> InjuryPenalty | None:
+        row = self._conn.execute(
+            "SELECT iso3, elo_penalty, n_players, computed_at, "
+            "       source_endpoint, transform "
+            "FROM injury_penalties WHERE iso3 = ?",
+            (iso3.lower(),),
+        ).fetchone()
+        if not row:
+            return None
+        return InjuryPenalty(
+            iso3=row["iso3"],
+            elo_penalty=float(row["elo_penalty"]),
+            n_players=int(row["n_players"]),
+            computed_at=row["computed_at"],
+            source_endpoint=row["source_endpoint"] or "",
+            transform=row["transform"] or "compute_injury_penalty",
+        )

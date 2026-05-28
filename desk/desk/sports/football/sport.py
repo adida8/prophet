@@ -233,14 +233,19 @@ class FootballSport:
         out = compute_model(features)
 
         # Forward-validation Shadow path — produce a second prediction
-        # with the residual forced ON, for offline Brier comparison
-        # against the published one. Only meaningful when at least one
-        # form_delta value is populated; otherwise the two outputs are
-        # identical and the runner skips the log row.
-        has_form = (features.team_a_form_delta is not None
-                    or features.team_b_form_delta is not None)
-        if has_form:
-            shadow_out = compute_model(features, force_residual=True)
+        # with B.1 form residual AND B.3 injury penalty forced ON.
+        # Captures the combined "all-hooks-on" Brier alongside the
+        # published path so the §1.4 gate can score either lever.
+        has_form    = (features.team_a_form_delta is not None
+                       or features.team_b_form_delta is not None)
+        has_injury  = (features.team_a_injury_elo_penalty is not None
+                       or features.team_b_injury_elo_penalty is not None)
+        if has_form or has_injury:
+            shadow_out = compute_model(
+                features,
+                force_residual=True if has_form else None,
+                force_injury_penalty=True if has_injury else None,
+            )
         else:
             shadow_out = out
         self._last_model_outputs[fx.match_id] = (out, shadow_out)

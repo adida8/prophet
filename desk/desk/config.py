@@ -68,3 +68,11 @@ COMPETITION_ALLOWLIST: frozenset[str] | None = _parse_competitions(
 # real values. Flip to 1 once the coupled unit clears forward-validation
 # per THE_DESK_OPTIMIZATION_SPEC §4.B.1.
 FORM_RANK_RESIDUAL_ENABLED: bool = os.getenv("DESK_FORM_RANK_RESIDUAL", "0") == "1"
+
+# ── Phase B.3 — injury Elo penalty ──────────────────────────────────
+# Off by default. Data side (`desk fetch-injuries`) fills the cache;
+# the flag only controls whether the published verdict reflects the
+# bounded per-team penalty. Stays off until the operator-run source
+# audit (`desk b3-audit`) clears + a forward-validation report shows
+# no Brier regression.
+INJURY_PENALTY_ENABLED: bool = os.getenv("DESK_INJURY_PENALTY", "0") == "1"

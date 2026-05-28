@@ -60,6 +60,20 @@ class APIFootballRuntime:
         row = cache.form_delta_for_iso3(iso3)
         return row.form_delta if row else None
 
+    def injury_penalty_for_iso3(self, iso3: str) -> float | None:
+        """Cached injury Elo penalty for a national side.
+
+        Returns a POSITIVE magnitude (Elo); the model hook subtracts
+        it. None = not computed yet → zero contribution per spec §3.6.
+        """
+        if not iso3:
+            return None
+        cache = self._ensure()
+        if cache is None:
+            return None
+        row = cache.injury_penalty_for_iso3(iso3)
+        return row.elo_penalty if row else None
+
     def close(self) -> None:
         if self._cache is not None:
             self._cache.close()
