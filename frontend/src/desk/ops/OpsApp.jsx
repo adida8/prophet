@@ -12,18 +12,22 @@ import { useCallback, useEffect, useState } from "react";
 import "../../ledger/op-tokens.css";
 import "./ops.css";
 
-import OpsMain  from "./OpsMain";
-import OpsAdmin from "./OpsAdmin";
+import OpsMain   from "./OpsMain";
+import OpsAdmin  from "./OpsAdmin";
+import OpsSocial from "./OpsSocial";
 
 const NAV_ITEMS = [
-  { id: "main",  label: "The Desk",   path: "/desk/ops" },
-  { id: "admin", label: "Desk admin", path: "/desk/ops/admin" },
+  { id: "main",   label: "The Desk",   path: "/desk/ops"        },
+  { id: "social", label: "Social",     path: "/desk/ops/social" },
+  { id: "admin",  label: "Desk admin", path: "/desk/ops/admin"  },
 ];
 
 function readView() {
   const p = (typeof window !== "undefined" ? window.location.pathname : "/desk/ops")
     .replace(/\/+$/, "");
-  return p === "/desk/ops/admin" ? "admin" : "main";
+  if (p === "/desk/ops/admin")  return "admin";
+  if (p === "/desk/ops/social") return "social";
+  return "main";
 }
 
 export default function OpsApp() {
@@ -63,7 +67,9 @@ export default function OpsApp() {
       </aside>
 
       <main className="ops__main">
-        {view === "admin" ? <OpsAdmin /> : <OpsMain />}
+        {view === "admin"  && <OpsAdmin />}
+        {view === "social" && <OpsSocial />}
+        {view === "main"   && <OpsMain />}
       </main>
     </div>
   );

@@ -22,6 +22,7 @@ Build specs live alongside the code:
 - `THE_DESK_OUTRIGHTS_SPEC.md` — outright winner build spec; v0.2 supersedes earlier drafts. Note: v0.2 wants outrights folded through the position-list waist, but **the parallel-pipeline implementation in `desk/outrights/` shipped first** — it predates the waist refactor and runs live on Polymarket today.
 - `THE_DESK_DATA_LAYER_SPEC.md` — data layer spec; Phase 1b (live Elo from eloratings.net / clubelo.com) is the credibility-load-bearing piece the match-Pick page needs before its Picks become real signals
 - `THE_DESK_NEWS_SIGNALS_SPEC.md` — news & editorial signals spec (v0.1 draft). PRs A–F **all shipped** as of 2026-05-21 — sport-agnostic source registry + resolver, RSS fetcher + cache, Haiku extractor, editorial track → `copy.editorial_citations`, GDELT aggregator path, hard-track Elo adjustments. Live on Railway behind `DESK_SIGNALS_FETCH=1` + `DESK_SIGNALS_EXTRACT=1` (needs `ANTHROPIC_API_KEY`).
+- `THE_DESK_SOCIAL_SPEC.md` — social automation spec (v0.1, 2026-05-28). **Phase 1 (PRs S1–S6) shipped 2026-05-28** — sqlite draft queue at `desk/desk/social/`, stub renderer (4 solid-colour 1080×1350 PNGs), selector (daily highest-conviction Pick + weekly roundup), IG + X caption templates with voice-rule + social banned-phrase enforcement + outlet-attribution lockstep, FastAPI router at `/api/desk/social/*` (re-uses `/desk/ops` Basic-auth gate), React approval view at `/desk/ops/social`, bundle download (PNGs + caption .txt files + meta.json) + Mark-as-posted hand-off, daily hook in `desk_refresh_loop.py` + new `social_weekly_cron.py` for the Sunday roundup. Gated on `DESK_SOCIAL_ENABLED=1` + the existing `DESK_OPS_USER` / `DESK_OPS_PASS`. **Phase 2** (S7 IG Graph API + S8 X v2 auto-post) outstanding — waits on Meta verification + X Basic subscription. Real slide renderer (replacing `StubRenderer`) is a separate workstream tracked by `THE_DESK_SOCIAL_RENDERER_SPEC.md`.
 - `ACTIVITY_SIGNALS_SPEC.md` — v1.0.1, locked. Anonymous views + four-way reactions on every match card. Schema in Railway Postgres (`migrations/20260527_activity_signals.sql`), FastAPI router at `/api/activity/*`, three background jobs in `activity_refresh_loop.py` (aggregator 60s / seeder 8 min / prune daily), vanilla-JS island at `site/public/js/activity.js`. Live on staging; prod awaits Postgres provisioning + `DATABASE_URL` wiring.
 - `desk/VOICE.md` — **canonical editorial voice for all Desk-generated copy** (V1: dry wit with a spine; 120–180-word blurbs, every blurb has a point + is sourced, never invent a citation). PR 5's Haiku blurb-writer prompt MUST point here. Hard "never" rules are enforced in `desk/desk/explainer/voice.py`; brand-level prose lives in `Odds Primer Design System/README.md`.
 - `STATUS.md` — overnight-run briefing (refreshed when an autonomous run lands work; check it in the morning)
@@ -259,6 +260,10 @@ python -m desk fetch-elo                      # Phase 1b — live Elo (elorating
 python -m desk b3-audit                       # Phase B.3 source audit (BEFORE flipping DESK_INJURY_FETCH)
 python -m desk fetch-injuries                 # Phase B.3 — per-team injuries + bounded Elo penalty
 python -m desk schedule --once                # PR 6 — single refresh-loop tick (cron-friendly)
+
+# Social automation (Phase 1; needs DESK_SOCIAL_ENABLED=1 to actually draft)
+python -m desk social draft-daily             # pick today's best Pick → render → caption → queue
+python -m desk social draft-weekly            # build Sunday roundup → render → caption → queue
 ```
 
 ### Layout
@@ -474,6 +479,15 @@ Override via `DESK_PICK_PP` / `DESK_PASS_PP` / `DESK_AVOID_PP` in `.env`.
 | `DESK_DISTRIBUTE_MAX_BYTES` | `60000` | Pre-send body-size guard. Contract bounds put worst-case JSON at ~32KB; the guard exists to fail loudly on contract drift before a 413 round-trip. |
 | `DESK_DISTRIBUTE_TICK_SEC` | `30` | Drain-loop cadence (project-root async task). |
 | `DESK_API_BEARER_TOKEN` | unset | Token for the bearer-gated external GET at `/api/desk/external/match/{match_id}` (single-match safety-net read for MTA). Shape `dtk_<32-byte URL-safe>`. **Without it the route 404s** — server.py omits the mount entirely so unconfigured deploys don't acknowledge the surface. |
+| `DESK_SOCIAL_ENABLED` | `0` | Master switch for social automation. Set to `1` to enable the selector + scheduler hooks (`desk_refresh_loop.py` fires `desk social draft-daily` per tick; `social_weekly_cron.py` fires `desk social draft-weekly` on the configured schedule). Approval API mounts regardless — when `0` it just sees an empty queue. |
+| `DESK_SOCIAL_DB_PATH` | unset → `desk/data/social.db` | Override the social-queue sqlite path. **Set on Railway** to a mounted volume so the draft queue + edit history survives deploys. |
+| `DESK_SOCIAL_ASSETS_DIR` | unset → `desk/data/social_assets` | Override the carousel PNG output dir. **Set on Railway** to a mounted volume so rendered slides survive deploys; without it, an approved draft's bundle would 500 on redeploy. |
+| `DESK_SOCIAL_MIN_EDGE_PP` | `2.0` | Selector skip threshold. Picks below this `edge_pp` don't get drafted. |
+| `DESK_SOCIAL_WEEKLY_DAY` | `sunday` | Weekday for the roundup cron (case-insensitive). |
+| `DESK_SOCIAL_WEEKLY_AT` | `09:00` | UTC time-of-day for the roundup cron (HH:MM). |
+| `DESK_SOCIAL_PUBLISH_MODE` | `manual` | `manual` (Phase 1; operator posts by hand + uses Mark-as-posted) or `api` (Phase 2; auto-posts via IG Graph + X v2). `api` mode requires all six `IG_*` / `X_*` creds to be set together — `load_config()` fails loud at boot otherwise. |
+| `IG_ACCESS_TOKEN` / `IG_BUSINESS_ACCOUNT_ID` | unset | Phase 2 only — Meta Graph API long-lived access token + the `@oddsprimer` IG Business account id. Required when `DESK_SOCIAL_PUBLISH_MODE=api`. |
+| `X_API_KEY` / `X_API_SECRET` / `X_ACCESS_TOKEN` / `X_ACCESS_SECRET` | unset | Phase 2 only — X API v2 OAuth 1.0a credentials. Required when `DESK_SOCIAL_PUBLISH_MODE=api`. |
 
 ### Output contract (what the website consumes)
 

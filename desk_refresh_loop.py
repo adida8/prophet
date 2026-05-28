@@ -321,6 +321,14 @@ def _tick() -> None:
              cwd=DESK_DIR, timeout=300,
              label="desk fv-ingest-outcomes", extra_env=sub_env)
 
+    # Social — draft today's daily Pick into the approval queue.
+    # No network calls (Phase 1 publish is manual), so safe to run
+    # whenever enabled. Selector returns None when nothing qualifies.
+    if os.getenv("DESK_SOCIAL_ENABLED", "0") == "1":
+        _run([py, "-m", "desk", "social", "draft-daily"],
+             cwd=DESK_DIR, timeout=180,
+             label="desk social draft-daily", extra_env=sub_env)
+
     # Persist this tick's cost summary so the dashboard can show it.
     # Linking by `run_id` lets the dashboard join one row of the run
     # history table with one row of tick-totals. When matches failed

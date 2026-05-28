@@ -28,6 +28,7 @@ import config
 from core.logger import get_portfolio_summary
 from desk_api import external_router as desk_external_router, router as desk_router
 from desk_ops_api import router as desk_ops_router
+from desk_social_api import router as desk_social_router
 from ledger import db as ledger_db
 from ledger.router import router as ledger_router
 from signup_api import router as signup_router
@@ -198,6 +199,10 @@ app.include_router(activity_router)
 # `app.get("/", ...)` etc.) so `/api/desk/ops/*` resolves to the API
 # adapter, not the React shell. Disabled-by-default — see desk_ops_api.
 app.include_router(desk_ops_router)
+# Social-automation queue lives under the same Basic-auth gate as
+# /api/desk/ops/* (the router imports `_gate` from desk_ops_api).
+# When DESK_OPS_USER / DESK_OPS_PASS are unset every route returns 404.
+app.include_router(desk_social_router)
 # External (bearer-gated) GET endpoint for the MTA refresh-button path.
 # Only mounted when DESK_API_BEARER_TOKEN is set; without it the route
 # 404s rather than 401s, so an unconfigured deploy doesn't even

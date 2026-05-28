@@ -795,6 +795,81 @@ def _cmd_verify_data_sources(args: argparse.Namespace) -> int:
     return rc
 
 
+def _cmd_social_draft_daily(args: argparse.Namespace) -> int:
+    """Run the daily social-draft path.
+
+    Reads published MatchOutputs off disk, picks the highest-conviction
+    Pick, renders 4 stub PNGs, writes captions, persists a `Draft`. No
+    network calls — the operator approves manually before any post
+    leaves the queue.
+    """
+    from desk.social import SocialQueue, load_config
+
+    try:
+        cfg = load_config()
+    except ValueError as e:
+        print(f"social: {e}", file=sys.stderr)
+        return 2
+
+    if not cfg.enabled:
+        print("social: DESK_SOCIAL_ENABLED=0 — skipping")
+        return 0
+
+    from desk.publish import Publisher
+    from desk.social.runner import draft_daily
+
+    pub_root = Path(args.output_dir) if args.output_dir else config.OUTPUT_DIR
+    pub = Publisher(output_dir=pub_root)
+
+    with SocialQueue(cfg.db_path) as queue:
+        draft = draft_daily(
+            queue=queue,
+            assets_dir=cfg.assets_dir,
+            publisher=pub,
+            min_edge_pp=cfg.min_edge_pp,
+        )
+    if draft is None:
+        print("social: nothing qualifies today")
+        return 0
+    print(f"social: drafted {draft.draft_id} (kind={draft.kind.value}, "
+          f"match={draft.match_id})")
+    return 0
+
+
+def _cmd_social_draft_weekly(args: argparse.Namespace) -> int:
+    """Run the weekly social-draft path."""
+    from desk.social import SocialQueue, load_config
+    from desk.social.runner import draft_weekly, stub_outcome_lookup
+
+    try:
+        cfg = load_config()
+    except ValueError as e:
+        print(f"social: {e}", file=sys.stderr)
+        return 2
+
+    if not cfg.enabled:
+        print("social: DESK_SOCIAL_ENABLED=0 — skipping")
+        return 0
+
+    from desk.publish import Publisher
+
+    pub_root = Path(args.output_dir) if args.output_dir else config.OUTPUT_DIR
+    pub = Publisher(output_dir=pub_root)
+
+    with SocialQueue(cfg.db_path) as queue:
+        draft = draft_weekly(
+            queue=queue,
+            assets_dir=cfg.assets_dir,
+            outcome_lookup=stub_outcome_lookup,
+            publisher=pub,
+        )
+    if draft is None:
+        print("social: no roundup drafted (window already covered or no Picks)")
+        return 0
+    print(f"social: drafted {draft.draft_id} (week_starting={draft.week_starting})")
+    return 0
+
+
 def _cmd_backtest(args: argparse.Namespace) -> int:
     """Run the historical backtest harness.
 
@@ -1008,6 +1083,16 @@ def build_parser() -> argparse.ArgumentParser:
     sv.add_argument("--resolve",
                     help="comma-separated tags; report how many sources match")
     sv.set_defaults(func=_cmd_signals_validate)
+
+    # `desk social <subcommand>` — daily / weekly drafters.
+    so = sub.add_parser("social", help="social automation drafters")
+    so_sub = so.add_subparsers(dest="social_cmd", required=True)
+    so_d = so_sub.add_parser("draft-daily",
+                              help="pick today's best Pick + render + caption + enqueue")
+    so_d.set_defaults(func=_cmd_social_draft_daily)
+    so_w = so_sub.add_parser("draft-weekly",
+                              help="build the weekly roundup + enqueue")
+    so_w.set_defaults(func=_cmd_social_draft_weekly)
 
     bt = sub.add_parser("backtest", help="run the historical backtest harness")
     bt.add_argument("--tournament", action="append",
