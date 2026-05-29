@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" data-palette="warm-editorial">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outright winners — standings table (mockup) · Odds Primer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAF7F0; --paper-pure:#FFFFFF; --paper-warm:#F0ECE2; --paper-deep:#E8E2D2;
+  --ink:#0E2240; --ink-soft:#2A3957; --graphite:#3A3F47; --graphite-soft:#6B7079;
+  --rule:#D9D2C0; --rule-soft:#EDE7D6;
+  --flame:#D9461C; --flame-deep:#A8341A; --flame-tint:#F7E4DA;
+  --venue-polymarket:#2A6FDB;
+  --font-sans:'Inter Tight',system-ui,sans-serif;
+  --font-serif:'Source Serif 4',Georgia,serif;
+  --font-mono:'JetBrains Mono','SF Mono',Menlo,monospace;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-sans);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+::selection{background:var(--flame-tint);color:var(--ink);}
+
+/* ---- masthead-lite ---- */
+.masthead{border-bottom:1px solid var(--ink);background:var(--paper);}
+.masthead-inner{max-width:1120px;margin:0 auto;padding:14px clamp(16px,4vw,40px);
+  display:flex;align-items:baseline;justify-content:space-between;gap:16px;}
+.wordmark{font-family:var(--font-sans);font-weight:700;font-size:20px;letter-spacing:-.01em;color:var(--ink);}
+.wordmark .glyph{color:var(--flame);}
+.edition{font-family:var(--font-serif);font-style:italic;font-size:13px;color:var(--graphite-soft);}
+
+/* ---- page shell ---- */
+.page{max-width:1120px;margin:0 auto;padding:clamp(20px,4vw,40px) clamp(16px,4vw,40px) 80px;}
+.crumb{font-size:13px;color:var(--graphite-soft);text-decoration:none;letter-spacing:.02em;}
+.crumb:hover{color:var(--flame-deep);}
+.crumb .arr{margin-right:5px;}
+h1{font-family:var(--font-serif);font-weight:600;font-size:clamp(2rem,3.5vw,3rem);
+  line-height:1.12;letter-spacing:-.005em;margin:10px 0 0;}
+.standfirst{font-family:var(--font-serif);font-style:italic;color:var(--ink-soft);
+  font-size:16px;margin:12px 0 0;max-width:60ch;}
+.standfirst strong{color:var(--flame-deep);font-style:normal;font-weight:600;}
+
+/* ---- context bar: meta only (no selector) ---- */
+.contextbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 20px;
+  margin-top:22px;padding-bottom:13px;border-bottom:1px solid var(--rule);}
+.meta{font-family:var(--font-sans);font-size:12.5px;color:var(--graphite-soft);
+  display:flex;flex-wrap:wrap;gap:4px 14px;}
+.meta b{color:var(--ink-soft);font-weight:600;}
+
+/* ---- the table ---- */
+.tablewrap{margin-top:18px;border:1px solid var(--rule);border-radius:8px;
+  background:var(--paper-pure);overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table.standings{border-collapse:collapse;width:100%;font-size:14px;}
+.standings thead th{position:sticky;top:0;background:var(--paper-warm);z-index:2;
+  font-family:var(--font-sans);font-weight:600;font-size:10.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--graphite-soft);text-align:right;
+  padding:11px 10px;border-bottom:1px solid var(--rule);white-space:nowrap;}
+.standings thead th.grp{text-align:left;border-bottom:1px solid var(--rule);
+  font-size:10px;color:var(--graphite);background:var(--paper-deep);padding:6px 10px;}
+
+.col-verdict{width:104px;text-align:center !important;}
+.col-team{text-align:left !important;min-width:178px;}
+.col-stat{width:46px;}
+.col-desk{width:74px;}
+
+/* Team is the pinned identity column; it stays put when the stat block scrolls. */
+.standings .c-team{position:sticky;left:0;background:var(--paper-pure);z-index:1;box-shadow:1px 0 0 var(--rule);}
+.standings thead .c-team{z-index:3;background:var(--paper-warm);}
+.standings .c-verdict{text-align:center;}
+
+.standings tbody tr{cursor:pointer;transition:background .12s;}
+.standings tbody tr:hover{background:var(--flame-tint);}
+.standings tbody tr:hover .c-team{background:var(--flame-tint);}
+.standings tbody td{padding:11px 10px;border-bottom:1px solid var(--rule-soft);
+  text-align:right;vertical-align:middle;white-space:nowrap;}
+.standings tbody tr:last-child td{border-bottom:0;}
+
+.team{display:flex;align-items:center;gap:10px;text-align:left;}
+.team .rank{font-family:var(--font-mono);font-size:12px;color:var(--graphite-soft);
+  width:18px;text-align:right;flex:0 0 auto;}
+.team .flag{width:22px;height:16px;border-radius:2px;flex:0 0 auto;
+  background:var(--paper-deep);display:inline-block;font-size:11px;line-height:16px;text-align:center;}
+.team .name{font-family:var(--font-sans);font-weight:600;font-size:14.5px;color:var(--ink);}
+.stat{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+.stat.muted{color:var(--rule);}
+.stat.pts{font-weight:600;color:var(--ink);}
+.num{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+.num.model{color:var(--ink);font-weight:600;}
+.edge{font-family:var(--font-mono);font-size:13px;font-weight:600;}
+.edge.pos{color:var(--flame-deep);}
+.edge.neg{color:var(--graphite-soft);}
+
+/* verdict chip */
+.chip{display:inline-block;font-family:var(--font-sans);font-weight:600;font-size:11px;
+  letter-spacing:.04em;text-transform:uppercase;padding:4px 11px;border-radius:999px;
+  border:1px solid transparent;}
+.chip.pick{background:var(--flame);color:#fff;}
+.chip.pass{background:transparent;color:var(--graphite-soft);border-color:var(--rule);}
+.chip.avoid{background:transparent;color:var(--ink);border-color:var(--ink);}
+.chip .side{opacity:.8;font-weight:500;margin-left:3px;}
+
+/* footnote / legend */
+.legend{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px 24px;
+  font-family:var(--font-sans);font-size:12px;color:var(--graphite-soft);}
+.legend b{color:var(--ink-soft);font-weight:600;}
+.note{margin-top:14px;font-family:var(--font-serif);font-style:italic;font-size:13.5px;
+  color:var(--graphite);max-width:64ch;line-height:1.5;}
+.note .dag{color:var(--flame);font-style:italic;}
+
+.designnote{margin-top:40px;padding:18px 20px;background:var(--paper-warm);
+  border-left:3px solid var(--ink);border-radius:0 6px 6px 0;max-width:72ch;}
+.designnote h3{font-family:var(--font-sans);font-size:13px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;margin:0 0 8px;color:var(--ink);}
+.designnote p{font-family:var(--font-serif);font-size:14px;line-height:1.55;color:var(--ink-soft);margin:0 0 8px;}
+.designnote code{font-family:var(--font-mono);font-size:12.5px;background:var(--paper-deep);padding:1px 5px;border-radius:3px;}
+
+/* ============================================================
+   MOBILE — show only Verdict · Team · P · Pts · Model.
+   Verdict stays the lead column. Everything else hides; no
+   horizontal scroll needed at this width.
+   ============================================================ */
+@media (max-width:640px){
+  h1{font-size:1.9rem;}
+  .standings thead tr.groups{display:none;}            /* drop the grouped header on mobile */
+  .standings .hide-mobile{display:none !important;}
+  .col-team{min-width:120px;}
+  .col-verdict{width:84px;}
+  .team .rank{display:none;}
+  .team .name{font-size:13px;}
+  .standings tbody td,.standings thead th{padding:11px 7px;}
+  .chip{padding:4px 9px;font-size:10px;}
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <span class="wordmark">Odds Primer<span class="glyph"> ▍</span></span>
+    <span class="edition">World Cup 2026 — the issue</span>
+  </div>
+</header>
+
+<main class="page">
+  <a class="crumb" href="/"><span class="arr">←</span> Home</a>
+  <h1 id="ttl">Outright winners</h1>
+  <p class="standfirst" id="stand"></p>
+
+  <div class="contextbar">
+    <div class="meta" id="meta"></div>
+  </div>
+
+  <div class="tablewrap">
+    <table class="standings" id="tbl">
+      <thead>
+        <tr class="groups">
+          <th class="grp c-team">Team</th>
+          <th class="grp"></th>
+          <th class="grp" colspan="8" id="g-form">Group stage</th>
+          <th class="grp" colspan="3">The Desk</th>
+        </tr>
+        <tr>
+          <th class="col-team c-team">Team</th>
+          <th class="col-verdict c-verdict">Verdict</th>
+          <th class="col-stat" title="Played">P</th>
+          <th class="col-stat hide-mobile" title="Won">W</th>
+          <th class="col-stat hide-mobile" title="Drawn">D</th>
+          <th class="col-stat hide-mobile" title="Lost">L</th>
+          <th class="col-stat hide-mobile" title="Goals for">GF</th>
+          <th class="col-stat hide-mobile" title="Goals against">GA</th>
+          <th class="col-stat hide-mobile" title="Goal difference">GD</th>
+          <th class="col-stat" title="Points">Pts</th>
+          <th class="col-desk" title="Model probability to win the market">Model</th>
+          <th class="col-desk hide-mobile" title="Market-implied probability">Market</th>
+          <th class="col-desk hide-mobile" title="Model minus market, percentage points">Edge</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <div class="legend">
+    <span><b>Model</b> the Desk's simulated probability</span>
+    <span><b>Market</b> price-implied probability (de-vigged)</span>
+    <span><b>Edge</b> model − market, in points</span>
+    <span><span class="chip pick" style="padding:2px 9px">Pick</span> edge clears +3.0pp</span>
+    <span><span class="chip pass" style="padding:2px 9px">Pass</span> no decisive gap</span>
+  </div>
+
+  <p class="note" id="note"></p>
+
+  <div class="designnote">
+    <h3>Why this layout reuses for leagues</h3>
+    <p>One component, one column contract: <code>Team · Verdict · [stat columns] · Model · Market · Edge</code>. The stat block is data-driven — for a tournament-winner market before kick-off it renders <code>—</code>; for a league it fills with <code>P W D L GF GA GD Pts</code> straight from the standings feed. No structural change, just a different data source.</p>
+    <p>Team leads as the pinned identity column with Verdict right beside it. Rows sort by Model probability on winner markets and by Points on league tables, and each row links to <code>/outrights/{team}</code> for the full case. On mobile the table collapses to <b>Team · Verdict · P · Pts · Model</b> — the things a phone reader actually scans.</p>
+  </div>
+</main>
+
+<script>
+// ---- real WC26 winner data (desk/data/output/outrights/fb-wc26-winner.json) ----
+const WC = [
+  ["Argentina","🇦🇷",0.1878,0.0845,10.33,"pick","YES"],
+  ["France","🇫🇷",0.1529,0.1665,-1.36,"pass",null],
+  ["Spain","🇪🇸",0.1261,0.1695,-4.34,"pass",null],
+  ["Brazil","🇧🇷",0.0886,0.0935,-0.49,"pass",null],
+  ["Germany","🇩🇪",0.0842,0.0515,3.27,"pass",null],
+  ["England","🏴",0.0756,0.1115,-3.59,"pass",null],
+  ["Portugal","🇵🇹",0.0573,0.1015,-4.42,"pass",null],
+  ["Netherlands","🇳🇱",0.0507,0.0375,1.32,"pass",null],
+  ["Croatia","🇭🇷",0.0229,0.0085,1.44,"pass",null],
+  ["Uruguay","🇺🇾",0.0195,0.0105,0.90,"pass",null],
+  ["Colombia","🇨🇴",0.0187,0.0175,0.12,"pass",null],
+  ["Belgium","🇧🇪",0.0177,0.0175,0.02,"pass",null],
+  ["Switzerland","🇨🇭",0.0113,0.0125,-0.12,"pass",null],
+  ["Morocco","🇲🇦",0.0106,0.0145,-0.39,"pass",null],
+  ["Ecuador","🇪🇨",0.0087,0.0085,0.02,"pass",null],
+  ["Mexico","🇲🇽",0.0086,0.0105,-0.19,"pass",null],
+  ["Czechia","🇨🇿",0.0081,0.0025,0.56,"pass",null],
+  ["Japan","🇯🇵",0.0071,0.0185,-1.14,"pass",null],
+  ["USA","🇺🇸",0.0067,0.0115,-0.48,"pass",null],
+  ["Korea Republic","🇰🇷",0.0050,0.0025,0.25,"pass",null],
+  ["Senegal","🇸🇳",0.0050,0.0065,-0.15,"pass",null],
+  ["Türkiye","🇹🇷",0.0045,0.0075,-0.30,"pass",null],
+  ["IR Iran","🇮🇷",0.0042,0.0015,0.27,"pass",null],
+  ["Norway","🇳🇴",0.0040,0.0285,-2.45,"pass",null],
+  ["Austria","🇦🇹",0.0026,0.0055,-0.29,"pass",null],
+  ["Côte d'Ivoire","🇨🇮",0.0016,0.0025,-0.09,"pass",null],
+  ["Algeria","🇩🇿",0.0015,0.0015,0.00,"pass",null],
+  ["Paraguay","🇵🇾",0.0014,0.0025,-0.11,"pass",null],
+];
+
+// ---- illustrative Premier League title race (demo data, not live) ----
+// [team, flag, P, W, D, L, GF, GA, model_p, market_p, edge_pp, verdict, side]
+const EPL = [
+  ["Liverpool","🔴",29,22,4,3,71,28,0.412,0.355,5.70,"pick","YES"],
+  ["Arsenal","⚪",29,20,6,3,62,26,0.301,0.330,-2.90,"pass",null],
+  ["Manchester City","🩵",29,19,5,5,68,34,0.214,0.235,-2.10,"pass",null],
+  ["Chelsea","🔵",29,15,8,6,55,38,0.041,0.045,-0.40,"pass",null],
+  ["Newcastle Utd","⚫",29,14,7,8,49,40,0.018,0.020,-0.20,"pass",null],
+  ["Aston Villa","🟣",29,13,7,9,46,42,0.008,0.009,-0.10,"pass",null],
+  ["Tottenham","⚪",29,13,5,11,52,45,0.004,0.004,0.00,"pass",null],
+  ["Brighton","🔵",29,11,9,9,44,41,0.002,0.002,0.00,"pass",null],
+];
+
+function pct(x){return (x*100).toFixed(1)+"%";}
+function slug(name){return name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");}
+function chipHTML(verdict,side){
+  return verdict==="pick"
+    ? `<span class="chip pick">Pick<span class="side">${side}</span></span>`
+    : verdict==="avoid"
+    ? `<span class="chip avoid">Avoid</span>`
+    : `<span class="chip pass">Pass</span>`;
+}
+function deskCells(model,market,edge){
+  const ec = edge>=0?"pos":"neg";
+  const es = (edge>=0?"+":"")+edge.toFixed(1);
+  return `<td class="num model">${pct(model)}</td>`+
+         `<td class="num hide-mobile">${pct(market)}</td>`+
+         `<td class="edge hide-mobile ${ec}">${es}</td>`;
+}
+function statCells(mode,r){
+  if(mode==="wc"){
+    // 7 muted cells (P..GD) + a muted Pts
+    return '<td class="stat muted">—</td>'+
+           '<td class="stat muted hide-mobile">—</td>'.repeat(6)+
+           '<td class="stat muted pts">—</td>';
+  }
+  const [, ,P,W,D,L,GF,GA]=r; const GD=GF-GA, Pts=W*3+D;
+  return `<td class="stat">${P}</td>`+
+    `<td class="stat hide-mobile">${W}</td><td class="stat hide-mobile">${D}</td>`+
+    `<td class="stat hide-mobile">${L}</td><td class="stat hide-mobile">${GF}</td>`+
+    `<td class="stat hide-mobile">${GA}</td><td class="stat hide-mobile">${GD>=0?"+"+GD:GD}</td>`+
+    `<td class="stat pts">${Pts}</td>`;
+}
+function rowHTML(r,i,mode){
+  let model,market,edge,verdict,side,team,flag;
+  if(mode==="wc"){ [team,flag,model,market,edge,verdict,side]=r; }
+  else { team=r[0];flag=r[1];model=r[8];market=r[9];edge=r[10];verdict=r[11];side=r[12]; }
+  return `<tr data-href="/outrights/${slug(team)}">`+
+    `<td class="c-team"><div class="team"><span class="rank">${i+1}</span>`+
+      `<span class="flag">${flag}</span><span class="name">${team}</span></div></td>`+
+    `<td class="c-verdict">${chipHTML(verdict,side)}</td>`+
+    statCells(mode,r)+
+    deskCells(model,market,edge)+
+    `</tr>`;
+}
+
+function setMode(mode){
+  const data = mode==="wc"?WC:EPL;
+  document.getElementById("rows").innerHTML = data.map((r,i)=>rowHTML(r,i,mode)).join("");
+  document.getElementById("g-form").textContent = mode==="wc" ? "Group stage — pending kick-off" : "Season form";
+  const picks = data.filter(r=> (mode==="wc"?r[5]:r[11])==="pick").length;
+  const n = data.length;
+  if(mode==="wc"){
+    document.getElementById("ttl").textContent = "Outright winners";
+    document.getElementById("stand").innerHTML =
+      `FIFA World Cup 2026 champion · <strong>${picks} Pick</strong> · ${n-picks} Pass across ${n} priced sides.`;
+    document.getElementById("meta").innerHTML =
+      `<span><b>Source</b> Polymarket</span><span><b>Resolves</b> 20 Jul 2026</span><span><b>As of</b> 28 May, 17:44 UTC</span>`;
+    document.getElementById("note").innerHTML =
+      `<span class="dag">†</span> Stat columns sit empty until the tournament kicks off — a winner market has no games played yet. The same cells fill automatically once group play begins.`;
+  } else {
+    document.getElementById("ttl").textContent = "Premier League — title";
+    document.getElementById("stand").innerHTML =
+      `Illustrative league table · <strong>${picks} Pick</strong> · ${n-picks} Pass. Same component, stat columns populated.`;
+    document.getElementById("meta").innerHTML =
+      `<span><b>Source</b> demo data</span><span><b>Matchday</b> 29</span><span style="color:var(--flame-deep)"><b>Illustrative — not live</b></span>`;
+    document.getElementById("note").innerHTML =
+      `<span class="dag">†</span> Demo numbers to show the populated layout. To preview it in this mockup, run <code>setMode('epl')</code> in the console.`;
+  }
+}
+
+// whole-row click → drill-down (demo: alerts the target; on the live site this navigates)
+document.getElementById("tbl").addEventListener("click", e=>{
+  const tr = e.target.closest("tr[data-href]");
+  if(!tr) return;
+  // window.location.href = tr.dataset.href;  // live behaviour
+  alert("Drill down → "+tr.dataset.href);
+});
+
+setMode("wc");
+</script>
+</body>
+</html>
