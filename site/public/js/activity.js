@@ -294,8 +294,64 @@
 
   // -------------------- boot -------------------------------
 
+  // -------------------- CTA beacon -------------------------
+  //
+  // Capture-phase delegated listener fires once per CTA click — for any
+  // <a data-cta-venue="..."> anywhere on the page. Capture phase is
+  // required because the listing-card overlay link calls preventDefault
+  // + navigates in the bubble phase, so a bubble listener never sees
+  // the click on those cards.
+  //
+  // navigator.sendBeacon is the primary path: it survives the
+  // unload/navigation that follows a click on an external CTA. fetch
+  // with keepalive is the fallback for the (small) set of browsers
+  // without sendBeacon. Both are fire-and-forget; the response is
+  // ignored — the daily report only needs the row to land.
+
+  function postCtaBeacon(matchId, venue) {
+    if (!matchId || !venue) return;
+    const url = API + "/cta";
+    const body = JSON.stringify({ match_id: matchId, venue: venue });
+    try {
+      if (navigator.sendBeacon) {
+        const blob = new Blob([body], { type: "application/json" });
+        if (navigator.sendBeacon(url, blob)) return;
+      }
+    } catch (_e) { /* fall through */ }
+    try {
+      fetch(url, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: body,
+        keepalive: true,
+      });
+    } catch (_e) { /* non-fatal */ }
+  }
+
+  function wireCtaBeacon() {
+    document.addEventListener(
+      "click",
+      function (ev) {
+        // Walk up from the click target — listing-card pills wrap the
+        // anchor in <span class="cta-stack">, so the literal target can
+        // be the inner <span class="arr"> or a text node.
+        let el = ev.target;
+        while (el && el !== document) {
+          if (el.tagName === "A" && el.dataset && el.dataset.ctaVenue) {
+            postCtaBeacon(el.dataset.matchId, el.dataset.ctaVenue);
+            return;
+          }
+          el = el.parentNode;
+        }
+      },
+      true, // capture
+    );
+  }
+
   function boot() {
     injectStyleOnce();
+    wireCtaBeacon();
     document.querySelectorAll(".op-activity[data-match-id]").forEach((root) => {
       const matchId = root.dataset.matchId;
       const state = {

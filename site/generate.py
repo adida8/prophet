@@ -50,6 +50,7 @@ from desk.sports.football.flags import (  # noqa: E402 — path tweak above
     flag_path,
     team_codes_from_match_id,
 )
+from desk.sports.football.teams import iso3_for_name  # noqa: E402
 
 # Canonical host for the public site. www is the host that serves every
 # page in production (the bare apex 404s on deep paths), so canonical tags,
@@ -3215,12 +3216,22 @@ def _team_slug(name: str) -> str:
     return slug or "team"
 
 
+def _outright_activity_id(outright: dict, row: dict) -> str:
+    """Stable per-team identifier for the activity widget. Format:
+    `outright-{outright_id}-{team-slug}` so views/votes on Argentina
+    in the WC26 winner market don't collide with anything else."""
+    outright_id = (outright.get("outright_id") or "").strip()
+    slug = _team_slug(row.get("team", ""))
+    return f"outright-{outright_id}-{slug}"
+
+
 def render_outright_team_card(outright: dict, row: dict, *, show_overlay: bool = True) -> str:
     """Card for a single team in an outright market. Mirrors the
     .lv-card shape used by per-match cards: state-coloured rule on the
-    left, glyph + label in the head, team name as the h3, market label
-    as the venue meta, model/market/edge stats in the foot, optional
-    overlay link so the whole tile is clickable."""
+    left, glyph + label in the head, country-flag + team name as the
+    h3, market label as the venue meta, model/market/edge stats in
+    the foot, activity strip + reaction chips beneath. Optional overlay
+    link so the whole tile is clickable through to /outrights/{slug}."""
     team = row.get("team", "—")
     model_p = row.get("model_p")
     market_p = row.get("yes_market_p")
@@ -3229,6 +3240,7 @@ def render_outright_team_card(outright: dict, row: dict, *, show_overlay: bool =
     state_class = f"is-{state}"
 
     href = f"/outrights/{_team_slug(team)}"
+    iso = iso3_for_name(team) or ""
     market_label = outright.get("market_label") or outright.get("competition", {}).get("label", "Outright")
 
     resolves_at = outright.get("resolves_at")
@@ -3290,15 +3302,28 @@ def render_outright_team_card(outright: dict, row: dict, *, show_overlay: bool =
         if show_overlay else ""
     )
     short_blurb = escape(_ladder_blurb_for(row))
+    # Country flag inline before the team name — mirrors the per-match
+    # card where the flag sits to the left of the team's display name.
+    team_h3 = f'<h3 class="lv-teams"><span class="lv-team">{_team_flag_img(iso)}{escape(team)}</span></h3>'
+    # Activity widget — anonymous views + reaction chips. Activity.js
+    # picks up the data-* attributes at runtime; the slot lives inside
+    # the lv-card grid so chip clicks don't fall through to the overlay.
+    activity_slot = (
+        f'<div class="op-activity" '
+        f'data-match-id="{escape(_outright_activity_id(outright, row))}" '
+        f'data-verdict-state="{escape(state)}" '
+        f'data-pick-side="{escape(row.get("pick_side") or "")}"></div>'
+    )
     return (
         f'<div class="lv-card {state_class}">'
         f'{overlay}'
         '<span class="lv-bar" aria-hidden="true"></span>'
         f'<div class="lv-head">{head}</div>'
-        f'<h3 class="lv-teams">{escape(team)}</h3>'
+        f'{team_h3}'
         f'<p class="lv-venue-meta">{escape(market_label)}</p>'
         f'<p class="lv-thesis">{short_blurb}</p>'
         f'{foot}'
+        f'{activity_slot}'
         '</div>'
     )
 
