@@ -3537,10 +3537,32 @@ def render_outright_ladder(outright: dict) -> str:
     )
 
 
+def _ordinal(n: int) -> str:
+    """1 → '1st', 22 → '22nd'. Stays inside the function family because
+    nothing else in this file uses ordinals."""
+    if 10 <= (n % 100) <= 20:
+        suf = "th"
+    else:
+        suf = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+    return f"{n}{suf}"
+
+
+def _pick_threshold_p(market_p: float) -> float:
+    """Model probability at which a YES Pick fires (market_p + 3pp)."""
+    return market_p + 0.03
+
+
 def _outright_team_blurb_paragraphs(outright: dict, row: dict) -> list[str]:
     """Multi-paragraph editorial read for a per-team outright page.
-    Synthesised from the row's data so every team gets a meaningful
-    dedicated page even when the engine never wrote prose for it."""
+    Synthesised from the row's data + the surrounding ladder so every
+    team gets a meaningful dedicated page even when the engine never
+    wrote prose for it.
+
+    Ranks the team by `model_p` against the rest of the ladder and
+    cross-references the leader, the immediate neighbours, and the
+    Pick threshold so a Pass team's page reads as editorial rather
+    than as a footnote.
+    """
     team = row.get("team", "this team")
     mp = row.get("model_p")
     mp_lower = row.get("model_p_lower")
@@ -3552,18 +3574,56 @@ def _outright_team_blurb_paragraphs(outright: dict, row: dict) -> list[str]:
     pick_side = row.get("pick_side")
 
     market_label = outright.get("market_label") or outright.get("competition", {}).get("label", "the outright")
+    market_label_lower = market_label.lower()
     mp_pct = f"{(mp or 0) * 100:.1f}%"
     mkp_pct = f"{(mkp or 0) * 100:.1f}%"
+
+    # ── Rank the team against the rest of the ladder by model_p ────
+    ladder = list(outright.get("ladder") or [])
+    by_model = sorted(
+        ladder, key=lambda r: r.get("model_p") or 0.0, reverse=True,
+    )
+    rank: int | None = None
+    leader: dict | None = None
+    field_size = len(by_model)
+    for i, r in enumerate(by_model, 1):
+        if r.get("team") == team:
+            rank = i
+            break
+    if by_model and by_model[0].get("team") != team:
+        leader = by_model[0]
+
+    # Ranked-by-market context — useful when model + market disagree
+    # on the leader (which is the whole reason this market exists).
+    by_market = sorted(
+        ladder, key=lambda r: r.get("yes_market_p") or 0.0, reverse=True,
+    )
+    market_rank: int | None = None
+    for i, r in enumerate(by_market, 1):
+        if r.get("team") == team:
+            market_rank = i
+            break
 
     paragraphs: list[str] = []
 
     if state == "pick":
         side_str = f"{pick_side} {team}" if pick_side else team
         paragraphs.append(
-            f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()}. "
+            f"The Desk's model rates {team} at {mp_pct} to win {market_label_lower}. "
             f"The market currently prices that side at {mkp_pct} — a {edge:+.1f}pp gap. "
             f"The position is {side_str}, and the verdict is Pick."
         )
+        if rank is not None and field_size:
+            ranking = (
+                f"That's the {_ordinal(rank)}-highest probability the model "
+                f"assigns in a field of {field_size}."
+            )
+            if market_rank is not None and market_rank != rank:
+                ranking += (
+                    f" The market has {team} {_ordinal(market_rank)} on its own ladder — "
+                    f"the disagreement on where {team} sits is precisely what creates the edge."
+                )
+            paragraphs.append(ranking)
         if isinstance(lower, (int, float)) and isinstance(mp_lower, (int, float)) and isinstance(mp_upper, (int, float)):
             paragraphs.append(
                 f"Across 100 bootstrap re-simulations of the tournament the model's "
@@ -3575,57 +3635,105 @@ def _outright_team_blurb_paragraphs(outright: dict, row: dict) -> list[str]:
             "The Desk doesn't tip. We publish what the model thinks and what the market thinks; "
             "the gap is editorial. Take the position only if you've read the case and the price still stands."
         )
-    elif state == "avoid":
+        return paragraphs
+
+    if state == "avoid":
         paragraphs.append(
-            f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()} — well below "
+            f"The Desk's model rates {team} at {mp_pct} to win {market_label_lower} — well below "
             f"the market's {mkp_pct} ({edge:+.1f}pp). The verdict is Avoid."
         )
-        if isinstance(lower, (int, float)) and isinstance(mp_upper, (int, float)):
+        if rank is not None and market_rank is not None and field_size:
+            spread = market_rank - rank
+            if spread <= -2:
+                paragraphs.append(
+                    f"The Desk has {team} {_ordinal(rank)} on the model ladder; "
+                    f"the market has them {_ordinal(market_rank)}. The market is paying "
+                    f"for an outcome the model thinks is meaningfully less likely than "
+                    f"the betting public has priced in."
+                )
+            else:
+                paragraphs.append(
+                    f"The Desk has {team} {_ordinal(rank)} in a field of {field_size}; "
+                    f"the market has them {_ordinal(market_rank)}. Even by the model's own "
+                    f"ranking, the price is buying a contender — the Desk just doesn't think "
+                    f"that contender is worth what the market is asking."
+                )
+        if isinstance(mp_upper, (int, float)) and mkp is not None:
             paragraphs.append(
-                f"Even at the model's bootstrap upper bound the team's probability is {mp_upper * 100:.1f}%, "
-                f"still below the price. The market is paying more than the Desk thinks the YES side is worth."
+                f"Across 100 bootstrap re-simulations the model's probability never gets "
+                f"above {mp_upper * 100:.1f}% — still below the {mkp_pct} the market is asking. "
+                f"In the simulations where {team} look best, the YES side is still overpriced."
             )
         paragraphs.append(
-            "Avoid is structural — it doesn't tell you to take the NO side; it tells you the YES price isn't fair. "
-            "If you do trade, the case has to come from somewhere else."
+            "Avoid is structural — it doesn't tell you to take the NO side; it tells you the "
+            "YES price isn't fair. If you do trade, the case has to come from somewhere else."
         )
-    else:
-        if isinstance(edge, (int, float)) and edge >= 1.5:
-            paragraphs.append(
-                f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()}, slightly above "
-                f"the market's {mkp_pct} ({edge:+.1f}pp). The verdict is Pass."
+        return paragraphs
+
+    # ── Pass — the long tail ───────────────────────────────────────
+    #
+    # The thin two-sentence stub that shipped first read as a footnote
+    # rather than an editorial — most of the ladder is Pass, so the
+    # tail has to carry its own weight. The synthesised read does
+    # four things: states the model + market split (1), places the
+    # team in the ladder (2), quantifies what would have to change
+    # for a Pick or Avoid to fire (3), and closes on what Pass means
+    # for a reader (4).
+
+    paragraphs.append(
+        f"The Desk's model rates {team} at {mp_pct} to win {market_label_lower}; "
+        f"the market prices that side at {mkp_pct}. The edge is {edge:+.1f}pp — "
+        + ("inside the Pass band." if abs(edge or 0) < 1.5 else
+           ("a lean toward YES that doesn't clear the bar." if (edge or 0) >= 1.5 else
+            "a lean toward NO that doesn't clear the Avoid bar."))
+    )
+
+    if rank is not None and field_size:
+        ladder_line = (
+            f"That puts {team} {_ordinal(rank)} on the model ladder in a field of {field_size}."
+        )
+        if leader is not None:
+            leader_pct = (leader.get("model_p") or 0) * 100
+            leader_team = leader.get("team", "the leader")
+            ladder_line += (
+                f" The model's leader, {leader_team}, sits at {leader_pct:.1f}%."
             )
-            if isinstance(lower, (int, float)):
-                if lower > 0:
-                    paragraphs.append(
-                        f"The bootstrap lower bound on the edge is {lower:+.1f}pp — positive but not enough "
-                        f"to clear the +3.0pp Pick threshold. The model's lean exists but the signal isn't "
-                        f"strong enough to publish a position."
-                    )
-                else:
-                    paragraphs.append(
-                        f"The bootstrap lower bound on the edge is {lower:+.1f}pp — it crosses zero, "
-                        f"which means in alternate simulations of the tournament the team's probability "
-                        f"drops below the market's price. The point estimate leans yes; the robustness doesn't hold."
-                    )
-        elif isinstance(edge, (int, float)) and edge <= -1.5:
-            paragraphs.append(
-                f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()} — below "
-                f"the market's {mkp_pct} ({edge:+.1f}pp). The verdict is Pass."
+        if market_rank is not None and market_rank != rank:
+            ladder_line += (
+                f" The market has {team} {_ordinal(market_rank)} on its own ladder — "
+                f"so reader and model disagree about where this side belongs, but not "
+                f"by enough to publish a position."
+            )
+        paragraphs.append(ladder_line)
+
+    # Quantify what would have to move for a Pick to trip — a useful
+    # editorial hook: it tells the reader what to watch.
+    if isinstance(mp, (int, float)) and isinstance(mkp, (int, float)):
+        threshold_pct = (_pick_threshold_p(mkp)) * 100
+        current_pct = mp * 100
+        if threshold_pct > current_pct:
+            band_hits = (
+                isinstance(mp_upper, (int, float))
+                and mp_upper * 100 >= threshold_pct
+            )
+            band_phrase = (
+                f"the band runs [{(mp_lower or 0) * 100:.1f}%, {(mp_upper or 0) * 100:.1f}%], "
+                + ("so even at the upper end the Pick bar is in reach."
+                   if band_hits else
+                   "and even at the upper end the Pick bar isn't reached.")
             )
             paragraphs.append(
-                "The market is paying more than the model thinks the YES side is worth, but the gap isn't "
-                "wide enough to call Avoid. There's no clear edge in either direction."
-            )
-        else:
-            paragraphs.append(
-                f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()}; the market prices "
-                f"that side at {mkp_pct}. The edge is {edge:+.1f}pp — effectively zero. The verdict is Pass."
-            )
-            paragraphs.append(
-                "When the model and the market agree, there's nothing for us to publish. The price is fair."
+                f"For the verdict to flip to Pick at today's market price, the model would "
+                f"need to rate {team} at {threshold_pct:.1f}% or better — a "
+                f"{threshold_pct - current_pct:.1f}pp move from where it sits now. "
+                f"Across 100 bootstrap re-simulations of the tournament {band_phrase}"
             )
 
+    paragraphs.append(
+        "Pass isn't 'no opinion'. It's the Desk saying the price and the model agree closely "
+        "enough that there's no edge to publish. A reader can still take a side on conviction; "
+        "we just don't have an editorial reason to push them either way."
+    )
     return paragraphs
 
 
