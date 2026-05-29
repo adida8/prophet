@@ -38,7 +38,22 @@ async def _safe_tick(cfg) -> None:
 
 
 async def run_daily_report_loop() -> None:
-    cfg = load_config()
+    # load_config() raises hard when DAILY_REPORT_ENABLED=1 but SMTP/recipient
+    # vars are missing. The loop is gathered alongside the FastAPI server, so a
+    # naked raise here propagates through asyncio.gather and brings the whole
+    # site down. Catch it: log + exit the task. The server (and every other
+    # loop) keeps running.
+    try:
+        cfg = load_config()
+    except Exception:  # noqa: BLE001
+        log.exception(
+            "daily report loop: load_config() failed; loop disabled. The rest "
+            "of the app keeps running. Fix the missing env vars on Railway "
+            "(SMTP_HOST/USER/PASS, DAILY_REPORT_TO) or set "
+            "DAILY_REPORT_ENABLED=0 to silence this."
+        )
+        return
+
     if not cfg.enabled:
         log.warning(
             "daily report loop disabled — DAILY_REPORT_ENABLED!=1. "
