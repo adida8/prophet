@@ -608,15 +608,65 @@ The aggregator runs every 60s, so a `GET /api/activity/{id}` issued within that 
 | `ACTIVITY_INITIAL_DELAY_SEC` | `30` | Delay before the first post-boot tick of any activity job. |
 | `ACTIVITY_IP_SALT` | unset → process-local random | Per-deployment secret prepended to the IP hash. Without it the salt resets on every restart (acceptable — hash is only used for same-day rate-limit buckets). |
 
+### CTA click tracking
+
+A fourth POST endpoint — `/api/activity/cta` — logs every market CTA click to a `cta_clicks` table (`migrations/20260529_cta_clicks.sql`). The site stamps every `<a>` that links to Polymarket or Kalshi with `data-match-id` + `data-cta-venue="polymarket|kalshi"` (see `_cta_pill` and the `render_match_page` cta-row in `site/generate.py`). A capture-phase delegated listener in `site/public/js/activity.js` calls `navigator.sendBeacon('/api/activity/cta', ...)` on click (falls back to `fetch` with `keepalive` when sendBeacon is absent) — capture is required because the listing-card overlay link navigates in the bubble phase. Rows fire-and-forget; the daily report is the consumer. The `seeded` column mirrors the other activity tables so the report's `WHERE seeded = false` filter is consistent across all four.
+
 ### Spec + design history
 
 `ACTIVITY_SIGNALS_SPEC.md` v1.0.1 is the locked spec. The user iterated through several designs in one afternoon: Editorial / Literal A/B → Literal only → Market Pulse v2 (incorporating the review doc) → back to v1 Literal. The shipped widget is v1 Literal with emoji chips. Untracked working-tree files left as design history: `activity_signals_mockup.html` (v1), `activity-signals-mockup-v2.html` (Market Pulse), `activity-signals-review.md` (critique arguing against the whole feature in favour of market-movement + "Track this Pick").
 
 ---
 
+## Daily report
+
+One-page HTML + PDF brief emailed once a day to `aaron@oddsprimer.com,adi.dagan@gmail.com`. Built from the activity tables (views / votes / CTA clicks for yesterday's UTC day, plus prior-day deltas), enriched with desk match labels + the latest `RunReport` + per-tick Anthropic cost.
+
+### Layout
+
+```
+daily_report.py             # one-shot orchestrator + CLI (--once / --force / --dry-run / --date)
+daily_report_loop.py        # hourly tick; fires run_once when utc_hour == DAILY_REPORT_HOUR
+templates/daily_report.html # Jinja2 template; A4 @page; OP design tokens (Inter Tight + Source Serif 4 + JetBrains Mono)
+tests/daily_report/         # config validation, window math, query helpers (faked asyncpg conn),
+                            # enrichment readers, status_line, render smoke, idempotency, email assembly
+```
+
+### Behaviour
+
+- Window = previous UTC day. Each KPI shows a ▲/▼/flat delta vs the day before.
+- Every Postgres query filters `seeded = false` so the seeder traffic never appears in the report.
+- The CTA query path is wrapped in `try/except`: a pre-migration deploy still produces a report (zero CTA counts) rather than 500.
+- Idempotency: state file at `{ops_root}/daily_report/last_sent.json`. `--force` bypasses.
+- Render: Jinja2 → HTML; WeasyPrint → PDF. If WeasyPrint import or render fails, the email goes HTML-only with a warning logged.
+- Email: smtplib + STARTTLS to Gmail SMTP. Gmail App Password lives in `SMTP_PASS` on Railway, never an account password.
+- The loop runs hourly; the send fires at the top of `DAILY_REPORT_HOUR` UTC (default 8). A duplicate tick inside the same hour is a no-op (already-sent).
+
+### Env vars
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `DAILY_REPORT_ENABLED` | `0` | Master switch. Set to `1` to enable the loop + arm fail-loud config validation. With `0`, missing SMTP/recipient env is allowed; `daily_report.py` exits cleanly with `reason="disabled"`. |
+| `DAILY_REPORT_HOUR` | `8` | UTC hour at which the loop fires the daily send. |
+| `DAILY_REPORT_TO` | unset | Comma-separated recipient list. Production target: `aaron@oddsprimer.com,adi.dagan@gmail.com`. |
+| `DAILY_REPORT_FROM` | falls back to `SMTP_USER` | "From" header. Gmail will rewrite to the authenticated account regardless. |
+| `DAILY_REPORT_ENV` | `staging` | Label rendered top-right of the report ("Daily report · Wed, 28 May 2026 · staging"). |
+| `DAILY_REPORT_TICK_SEC` | `3600` | Loop tick cadence; rarely changed. |
+| `DAILY_REPORT_INITIAL_DELAY_SEC` | `60` | First-tick delay so the server stands up before the loop arms. |
+| `SMTP_HOST` | unset | SMTP server. Gmail: `smtp.gmail.com`. Required when `DAILY_REPORT_ENABLED=1`. |
+| `SMTP_PORT` | `587` | SMTP port; STARTTLS enabled by default. |
+| `SMTP_USER` | unset | SMTP auth user. For Gmail: `adi.dagan@gmail.com`. |
+| `SMTP_PASS` | unset | SMTP auth password — Gmail **App Password** (16 chars), never the account password. |
+
+### Spec history
+
+The original build brief (`DAILY_REPORT_BUILD_SPEC.md`) and sample-PDF design lived outside the repo at the time of build (2026-05-29). The shipped layout follows the brief's structure: masthead → status banner → PART I Audience (4 KPI cards, new-vs-returning row, busiest-hour row, CTA-by-venue list, top-5 matches, sentiment bars, zero-click picks, audience funnel) → PART II Desk health (last tick, verdict mix, tick cost, editorial changes, pipeline funnel).
+
+---
+
 ## Tech stack
 
-**Backend** Python 3.11+, httpx, websockets, cryptography, pandas, FastAPI, uvicorn, Pydantic v2, aiosqlite, asyncpg (activity signals only — Railway Postgres add-on), APScheduler (PR 6+), Anthropic SDK (Haiku for news-signals extraction + future PR 5 blurb generation — listed in root `requirements.txt` so the Railway image installs it; `desk/pyproject.toml` is **not** pip-installed in production, the package runs as a subprocess via PYTHONPATH).
+**Backend** Python 3.11+, httpx, websockets, cryptography, pandas, FastAPI, uvicorn, Pydantic v2, aiosqlite, asyncpg (activity signals only — Railway Postgres add-on), APScheduler (PR 6+), Anthropic SDK (Haiku for news-signals extraction + future PR 5 blurb generation — listed in root `requirements.txt` so the Railway image installs it; `desk/pyproject.toml` is **not** pip-installed in production, the package runs as a subprocess via PYTHONPATH), Jinja2 + WeasyPrint (daily report template + PDF rendering — WeasyPrint falls back to HTML-only when its Cairo/Pango deps aren't present, so the email still ships).
 
 **Frontend** React 19, Vite, Recharts, Lucide React. The editorial site (`frontend/src/op/`), Ledger (`frontend/src/ledger/`), and Desk page (`frontend/src/desk/`) all use the Odds Primer Design System (`Odds Primer Design System/`) — Source Serif 4 (body), Inter Tight (wordmark + chrome), JetBrains Mono (numerics). All three share the locked tokens at `frontend/src/ledger/op-tokens.css`. The legacy Prophet trading dashboard at `/dashboard` still uses its older dark-theme tokens.
 

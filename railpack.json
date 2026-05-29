@@ -19,6 +19,11 @@
     }
   },
   "deploy": {
+    "aptPackages": [
+      "libpango-1.0-0",
+      "libpangoft2-1.0-0",
+      "libharfbuzz0b"
+    ],
     "startCommand": "python site/generate.py --quiet || true; python main.py --dashboard --port $PORT"
   }
 }

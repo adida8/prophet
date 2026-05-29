@@ -838,6 +838,119 @@ a { color: inherit; }
   color: var(--graphite); margin: 12px auto 0; max-width: 52ch;
 }
 
+/* OUTRIGHTS STANDINGS TABLE
+   One component, reusable for league tables later. Column contract:
+   Team · Verdict · P · W · D · L · GF · GA · GD · Pts · Model · Market · Edge.
+   Team is the pinned identity column. Stat block is data-driven — empty (—)
+   for winner markets pre-kickoff, populated from standings for league markets.
+   Mobile collapses to Team · Verdict · P · Pts · Model. */
+.standings-meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 20px;
+  margin-top: 22px; padding-bottom: 13px; border-bottom: var(--hairline);
+  font-family: var(--font-sans); font-size: 12.5px; color: var(--graphite-soft);
+}
+.standings-meta span b { color: var(--ink-soft); font-weight: 600; }
+.tablewrap {
+  margin-top: 18px; border: var(--hairline); border-radius: 8px;
+  background: var(--paper-pure); overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+table.standings { border-collapse: collapse; width: 100%; font-size: 14px; }
+.standings thead th {
+  position: sticky; top: 0; background: var(--paper-warm); z-index: 2;
+  font-family: var(--font-sans); font-weight: 600; font-size: 10.5px; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--graphite-soft); text-align: right;
+  padding: 11px 10px; border-bottom: var(--hairline); white-space: nowrap;
+}
+.standings thead th.grp {
+  text-align: left; border-bottom: var(--hairline);
+  font-size: 10px; color: var(--graphite); background: var(--rule); padding: 6px 10px;
+}
+.standings .col-verdict { width: 104px; text-align: center !important; }
+.standings .col-team { text-align: left !important; min-width: 178px; }
+.standings .col-stat { width: 46px; }
+.standings .col-desk { width: 74px; }
+.standings .c-team {
+  position: sticky; left: 0; background: var(--paper-pure); z-index: 1;
+  box-shadow: 1px 0 0 var(--rule);
+}
+.standings thead .c-team { z-index: 3; background: var(--paper-warm); }
+.standings .c-verdict { text-align: center; }
+.standings tbody tr { cursor: pointer; transition: background var(--dur-fast) var(--ease-standard); }
+.standings tbody tr:hover { background: var(--flame-tint); }
+.standings tbody tr:hover .c-team { background: var(--flame-tint); }
+.standings tbody td {
+  padding: 11px 10px; border-bottom: var(--hairline-soft);
+  text-align: right; vertical-align: middle; white-space: nowrap;
+}
+.standings tbody tr:last-child td { border-bottom: 0; }
+.standings .team { display: flex; align-items: center; gap: 10px; text-align: left; }
+.standings .team .rank {
+  font-family: var(--font-mono); font-size: 12px; color: var(--graphite-soft);
+  width: 18px; text-align: right; flex: 0 0 auto;
+}
+.standings .team .flag {
+  width: 22px; height: 16px; border-radius: 2px; flex: 0 0 auto;
+  display: inline-block; object-fit: cover; background: var(--rule-soft);
+}
+.standings .team .name {
+  font-family: var(--font-sans); font-weight: 600; font-size: 14.5px; color: var(--ink);
+}
+.standings .team a {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: inherit;
+}
+.standings .stat { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); }
+.standings .stat.muted { color: var(--rule); }
+.standings .stat.pts { font-weight: 600; color: var(--ink); }
+.standings .num { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); }
+.standings .num.model { color: var(--ink); font-weight: 600; }
+.standings .edge { font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
+.standings .edge.pos { color: var(--flame-deep); }
+.standings .edge.neg { color: var(--graphite-soft); }
+.standings .chip {
+  display: inline-block; font-family: var(--font-sans); font-weight: 600; font-size: 11px;
+  letter-spacing: 0.04em; text-transform: uppercase; padding: 4px 11px; border-radius: 999px;
+  border: 1px solid transparent;
+}
+.standings .chip.pick { background: var(--flame); color: #fff; }
+.standings .chip.pass { background: transparent; color: var(--graphite-soft); border-color: var(--rule); }
+.standings .chip.avoid { background: transparent; color: var(--ink); border-color: var(--ink); }
+.standings .chip .side { opacity: 0.8; font-weight: 500; margin-left: 3px; }
+.standings-legend {
+  margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px 24px;
+  font-family: var(--font-sans); font-size: 12px; color: var(--graphite-soft);
+}
+.standings-legend b { color: var(--ink-soft); font-weight: 600; }
+.standings-legend .chip { padding: 2px 9px; }
+.standings-note {
+  margin-top: 14px; font-family: var(--font-serif); font-style: italic; font-size: 13.5px;
+  color: var(--graphite); max-width: 64ch; line-height: 1.5;
+}
+.standings-note .dag { color: var(--flame); font-style: italic; }
+@media (max-width: 640px) {
+  .standings { table-layout: fixed; }
+  .standings thead tr.groups { display: none; }
+  .standings .hide-mobile { display: none !important; }
+  .standings .col-team { min-width: 0; width: auto; }
+  .standings .col-verdict { width: 60px; }
+  .standings .col-stat { width: 28px; }
+  .standings .col-desk { width: 48px; }
+  .standings .team { gap: 7px; }
+  .standings .team a { gap: 7px; }
+  .standings .team .rank { display: none; }
+  .standings .team .flag { width: 18px; height: 13px; }
+  .standings .team .name {
+    font-size: 12.5px; white-space: normal; line-height: 1.25;
+    word-break: break-word;
+  }
+  .standings tbody td, .standings thead th { padding: 9px 4px; }
+  .standings .num, .standings .stat { font-size: 11.5px; }
+  .standings .edge { font-size: 11.5px; }
+  .standings .chip { padding: 3px 6px; font-size: 9.5px; letter-spacing: 0.03em; }
+  .standings .chip .side { margin-left: 2px; }
+  .standings-meta { font-size: 11.5px; gap: 4px 14px; }
+}
+
 .site-foot {
   margin: 48px 0 28px; padding-top: 18px; border-top: var(--hairline);
   display: flex; flex-direction: column; gap: 14px;
@@ -3278,24 +3391,34 @@ def render_outright_team_card(outright: dict, row: dict, *, show_overlay: bool =
     if edge_str:
         reads += f'<span class="edge{edge_class}">{edge_str}</span>'
 
-    if state == "pass":
-        foot = (
-            '<div class="lv-foot">'
-            f'<div class="lv-reads">{reads}</div>'
-            '</div>'
-        )
-    else:
-        # Pick / Avoid get a "Read the case" tertiary link pointing at
-        # the team page (matches the per-match card convention).
-        action = (
-            f'<a class="cta cta--ghost" href="{href}">Read the case <span class="arr">→</span></a>'
-        )
-        foot = (
-            '<div class="lv-foot">'
-            f'<div class="lv-reads">{reads}</div>'
-            f'<div class="lv-action">{action}</div>'
-            '</div>'
-        )
+    # Foot CTAs — Polymarket + Kalshi pills, plus an optional "Read the
+    # case" tertiary link. On the team's own drill-down page
+    # (`show_overlay=False`) the self-link is dropped so the foot only
+    # carries the two market pills.
+    top_verdict = outright.get("verdict") or {}
+    cta_dict = {
+        "market_url":   top_verdict.get("market_url")   or outright.get("market_url"),
+        "market_venue": top_verdict.get("market_venue") or outright.get("market_venue"),
+    }
+    # Price only applies on the top-level Pick team (e.g. Argentina YES
+    # on the WC26 winner market); other rows share the same Polymarket
+    # event URL but no per-team price.
+    row_price = top_verdict.get("price") if (
+        state == "pick" and top_verdict.get("team") == team
+    ) else None
+    detail_href = href if show_overlay else None
+    cta_html = market_cta(
+        cta_dict,
+        price=row_price,
+        search_key="World Cup 2026 winner",
+        detail_href=detail_href,
+    )
+    foot = (
+        '<div class="lv-foot">'
+        f'<div class="lv-reads">{reads}</div>'
+        f'<div class="lv-action">{cta_html}</div>'
+        '</div>'
+    )
 
     overlay = (
         f'<a class="lv-card-link" href="{href}" aria-label="Read the case for {escape(team)}"></a>'
@@ -3328,12 +3451,193 @@ def render_outright_team_card(outright: dict, row: dict, *, show_overlay: bool =
     )
 
 
+def _outright_market_type(outright: dict) -> str:
+    """Which market shape this outright is — drives the sort key + the
+    stat-block data source. Winner markets sort by model probability
+    and render an empty stat block (no games played yet). League-table
+    markets (future) will sort by points and pull stats from a
+    `standings` field on each ladder row."""
+    label = (outright.get("market_label") or "").lower()
+    if "league" in label or "table" in label:
+        return "league_table"
+    return "winner"
+
+
+def _outright_sort_key(market_type: str):
+    """Row sort key by market type. Winner markets descend on model
+    probability (current behaviour). League tables descend on points."""
+    if market_type == "league_table":
+        def _key(row: dict) -> float:
+            st = row.get("standings") or {}
+            try:
+                return -float(st.get("points") or 0)
+            except (TypeError, ValueError):
+                return 0.0
+        return _key
+    return lambda row: -(row.get("model_p") or 0)
+
+
+def _outright_stat_cells(row: dict, market_type: str) -> str:
+    """Stat block (P · W · D · L · GF · GA · GD · Pts) as 8 <td> cells.
+    Winner markets render every cell as muted '—' until the tournament
+    kicks off. League-table markets pull from row['standings']; the
+    cells fill automatically without forking the row builder."""
+    if market_type == "winner":
+        muted = '<td class="stat muted">—</td>'
+        muted_h = '<td class="stat muted hide-mobile">—</td>'
+        return (
+            f'{muted}'                # P (visible mobile)
+            f'{muted_h}'              # W
+            f'{muted_h}'              # D
+            f'{muted_h}'              # L
+            f'{muted_h}'              # GF
+            f'{muted_h}'              # GA
+            f'{muted_h}'              # GD
+            f'<td class="stat muted pts">—</td>'  # Pts (visible mobile)
+        )
+    st = row.get("standings") or {}
+    def _i(key: str) -> int:
+        try:
+            return int(st.get(key) or 0)
+        except (TypeError, ValueError):
+            return 0
+    P, W, D, L = _i("played"), _i("won"), _i("drawn"), _i("lost")
+    GF, GA = _i("goals_for"), _i("goals_against")
+    GD = GF - GA
+    Pts = _i("points") if st.get("points") is not None else (W * 3 + D)
+    gd_str = f"+{GD}" if GD > 0 else str(GD)
+    return (
+        f'<td class="stat">{P}</td>'
+        f'<td class="stat hide-mobile">{W}</td>'
+        f'<td class="stat hide-mobile">{D}</td>'
+        f'<td class="stat hide-mobile">{L}</td>'
+        f'<td class="stat hide-mobile">{GF}</td>'
+        f'<td class="stat hide-mobile">{GA}</td>'
+        f'<td class="stat hide-mobile">{gd_str}</td>'
+        f'<td class="stat pts">{Pts}</td>'
+    )
+
+
+def _verdict_chip(verdict: str, side: str | None) -> str:
+    """Verdict chip in the standings row — Pick (flame fill, shows YES/NO
+    side), Pass (muted outline), Avoid (ink outline)."""
+    if verdict == "pick":
+        side_html = f'<span class="side">{escape(side)}</span>' if side else ""
+        return f'<span class="chip pick">Pick{side_html}</span>'
+    if verdict == "avoid":
+        return '<span class="chip avoid">Avoid</span>'
+    return '<span class="chip pass">Pass</span>'
+
+
+def _standings_row(outright: dict, row: dict, rank: int, market_type: str) -> str:
+    team = row.get("team", "—")
+    href = f"/outrights/{_team_slug(team)}"
+    iso = iso3_for_name(team) or ""
+    flag_html = (
+        f'<img class="flag" src="{flag_path(iso)}" alt="" aria-hidden="true" loading="lazy">'
+        if iso else '<span class="flag" aria-hidden="true"></span>'
+    )
+    verdict = row.get("verdict", "pass")
+    pick_side = row.get("pick_side")
+    model_p = row.get("model_p")
+    market_p = row.get("yes_market_p")
+    edge_pp = row.get("yes_edge_pp")
+
+    model_str = f"{(model_p or 0) * 100:.1f}%" if model_p is not None else "—"
+    market_str = f"{(market_p or 0) * 100:.1f}%" if market_p is not None else "—"
+    if isinstance(edge_pp, (int, float)):
+        edge_class = "pos" if edge_pp >= 0 else "neg"
+        edge_sign = "+" if edge_pp >= 0 else ""
+        edge_str = f"{edge_sign}{edge_pp:.1f}"
+    else:
+        edge_class = "neg"
+        edge_str = "—"
+
+    team_cell = (
+        '<td class="c-team">'
+        f'<div class="team">'
+        f'<a href="{href}">'
+        f'<span class="rank">{rank}</span>'
+        f'{flag_html}'
+        f'<span class="name">{escape(team)}</span>'
+        '</a>'
+        '</div>'
+        '</td>'
+    )
+    return (
+        f'<tr data-href="{href}">'
+        f'{team_cell}'
+        f'<td class="c-verdict">{_verdict_chip(verdict, pick_side)}</td>'
+        f'{_outright_stat_cells(row, market_type)}'
+        f'<td class="num model">{model_str}</td>'
+        f'<td class="num hide-mobile">{market_str}</td>'
+        f'<td class="edge hide-mobile {edge_class}">{edge_str}</td>'
+        '</tr>'
+    )
+
+
+def _standings_table(outright: dict) -> tuple[str, int, int, int]:
+    """Render one <table.standings> for a single outright. Returns the
+    HTML plus (total, picks, passes) for the standfirst counts."""
+    market_type = _outright_market_type(outright)
+    ladder = sorted(outright.get("ladder") or [], key=_outright_sort_key(market_type))
+    total = len(ladder)
+    picks = sum(1 for r in ladder if r.get("verdict") == "pick")
+    passes = sum(1 for r in ladder if r.get("verdict") == "pass")
+    grp_label = (
+        "Group stage — pending kick-off" if market_type == "winner"
+        else "Season form"
+    )
+    rows_html = "\n".join(
+        _standings_row(outright, row, i + 1, market_type)
+        for i, row in enumerate(ladder)
+    )
+    head = (
+        '<thead>'
+        '<tr class="groups">'
+        '<th class="grp c-team">Team</th>'
+        '<th class="grp"></th>'
+        f'<th class="grp" colspan="8">{escape(grp_label)}</th>'
+        '<th class="grp" colspan="3">The Desk</th>'
+        '</tr>'
+        '<tr>'
+        '<th class="col-team c-team">Team</th>'
+        '<th class="col-verdict c-verdict">Verdict</th>'
+        '<th class="col-stat" title="Played">P</th>'
+        '<th class="col-stat hide-mobile" title="Won">W</th>'
+        '<th class="col-stat hide-mobile" title="Drawn">D</th>'
+        '<th class="col-stat hide-mobile" title="Lost">L</th>'
+        '<th class="col-stat hide-mobile" title="Goals for">GF</th>'
+        '<th class="col-stat hide-mobile" title="Goals against">GA</th>'
+        '<th class="col-stat hide-mobile" title="Goal difference">GD</th>'
+        '<th class="col-stat" title="Points">Pts</th>'
+        '<th class="col-desk" title="Model probability">Model</th>'
+        '<th class="col-desk hide-mobile" title="Market-implied probability">Market</th>'
+        '<th class="col-desk hide-mobile" title="Model minus market, points">Edge</th>'
+        '</tr>'
+        '</thead>'
+    )
+    table = (
+        '<div class="tablewrap">'
+        '<table class="standings">'
+        f'{head}'
+        f'<tbody>{rows_html}</tbody>'
+        '</table>'
+        '</div>'
+    )
+    return table, total, picks, passes
+
+
 def render_outrights_index(outrights: list[dict]) -> str:
-    """Listing page at /outrights/ — every team in every decisive
-    outright market gets its own lv-card, sorted by model_p desc.
-    Mirrors how /matches/ shows every match as a card. When no
-    outright market has a Pick or Avoid verdict the page falls back
-    to a coming-soon empty state."""
+    """Listing page at /outrights/ — every priced team rendered as one
+    row of a league-style standings table. Column contract is the same
+    component a league table will reuse later: Team · Verdict · P · W ·
+    D · L · GF · GA · GD · Pts · Model · Market · Edge. The stat block
+    is data-driven — empty (—) on winner markets pre-kick-off, populated
+    from `row['standings']` on league markets. Sort key swaps too:
+    winner markets sort by model probability, league tables by points.
+    When no outright market has a Pick or Avoid verdict the page falls
+    back to a coming-soon empty state."""
     decisive = [
         o for o in (outrights or [])
         if (o.get("verdict") or {}).get("state") in ("pick", "avoid")
@@ -3361,41 +3665,93 @@ def render_outrights_index(outrights: list[dict]) -> str:
             + chrome_footer()
         )
 
-    # Flatten — one card per team across every decisive outright. When
-    # a second outright market opens this groups by market via the
-    # market_label section heading; today there's only one so a single
-    # grid renders directly.
     sections: list[str] = []
-    pick_count = 0
-    pass_count = 0
-    total_count = 0
+    pick_total = 0
+    pass_total = 0
+    total = 0
+    primary_outright = decisive[0]
     for outright in decisive:
-        ladder = sorted(
-            outright.get("ladder") or [],
-            key=lambda r: -(r.get("model_p") or 0),
-        )
-        if not ladder:
+        table, n, picks, passes = _standings_table(outright)
+        if not n:
             continue
-        cards = "\n".join(render_outright_team_card(outright, row) for row in ladder)
         if len(decisive) > 1:
             heading = outright.get("market_label") or outright.get("competition", {}).get("label", "Outright")
-            sections.append(f'<h2 class="date-head">{escape(heading)}</h2>{cards}')
+            sections.append(f'<h2 class="date-head">{escape(heading)}</h2>{table}')
         else:
-            sections.append(cards)
-        for r in ladder:
-            total_count += 1
-            if r.get("verdict") == "pick":
-                pick_count += 1
-            elif r.get("verdict") == "pass":
-                pass_count += 1
+            sections.append(table)
+        total += n
+        pick_total += picks
+        pass_total += passes
 
+    market_label = escape(primary_outright.get("market_label") or "Tournament winner")
+    standfirst_inner = (
+        f'{market_label} · '
+        f'<strong>{pick_total} Pick{"s" if pick_total != 1 else ""}</strong> · '
+        f'{pass_total} Pass across {total} priced sides.'
+    )
     standfirst = (
-        f'<p class="standfirst" style="font-family:var(--font-serif);font-style:italic;'
-        f'color:var(--ink-soft);margin:14px 0 0;">'
-        f'{total_count} teams priced · '
-        f'<strong style="color:var(--flame-deep)">{pick_count} Pick{"s" if pick_count != 1 else ""}</strong> · '
-        f'{pass_count} Pass'
+        '<p class="standfirst" style="font-family:var(--font-serif);font-style:italic;'
+        'color:var(--ink-soft);margin:14px 0 0;max-width:60ch;">'
+        f'{standfirst_inner}'
         '</p>'
+    )
+
+    # Meta strip: source venue · resolves-on · as-of stamp. Pulled from
+    # the primary outright (today there's only one decisive outright).
+    venue = (
+        primary_outright.get("market_venue")
+        or (primary_outright.get("verdict") or {}).get("market_venue")
+        or "Polymarket"
+    ).title()
+    resolves_label = ""
+    if primary_outright.get("resolves_at"):
+        try:
+            rdt = datetime.fromisoformat(primary_outright["resolves_at"].replace("Z", "+00:00"))
+            resolves_label = rdt.strftime("%-d %b %Y")
+        except (ValueError, AttributeError):
+            resolves_label = ""
+    asof_label = ""
+    if primary_outright.get("asof") or primary_outright.get("updated_at"):
+        try:
+            adt = datetime.fromisoformat(
+                (primary_outright.get("asof") or primary_outright["updated_at"]).replace("Z", "+00:00")
+            )
+            asof_label = adt.strftime("%-d %b, %H:%M UTC")
+        except (ValueError, AttributeError):
+            asof_label = ""
+    meta_bits = [f'<span><b>Source</b> {escape(venue)}</span>']
+    if resolves_label:
+        meta_bits.append(f'<span><b>Resolves</b> {escape(resolves_label)}</span>')
+    if asof_label:
+        meta_bits.append(f'<span><b>As of</b> {escape(asof_label)}</span>')
+    meta = f'<div class="standings-meta">{"".join(meta_bits)}</div>'
+
+    legend = (
+        '<div class="standings-legend">'
+        '<span><b>Model</b> the Desk\'s simulated probability</span>'
+        '<span><b>Market</b> price-implied probability</span>'
+        '<span><b>Edge</b> model − market, in points</span>'
+        '<span><span class="chip pick">Pick</span> edge clears +3.0pp</span>'
+        '<span><span class="chip pass">Pass</span> no decisive gap</span>'
+        '</div>'
+    )
+    note = (
+        '<p class="standings-note">'
+        '<span class="dag">†</span> Stat columns sit empty until the tournament kicks off — '
+        'a winner market has no games played yet. The same cells fill automatically once group play begins.'
+        '</p>'
+    )
+
+    # Whole-row click → drill-down. Inline so the page stays self-contained.
+    row_click_js = (
+        '<script>'
+        'document.querySelectorAll("table.standings").forEach(t=>'
+        't.addEventListener("click",e=>{'
+        'const tr=e.target.closest("tr[data-href]");'
+        'if(!tr)return;'
+        'if(e.target.closest("a"))return;'
+        'window.location.href=tr.dataset.href;}));'
+        '</script>'
     )
 
     return (
@@ -3410,9 +3766,13 @@ def render_outrights_index(outrights: list[dict]) -> str:
           '<a class="crumb" href="/"><span class="arr">←</span> Home</a>'
           '<h1>Outright winners</h1>'
           f'{standfirst}'
+          f'{meta}'
           '</section>'
         + "\n".join(sections)
+        + legend
+        + note
         + '</main>'
+        + row_click_js
         + chrome_footer()
     )
 
@@ -3537,10 +3897,32 @@ def render_outright_ladder(outright: dict) -> str:
     )
 
 
+def _ordinal(n: int) -> str:
+    """1 → '1st', 22 → '22nd'. Stays inside the function family because
+    nothing else in this file uses ordinals."""
+    if 10 <= (n % 100) <= 20:
+        suf = "th"
+    else:
+        suf = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+    return f"{n}{suf}"
+
+
+def _pick_threshold_p(market_p: float) -> float:
+    """Model probability at which a YES Pick fires (market_p + 3pp)."""
+    return market_p + 0.03
+
+
 def _outright_team_blurb_paragraphs(outright: dict, row: dict) -> list[str]:
     """Multi-paragraph editorial read for a per-team outright page.
-    Synthesised from the row's data so every team gets a meaningful
-    dedicated page even when the engine never wrote prose for it."""
+    Synthesised from the row's data + the surrounding ladder so every
+    team gets a meaningful dedicated page even when the engine never
+    wrote prose for it.
+
+    Ranks the team by `model_p` against the rest of the ladder and
+    cross-references the leader, the immediate neighbours, and the
+    Pick threshold so a Pass team's page reads as editorial rather
+    than as a footnote.
+    """
     team = row.get("team", "this team")
     mp = row.get("model_p")
     mp_lower = row.get("model_p_lower")
@@ -3552,18 +3934,56 @@ def _outright_team_blurb_paragraphs(outright: dict, row: dict) -> list[str]:
     pick_side = row.get("pick_side")
 
     market_label = outright.get("market_label") or outright.get("competition", {}).get("label", "the outright")
+    market_label_lower = market_label.lower()
     mp_pct = f"{(mp or 0) * 100:.1f}%"
     mkp_pct = f"{(mkp or 0) * 100:.1f}%"
+
+    # ── Rank the team against the rest of the ladder by model_p ────
+    ladder = list(outright.get("ladder") or [])
+    by_model = sorted(
+        ladder, key=lambda r: r.get("model_p") or 0.0, reverse=True,
+    )
+    rank: int | None = None
+    leader: dict | None = None
+    field_size = len(by_model)
+    for i, r in enumerate(by_model, 1):
+        if r.get("team") == team:
+            rank = i
+            break
+    if by_model and by_model[0].get("team") != team:
+        leader = by_model[0]
+
+    # Ranked-by-market context — useful when model + market disagree
+    # on the leader (which is the whole reason this market exists).
+    by_market = sorted(
+        ladder, key=lambda r: r.get("yes_market_p") or 0.0, reverse=True,
+    )
+    market_rank: int | None = None
+    for i, r in enumerate(by_market, 1):
+        if r.get("team") == team:
+            market_rank = i
+            break
 
     paragraphs: list[str] = []
 
     if state == "pick":
         side_str = f"{pick_side} {team}" if pick_side else team
         paragraphs.append(
-            f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()}. "
+            f"The Desk's model rates {team} at {mp_pct} to win {market_label_lower}. "
             f"The market currently prices that side at {mkp_pct} — a {edge:+.1f}pp gap. "
             f"The position is {side_str}, and the verdict is Pick."
         )
+        if rank is not None and field_size:
+            ranking = (
+                f"That's the {_ordinal(rank)}-highest probability the model "
+                f"assigns in a field of {field_size}."
+            )
+            if market_rank is not None and market_rank != rank:
+                ranking += (
+                    f" The market has {team} {_ordinal(market_rank)} on its own ladder — "
+                    f"the disagreement on where {team} sits is precisely what creates the edge."
+                )
+            paragraphs.append(ranking)
         if isinstance(lower, (int, float)) and isinstance(mp_lower, (int, float)) and isinstance(mp_upper, (int, float)):
             paragraphs.append(
                 f"Across 100 bootstrap re-simulations of the tournament the model's "
@@ -3575,57 +3995,105 @@ def _outright_team_blurb_paragraphs(outright: dict, row: dict) -> list[str]:
             "The Desk doesn't tip. We publish what the model thinks and what the market thinks; "
             "the gap is editorial. Take the position only if you've read the case and the price still stands."
         )
-    elif state == "avoid":
+        return paragraphs
+
+    if state == "avoid":
         paragraphs.append(
-            f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()} — well below "
+            f"The Desk's model rates {team} at {mp_pct} to win {market_label_lower} — well below "
             f"the market's {mkp_pct} ({edge:+.1f}pp). The verdict is Avoid."
         )
-        if isinstance(lower, (int, float)) and isinstance(mp_upper, (int, float)):
+        if rank is not None and market_rank is not None and field_size:
+            spread = market_rank - rank
+            if spread <= -2:
+                paragraphs.append(
+                    f"The Desk has {team} {_ordinal(rank)} on the model ladder; "
+                    f"the market has them {_ordinal(market_rank)}. The market is paying "
+                    f"for an outcome the model thinks is meaningfully less likely than "
+                    f"the betting public has priced in."
+                )
+            else:
+                paragraphs.append(
+                    f"The Desk has {team} {_ordinal(rank)} in a field of {field_size}; "
+                    f"the market has them {_ordinal(market_rank)}. Even by the model's own "
+                    f"ranking, the price is buying a contender — the Desk just doesn't think "
+                    f"that contender is worth what the market is asking."
+                )
+        if isinstance(mp_upper, (int, float)) and mkp is not None:
             paragraphs.append(
-                f"Even at the model's bootstrap upper bound the team's probability is {mp_upper * 100:.1f}%, "
-                f"still below the price. The market is paying more than the Desk thinks the YES side is worth."
+                f"Across 100 bootstrap re-simulations the model's probability never gets "
+                f"above {mp_upper * 100:.1f}% — still below the {mkp_pct} the market is asking. "
+                f"In the simulations where {team} look best, the YES side is still overpriced."
             )
         paragraphs.append(
-            "Avoid is structural — it doesn't tell you to take the NO side; it tells you the YES price isn't fair. "
-            "If you do trade, the case has to come from somewhere else."
+            "Avoid is structural — it doesn't tell you to take the NO side; it tells you the "
+            "YES price isn't fair. If you do trade, the case has to come from somewhere else."
         )
-    else:
-        if isinstance(edge, (int, float)) and edge >= 1.5:
-            paragraphs.append(
-                f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()}, slightly above "
-                f"the market's {mkp_pct} ({edge:+.1f}pp). The verdict is Pass."
+        return paragraphs
+
+    # ── Pass — the long tail ───────────────────────────────────────
+    #
+    # The thin two-sentence stub that shipped first read as a footnote
+    # rather than an editorial — most of the ladder is Pass, so the
+    # tail has to carry its own weight. The synthesised read does
+    # four things: states the model + market split (1), places the
+    # team in the ladder (2), quantifies what would have to change
+    # for a Pick or Avoid to fire (3), and closes on what Pass means
+    # for a reader (4).
+
+    paragraphs.append(
+        f"The Desk's model rates {team} at {mp_pct} to win {market_label_lower}; "
+        f"the market prices that side at {mkp_pct}. The edge is {edge:+.1f}pp — "
+        + ("inside the Pass band." if abs(edge or 0) < 1.5 else
+           ("a lean toward YES that doesn't clear the bar." if (edge or 0) >= 1.5 else
+            "a lean toward NO that doesn't clear the Avoid bar."))
+    )
+
+    if rank is not None and field_size:
+        ladder_line = (
+            f"That puts {team} {_ordinal(rank)} on the model ladder in a field of {field_size}."
+        )
+        if leader is not None:
+            leader_pct = (leader.get("model_p") or 0) * 100
+            leader_team = leader.get("team", "the leader")
+            ladder_line += (
+                f" The model's leader, {leader_team}, sits at {leader_pct:.1f}%."
             )
-            if isinstance(lower, (int, float)):
-                if lower > 0:
-                    paragraphs.append(
-                        f"The bootstrap lower bound on the edge is {lower:+.1f}pp — positive but not enough "
-                        f"to clear the +3.0pp Pick threshold. The model's lean exists but the signal isn't "
-                        f"strong enough to publish a position."
-                    )
-                else:
-                    paragraphs.append(
-                        f"The bootstrap lower bound on the edge is {lower:+.1f}pp — it crosses zero, "
-                        f"which means in alternate simulations of the tournament the team's probability "
-                        f"drops below the market's price. The point estimate leans yes; the robustness doesn't hold."
-                    )
-        elif isinstance(edge, (int, float)) and edge <= -1.5:
-            paragraphs.append(
-                f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()} — below "
-                f"the market's {mkp_pct} ({edge:+.1f}pp). The verdict is Pass."
+        if market_rank is not None and market_rank != rank:
+            ladder_line += (
+                f" The market has {team} {_ordinal(market_rank)} on its own ladder — "
+                f"so reader and model disagree about where this side belongs, but not "
+                f"by enough to publish a position."
+            )
+        paragraphs.append(ladder_line)
+
+    # Quantify what would have to move for a Pick to trip — a useful
+    # editorial hook: it tells the reader what to watch.
+    if isinstance(mp, (int, float)) and isinstance(mkp, (int, float)):
+        threshold_pct = (_pick_threshold_p(mkp)) * 100
+        current_pct = mp * 100
+        if threshold_pct > current_pct:
+            band_hits = (
+                isinstance(mp_upper, (int, float))
+                and mp_upper * 100 >= threshold_pct
+            )
+            band_phrase = (
+                f"the band runs [{(mp_lower or 0) * 100:.1f}%, {(mp_upper or 0) * 100:.1f}%], "
+                + ("so even at the upper end the Pick bar is in reach."
+                   if band_hits else
+                   "and even at the upper end the Pick bar isn't reached.")
             )
             paragraphs.append(
-                "The market is paying more than the model thinks the YES side is worth, but the gap isn't "
-                "wide enough to call Avoid. There's no clear edge in either direction."
-            )
-        else:
-            paragraphs.append(
-                f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()}; the market prices "
-                f"that side at {mkp_pct}. The edge is {edge:+.1f}pp — effectively zero. The verdict is Pass."
-            )
-            paragraphs.append(
-                "When the model and the market agree, there's nothing for us to publish. The price is fair."
+                f"For the verdict to flip to Pick at today's market price, the model would "
+                f"need to rate {team} at {threshold_pct:.1f}% or better — a "
+                f"{threshold_pct - current_pct:.1f}pp move from where it sits now. "
+                f"Across 100 bootstrap re-simulations of the tournament {band_phrase}"
             )
 
+    paragraphs.append(
+        "Pass isn't 'no opinion'. It's the Desk saying the price and the model agree closely "
+        "enough that there's no edge to publish. A reader can still take a side on conviction; "
+        "we just don't have an editorial reason to push them either way."
+    )
     return paragraphs
 
 

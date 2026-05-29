@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Odds Primer — Daily Report ({{ report_date }})</title>
+<style>
+  /* ───────── tokens (lifted from Odds Primer Design System) ───────── */
+  :root {
+    --paper:       #FAF7F0;
+    --paper-pure:  #FFFFFF;
+    --paper-warm:  #F0ECE2;
+    --paper-deep:  #E8E2D2;
+    --ink:         #0E2240;
+    --ink-soft:    #2A3957;
+    --graphite:    #3A3F47;
+    --graphite-soft:#6B7079;
+    --rule:        #D9D2C0;
+    --rule-soft:   #EDE7D6;
+    --flame:       #D9461C;
+    --flame-deep:  #A8341A;
+    --flame-tint:  #F7E4DA;
+    --venue-kalshi:     #00C46A;
+    --venue-polymarket: #2A6FDB;
+    --status-green: #1F7A4D;
+    --status-amber: #B07A1F;
+    --status-red:   #A8341A;
+  }
+
+  @page {
+    size: A4;
+    margin: 18mm 16mm 18mm 16mm;
+  }
+
+  /* WeasyPrint pulls @font-face URLs at render time; keep all type
+     resolution at the stack level so it works offline + in browsers. */
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', 'Charter', Georgia, serif;
+    font-size: 10.5pt;
+    line-height: 1.45;
+    margin: 0;
+    padding: 0;
+  }
+  .sans  { font-family: 'Inter Tight', 'Inter', system-ui, -apple-system, sans-serif; }
+  .mono  { font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace; }
+
+  a { color: var(--flame-deep); text-decoration: none; }
+
+  /* ───────── masthead ───────── */
+  .masthead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+  .wordmark {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 22pt;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .wordmark .dot { color: var(--flame); }
+  .edition-strip {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 9pt;
+    color: var(--graphite-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .edition-strip .label { color: var(--ink); font-weight: 600; }
+
+  /* ───────── status banner ───────── */
+  .status-banner {
+    background: var(--paper-warm);
+    border-left: 4px solid var(--flame);
+    padding: 10px 14px;
+    margin: 0 0 18px 0;
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 10.5pt;
+    color: var(--ink);
+  }
+  .status-banner .pill {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--paper-pure);
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-right: 8px;
+    vertical-align: 1px;
+  }
+  .status-banner .pill.green { background: var(--status-green); }
+  .status-banner .pill.amber { background: var(--status-amber); }
+  .status-banner .pill.red   { background: var(--status-red);   }
+
+  /* ───────── section / part headings ───────── */
+  .part {
+    margin-top: 24px;
+    margin-bottom: 10px;
+  }
+  .part .kicker {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 8.5pt;
+    letter-spacing: 0.18em;
+    color: var(--flame);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .part h2 {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 18pt;
+    color: var(--ink);
+    margin: 2px 0 0 0;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .part .sub {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 9.5pt;
+    color: var(--graphite-soft);
+    margin: 4px 0 8px 0;
+  }
+
+  h3.section {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 10.5pt;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 16px 0 8px 0;
+    border-top: 1px solid var(--rule);
+    padding-top: 8px;
+  }
+
+  /* ───────── KPI grid (4 across) ───────── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .kpi {
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    padding: 10px 12px;
+  }
+  .kpi .label {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--graphite-soft);
+  }
+  .kpi .value {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 22pt;
+    color: var(--ink);
+    line-height: 1.05;
+    margin-top: 4px;
+  }
+  .kpi .delta {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 8.5pt;
+    color: var(--graphite-soft);
+    margin-top: 2px;
+  }
+  .kpi .delta.up   { color: var(--status-green); }
+  .kpi .delta.down { color: var(--status-red);   }
+
+  /* ───────── tables ───────── */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 10pt;
+  }
+  th, td {
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  th {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--graphite-soft);
+    font-weight: 600;
+    border-bottom: 1px solid var(--ink);
+  }
+  td.num, th.num {
+    text-align: right;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  /* ───────── KV rows (CTAs to Polymarket / Kalshi, etc.) ───────── */
+  .kv {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 12px;
+    margin: 4px 0;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .kv .k {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    color: var(--ink-soft);
+    font-size: 10pt;
+  }
+  .kv .v {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    color: var(--ink);
+    text-align: right;
+    font-size: 10pt;
+  }
+  .kv .v .pill-venue {
+    display: inline-block;
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--paper-pure);
+    background: var(--graphite-soft);
+    padding: 1px 6px;
+    border-radius: 999px;
+    margin-right: 6px;
+    vertical-align: 1px;
+  }
+  .pill-venue.polymarket { background: var(--venue-polymarket); }
+  .pill-venue.kalshi     { background: var(--venue-kalshi);     }
+
+  /* ───────── sentiment bars (community reactions) ───────── */
+  .bars { margin-top: 4px; }
+  .bar-row {
+    display: grid;
+    grid-template-columns: 130px 1fr 60px;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+    font-size: 10pt;
+  }
+  .bar-row .name {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    color: var(--ink-soft);
+  }
+  .bar-row .track {
+    background: var(--paper-warm);
+    border-radius: 2px;
+    height: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-row .fill {
+    background: var(--flame);
+    height: 100%;
+  }
+  .bar-row.positive .fill { background: var(--ink); }
+  .bar-row .pct {
+    text-align: right;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    color: var(--graphite);
+    font-size: 9pt;
+  }
+
+  /* ───────── funnel (audience visit chain) ───────── */
+  .funnel { margin-top: 6px; }
+  .funnel-step {
+    display: grid;
+    grid-template-columns: 200px 1fr 100px;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .funnel-step .lbl {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 10pt;
+    color: var(--ink-soft);
+  }
+  .funnel-step .track {
+    background: var(--paper-warm);
+    height: 14px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .funnel-step .fill {
+    background: var(--ink);
+    height: 100%;
+  }
+  .funnel-step .num {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    text-align: right;
+    color: var(--ink);
+  }
+
+  /* ───────── desk health ───────── */
+  .desk-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .desk-card {
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    padding: 10px 12px;
+  }
+  .desk-card h4 {
+    margin: 0 0 6px 0;
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 9.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--graphite-soft);
+    font-weight: 600;
+  }
+  .desk-card .val {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 14pt;
+    color: var(--ink);
+  }
+  .desk-card .sub {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 9pt;
+    color: var(--graphite-soft);
+    margin-top: 2px;
+  }
+
+  /* ───────── footer ───────── */
+  .colophon {
+    margin-top: 28px;
+    padding-top: 10px;
+    border-top: 1px solid var(--rule);
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 8.5pt;
+    color: var(--graphite-soft);
+  }
+  .colophon a { color: var(--graphite); }
+
+  .muted { color: var(--graphite-soft); }
+  .empty {
+    font-style: italic;
+    color: var(--graphite-soft);
+    font-family: 'Source Serif 4', Georgia, serif;
+    padding: 6px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ───────── masthead ───────── -->
+<div class="masthead">
+  <div class="wordmark">Odds Primer<span class="dot">.</span></div>
+  <div class="edition-strip">
+    <span class="label">Daily report</span> &middot; {{ report_date_long }} &middot; {{ env_label }}
+  </div>
+</div>
+
+<!-- ───────── status banner ───────── -->
+<div class="status-banner">
+  <span class="pill {{ status.color }}">{{ status.label }}</span>
+  {{ status.line }}
+</div>
+
+<!-- ───────── PART I — Audience ───────── -->
+<div class="part">
+  <div class="kicker">Part I</div>
+  <h2>Audience</h2>
+  <div class="sub">Reader traffic, picked matches, and how the community is voting.</div>
+</div>
+
+<!-- 4 KPIs -->
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="label">Views</div>
+    <div class="value">{{ kpi.views }}</div>
+    <div class="delta {{ kpi.views_delta_cls }}">{{ kpi.views_delta }}</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Unique readers</div>
+    <div class="value">{{ kpi.uniques }}</div>
+    <div class="delta {{ kpi.uniques_delta_cls }}">{{ kpi.uniques_delta }}</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Votes cast</div>
+    <div class="value">{{ kpi.votes }}</div>
+    <div class="delta {{ kpi.votes_delta_cls }}">{{ kpi.votes_delta }}</div>
+  </div>
+  <div class="kpi">
+    <div class="label">CTA clicks</div>
+    <div class="value">{{ kpi.cta_total }}</div>
+    <div class="delta {{ kpi.cta_delta_cls }}">{{ kpi.cta_delta }}</div>
+  </div>
+</div>
+
+<!-- New vs returning + busiest hour -->
+<div class="kv">
+  <div class="k">New vs returning readers</div>
+  <div class="v">{{ audience.new_pct }}% new &middot; {{ audience.returning_pct }}% returning</div>
+</div>
+<div class="kv">
+  <div class="k">Busiest hour (UTC)</div>
+  <div class="v">{{ audience.busiest_hour }}</div>
+</div>
+
+<!-- CTA breakdown by venue -->
+<h3 class="section">CTAs to Polymarket / Kalshi</h3>
+{% if cta_by_venue %}
+{% for row in cta_by_venue %}
+<div class="kv">
+  <div class="k"><span class="pill-venue {{ row.venue }}">{{ row.venue }}</span> {{ row.label }}</div>
+  <div class="v">{{ row.count }} clicks</div>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty">No CTA clicks recorded yet. (The endpoint may not be wired, or yesterday saw no qualifying traffic.)</div>
+{% endif %}
+
+<!-- Top-5 matches by views -->
+<h3 class="section">Top matches by views</h3>
+{% if top_matches %}
+<table>
+  <thead>
+    <tr>
+      <th>Match</th>
+      <th>Verdict</th>
+      <th class="num">Views</th>
+      <th class="num">Votes</th>
+      <th class="num">Aligned %</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for m in top_matches %}
+    <tr>
+      <td>{{ m.label }}</td>
+      <td class="muted">{{ m.verdict_label }}</td>
+      <td class="num">{{ m.views }}</td>
+      <td class="num">{{ m.votes }}</td>
+      <td class="num">{% if m.aligned_pct is not none %}{{ m.aligned_pct }}%{% else %}—{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No matches crossed yesterday's read threshold.</div>
+{% endif %}
+
+<!-- Sentiment bars -->
+<h3 class="section">Community sentiment</h3>
+{% if sentiment.total > 0 %}
+<div class="bars">
+  {% for row in sentiment.rows %}
+  <div class="bar-row {% if row.positive %}positive{% endif %}">
+    <div class="name">{{ row.emoji }} {{ row.label }}</div>
+    <div class="track"><div class="fill" style="width: {{ row.pct }}%;"></div></div>
+    <div class="pct">{{ row.count }} &middot; {{ row.pct }}%</div>
+  </div>
+  {% endfor %}
+</div>
+<div class="muted" style="margin-top:6px; font-size: 9pt;">
+  Aligned with the Desk: <strong>{{ sentiment.aligned_pct }}%</strong> of votes were on a positive chip (Bullish or Value).
+</div>
+{% else %}
+<div class="empty">No votes cast yesterday.</div>
+{% endif %}
+
+<!-- Zero-click picks -->
+<h3 class="section">Picks with zero clicks</h3>
+{% if zero_click_picks %}
+<table>
+  <thead>
+    <tr>
+      <th>Match</th>
+      <th class="num">Edge</th>
+      <th class="num">Views</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for m in zero_click_picks %}
+    <tr>
+      <td>{{ m.label }}</td>
+      <td class="num">{% if m.edge_pp is not none %}+{{ '%.1f'|format(m.edge_pp) }}pp{% else %}—{% endif %}</td>
+      <td class="num">{{ m.views }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<div class="muted" style="margin-top:4px; font-size: 9pt;">
+  Live Picks that nobody clicked the CTA on yesterday — candidates for surface or copy review.
+</div>
+{% else %}
+<div class="empty">Every live Pick attracted at least one click. Nice.</div>
+{% endif %}
+
+<!-- Funnel -->
+<h3 class="section">Audience funnel</h3>
+{% if funnel.rows %}
+<div class="funnel">
+  {% for f in funnel.rows %}
+  <div class="funnel-step">
+    <div class="lbl">{{ f.label }}</div>
+    <div class="track"><div class="fill" style="width: {{ f.pct }}%;"></div></div>
+    <div class="num">{{ f.value }}</div>
+  </div>
+  {% endfor %}
+</div>
+<div class="muted" style="margin-top:4px; font-size: 9pt;">
+  Each bar is sized as a share of the top step's count.
+</div>
+{% else %}
+<div class="empty">No audience activity recorded yesterday.</div>
+{% endif %}
+
+<!-- ───────── PART II — Desk health ───────── -->
+<div class="part" style="margin-top: 32px;">
+  <div class="kicker">Part II</div>
+  <h2>Desk health</h2>
+  <div class="sub">Latest pipeline run, verdict mix, and end-to-end cost.</div>
+</div>
+
+<div class="desk-grid">
+  <div class="desk-card">
+    <h4>Last refresh tick</h4>
+    <div class="val">{{ desk.last_run_at or '—' }}</div>
+    <div class="sub">Status: {{ desk.last_run_status or '—' }} &middot; Duration: {{ desk.last_run_duration }} &middot; Trigger: {{ desk.last_run_trigger or '—' }}</div>
+  </div>
+  <div class="desk-card">
+    <h4>Verdicts published</h4>
+    <div class="val">{{ desk.published }}</div>
+    <div class="sub">{{ desk.picks }} Pick &middot; {{ desk.passes }} Pass &middot; {{ desk.avoids }} Avoid</div>
+  </div>
+  <div class="desk-card">
+    <h4>Tick cost</h4>
+    <div class="val">${{ '%.2f'|format(desk.tick_usd) }}</div>
+    <div class="sub">Across {{ desk.tick_calls }} Anthropic calls (Haiku + extractor).</div>
+  </div>
+  <div class="desk-card">
+    <h4>Editorial changes</h4>
+    <div class="val">{{ desk.changes }}</div>
+    <div class="sub">Verdicts, copy, or edges that moved vs the previous run.</div>
+  </div>
+</div>
+
+<h3 class="section">Funnel — Desk pipeline</h3>
+{% if desk.funnel %}
+<table>
+  <thead>
+    <tr>
+      <th>Stage</th>
+      <th class="num">Count</th>
+      <th>Note</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for s in desk.funnel %}
+    <tr>
+      <td>{{ s.stage }}</td>
+      <td class="num">{{ s.n }}</td>
+      <td class="muted">{{ s.note or '' }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No funnel rows recorded — pipeline hasn't completed a tick yet.</div>
+{% endif %}
+
+<!-- ───────── footer ───────── -->
+<div class="colophon">
+  Odds Primer &middot; Daily report generated {{ generated_at }} &middot;
+  Window {{ window_start }} → {{ window_end }} (UTC) &middot;
+  Built from the activity-signals tables, the Desk's <code>RunReport</code> ledger, and per-tick Anthropic cost rows.
+</div>
+
+</body>
+</html>

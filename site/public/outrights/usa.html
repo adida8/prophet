@@ -4,17 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>USA · Odds Primer</title>
-<meta name="description" content="The Desk&#x27;s model rates USA at 0.7% to win world cup 2026 — outright winner; the market prices that side at 1.1%. The edge is -0.5pp — effectively zero. The verdict is Pass.">
+<meta name="description" content="The Desk&#x27;s model rates USA at 0.7% to win world cup 2026 — outright winner; the market prices that side at 1.1%. The edge is -0.5pp — inside the Pass band.">
 <link rel="canonical" href="https://www.oddsprimer.com/outrights/usa">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Odds Primer">
 <meta property="og:title" content="USA · Odds Primer">
-<meta property="og:description" content="The Desk&#x27;s model rates USA at 0.7% to win world cup 2026 — outright winner; the market prices that side at 1.1%. The edge is -0.5pp — effectively zero. The verdict is Pass.">
+<meta property="og:description" content="The Desk&#x27;s model rates USA at 0.7% to win world cup 2026 — outright winner; the market prices that side at 1.1%. The edge is -0.5pp — inside the Pass band.">
 <meta property="og:url" content="https://www.oddsprimer.com/outrights/usa">
 <meta property="og:image" content="https://www.oddsprimer.com/favicon-192.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="USA · Odds Primer">
-<meta name="twitter:description" content="The Desk&#x27;s model rates USA at 0.7% to win world cup 2026 — outright winner; the market prices that side at 1.1%. The edge is -0.5pp — effectively zero. The verdict is Pass.">
+<meta name="twitter:description" content="The Desk&#x27;s model rates USA at 0.7% to win world cup 2026 — outright winner; the market prices that side at 1.1%. The edge is -0.5pp — inside the Pass band.">
 <meta name="twitter:image" content="https://www.oddsprimer.com/favicon-192.png">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
@@ -793,6 +793,119 @@ a { color: inherit; }
   color: var(--graphite); margin: 12px auto 0; max-width: 52ch;
 }
 
+/* OUTRIGHTS STANDINGS TABLE
+   One component, reusable for league tables later. Column contract:
+   Team · Verdict · P · W · D · L · GF · GA · GD · Pts · Model · Market · Edge.
+   Team is the pinned identity column. Stat block is data-driven — empty (—)
+   for winner markets pre-kickoff, populated from standings for league markets.
+   Mobile collapses to Team · Verdict · P · Pts · Model. */
+.standings-meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 20px;
+  margin-top: 22px; padding-bottom: 13px; border-bottom: var(--hairline);
+  font-family: var(--font-sans); font-size: 12.5px; color: var(--graphite-soft);
+}
+.standings-meta span b { color: var(--ink-soft); font-weight: 600; }
+.tablewrap {
+  margin-top: 18px; border: var(--hairline); border-radius: 8px;
+  background: var(--paper-pure); overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+table.standings { border-collapse: collapse; width: 100%; font-size: 14px; }
+.standings thead th {
+  position: sticky; top: 0; background: var(--paper-warm); z-index: 2;
+  font-family: var(--font-sans); font-weight: 600; font-size: 10.5px; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--graphite-soft); text-align: right;
+  padding: 11px 10px; border-bottom: var(--hairline); white-space: nowrap;
+}
+.standings thead th.grp {
+  text-align: left; border-bottom: var(--hairline);
+  font-size: 10px; color: var(--graphite); background: var(--rule); padding: 6px 10px;
+}
+.standings .col-verdict { width: 104px; text-align: center !important; }
+.standings .col-team { text-align: left !important; min-width: 178px; }
+.standings .col-stat { width: 46px; }
+.standings .col-desk { width: 74px; }
+.standings .c-team {
+  position: sticky; left: 0; background: var(--paper-pure); z-index: 1;
+  box-shadow: 1px 0 0 var(--rule);
+}
+.standings thead .c-team { z-index: 3; background: var(--paper-warm); }
+.standings .c-verdict { text-align: center; }
+.standings tbody tr { cursor: pointer; transition: background var(--dur-fast) var(--ease-standard); }
+.standings tbody tr:hover { background: var(--flame-tint); }
+.standings tbody tr:hover .c-team { background: var(--flame-tint); }
+.standings tbody td {
+  padding: 11px 10px; border-bottom: var(--hairline-soft);
+  text-align: right; vertical-align: middle; white-space: nowrap;
+}
+.standings tbody tr:last-child td { border-bottom: 0; }
+.standings .team { display: flex; align-items: center; gap: 10px; text-align: left; }
+.standings .team .rank {
+  font-family: var(--font-mono); font-size: 12px; color: var(--graphite-soft);
+  width: 18px; text-align: right; flex: 0 0 auto;
+}
+.standings .team .flag {
+  width: 22px; height: 16px; border-radius: 2px; flex: 0 0 auto;
+  display: inline-block; object-fit: cover; background: var(--rule-soft);
+}
+.standings .team .name {
+  font-family: var(--font-sans); font-weight: 600; font-size: 14.5px; color: var(--ink);
+}
+.standings .team a {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: inherit;
+}
+.standings .stat { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); }
+.standings .stat.muted { color: var(--rule); }
+.standings .stat.pts { font-weight: 600; color: var(--ink); }
+.standings .num { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); }
+.standings .num.model { color: var(--ink); font-weight: 600; }
+.standings .edge { font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
+.standings .edge.pos { color: var(--flame-deep); }
+.standings .edge.neg { color: var(--graphite-soft); }
+.standings .chip {
+  display: inline-block; font-family: var(--font-sans); font-weight: 600; font-size: 11px;
+  letter-spacing: 0.04em; text-transform: uppercase; padding: 4px 11px; border-radius: 999px;
+  border: 1px solid transparent;
+}
+.standings .chip.pick { background: var(--flame); color: #fff; }
+.standings .chip.pass { background: transparent; color: var(--graphite-soft); border-color: var(--rule); }
+.standings .chip.avoid { background: transparent; color: var(--ink); border-color: var(--ink); }
+.standings .chip .side { opacity: 0.8; font-weight: 500; margin-left: 3px; }
+.standings-legend {
+  margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px 24px;
+  font-family: var(--font-sans); font-size: 12px; color: var(--graphite-soft);
+}
+.standings-legend b { color: var(--ink-soft); font-weight: 600; }
+.standings-legend .chip { padding: 2px 9px; }
+.standings-note {
+  margin-top: 14px; font-family: var(--font-serif); font-style: italic; font-size: 13.5px;
+  color: var(--graphite); max-width: 64ch; line-height: 1.5;
+}
+.standings-note .dag { color: var(--flame); font-style: italic; }
+@media (max-width: 640px) {
+  .standings { table-layout: fixed; }
+  .standings thead tr.groups { display: none; }
+  .standings .hide-mobile { display: none !important; }
+  .standings .col-team { min-width: 0; width: auto; }
+  .standings .col-verdict { width: 60px; }
+  .standings .col-stat { width: 28px; }
+  .standings .col-desk { width: 48px; }
+  .standings .team { gap: 7px; }
+  .standings .team a { gap: 7px; }
+  .standings .team .rank { display: none; }
+  .standings .team .flag { width: 18px; height: 13px; }
+  .standings .team .name {
+    font-size: 12.5px; white-space: normal; line-height: 1.25;
+    word-break: break-word;
+  }
+  .standings tbody td, .standings thead th { padding: 9px 4px; }
+  .standings .num, .standings .stat { font-size: 11.5px; }
+  .standings .edge { font-size: 11.5px; }
+  .standings .chip { padding: 3px 6px; font-size: 9.5px; letter-spacing: 0.03em; }
+  .standings .chip .side { margin-left: 2px; }
+  .standings-meta { font-size: 11.5px; gap: 4px 14px; }
+}
+
 .site-foot {
   margin: 48px 0 28px; padding-top: 18px; border-top: var(--hairline);
   display: flex; flex-direction: column; gap: 14px;
@@ -1282,8 +1395,10 @@ body.op-noscroll { overflow: hidden; }
     <a href="/about">About</a>
   </nav>
 </header>
-<main class="page"><section class="page-header"><a class="crumb" href="/outrights/"><span class="arr">←</span> All outright winners</a><h1>USA</h1><p class="standfirst" style="font-family:var(--font-serif);font-style:italic;color:var(--ink-soft);margin:14px 0 0;">World Cup 2026 — outright winner · <strong style="color:var(--flame-deep)">Pass</strong></p></section><div class="lv-card is-pass"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">—</span><span class="lv-lab">Pass</span><span class="lv-when"><span class="lv-when-row">Resolves 20 Jul 2026</span><span class="lv-fresh">Last updated ·20 hrs ago</span></span></div><h3 class="lv-teams"><span class="lv-team"><img class="lv-flag" src="/flags/us.svg" alt="" aria-hidden="true" loading="lazy">USA</span></h3><p class="lv-venue-meta">World Cup 2026 — outright winner</p><p class="lv-thesis">Priced close to fair: model 0.7% vs market 1.1% (-0.5pp). No edge in either direction.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">1%</span></span><span class="rp"><span class="k">Market</span><span class="v">1%</span></span><span class="edge is-neg">−0.5 pts</span></div></div><div class="op-activity" data-match-id="outright-fb-wc26-winner-usa" data-verdict-state="pass" data-pick-side=""></div></div><div class="blurb"><p>The Desk&#x27;s model rates USA at 0.7% to win world cup 2026 — outright winner; the market prices that side at 1.1%. The edge is -0.5pp — effectively zero. The verdict is Pass.</p>
-<p>When the model and the market agree, there&#x27;s nothing for us to publish. The price is fair.</p></div><div class="cta-row"><a class="open-market" href="https://polymarket.com/event/2026-fifa-world-cup-winner-595" rel="nofollow noopener" target="_blank">See price on <span class="venue-name">Polymarket</span> <span class="arr">↗</span></a><span class="meta-note">Affiliate link. Odds Primer may earn a commission. Editorial verdicts are independent.</span></div></main><section class="op-news" aria-labelledby="op-news-title">
+<main class="page"><section class="page-header"><a class="crumb" href="/outrights/"><span class="arr">←</span> All outright winners</a><h1>USA</h1><p class="standfirst" style="font-family:var(--font-serif);font-style:italic;color:var(--ink-soft);margin:14px 0 0;">World Cup 2026 — outright winner · <strong style="color:var(--flame-deep)">Pass</strong></p></section><div class="lv-card is-pass"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">—</span><span class="lv-lab">Pass</span><span class="lv-when"><span class="lv-when-row">Resolves 20 Jul 2026</span><span class="lv-fresh">Last updated ·1 day ago</span></span></div><h3 class="lv-teams"><span class="lv-team"><img class="lv-flag" src="/flags/us.svg" alt="" aria-hidden="true" loading="lazy">USA</span></h3><p class="lv-venue-meta">World Cup 2026 — outright winner</p><p class="lv-thesis">Priced close to fair: model 0.7% vs market 1.1% (-0.5pp). No edge in either direction.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">1%</span></span><span class="rp"><span class="k">Market</span><span class="v">1%</span></span><span class="edge is-neg">−0.5 pts</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/2026-fifa-world-cup-winner-595" target="_blank" rel="nofollow noopener">See price on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-live">See live market</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">See price on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span></div></div><div class="op-activity" data-match-id="outright-fb-wc26-winner-usa" data-verdict-state="pass" data-pick-side=""></div></div><div class="blurb"><p>The Desk&#x27;s model rates USA at 0.7% to win world cup 2026 — outright winner; the market prices that side at 1.1%. The edge is -0.5pp — inside the Pass band.</p>
+<p>That puts USA 19th on the model ladder in a field of 48. The model&#x27;s leader, Argentina, sits at 18.8%. The market has USA 15th on its own ladder — so reader and model disagree about where this side belongs, but not by enough to publish a position.</p>
+<p>For the verdict to flip to Pick at today&#x27;s market price, the model would need to rate USA at 4.1% or better — a 3.5pp move from where it sits now. Across 100 bootstrap re-simulations of the tournament the band runs [0.1%, 1.4%], and even at the upper end the Pick bar isn&#x27;t reached.</p>
+<p>Pass isn&#x27;t &#x27;no opinion&#x27;. It&#x27;s the Desk saying the price and the model agree closely enough that there&#x27;s no edge to publish. A reader can still take a side on conviction; we just don&#x27;t have an editorial reason to push them either way.</p></div><div class="cta-row"><a class="open-market" href="https://polymarket.com/event/2026-fifa-world-cup-winner-595" rel="nofollow noopener" target="_blank">See price on <span class="venue-name">Polymarket</span> <span class="arr">↗</span></a><span class="meta-note">Affiliate link. Odds Primer may earn a commission. Editorial verdicts are independent.</span></div></main><section class="op-news" aria-labelledby="op-news-title">
   <div class="op-news__inner">
     <p class="op-news__eyebrow">New to prediction markets?</p>
     <h2 class="op-news__title" id="op-news-title">Start with the weekly primer.</h2>
