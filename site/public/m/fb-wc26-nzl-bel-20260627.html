@@ -583,6 +583,57 @@ a { color: inherit; }
 }
 .blurb p + p { margin-top: 14px; }
 
+/* Ladder — per-team verdict table on the per-outright page. Same
+   eyebrow shape as .drivers; numeric columns are mono + right-aligned
+   so 48 rows of probabilities scan cleanly. */
+.ladder { margin: 32px 0 0; }
+.ladder h2 {
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  margin: 0 0 12px; padding-bottom: 8px; border-bottom: var(--hairline);
+}
+.ladder-table {
+  width: 100%; border-collapse: collapse;
+  font-family: var(--font-sans); font-size: 14px;
+}
+.ladder-table thead th {
+  text-align: left; font-weight: 700; font-size: 10.5px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--graphite-soft);
+  padding: 8px 10px; border-bottom: var(--hairline);
+}
+.ladder-table th.ladder-num,
+.ladder-table td.ladder-num { text-align: right; }
+.ladder-table th.ladder-verdict,
+.ladder-table td.ladder-verdict { text-align: right; white-space: nowrap; }
+.ladder-row td {
+  padding: 10px; border-bottom: var(--hairline-soft); vertical-align: middle;
+}
+.ladder-row:last-child td { border-bottom: none; }
+.ladder-row.is-pick { background: rgba(217, 70, 28, 0.04); }
+.ladder-team {
+  font-family: var(--font-serif); font-size: 15px; color: var(--ink);
+}
+.ladder-num {
+  font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.ladder-edge { color: var(--ink); font-weight: 600; }
+.ladder-edge.is-neg { color: var(--graphite-soft); font-weight: 400; }
+.ladder-glyph {
+  display: inline-block; margin-right: 6px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--graphite-soft);
+}
+.ladder-row.is-pick .ladder-glyph { color: var(--flame-deep); }
+.ladder-row.is-avoid .ladder-glyph { color: var(--ink); }
+.ladder-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--graphite-soft);
+}
+.ladder-row.is-pick .ladder-label { color: var(--flame-deep); }
+.ladder-row.is-avoid .ladder-label { color: var(--ink); }
+
 /* Sources — verifiable links behind the press chorus in the blurb.
    One row per outlet; each row links to the article and shows the
    verbatim line we quoted. Editorial register, not a directory. */
@@ -1157,11 +1208,12 @@ body.op-noscroll { overflow: hidden; }
       <ul>
         <li><a href="/">Home</a></li>
         <li><a href="/matches/" aria-current="page">Upcoming matches</a></li>
+        <li><a href="/outrights/">Outright winner</a></li>
         <li><a href="/methodology">How it works</a></li>
         <li><a href="/about">About</a></li>
       </ul>
     </nav>
-    <span class="nav-meta">Last refresh 13:44 UTC</span>
+    <span class="nav-meta">Last refresh 17:44 UTC</span>
     <details class="burger">
       <summary class="burger-btn" aria-label="More links">
         <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
@@ -1173,6 +1225,7 @@ body.op-noscroll { overflow: hidden; }
       <ul class="burger-menu">
         <li><a href="/">Home</a></li>
         <li><a href="/matches/" aria-current="page">Upcoming matches</a></li>
+        <li><a href="/outrights/">Outright winner</a></li>
         <li><a href="/methodology">How it works</a></li>
         <li><a href="/about">About</a></li>
         <li><a href="/responsible-use">Responsible use</a></li>
@@ -1190,11 +1243,12 @@ body.op-noscroll { overflow: hidden; }
   <nav class="pill-nav" aria-label="Primary (mobile)">
     <a href="/">Home</a>
     <a href="/matches/" aria-current="page">Matches</a>
+    <a href="/outrights/">Outright</a>
     <a href="/methodology">How it works</a>
     <a href="/about">About</a>
   </nav>
 </header>
-<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>New Zealand v Belgium · the model leans New Zealand</h1></section><section class="trust-strip" aria-label="Data freshness"><span class="ts-item"><span class="ts-lbl">Updated</span> 1 day ago</span><span class="ts-item"><span class="ts-lbl">Model refresh</span> 13:43 UTC</span><span class="ts-item"><span class="ts-lbl">Market snapshot</span> live</span></section><div class="lv-card is-pick is-lead"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-pick-chip">New Zealand to win</span><span class="lv-when"><span class="lv-when-row">Sat 27 Jun · 03:00 UTC</span><span class="lv-fresh">Last updated ·1 day ago</span></span></div><h3 class="lv-teams"><span class="lv-team"><img class="lv-flag" src="/flags/nz.svg" alt="" aria-hidden="true" loading="lazy">New Zealand</span> <span class="vs">v</span> <span class="lv-team is-dim"><img class="lv-flag" src="/flags/be.svg" alt="" aria-hidden="true" loading="lazy">Belgium</span></h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">The home side reads stronger to the model than to the market. Our model puts New Zealand at 13%; Polymarket prices that side at 6%. That +6.7 pts gap makes this a Pick.</p><div class="lv-foot"><div class="lv-reads-stack"><div class="lv-stat-lead">New Zealand to win</div><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">13%</span></span><span class="rp"><span class="k">Market</span><span class="v">6%</span></span><span class="edge">+6.7 pts</span></div></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-nzl-bel-2026-06-26" target="_blank" rel="nofollow noopener">See price on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +1567</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">See price on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span></div></div><div class="op-activity" data-match-id="fb-wc26-nzl-bel-20260627" data-verdict-state="pick" data-pick-side="New Zealand"></div></div><p class="event-disclaimer">Editorial analysis only. Odds Primer does not provide betting or financial advice.</p><div class="blurb"><p>New Zealand face Belgium on Saturday, overnight UTC kickoff, in FIFA World Cup 2026. This is one of the matches where the model&#x27;s number disagrees with the closing line on Polymarket — a substantive gap on the New Zealand side, +6.7 pts.</p>
+<main class="page"><section class="page-header"><a class="crumb" href="/matches/"><span class="arr">←</span> All matches</a><h1>New Zealand v Belgium · the model leans New Zealand</h1></section><section class="trust-strip" aria-label="Data freshness"><span class="ts-item"><span class="ts-lbl">Updated</span> 2 days ago</span><span class="ts-item"><span class="ts-lbl">Model refresh</span> 13:43 UTC</span><span class="ts-item"><span class="ts-lbl">Market snapshot</span> live</span></section><div class="lv-card is-pick is-lead"><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-pick-chip">New Zealand to win</span><span class="lv-when"><span class="lv-when-row">Sat 27 Jun · 03:00 UTC</span><span class="lv-fresh">Last updated ·2 days ago</span></span></div><h3 class="lv-teams"><span class="lv-team"><img class="lv-flag" src="/flags/nz.svg" alt="" aria-hidden="true" loading="lazy">New Zealand</span> <span class="vs">v</span> <span class="lv-team is-dim"><img class="lv-flag" src="/flags/be.svg" alt="" aria-hidden="true" loading="lazy">Belgium</span></h3><p class="lv-venue-meta">FIFA World Cup 2026</p><p class="lv-thesis">The home side reads stronger to the model than to the market. Our model puts New Zealand at 13%; Polymarket prices that side at 6%. That +6.7 pts gap makes this a Pick.</p><div class="lv-foot"><div class="lv-reads-stack"><div class="lv-stat-lead">New Zealand to win</div><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">13%</span></span><span class="rp"><span class="k">Market</span><span class="v">6%</span></span><span class="edge">+6.7 pts</span></div></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/fifwc-nzl-bel-2026-06-26" target="_blank" rel="nofollow noopener">See price on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +1567</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">See price on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span></div></div><div class="op-activity" data-match-id="fb-wc26-nzl-bel-20260627" data-verdict-state="pick" data-pick-side="New Zealand"></div></div><p class="event-disclaimer">Editorial analysis only. Odds Primer does not provide betting or financial advice.</p><div class="blurb"><p>New Zealand face Belgium on Saturday, overnight UTC kickoff, in FIFA World Cup 2026. This is one of the matches where the model&#x27;s number disagrees with the closing line on Polymarket — a substantive gap on the New Zealand side, +6.7 pts.</p>
 <p>On Elo, Belgium comes in 310 points ahead — New Zealand at 1550, Belgium at 1860. Both Elo numbers are pulled live from the public Elo source. The adjustment layer is quiet on this fixture — no host bonus, no home-ground correction, no altitude folding in. The Elo numbers above are what the model uses.</p>
 <p>Three-way split from the model: New Zealand to win at 13%, the draw at 11%, and Belgium to win at 76%. Draw share decays with Elo gap; on a fixture this evenly matched the draw carries more probability than a casual reader might guess. New Zealand on the win side reads 13%.</p>
 <p>On the same three-way, Polymarket: New Zealand to win at 6%, the draw at 13%, and Belgium to win at 80%. Polymarket has New Zealand at 6%, which prices out at American odds of +1567; the model has the same side at 13%. The +6.7 pts gap across them is the disagreement we&#x27;re surfacing.</p>
@@ -1237,7 +1291,7 @@ body.op-noscroll { overflow: hidden; }
   </div>
   <div class="foot-row">
     <span class="left">Odds Primer · Independent editorial</span>
-    <span>The Desk · v1.1 · 27 May 2026</span>
+    <span>The Desk · v1.1 · 29 May 2026</span>
   </div>
   <nav class="foot-nav" aria-label="Trust and editorial">
     <a href="/responsible-use">Responsible use</a>

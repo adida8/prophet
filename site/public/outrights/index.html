@@ -583,6 +583,57 @@ a { color: inherit; }
 }
 .blurb p + p { margin-top: 14px; }
 
+/* Ladder — per-team verdict table on the per-outright page. Same
+   eyebrow shape as .drivers; numeric columns are mono + right-aligned
+   so 48 rows of probabilities scan cleanly. */
+.ladder { margin: 32px 0 0; }
+.ladder h2 {
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  margin: 0 0 12px; padding-bottom: 8px; border-bottom: var(--hairline);
+}
+.ladder-table {
+  width: 100%; border-collapse: collapse;
+  font-family: var(--font-sans); font-size: 14px;
+}
+.ladder-table thead th {
+  text-align: left; font-weight: 700; font-size: 10.5px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--graphite-soft);
+  padding: 8px 10px; border-bottom: var(--hairline);
+}
+.ladder-table th.ladder-num,
+.ladder-table td.ladder-num { text-align: right; }
+.ladder-table th.ladder-verdict,
+.ladder-table td.ladder-verdict { text-align: right; white-space: nowrap; }
+.ladder-row td {
+  padding: 10px; border-bottom: var(--hairline-soft); vertical-align: middle;
+}
+.ladder-row:last-child td { border-bottom: none; }
+.ladder-row.is-pick { background: rgba(217, 70, 28, 0.04); }
+.ladder-team {
+  font-family: var(--font-serif); font-size: 15px; color: var(--ink);
+}
+.ladder-num {
+  font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.ladder-edge { color: var(--ink); font-weight: 600; }
+.ladder-edge.is-neg { color: var(--graphite-soft); font-weight: 400; }
+.ladder-glyph {
+  display: inline-block; margin-right: 6px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--graphite-soft);
+}
+.ladder-row.is-pick .ladder-glyph { color: var(--flame-deep); }
+.ladder-row.is-avoid .ladder-glyph { color: var(--ink); }
+.ladder-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--graphite-soft);
+}
+.ladder-row.is-pick .ladder-label { color: var(--flame-deep); }
+.ladder-row.is-avoid .ladder-label { color: var(--ink); }
+
 /* Sources — verifiable links behind the press chorus in the blurb.
    One row per outlet; each row links to the article and shows the
    verbatim line we quoted. Editorial register, not a directory. */
@@ -1157,6 +1208,7 @@ body.op-noscroll { overflow: hidden; }
       <ul>
         <li><a href="/">Home</a></li>
         <li><a href="/matches/">Upcoming matches</a></li>
+        <li><a href="/outrights/" aria-current="page">Outright winner</a></li>
         <li><a href="/methodology">How it works</a></li>
         <li><a href="/about">About</a></li>
       </ul>
@@ -1173,6 +1225,7 @@ body.op-noscroll { overflow: hidden; }
       <ul class="burger-menu">
         <li><a href="/">Home</a></li>
         <li><a href="/matches/">Upcoming matches</a></li>
+        <li><a href="/outrights/" aria-current="page">Outright winner</a></li>
         <li><a href="/methodology">How it works</a></li>
         <li><a href="/about">About</a></li>
         <li><a href="/responsible-use">Responsible use</a></li>
@@ -1190,11 +1243,12 @@ body.op-noscroll { overflow: hidden; }
   <nav class="pill-nav" aria-label="Primary (mobile)">
     <a href="/">Home</a>
     <a href="/matches/">Matches</a>
+    <a href="/outrights/" aria-current="page">Outright</a>
     <a href="/methodology">How it works</a>
     <a href="/about">About</a>
   </nav>
 </header>
-<main class="page"><section class="page-header"><a class="crumb" href="/"><span class="arr">←</span> Home</a><h1>Outright winners</h1></section><div class="lv-card is-pick"><a class="lv-card-link" href="/o/fb-wc26-winner" aria-label="Read the full case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when"><span class="lv-when-row">Resolves 20 Jul 2026</span><span class="lv-fresh">Last updated ·11 hrs ago</span></span></div><h3 class="lv-teams">YES Argentina</h3><p class="lv-venue-meta">World Cup 2026 — outright winner</p><p class="lv-thesis">The model gives Argentina a 18.8% chance to lift the trophy; the market prices that at 8.5%. The +10.3pp gap is the basis for the Pick.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">19%</span></span><span class="rp"><span class="k">Market</span><span class="v">8%</span></span><span class="edge">+10.3 pts</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/2026-fifa-world-cup-winner-595" target="_blank" rel="nofollow noopener">See price on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +1083</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">See price on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/o/fb-wc26-winner">Read the full case <span class="arr">→</span></a></div></div></div></main><section class="op-news" aria-labelledby="op-news-title">
+<main class="page"><section class="page-header"><a class="crumb" href="/"><span class="arr">←</span> Home</a><h1>Outright winners</h1></section><div class="lv-card is-pick"><a class="lv-card-link" href="/o/fb-wc26-winner" aria-label="Read the full case"></a><span class="lv-bar" aria-hidden="true"></span><div class="lv-head"><span class="lv-glyph" aria-hidden="true">▲</span><span class="lv-lab">Pick</span><span class="lv-when"><span class="lv-when-row">Resolves 20 Jul 2026</span><span class="lv-fresh">Last updated ·12 hrs ago</span></span></div><h3 class="lv-teams">YES Argentina</h3><p class="lv-venue-meta">World Cup 2026 — outright winner</p><p class="lv-thesis">The model gives Argentina a 18.8% chance to lift the trophy; the market prices that at 8.5%. The +10.3pp gap is the basis for the Pick.</p><div class="lv-foot"><div class="lv-reads"><span class="rp"><span class="k">Model</span><span class="v">19%</span></span><span class="rp"><span class="k">Market</span><span class="v">8%</span></span><span class="edge">+10.3 pts</span></div><div class="lv-action"><span class="cta-stack"><a class="cta market-cta" href="https://polymarket.com/event/2026-fifa-world-cup-winner-595" target="_blank" rel="nofollow noopener">See price on Polymarket <span class="arr">↗</span></a><span class="cta-caption is-best">Best price · +1083</span></span><span class="cta-stack"><a class="cta market-cta is-placeholder" href="https://kalshi.com/category/sports/soccer/fifa-world-cup" target="_blank" rel="nofollow noopener">See price on Kalshi <span class="arr">↗</span></a><span class="cta-caption is-spacer" aria-hidden="true">&nbsp;</span></span><a class="cta-secondary read-case" href="/o/fb-wc26-winner">Read the full case <span class="arr">→</span></a></div></div></div></main><section class="op-news" aria-labelledby="op-news-title">
   <div class="op-news__inner">
     <p class="op-news__eyebrow">New to prediction markets?</p>
     <h2 class="op-news__title" id="op-news-title">Start with the weekly primer.</h2>

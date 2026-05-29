@@ -627,6 +627,57 @@ a { color: inherit; }
 }
 .blurb p + p { margin-top: 14px; }
 
+/* Ladder — per-team verdict table on the per-outright page. Same
+   eyebrow shape as .drivers; numeric columns are mono + right-aligned
+   so 48 rows of probabilities scan cleanly. */
+.ladder { margin: 32px 0 0; }
+.ladder h2 {
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  margin: 0 0 12px; padding-bottom: 8px; border-bottom: var(--hairline);
+}
+.ladder-table {
+  width: 100%; border-collapse: collapse;
+  font-family: var(--font-sans); font-size: 14px;
+}
+.ladder-table thead th {
+  text-align: left; font-weight: 700; font-size: 10.5px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--graphite-soft);
+  padding: 8px 10px; border-bottom: var(--hairline);
+}
+.ladder-table th.ladder-num,
+.ladder-table td.ladder-num { text-align: right; }
+.ladder-table th.ladder-verdict,
+.ladder-table td.ladder-verdict { text-align: right; white-space: nowrap; }
+.ladder-row td {
+  padding: 10px; border-bottom: var(--hairline-soft); vertical-align: middle;
+}
+.ladder-row:last-child td { border-bottom: none; }
+.ladder-row.is-pick { background: rgba(217, 70, 28, 0.04); }
+.ladder-team {
+  font-family: var(--font-serif); font-size: 15px; color: var(--ink);
+}
+.ladder-num {
+  font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.ladder-edge { color: var(--ink); font-weight: 600; }
+.ladder-edge.is-neg { color: var(--graphite-soft); font-weight: 400; }
+.ladder-glyph {
+  display: inline-block; margin-right: 6px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--graphite-soft);
+}
+.ladder-row.is-pick .ladder-glyph { color: var(--flame-deep); }
+.ladder-row.is-avoid .ladder-glyph { color: var(--ink); }
+.ladder-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--graphite-soft);
+}
+.ladder-row.is-pick .ladder-label { color: var(--flame-deep); }
+.ladder-row.is-avoid .ladder-label { color: var(--ink); }
+
 /* Sources — verifiable links behind the press chorus in the blurb.
    One row per outlet; each row links to the article and shows the
    verbatim line we quoted. Editorial register, not a directory. */
@@ -1331,6 +1382,7 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
       <ul>
         <li><a href="/"{cur('home')}>Home</a></li>
         <li><a href="/matches/"{cur('matches')}>Upcoming matches</a></li>
+        <li><a href="/outrights/"{cur('outrights')}>Outright winner</a></li>
         <li><a href="/methodology"{cur('methodology')}>How it works</a></li>
         <li><a href="/about"{cur('about')}>About</a></li>
       </ul>
@@ -1347,6 +1399,7 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
       <ul class="burger-menu">
         <li><a href="/"{cur('home')}>Home</a></li>
         <li><a href="/matches/"{cur('matches')}>Upcoming matches</a></li>
+        <li><a href="/outrights/"{cur('outrights')}>Outright winner</a></li>
         <li><a href="/methodology"{cur('methodology')}>How it works</a></li>
         <li><a href="/about"{cur('about')}>About</a></li>
         <li><a href="/responsible-use">Responsible use</a></li>
@@ -1364,6 +1417,7 @@ def chrome_masthead(active: str, edition_label: str = "World Cup 2026") -> str:
   <nav class="pill-nav" aria-label="Primary (mobile)">
     <a href="/"{cur('home')}>Home</a>
     <a href="/matches/"{cur('matches')}>Matches</a>
+    <a href="/outrights/"{cur('outrights')}>Outright</a>
     <a href="/methodology"{cur('methodology')}>How it works</a>
     <a href="/about"{cur('about')}>About</a>
   </nav>
@@ -1700,6 +1754,7 @@ def patch_editorial_pages(log=print) -> None:
         return (
             f'\n          <li><a href="/"{attr("home")}>Home</a></li>'
             f'\n          <li><a href="/matches/"{attr("matches")}>Upcoming matches</a></li>'
+            f'\n          <li><a href="/outrights/"{attr("outrights")}>Outright winner</a></li>'
             f'\n          <li><a href="/methodology"{attr("methodology")}>How it works</a></li>'
             f'\n          <li><a href="/about"{attr("about")}>About</a></li>'
             f'\n        '
@@ -1711,6 +1766,7 @@ def patch_editorial_pages(log=print) -> None:
         return (
             f'\n          <li><a href="/"{attr("home")}>Home</a></li>'
             f'\n          <li><a href="/matches/"{attr("matches")}>Upcoming matches</a></li>'
+            f'\n          <li><a href="/outrights/"{attr("outrights")}>Outright winner</a></li>'
             f'\n          <li><a href="/methodology"{attr("methodology")}>How it works</a></li>'
             f'\n          <li><a href="/about"{attr("about")}>About</a></li>'
             f'\n          <li><a href="/responsible-use">Responsible use</a></li>'
@@ -1727,6 +1783,7 @@ def patch_editorial_pages(log=print) -> None:
         return (
             f'\n      <a href="/"{attr("home")}>Home</a>'
             f'\n      <a href="/matches/"{attr("matches")}>Matches</a>'
+            f'\n      <a href="/outrights/"{attr("outrights")}>Outright</a>'
             f'\n      <a href="/methodology"{attr("methodology")}>How it works</a>'
             f'\n      <a href="/about"{attr("about")}>About</a>'
             f'\n    '
@@ -3083,6 +3140,55 @@ def render_outrights_index(outrights: list[dict]) -> str:
     )
 
 
+def render_outright_ladder(outright: dict) -> str:
+    """Per-team verdict ladder for an outright. Sorted by model_p desc;
+    every row shows the YES-side read (model probability the team wins
+    vs market probability the team wins, signed edge in pp, verdict)."""
+    ladder = outright.get("ladder") or []
+    if not ladder:
+        return ""
+    rows_sorted = sorted(ladder, key=lambda r: -(r.get("model_p") or 0))
+    rows_html = []
+    for row in rows_sorted:
+        team = row.get("team", "—")
+        model_p = row.get("model_p")
+        market_p = row.get("yes_market_p")
+        edge_pp = row.get("yes_edge_pp")
+        state = row.get("verdict", "pass")
+        glyph = GLYPHS.get(state, "—")
+        label = LABELS.get(state, "Pass")
+        edge_class = ""
+        if isinstance(edge_pp, (int, float)) and edge_pp < 0:
+            edge_class = " is-neg"
+        rows_html.append(
+            f'<tr class="ladder-row is-{state}">'
+            f'<td class="ladder-team">{escape(team)}</td>'
+            f'<td class="ladder-num">{fmt_pct(model_p)}</td>'
+            f'<td class="ladder-num">{fmt_pct(market_p)}</td>'
+            f'<td class="ladder-num ladder-edge{edge_class}">{fmt_edge(edge_pp) or "—"}</td>'
+            f'<td class="ladder-verdict">'
+            f'<span class="ladder-glyph" aria-hidden="true">{glyph}</span>'
+            f'<span class="ladder-label">{label}</span>'
+            f'</td>'
+            f'</tr>'
+        )
+    return (
+        '<section class="ladder">'
+        '<h2>Verdicts across the field</h2>'
+        '<table class="ladder-table">'
+        '<thead><tr>'
+        '<th class="ladder-team">Team</th>'
+        '<th class="ladder-num">Model</th>'
+        '<th class="ladder-num">Market</th>'
+        '<th class="ladder-num">Edge</th>'
+        '<th class="ladder-verdict">Verdict</th>'
+        '</tr></thead>'
+        f'<tbody>{"".join(rows_html)}</tbody>'
+        '</table>'
+        '</section>'
+    )
+
+
 def render_outright_page(outright: dict) -> str:
     """Per-outright page. Same skeleton as per-match."""
     title = outright.get("copy", {}).get("title") or outright.get("candidate", "Outright")
@@ -3125,6 +3231,7 @@ def render_outright_page(outright: dict) -> str:
         + (f'<div class="blurb">{blurb_paras}</div>' if blurb_paras else "")
         + cta_row
         + drivers_html
+        + render_outright_ladder(outright)
         + '</main>'
         + chrome_footer()
     )
