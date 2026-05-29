@@ -2142,15 +2142,31 @@ def _polymarket_url_for(verdict: dict, fallback_search: str | None = None) -> st
     """Polymarket URL — use the explicit one when present, fall back to a
     search on the event slug. Never returns empty; the venue is always
     surfaceable.
+
+    Safety net: Polymarket migrated WC 2026 match pages from
+    `/event/{slug}` to `/sports/fifa-world-cup/{slug}` (the old path
+    404s). We detect old-style FIFWC URLs and rewrite them at
+    build-time so a stale `verdict.market_url` still resolves.
     """
     url = (verdict.get("market_url") or "").strip()
     if url and "polymarket.com" in url.lower():
-        return url
+        return _normalise_polymarket_url(url)
     # No explicit Polymarket URL → degrade to a search.
     if fallback_search:
         from urllib.parse import quote_plus
         return f"https://polymarket.com/markets?_q={quote_plus(fallback_search)}"
     return "https://polymarket.com/"
+
+
+def _normalise_polymarket_url(url: str) -> str:
+    """Rewrite Polymarket URLs that still point at the retired
+    `/event/fifwc-...` path. Safe to call on already-correct URLs.
+    """
+    old_prefix = "polymarket.com/event/fifwc-"
+    new_prefix = "polymarket.com/sports/fifa-world-cup/fifwc-"
+    if old_prefix in url:
+        return url.replace(old_prefix, new_prefix, 1)
+    return url
 
 
 KALSHI_WC_LANDING = "https://kalshi.com/category/sports/soccer/fifa-world-cup"
@@ -2159,6 +2175,27 @@ _KALSHI_MONTH_TO_NUM = {
     "JAN": 1, "FEB": 2, "MAR": 3, "APR": 4, "MAY": 5, "JUN": 6,
     "JUL": 7, "AUG": 8, "SEP": 9, "OCT": 10, "NOV": 11, "DEC": 12,
 }
+
+# Kalshi tri-letter codes don't match the Polymarket ones we use in
+# our match-ids 1:1 — Kalshi mixes ISO3 (DZA, HTI) and IOC (SUI, IRI)
+# while we follow whatever Polymarket put in its event slug. Map both
+# directions so the WC26 event index can be looked up by our codes
+# and the picked-side market ticker can be built in Kalshi's codes.
+_KALSHI_CODE_TO_OURS = {
+    "sui": "che",   # Switzerland (Kalshi IOC → ISO3)
+    "hti": "hai",   # Haiti (Kalshi ISO3 → IOC)
+    "iri": "irn",   # Iran (Kalshi IOC → ISO3)
+    "dza": "alg",   # Algeria (Kalshi ISO3 → IOC)
+}
+_OURS_TO_KALSHI_CODE = {v: k for k, v in _KALSHI_CODE_TO_OURS.items()}
+
+
+def _kalshi_to_our_code(code: str) -> str:
+    return _KALSHI_CODE_TO_OURS.get(code.lower(), code.lower())
+
+
+def _our_to_kalshi_code(code: str) -> str:
+    return _OURS_TO_KALSHI_CODE.get(code.lower(), code.lower())
 
 
 def _load_kalshi_event_index() -> dict[tuple, str]:
@@ -2203,8 +2240,8 @@ def _load_kalshi_event_index() -> dict[tuple, str]:
             yy   = int(body[0:2])
             mmm  = body[2:5]
             dd   = int(body[5:7])
-            iso3_a = body[7:10].lower()
-            iso3_b = body[10:13].lower()
+            iso3_a = _kalshi_to_our_code(body[7:10])
+            iso3_b = _kalshi_to_our_code(body[10:13])
             month = _KALSHI_MONTH_TO_NUM.get(mmm)
             if not month:
                 continue
@@ -2257,7 +2294,12 @@ def _kalshi_market_ticker_for_side(
 ) -> str | None:
     """Return the Kalshi market ticker for the picked side, or None when
     no side was picked (Pass/Avoid → land on the event page with no
-    side preselected)."""
+    side preselected).
+
+    `pick_side_iso3` arrives in our (Polymarket-derived) code system;
+    the Kalshi event ticker carries Kalshi's codes. Translate before
+    comparing so e.g. our "che" matches Kalshi's "SUI".
+    """
     body = event_ticker.removeprefix("KXWCGAME-")
     iso3_a = body[7:10].upper()
     iso3_b = body[10:13].upper()
@@ -2265,9 +2307,10 @@ def _kalshi_market_ticker_for_side(
         return None
     if pick_side_iso3 == "draw":
         return f"{event_ticker}-TIE"
-    if pick_side_iso3.upper() == iso3_a:
+    pick_kalshi = _our_to_kalshi_code(pick_side_iso3).upper()
+    if pick_kalshi == iso3_a:
         return f"{event_ticker}-{iso3_a}"
-    if pick_side_iso3.upper() == iso3_b:
+    if pick_kalshi == iso3_b:
         return f"{event_ticker}-{iso3_b}"
     return None
 
@@ -2318,17 +2361,29 @@ def _cta_pill(
     placeholder: bool = False,
     caption: str | None = None,
     caption_kind: str = "",
+    match_id: str | None = None,
+    venue: str | None = None,
 ) -> str:
     """Render a single trade CTA pill, optionally with a small caption
     underneath. `caption_kind`:
       - "best"  → highlighted "best price" caption (flame)
       - "live"  → priced-but-not-best caption (ink)
       - "search" → no live price detected (muted)
+
+    When both `match_id` and `venue` are provided, stamps the pill with
+    `data-match-id` + `data-cta-venue` so activity.js can fire the
+    `/api/activity/cta` beacon on click. Venue is "polymarket" | "kalshi".
     """
     extra = " is-placeholder" if placeholder else ""
+    data_attrs = ""
+    if match_id and venue:
+        data_attrs = (
+            f' data-match-id="{escape(match_id)}"'
+            f' data-cta-venue="{escape(venue)}"'
+        )
     pill = (
         f'<a class="cta market-cta{extra}" href="{escape(url)}" '
-        f'target="_blank" rel="nofollow noopener">'
+        f'target="_blank" rel="nofollow noopener"{data_attrs}>'
         f'{escape(label)} <span class="arr">↗</span>'
         f'</a>'
     )
@@ -2426,10 +2481,12 @@ def market_cta(
     poly_pill = _cta_pill(
         "See price on Polymarket", poly_url,
         caption=poly_caption, caption_kind=poly_kind,
+        match_id=match_id, venue="polymarket",
     )
     kalshi_pill = _cta_pill(
         "See price on Kalshi", kalshi_url, placeholder=not kalshi_is_live,
         caption=kalshi_caption, caption_kind=kalshi_kind,
+        match_id=match_id, venue="kalshi",
     )
     secondary = _read_case_link(detail_href) if detail_href else ""
     return f'{poly_pill}{kalshi_pill}{secondary}'
@@ -2981,12 +3038,24 @@ def render_match_page(match: dict) -> str:
     extra_head = "" if has_real_verdict else '<meta name="robots" content="noindex">'
 
     market_url = v.get("market_url")
+    if market_url:
+        market_url = _normalise_polymarket_url(market_url)
     venue_name = (v.get("market_venue") or "").title()
     cta_row = ""
     if market_url:
+        # Derive the beacon venue from the URL host so the bottom cta-row
+        # logs the same way the in-card pills do.
+        beacon_venue = venue_name_from_url(market_url)
+        match_id = match.get("match_id") or ""
+        data_attrs = ""
+        if match_id and beacon_venue:
+            data_attrs = (
+                f' data-match-id="{escape(match_id)}"'
+                f' data-cta-venue="{escape(beacon_venue.lower())}"'
+            )
         cta_row = (
             '<div class="cta-row">'
-            f'<a class="open-market" href="{escape(market_url)}" rel="nofollow noopener" target="_blank">'
+            f'<a class="open-market" href="{escape(market_url)}" rel="nofollow noopener" target="_blank"{data_attrs}>'
             f'See price on <span class="venue-name">{escape(venue_name) if venue_name else "the source"}</span> <span class="arr">↗</span></a>'
             '<span class="meta-note">Affiliate link. Odds Primer may earn a commission. Editorial verdicts are independent.</span>'
             '</div>'
@@ -3135,8 +3204,116 @@ def render_outright_card(outright: dict) -> str:
     )
 
 
+def _team_slug(name: str) -> str:
+    """URL-safe slug from a team name. Strips diacritics, lowercases,
+    collapses anything non-alphanumeric to hyphens.
+    "Argentina" → "argentina"; "Côte d'Ivoire" → "cote-d-ivoire";
+    "Bosnia and Herzegovina" → "bosnia-and-herzegovina"."""
+    import unicodedata
+    norm = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
+    slug = re.sub(r"[^a-z0-9]+", "-", norm.lower()).strip("-")
+    return slug or "team"
+
+
+def render_outright_team_card(outright: dict, row: dict, *, show_overlay: bool = True) -> str:
+    """Card for a single team in an outright market. Mirrors the
+    .lv-card shape used by per-match cards: state-coloured rule on the
+    left, glyph + label in the head, team name as the h3, market label
+    as the venue meta, model/market/edge stats in the foot, optional
+    overlay link so the whole tile is clickable."""
+    team = row.get("team", "—")
+    model_p = row.get("model_p")
+    market_p = row.get("yes_market_p")
+    edge_pp = row.get("yes_edge_pp")
+    state = row.get("verdict", "pass")
+    state_class = f"is-{state}"
+
+    href = f"/outrights/{_team_slug(team)}"
+    market_label = outright.get("market_label") or outright.get("competition", {}).get("label", "Outright")
+
+    resolves_at = outright.get("resolves_at")
+    when = ""
+    if resolves_at:
+        try:
+            dt = datetime.fromisoformat(resolves_at.replace("Z", "+00:00"))
+            when = "Resolves " + dt.strftime("%-d %b %Y")
+        except Exception:
+            when = ""
+
+    fresh_rel = _relative_updated(outright.get("updated_at"))
+    head = (
+        f'<span class="lv-glyph" aria-hidden="true">{GLYPHS.get(state, "—")}</span>'
+        f'<span class="lv-lab">{LABELS.get(state, "Pass")}</span>'
+        f'<span class="lv-when">'
+        f'<span class="lv-when-row">{escape(when)}</span>'
+        f'<span class="lv-fresh">Last updated ·{escape(fresh_rel)}</span>'
+        f'</span>'
+    )
+
+    # Foot: stats for the YES side (model wins prob vs market wins prob).
+    edge_class = ""
+    edge_str = fmt_edge(edge_pp)
+    if edge_str:
+        if isinstance(edge_pp, (int, float)):
+            if edge_pp < 0:
+                edge_class = " is-neg"
+            elif abs(edge_pp) < 0.5:
+                edge_class = " is-flat"
+    reads = (
+        f'<span class="rp"><span class="k">Model</span><span class="v">{fmt_pct(model_p)}</span></span>'
+        f'<span class="rp"><span class="k">Market</span><span class="v">{fmt_pct(market_p)}</span></span>'
+    )
+    if edge_str:
+        reads += f'<span class="edge{edge_class}">{edge_str}</span>'
+
+    if state == "pass":
+        foot = (
+            '<div class="lv-foot">'
+            f'<div class="lv-reads">{reads}</div>'
+            '</div>'
+        )
+    else:
+        # Pick / Avoid get a "Read the case" tertiary link pointing at
+        # the team page (matches the per-match card convention).
+        action = (
+            f'<a class="cta cta--ghost" href="{href}">Read the case <span class="arr">→</span></a>'
+        )
+        foot = (
+            '<div class="lv-foot">'
+            f'<div class="lv-reads">{reads}</div>'
+            f'<div class="lv-action">{action}</div>'
+            '</div>'
+        )
+
+    overlay = (
+        f'<a class="lv-card-link" href="{href}" aria-label="Read the case for {escape(team)}"></a>'
+        if show_overlay else ""
+    )
+    short_blurb = escape(_ladder_blurb_for(row))
+    return (
+        f'<div class="lv-card {state_class}">'
+        f'{overlay}'
+        '<span class="lv-bar" aria-hidden="true"></span>'
+        f'<div class="lv-head">{head}</div>'
+        f'<h3 class="lv-teams">{escape(team)}</h3>'
+        f'<p class="lv-venue-meta">{escape(market_label)}</p>'
+        f'<p class="lv-thesis">{short_blurb}</p>'
+        f'{foot}'
+        '</div>'
+    )
+
+
 def render_outrights_index(outrights: list[dict]) -> str:
-    if not outrights:
+    """Listing page at /outrights/ — every team in every decisive
+    outright market gets its own lv-card, sorted by model_p desc.
+    Mirrors how /matches/ shows every match as a card. When no
+    outright market has a Pick or Avoid verdict the page falls back
+    to a coming-soon empty state."""
+    decisive = [
+        o for o in (outrights or [])
+        if (o.get("verdict") or {}).get("state") in ("pick", "avoid")
+    ]
+    if not decisive:
         return (
             chrome_head(
                 "Outright winners · Odds Primer",
@@ -3159,16 +3336,57 @@ def render_outrights_index(outrights: list[dict]) -> str:
             + chrome_footer()
         )
 
-    cards = "\n".join(render_outright_card(o) for o in outrights)
+    # Flatten — one card per team across every decisive outright. When
+    # a second outright market opens this groups by market via the
+    # market_label section heading; today there's only one so a single
+    # grid renders directly.
+    sections: list[str] = []
+    pick_count = 0
+    pass_count = 0
+    total_count = 0
+    for outright in decisive:
+        ladder = sorted(
+            outright.get("ladder") or [],
+            key=lambda r: -(r.get("model_p") or 0),
+        )
+        if not ladder:
+            continue
+        cards = "\n".join(render_outright_team_card(outright, row) for row in ladder)
+        if len(decisive) > 1:
+            heading = outright.get("market_label") or outright.get("competition", {}).get("label", "Outright")
+            sections.append(f'<h2 class="date-head">{escape(heading)}</h2>{cards}')
+        else:
+            sections.append(cards)
+        for r in ladder:
+            total_count += 1
+            if r.get("verdict") == "pick":
+                pick_count += 1
+            elif r.get("verdict") == "pass":
+                pass_count += 1
+
+    standfirst = (
+        f'<p class="standfirst" style="font-family:var(--font-serif);font-style:italic;'
+        f'color:var(--ink-soft);margin:14px 0 0;">'
+        f'{total_count} teams priced · '
+        f'<strong style="color:var(--flame-deep)">{pick_count} Pick{"s" if pick_count != 1 else ""}</strong> · '
+        f'{pass_count} Pass'
+        '</p>'
+    )
+
     return (
-        chrome_head("Outright winners · Odds Primer")
+        chrome_head(
+            "Outright winners · Odds Primer",
+            description="Tournament-winner verdicts — every priced team with the model's edge against the market.",
+            path="/outrights/",
+        )
         + chrome_masthead("outrights")
         + '<main class="page">'
-          '<section class="page-header">'
+        + '<section class="page-header">'
           '<a class="crumb" href="/"><span class="arr">←</span> Home</a>'
           '<h1>Outright winners</h1>'
+          f'{standfirst}'
           '</section>'
-        + cards
+        + "\n".join(sections)
         + '</main>'
         + chrome_footer()
     )
@@ -3294,6 +3512,154 @@ def render_outright_ladder(outright: dict) -> str:
     )
 
 
+def _outright_team_blurb_paragraphs(outright: dict, row: dict) -> list[str]:
+    """Multi-paragraph editorial read for a per-team outright page.
+    Synthesised from the row's data so every team gets a meaningful
+    dedicated page even when the engine never wrote prose for it."""
+    team = row.get("team", "this team")
+    mp = row.get("model_p")
+    mp_lower = row.get("model_p_lower")
+    mp_upper = row.get("model_p_upper")
+    mkp = row.get("yes_market_p")
+    edge = row.get("yes_edge_pp")
+    lower = row.get("yes_lower_edge_pp")
+    state = row.get("verdict", "pass")
+    pick_side = row.get("pick_side")
+
+    market_label = outright.get("market_label") or outright.get("competition", {}).get("label", "the outright")
+    mp_pct = f"{(mp or 0) * 100:.1f}%"
+    mkp_pct = f"{(mkp or 0) * 100:.1f}%"
+
+    paragraphs: list[str] = []
+
+    if state == "pick":
+        side_str = f"{pick_side} {team}" if pick_side else team
+        paragraphs.append(
+            f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()}. "
+            f"The market currently prices that side at {mkp_pct} — a {edge:+.1f}pp gap. "
+            f"The position is {side_str}, and the verdict is Pick."
+        )
+        if isinstance(lower, (int, float)) and isinstance(mp_lower, (int, float)) and isinstance(mp_upper, (int, float)):
+            paragraphs.append(
+                f"Across 100 bootstrap re-simulations of the tournament the model's "
+                f"probability lands in the band [{mp_lower * 100:.1f}%, {mp_upper * 100:.1f}%]. "
+                f"Even at the conservative floor the YES edge against the market is {lower:+.1f}pp — "
+                f"which clears the +3.0pp Pick threshold."
+            )
+        paragraphs.append(
+            "The Desk doesn't tip. We publish what the model thinks and what the market thinks; "
+            "the gap is editorial. Take the position only if you've read the case and the price still stands."
+        )
+    elif state == "avoid":
+        paragraphs.append(
+            f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()} — well below "
+            f"the market's {mkp_pct} ({edge:+.1f}pp). The verdict is Avoid."
+        )
+        if isinstance(lower, (int, float)) and isinstance(mp_upper, (int, float)):
+            paragraphs.append(
+                f"Even at the model's bootstrap upper bound the team's probability is {mp_upper * 100:.1f}%, "
+                f"still below the price. The market is paying more than the Desk thinks the YES side is worth."
+            )
+        paragraphs.append(
+            "Avoid is structural — it doesn't tell you to take the NO side; it tells you the YES price isn't fair. "
+            "If you do trade, the case has to come from somewhere else."
+        )
+    else:
+        if isinstance(edge, (int, float)) and edge >= 1.5:
+            paragraphs.append(
+                f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()}, slightly above "
+                f"the market's {mkp_pct} ({edge:+.1f}pp). The verdict is Pass."
+            )
+            if isinstance(lower, (int, float)):
+                if lower > 0:
+                    paragraphs.append(
+                        f"The bootstrap lower bound on the edge is {lower:+.1f}pp — positive but not enough "
+                        f"to clear the +3.0pp Pick threshold. The model's lean exists but the signal isn't "
+                        f"strong enough to publish a position."
+                    )
+                else:
+                    paragraphs.append(
+                        f"The bootstrap lower bound on the edge is {lower:+.1f}pp — it crosses zero, "
+                        f"which means in alternate simulations of the tournament the team's probability "
+                        f"drops below the market's price. The point estimate leans yes; the robustness doesn't hold."
+                    )
+        elif isinstance(edge, (int, float)) and edge <= -1.5:
+            paragraphs.append(
+                f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()} — below "
+                f"the market's {mkp_pct} ({edge:+.1f}pp). The verdict is Pass."
+            )
+            paragraphs.append(
+                "The market is paying more than the model thinks the YES side is worth, but the gap isn't "
+                "wide enough to call Avoid. There's no clear edge in either direction."
+            )
+        else:
+            paragraphs.append(
+                f"The Desk's model rates {team} at {mp_pct} to win {market_label.lower()}; the market prices "
+                f"that side at {mkp_pct}. The edge is {edge:+.1f}pp — effectively zero. The verdict is Pass."
+            )
+            paragraphs.append(
+                "When the model and the market agree, there's nothing for us to publish. The price is fair."
+            )
+
+    return paragraphs
+
+
+def render_outright_team_page(outright: dict, row: dict) -> str:
+    """Per-team dedicated page at /outrights/{team-slug}. Mirrors the
+    per-match page skeleton: chrome, crumb back to /outrights/, h1
+    team name, the team's lv-card (overlay disabled — already on the
+    page), a multi-paragraph editorial blurb, and a CTA out to the
+    outright market URL."""
+    team = row.get("team", "Outright entry")
+    state = row.get("verdict", "pass")
+    market_label = outright.get("market_label") or outright.get("competition", {}).get("label", "Outright")
+    verdict_word = LABELS.get(state, "Pass")
+
+    title = f"{team} · {verdict_word} · {market_label}"
+    paragraphs = _outright_team_blurb_paragraphs(outright, row)
+    blurb_html = "\n".join(f"<p>{escape(p)}</p>" for p in paragraphs)
+
+    market_url = outright.get("market_url") or (outright.get("verdict") or {}).get("market_url")
+    if market_url:
+        market_url = _normalise_polymarket_url(market_url)
+    venue_name = (outright.get("market_venue") or (outright.get("verdict") or {}).get("market_venue") or "").title()
+    cta_row = ""
+    if market_url:
+        cta_row = (
+            '<div class="cta-row">'
+            f'<a class="open-market" href="{escape(market_url)}" rel="nofollow noopener" target="_blank">'
+            f'See price on <span class="venue-name">{escape(venue_name) if venue_name else "the source"}</span> '
+            f'<span class="arr">↗</span></a>'
+            '<span class="meta-note">Affiliate link. Odds Primer may earn a commission. '
+            'Editorial verdicts are independent.</span>'
+            '</div>'
+        )
+
+    description = paragraphs[0] if paragraphs else f"Verdict for {team} in the {market_label} market."
+
+    return (
+        chrome_head(
+            f"{team} · Odds Primer",
+            description=description,
+            path=f"/outrights/{_team_slug(team)}",
+        )
+        + chrome_masthead("outrights")
+        + '<main class="page">'
+        + '<section class="page-header">'
+          '<a class="crumb" href="/outrights/"><span class="arr">←</span> All outright winners</a>'
+          f'<h1>{escape(team)}</h1>'
+          f'<p class="standfirst" style="font-family:var(--font-serif);font-style:italic;'
+          f'color:var(--ink-soft);margin:14px 0 0;">{escape(market_label)} · '
+          f'<strong style="color:var(--flame-deep)">{escape(verdict_word)}</strong></p>'
+          '</section>'
+        + render_outright_team_card(outright, row, show_overlay=False)
+        + (f'<div class="blurb">{blurb_html}</div>' if blurb_html else "")
+        + cta_row
+        + '</main>'
+        + chrome_footer()
+    )
+
+
 def render_outright_page(outright: dict) -> str:
     """Per-outright page. Same skeleton as per-match."""
     title = outright.get("copy", {}).get("title") or outright.get("candidate", "Outright")
@@ -3309,6 +3675,8 @@ def render_outright_page(outright: dict) -> str:
 
     v = outright.get("verdict", {})
     market_url = v.get("market_url")
+    if market_url:
+        market_url = _normalise_polymarket_url(market_url)
     venue_name = (v.get("market_venue") or "").title()
     cta_row = ""
     if market_url:
@@ -3538,10 +3906,12 @@ def main():
         (SITE_OUT / "m" / f"{m['match_id']}.html").write_text(render_match_page(m))
     log(f"Wrote          : {len(matches)} match page(s) in m/")
 
-    # Outrights pages render only for markets whose verdict is Pick or
-    # Avoid. Pass-state outrights are left out so search engines don't
-    # index the placeholder and the server's /outrights gate falls
-    # through to the on-brand 404.
+    # Outrights pages render only when at least one market produces a
+    # Pick or Avoid verdict. /outrights/ becomes a team-card listing
+    # that mirrors /matches/ — every team in every decisive market is
+    # its own lv-card. Each card links to /outrights/{team-slug} for a
+    # dedicated per-team page. Pass-state outright markets are left
+    # out so search engines don't index empty placeholders.
     decisive = [
         o for o in outrights
         if (o.get("verdict") or {}).get("state") in ("pick", "avoid")
@@ -3552,20 +3922,32 @@ def main():
     if decisive:
         out_dir.mkdir(parents=True, exist_ok=True)
         out_idx.write_text(render_outrights_index(decisive))
-        log(f"Wrote          : outrights/index.html ({len(decisive)} decisive)")
-        kept_ids = set()
-        for o in decisive:
-            (out_dir / f"{o['outright_id']}.html").write_text(render_outright_page(o))
-            kept_ids.add(o["outright_id"])
-        log(f"Wrote          : {len(decisive)} outright page(s) in outrights/")
+        log(f"Wrote          : outrights/index.html ({len(decisive)} decisive market(s))")
+        kept_slugs: set[str] = set()
+        team_pages = 0
+        for outright in decisive:
+            for row in outright.get("ladder") or []:
+                slug = _team_slug(row.get("team", ""))
+                if not slug:
+                    continue
+                (out_dir / f"{slug}.html").write_text(
+                    render_outright_team_page(outright, row)
+                )
+                kept_slugs.add(slug)
+                team_pages += 1
+        log(f"Wrote          : {team_pages} team page(s) in outrights/")
+        # Sweep any orphans (retired team pages from a previous run, or
+        # the old per-outright market pages that this scheme replaced).
         n_removed = 0
         for stale in out_dir.glob("*.html"):
-            if stale.name == "index.html" or stale.stem in kept_ids:
+            if stale.name == "index.html":
+                continue
+            if stale.stem in kept_slugs:
                 continue
             stale.unlink()
             n_removed += 1
         if n_removed:
-            log(f"Removed        : {n_removed} stale outright page(s) in outrights/")
+            log(f"Removed        : {n_removed} stale page(s) in outrights/")
     else:
         if out_idx.exists():
             out_idx.unlink()
@@ -3575,7 +3957,7 @@ def main():
                 continue
             stale.unlink()
     # Sweep the retired /o/ output dir on every build — the server now
-    # 301s /o/{id} to /outrights/{id}, so any leftover static HTML there
+    # 301s /o/{id} to /outrights/, so any leftover static HTML there
     # would be unreachable and confuse search engines if rediscovered.
     if legacy_o_dir.is_dir():
         n_legacy = 0

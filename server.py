@@ -451,12 +451,19 @@ if (SITE_PUBLIC / "index.html").exists():
         match_id = match_id.removesuffix("/").removesuffix(".html")
         return _serve_site(f"m/{match_id}.html")
 
-    # Outright pages are hidden from the public site until the market in
-    # question produces a Pick or Avoid. The gate reads verdict state at
-    # request time so flipping the toggle requires no code change — the
-    # next refresh tick that lands a pick/avoid verdict opens the page.
+    # Outright surface — mirrors /matches/ + /m/{id}:
+    #   /outrights/       → listing of every priced team across every
+    #                       decisive outright market (lv-cards, each
+    #                       links to its own dedicated page)
+    #   /outrights/{slug} → per-team detail page
+    #
+    # All gates read verdict state at request time so flipping a Pick
+    # in or out takes no code change. Legacy /o/{outright_id} 301s to
+    # /outrights/ — every per-outright market page that used to live
+    # under that path was replaced by the team-grid listing.
     import re as _re
     _OUTRIGHT_ID_RE = _re.compile(r"^[a-z0-9]{2,8}-[a-z0-9-]{2,64}$")
+    _SLUG_RE = _re.compile(r"^[a-z0-9-]{1,64}$")
 
     def _outrights_root() -> Path:
         env = os.getenv("DESK_OUTPUT_DIR")
@@ -476,57 +483,55 @@ if (SITE_PUBLIC / "index.html").exists():
         state = (data.get("verdict") or {}).get("state")
         return state in ("pick", "avoid")
 
-    def _decisive_outright_ids() -> list[str]:
+    def _any_outright_has_decision() -> bool:
         p = _outrights_root() / "index.json"
         if not p.is_file():
-            return []
+            return False
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
         except (OSError, ValueError):
-            return []
-        return [
-            row.get("outright_id", "")
-            for row in (data.get("outrights") or [])
-            if row.get("verdict") in ("pick", "avoid") and row.get("outright_id")
-        ]
+            return False
+        for row in (data.get("outrights") or []):
+            if row.get("verdict") in ("pick", "avoid"):
+                return True
+        return False
 
     @app.get("/outrights", include_in_schema=False)
     @app.get("/outrights/", include_in_schema=False)
     async def site_outrights():
-        ids = _decisive_outright_ids()
-        if not ids:
+        if not _any_outright_has_decision():
             return _site_not_found()
-        # When exactly one outright market has a decisive verdict, the
-        # "list of 1 card" landing page is redundant — bounce straight
-        # to the per-team grid so the reader lands on the content.
-        if len(ids) == 1:
-            return RedirectResponse(url=f"/outrights/{ids[0]}", status_code=301)
         return _serve_site("outrights/index.html")
 
     @app.get("/outrights/wc26", include_in_schema=False)
     @app.get("/outrights/wc26/", include_in_schema=False)
     async def site_outrights_wc26():
-        if not _outright_has_decision("fb-wc26-winner"):
+        # Friendly shortlink — keeps existing inbound links working
+        # even though the per-market detail page no longer exists.
+        if not _any_outright_has_decision():
             return _site_not_found()
-        return RedirectResponse(url="/outrights/fb-wc26-winner", status_code=301)
+        return RedirectResponse(url="/outrights/", status_code=301)
 
-    @app.get("/outrights/{outright_id}", include_in_schema=False)
-    async def site_outright_page(outright_id: str):
-        outright_id = outright_id.removesuffix("/").removesuffix(".html")
-        if not _outright_has_decision(outright_id):
+    @app.get("/outrights/{slug}", include_in_schema=False)
+    async def site_outright_slug(slug: str):
+        slug = slug.removesuffix("/").removesuffix(".html")
+        # An outright_id (e.g. fb-wc26-winner) is a legacy per-market
+        # URL — 301 home to the new listing.
+        if _OUTRIGHT_ID_RE.match(slug):
+            if not _outright_has_decision(slug):
+                return _site_not_found()
+            return RedirectResponse(url="/outrights/", status_code=301)
+        if not _SLUG_RE.match(slug):
             return _site_not_found()
-        return _serve_site(f"outrights/{outright_id}.html")
+        # Team slug — serve the static page the generator wrote.
+        return _serve_site(f"outrights/{slug}.html")
 
-    # Legacy short URL — every per-outright page used to live at /o/{id}.
-    # Preserve external links with a 301 to the canonical location under
-    # /outrights/. The decision gate matches the new route so an unknown
-    # or pass-state outright still 404s instead of redirecting to nothing.
     @app.get("/o/{outright_id}", include_in_schema=False)
     async def site_outright_legacy(outright_id: str):
         outright_id = outright_id.removesuffix("/").removesuffix(".html")
         if not _outright_has_decision(outright_id):
             return _site_not_found()
-        return RedirectResponse(url=f"/outrights/{outright_id}", status_code=301)
+        return RedirectResponse(url="/outrights/", status_code=301)
 
     # ── Editorial / trust pages (sourced from handover-v4) ────────────
     # `learn` and `world-cup` are intentionally absent: the React SPA owns
