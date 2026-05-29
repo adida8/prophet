@@ -351,6 +351,39 @@
     font-family: 'Source Serif 4', Georgia, serif;
     padding: 6px 0;
   }
+
+  /* ───────── 7-day unique-readers chart ───────── */
+  .weekly-chart {
+    margin: 0 0 18px 0;
+    padding: 14px 16px 10px 16px;
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+  }
+  .weekly-chart .head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px; margin-bottom: 6px;
+  }
+  .weekly-chart .label {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--graphite-soft);
+  }
+  .weekly-chart .latest {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13pt; color: var(--ink);
+  }
+  .weekly-chart .delta {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 9pt; color: var(--graphite-soft);
+    margin-left: 8px;
+  }
+  .weekly-chart .delta.up   { color: var(--status-green); }
+  .weekly-chart .delta.down { color: var(--status-red);   }
+  .weekly-chart svg { display: block; width: 100%; height: auto; }
+  .weekly-chart .foot {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-size: 8.5pt; color: var(--graphite-soft); margin-top: 4px;
+  }
 </style>
 </head>
 <body>
@@ -369,6 +402,23 @@
   {{ status.line }}
 </div>
 
+<!-- ───────── 7-day unique readers (real users only) ───────── -->
+{% if weekly_uniques and weekly_uniques.svg %}
+<div class="weekly-chart">
+  <div class="head">
+    <div class="label">Unique readers · last 7 days</div>
+    <div>
+      <span class="latest">{{ weekly_uniques.latest }}</span>
+      {% if weekly_uniques.wow_delta %}
+      <span class="delta {{ weekly_uniques.wow_cls }}">{{ weekly_uniques.wow_delta }}</span>
+      {% endif %}
+    </div>
+  </div>
+  {{ weekly_uniques.svg|safe }}
+  <div class="foot">Real readers only — seeded engine traffic is excluded.</div>
+</div>
+{% endif %}
+
 <!-- ───────── PART I — Audience ───────── -->
 <div class="part">
   <div class="kicker">Part I</div>
@@ -376,15 +426,20 @@
   <div class="sub">Reader traffic, picked matches, and how the community is voting.</div>
 </div>
 
-<!-- 4 KPIs -->
+<!-- 5 KPIs -->
 <div class="kpi-grid">
   <div class="kpi">
-    <div class="label">Views</div>
+    <div class="label">Unique visitors</div>
+    <div class="value">{{ kpi.visitors }}</div>
+    <div class="delta {{ kpi.visitors_delta_cls }}">{{ kpi.visitors_delta }}</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Match views</div>
     <div class="value">{{ kpi.views }}</div>
     <div class="delta {{ kpi.views_delta_cls }}">{{ kpi.views_delta }}</div>
   </div>
   <div class="kpi">
-    <div class="label">Unique readers</div>
+    <div class="label">Match readers</div>
     <div class="value">{{ kpi.uniques }}</div>
     <div class="delta {{ kpi.uniques_delta_cls }}">{{ kpi.uniques_delta }}</div>
   </div>

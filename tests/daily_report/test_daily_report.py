@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import replace
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from email.message import EmailMessage
 from pathlib import Path
 from typing import Any, Optional
@@ -126,27 +126,27 @@ def test_yesterday_utc() -> None:
 
 
 def test_status_line_failed_pipeline_overrides_traffic() -> None:
-    s = dr.status_line(views=2000, votes=500, cta_total=120, desk_status="fail")
+    s = dr.status_line(views=2000, visitors=900, votes=500, cta_total=120, desk_status="fail")
     assert s["color"] == "red"
     assert "failed" in s["line"].lower()
 
 
 def test_status_line_quiet_day() -> None:
-    s = dr.status_line(views=0, votes=0, cta_total=0, desk_status="ok")
+    s = dr.status_line(views=0, visitors=0, votes=0, cta_total=0, desk_status="ok")
     assert s["color"] == "amber"
     assert "quiet" in s["label"].lower()
 
 
 def test_status_line_low_traffic() -> None:
-    s = dr.status_line(views=10, votes=2, cta_total=1, desk_status="ok")
+    s = dr.status_line(views=10, visitors=4, votes=2, cta_total=1, desk_status="ok")
     assert s["color"] == "amber"
-    assert "10 views" in s["line"]
+    assert "10 match views" in s["line"]
 
 
 def test_status_line_healthy() -> None:
-    s = dr.status_line(views=500, votes=50, cta_total=20, desk_status="ok")
+    s = dr.status_line(views=500, visitors=180, votes=50, cta_total=20, desk_status="ok")
     assert s["color"] == "green"
-    assert "500 views" in s["line"]
+    assert "500 match views" in s["line"]
 
 
 def test_delta_label_up_down_flat_new() -> None:
@@ -275,6 +275,53 @@ def test_build_funnel_scales_to_top() -> None:
     assert pcts["Clicked a market CTA"] == 2
 
 
+def test_build_weekly_chart_empty_series_returns_blank() -> None:
+    out = dr.build_weekly_chart([])
+    assert out["svg"] == ""
+    assert out["latest"] == 0
+    assert out["max"] == 0
+    assert out["wow_delta"] is None
+
+
+def test_build_weekly_chart_renders_svg_with_trend() -> None:
+    series = [
+        {"date": date(2026, 5, 22), "uniques":  60},
+        {"date": date(2026, 5, 23), "uniques":  95},
+        {"date": date(2026, 5, 24), "uniques":  88},
+        {"date": date(2026, 5, 25), "uniques": 120},
+        {"date": date(2026, 5, 26), "uniques": 150},
+        {"date": date(2026, 5, 27), "uniques": 150},
+        {"date": date(2026, 5, 28), "uniques": 180},
+    ]
+    out = dr.build_weekly_chart(series)
+    assert out["svg"].startswith("<svg")
+    assert "</svg>" in out["svg"]
+    assert "polyline" in out["svg"]
+    assert out["latest"] == 180
+    assert out["max"] == 180
+    # 60 → 180 = +200% week-over-week.
+    assert out["wow_delta"] is not None
+    assert "+200%" in out["wow_delta"]
+    assert out["wow_cls"] == "up"
+    # The latest value gets a label in the SVG.
+    assert ">180<" in out["svg"]
+    # Day-of-week strip — every day name + the literal "today" appear.
+    for needle in ("Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "today"):
+        assert needle in out["svg"]
+
+
+def test_build_weekly_chart_handles_all_zero_series() -> None:
+    series = [{"date": date(2026, 5, 22) + timedelta(days=i), "uniques": 0}
+              for i in range(7)]
+    out = dr.build_weekly_chart(series)
+    # No real readers in any of the 7 days — render anyway so the chart
+    # placeholder is present and the operator sees the silence.
+    assert out["svg"].startswith("<svg")
+    assert out["latest"] == 0
+    assert out["max"] == 0
+    assert out["wow_delta"] is None
+
+
 # ─────────────────────────────────────────────────────────────────────
 # Fake Postgres connection — substring-matched
 # ─────────────────────────────────────────────────────────────────────
@@ -319,9 +366,11 @@ class _FakeConn:
 
     async def fetchrow(self, sql: str, *args: Any) -> Optional[dict]:
         s = sql.lower()
-        if "from match_aggregates" in s:
+        # Per-match real-vote breakdown — replaces the old match_aggregates read.
+        if "from match_reactions" in s and "votes_total" in s and "match_id = $1" in s:
             mid = args[0]
-            return self.state["aggregates"].get(mid)
+            row = self.state["per_match_reactions"].get(mid)
+            return _FakeRow(row) if row else _FakeRow({"votes_total": 0, "aligned": 0})
         if "extract(hour from viewed_at)" in s:
             return self.state[self._bucket(args)]["busiest_hour_row"]
         if "count(*) as n from match_views" in s and "match_id = $1" in s:
@@ -335,6 +384,9 @@ class _FakeConn:
 
     async def fetch(self, sql: str, *args: Any) -> list[dict]:
         s = sql.lower()
+        # 7-day uniques series — args don't match the per-window bucket key.
+        if "date_trunc('day', viewed_at)" in s:
+            return [_FakeRow(r) for r in self.state.get("weekly_uniques_rows", [])]
         b = self._bucket(args)
         if "anon_id, min(viewed_at)" in s:
             return self.state[b]["nvr_rows"]
@@ -396,10 +448,28 @@ def fake_state(tmp_path: Path) -> dict:
             "top": [],
             "zero_click_ids": [],
         },
-        "aggregates": {
-            "fb-wc26-fra-mex-20260612": _FakeRow({"votes_total": 22, "aligned_pct": 70}),
-            "fb-wc26-arg-alg-20260617": _FakeRow({"votes_total": 12, "aligned_pct": None}),
+        # Per-match real-vote breakdown (seeded=false only). Replaces the
+        # old match_aggregates fixture — the report now reads
+        # match_reactions directly so seeded rows can't leak in.
+        "per_match_reactions": {
+            # 22 real votes, 14 on positive chips (sharp_call + fair_call)
+            # → aligned_pct = round(14/22*100) = 64
+            "fb-wc26-fra-mex-20260612": {"votes_total": 22, "aligned": 14},
+            # 0 real votes → aligned_pct is None
+            "fb-wc26-arg-alg-20260617": {"votes_total": 0,  "aligned": 0},
         },
+        # 7-day uniques series the q_unique_anons_by_day query returns
+        # (only non-zero days; helper fills the rest with zeros).
+        # Report date is 2026-05-28; series spans 2026-05-22 .. 2026-05-28.
+        "weekly_uniques_rows": [
+            {"day": date(2026, 5, 22), "uniques":  60},
+            {"day": date(2026, 5, 23), "uniques":  95},
+            {"day": date(2026, 5, 24), "uniques":  88},
+            {"day": date(2026, 5, 25), "uniques": 120},
+            {"day": date(2026, 5, 26), "uniques": 150},
+            {"day": date(2026, 5, 27), "uniques": 150},
+            {"day": date(2026, 5, 28), "uniques": 180},
+        ],
         "per_match_view_fallback": {"fb-wc26-bra-mar-20260613": 33},
     }
 
@@ -445,17 +515,34 @@ async def _build_context_and_render_html_inner(tmp_path: Path, fake_state: dict,
     assert ctx["audience"]["busiest_hour"] == "19:00–20:00"
     assert any(r["venue"] == "polymarket" and r["count"] == 12 for r in ctx["cta_by_venue"])
     assert ctx["top_matches"][0]["label"] == "France vs Mexico"
+    # Top-matches votes come from match_reactions (seeded=false), not the
+    # aggregator. France row in the fixture has 22 real votes, 14 aligned.
+    assert ctx["top_matches"][0]["votes"] == 22
+    assert ctx["top_matches"][0]["aligned_pct"] == 64
+    # Argentina row has zero real votes → aligned_pct is None (renders as —).
+    assert ctx["top_matches"][1]["votes"] == 0
+    assert ctx["top_matches"][1]["aligned_pct"] is None
     assert ctx["sentiment"]["total"] == 42
     assert ctx["sentiment"]["aligned_pct"] == 71  # 30/42 rounded
     assert any(r["label"] == "Brazil vs Morocco" for r in ctx["zero_click_picks"])
     assert ctx["desk"]["published"] == 0  # no run report
     assert ctx["status"]["color"] == "green"
 
+    # 7-day uniques chart — built from match_views (seeded=false), one
+    # SVG block at the top of the report.
+    wu = ctx["weekly_uniques"]
+    assert wu["latest"] == 180
+    assert wu["max"] == 180
+    assert wu["wow_delta"] is not None and "+200%" in wu["wow_delta"]  # 60 → 180
+    assert wu["wow_cls"] == "up"
+    assert wu["svg"].startswith("<svg")
+    assert "polyline" in wu["svg"]
+
     html = dr.render_html(ctx)
     # Sample-PDF figures must all appear in the rendered HTML.
     for needle in [
         "320",            # views
-        "180",            # uniques
+        "180",            # uniques (also the chart's latest label)
         "42",             # votes
         "17",             # cta clicks
         "France vs Mexico",
@@ -468,6 +555,9 @@ async def _build_context_and_render_html_inner(tmp_path: Path, fake_state: dict,
         "Daily report",
         "Audience",
         "Desk health",
+        "Unique readers · last 7 days",   # chart header
+        "Real readers only",               # chart footer
+        "<svg",                            # inline SVG present
     ]:
         assert needle in html, f"missing fragment: {needle!r}"
 
