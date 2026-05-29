@@ -515,16 +515,20 @@ if (SITE_PUBLIC / "index.html").exists():
     @app.get("/outrights/{slug}", include_in_schema=False)
     async def site_outright_slug(slug: str):
         slug = slug.removesuffix("/").removesuffix(".html")
-        # An outright_id (e.g. fb-wc26-winner) is a legacy per-market
-        # URL — 301 home to the new listing.
-        if _OUTRIGHT_ID_RE.match(slug):
-            if not _outright_has_decision(slug):
-                return _site_not_found()
-            return RedirectResponse(url="/outrights/", status_code=301)
         if not _SLUG_RE.match(slug):
             return _site_not_found()
-        # Team slug — serve the static page the generator wrote.
-        return _serve_site(f"outrights/{slug}.html")
+        # Team page wins — try the static HTML first. Falling through
+        # to the outright-id branch only when no team file exists is
+        # what keeps multi-word team slugs ("bosnia-and-herzegovina",
+        # "cote-d-ivoire", "dr-congo") from being mis-routed: those
+        # slugs structurally match _OUTRIGHT_ID_RE by coincidence.
+        team_html = SITE_PUBLIC / "outrights" / f"{slug}.html"
+        if team_html.is_file():
+            return _serve_site(f"outrights/{slug}.html")
+        # Legacy per-market URL — 301 home to the new listing.
+        if _OUTRIGHT_ID_RE.match(slug) and _outright_has_decision(slug):
+            return RedirectResponse(url="/outrights/", status_code=301)
+        return _site_not_found()
 
     @app.get("/o/{outright_id}", include_in_schema=False)
     async def site_outright_legacy(outright_id: str):
