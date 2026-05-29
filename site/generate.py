@@ -3327,22 +3327,44 @@ def main():
         (SITE_OUT / "m" / f"{m['match_id']}.html").write_text(render_match_page(m))
     log(f"Wrote          : {len(matches)} match page(s) in m/")
 
-    # Outrights pages are hidden until the engine has a tournament-winner
-    # market that produces a real Pick / Avoid. Delete any previously-built
-    # /outrights/index.html and /o/*.html so search engines stop indexing
-    # the "Pass" placeholder and the server falls through to the 404.
+    # Outrights pages render only for markets whose verdict is Pick or
+    # Avoid. Pass-state outrights are left out so search engines don't
+    # index the placeholder and the server's /outrights + /o/{id} gate
+    # falls through to the on-brand 404.
+    decisive = [
+        o for o in outrights
+        if (o.get("verdict") or {}).get("state") in ("pick", "avoid")
+    ]
     out_idx = SITE_OUT / "outrights" / "index.html"
-    if out_idx.exists():
-        out_idx.unlink()
-        log("Removed        : outrights/index.html (hidden until a real verdict lands)")
     o_dir = SITE_OUT / "o"
-    n_removed = 0
-    if o_dir.is_dir():
+    if decisive:
+        out_idx.parent.mkdir(parents=True, exist_ok=True)
+        out_idx.write_text(render_outrights_index(decisive))
+        log(f"Wrote          : outrights/index.html ({len(decisive)} decisive)")
+        o_dir.mkdir(parents=True, exist_ok=True)
+        kept_ids = set()
+        for o in decisive:
+            (o_dir / f"{o['outright_id']}.html").write_text(render_outright_page(o))
+            kept_ids.add(o["outright_id"])
+        log(f"Wrote          : {len(decisive)} outright page(s) in o/")
+        n_removed = 0
         for stale in o_dir.glob("*.html"):
-            stale.unlink()
-            n_removed += 1
-    if n_removed:
-        log(f"Removed        : {n_removed} stale outright page(s) in o/")
+            if stale.stem not in kept_ids:
+                stale.unlink()
+                n_removed += 1
+        if n_removed:
+            log(f"Removed        : {n_removed} stale outright page(s) in o/")
+    else:
+        if out_idx.exists():
+            out_idx.unlink()
+            log("Removed        : outrights/index.html (no pick/avoid verdict)")
+        n_removed = 0
+        if o_dir.is_dir():
+            for stale in o_dir.glob("*.html"):
+                stale.unlink()
+                n_removed += 1
+        if n_removed:
+            log(f"Removed        : {n_removed} stale outright page(s) in o/")
 
     # Hand-written editorial pages live under site/public/ as flat HTML;
     # the generator doesn't rewrite them, but it does inject (or strip)

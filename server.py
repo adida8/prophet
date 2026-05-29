@@ -451,19 +451,64 @@ if (SITE_PUBLIC / "index.html").exists():
         match_id = match_id.removesuffix("/").removesuffix(".html")
         return _serve_site(f"m/{match_id}.html")
 
-    # Outright pages are hidden from the public site until a tournament-
-    # winner market produces a real Pick / Avoid. Every /outrights and
-    # /o/{id} request falls through to the on-brand 404 page.
+    # Outright pages are hidden from the public site until the market in
+    # question produces a Pick or Avoid. The gate reads verdict state at
+    # request time so flipping the toggle requires no code change — the
+    # next refresh tick that lands a pick/avoid verdict opens the page.
+    import re as _re
+    _OUTRIGHT_ID_RE = _re.compile(r"^[a-z0-9]{2,8}-[a-z0-9-]{2,64}$")
+
+    def _outrights_root() -> Path:
+        env = os.getenv("DESK_OUTPUT_DIR")
+        root = Path(env) if env else (Path(__file__).resolve().parent / "desk" / "data" / "output")
+        return root / "outrights"
+
+    def _outright_has_decision(outright_id: str) -> bool:
+        if not _OUTRIGHT_ID_RE.match(outright_id):
+            return False
+        p = _outrights_root() / f"{outright_id}.json"
+        if not p.is_file():
+            return False
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return False
+        state = (data.get("verdict") or {}).get("state")
+        return state in ("pick", "avoid")
+
+    def _any_outright_has_decision() -> bool:
+        p = _outrights_root() / "index.json"
+        if not p.is_file():
+            return False
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return False
+        for row in data.get("outrights") or []:
+            if row.get("verdict") in ("pick", "avoid"):
+                return True
+        return False
+
     @app.get("/outrights", include_in_schema=False)
     @app.get("/outrights/", include_in_schema=False)
+    async def site_outrights():
+        if not _any_outright_has_decision():
+            return _site_not_found()
+        return _serve_site("outrights/index.html")
+
     @app.get("/outrights/wc26", include_in_schema=False)
     @app.get("/outrights/wc26/", include_in_schema=False)
-    async def site_outrights():
-        return _site_not_found()
+    async def site_outrights_wc26():
+        if not _outright_has_decision("fb-wc26-winner"):
+            return _site_not_found()
+        return RedirectResponse(url="/o/fb-wc26-winner", status_code=301)
 
     @app.get("/o/{outright_id}", include_in_schema=False)
-    async def site_outright(outright_id: str):  # noqa: ARG001
-        return _site_not_found()
+    async def site_outright(outright_id: str):
+        outright_id = outright_id.removesuffix("/").removesuffix(".html")
+        if not _outright_has_decision(outright_id):
+            return _site_not_found()
+        return _serve_site(f"o/{outright_id}.html")
 
     # ── Editorial / trust pages (sourced from handover-v4) ────────────
     # `learn` and `world-cup` are intentionally absent: the React SPA owns
