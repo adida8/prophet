@@ -627,67 +627,90 @@ a { color: inherit; }
 }
 .blurb p + p { margin-top: 14px; }
 
-/* Ladder — per-team verdict block on the per-outright page. One
-   <article> per team, sorted by model_p desc, each carrying stats
-   + a one-line editorial blurb so a reader can scan the field. */
+/* Ladder — per-team verdict grid on the per-outright page. Each
+   <article class="lc-card"> is its own tile carrying team name,
+   verdict pill, model/market/edge stats, a one-line editorial blurb,
+   and a "See {team} on Polymarket" CTA. Sorted by model_p desc;
+   Pick tiles get a flame tint so they jump out of the 48-tile grid. */
 .ladder { margin: 32px 0 0; }
 .ladder h2 {
   font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
   letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
-  margin: 0 0 12px; padding-bottom: 8px; border-bottom: var(--hairline);
+  margin: 0 0 16px; padding-bottom: 8px; border-bottom: var(--hairline);
 }
-.ladder-list { display: flex; flex-direction: column; }
-.ladder-row {
-  padding: 16px 0; border-bottom: var(--hairline-soft);
+.lc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
 }
-.ladder-row:last-child { border-bottom: none; }
-.ladder-row.is-pick {
-  background: rgba(217, 70, 28, 0.04);
-  padding: 16px 14px; margin: 0 -14px;
-  border-bottom: var(--hairline);
+.lc-card {
+  position: relative;
+  border: 1px solid rgba(14, 34, 64, 0.12);
+  border-radius: 4px;
+  padding: 16px;
+  background: var(--paper, #fff);
+  display: flex; flex-direction: column; gap: 10px;
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
 }
-.ladder-row-head {
+.lc-card:hover {
+  border-color: rgba(14, 34, 64, 0.32);
+  box-shadow: 0 2px 12px rgba(14, 34, 64, 0.08);
+  transform: translateY(-1px);
+}
+.lc-card.is-pick {
+  border-color: rgba(217, 70, 28, 0.35);
+  background: rgba(217, 70, 28, 0.05);
+}
+.lc-card.is-pick:hover { border-color: rgba(217, 70, 28, 0.6); }
+.lc-head {
   display: flex; align-items: baseline; justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
-.ladder-team {
+.lc-team {
   font-family: var(--font-serif); font-size: 17px; font-weight: 600;
-  color: var(--ink);
+  color: var(--ink); line-height: 1.15;
 }
-.ladder-row-verdict { white-space: nowrap; }
-.ladder-glyph {
-  display: inline-block; margin-right: 6px;
-  font-family: var(--font-mono); font-size: 11px;
+.lc-verdict { white-space: nowrap; }
+.lc-glyph {
+  display: inline-block; margin-right: 4px;
+  font-family: var(--font-mono); font-size: 10.5px;
   color: var(--graphite-soft);
 }
-.ladder-label {
-  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+.lc-lab {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--graphite-soft);
 }
-.ladder-row.is-pick .ladder-glyph,
-.ladder-row.is-pick .ladder-label { color: var(--flame-deep); }
-.ladder-row.is-avoid .ladder-glyph,
-.ladder-row.is-avoid .ladder-label { color: var(--ink); }
-.ladder-row-stats {
-  display: flex; flex-wrap: wrap; gap: 18px; margin-top: 6px;
-  font-family: var(--font-sans); font-size: 12px;
+.lc-card.is-pick .lc-glyph,
+.lc-card.is-pick .lc-lab { color: var(--flame-deep); }
+.lc-card.is-avoid .lc-glyph,
+.lc-card.is-avoid .lc-lab { color: var(--ink); }
+.lc-stats {
+  display: flex; gap: 16px; margin: 0; padding: 8px 0;
+  border-top: var(--hairline-soft); border-bottom: var(--hairline-soft);
 }
-.ladder-row-stats .stat { display: inline-flex; align-items: baseline; gap: 4px; }
-.ladder-row-stats .stat-k {
-  font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--graphite-soft);
+.lc-stats div { display: flex; flex-direction: column; gap: 2px; }
+.lc-stats dt {
+  font-family: var(--font-sans); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-soft);
+  margin: 0;
 }
-.ladder-row-stats .stat-v {
-  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
-  color: var(--ink-soft);
+.lc-stats dd {
+  margin: 0; font-family: var(--font-mono); font-size: 13px;
+  font-variant-numeric: tabular-nums; color: var(--ink-soft);
 }
-.ladder-row-stats .stat-edge { color: var(--ink); font-weight: 600; }
-.ladder-row-stats .stat-edge.is-neg { color: var(--graphite-soft); font-weight: 400; }
-.ladder-blurb {
-  margin: 8px 0 0; max-width: 64ch;
-  font-family: var(--font-serif); font-size: 14.5px; line-height: 1.55;
-  color: var(--ink-soft);
+.lc-stats dd.lc-edge { color: var(--ink); font-weight: 600; }
+.lc-stats dd.lc-edge.is-neg { color: var(--graphite-soft); font-weight: 400; }
+.lc-blurb {
+  margin: 0; font-family: var(--font-serif); font-size: 14px;
+  line-height: 1.5; color: var(--ink-soft);
 }
+.lc-link {
+  display: inline-block; margin-top: 2px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--flame-deep); text-decoration: none;
+}
+.lc-link:hover { text-decoration: underline; }
 
 /* Sources — verifiable links behind the press chorus in the blurb.
    One row per outlet; each row links to the article and shows the
@@ -3214,14 +3237,17 @@ def _ladder_blurb_for(row: dict) -> str:
 
 def render_outright_ladder(outright: dict) -> str:
     """Per-team verdict ladder for an outright. Sorted by model_p desc;
-    every row shows the YES-side read (model probability the team wins
-    vs market probability the team wins, signed edge in pp, verdict)
-    plus a one-sentence blurb specific to that team's situation."""
+    rendered as a grid of cards. Each card carries team, verdict pill,
+    model/market/edge stats, a short editorial blurb, and a CTA to the
+    outright market URL (Polymarket has no stable per-team deep-link,
+    so every card lands on the same event page where the user can act)."""
     ladder = outright.get("ladder") or []
     if not ladder:
         return ""
     rows_sorted = sorted(ladder, key=lambda r: -(r.get("model_p") or 0))
-    rows_html = []
+    market_url = outright.get("market_url") or (outright.get("verdict") or {}).get("market_url") or ""
+    venue_name = (outright.get("market_venue") or (outright.get("verdict") or {}).get("market_venue") or "").title()
+    cards = []
     for row in rows_sorted:
         team = row.get("team", "—")
         model_p = row.get("model_p")
@@ -3234,27 +3260,36 @@ def render_outright_ladder(outright: dict) -> str:
         if isinstance(edge_pp, (int, float)) and edge_pp < 0:
             edge_class = " is-neg"
         blurb = _ladder_blurb_for(row)
-        rows_html.append(
-            f'<article class="ladder-row is-{state}">'
-            f'<div class="ladder-row-head">'
-            f'<span class="ladder-team">{escape(team)}</span>'
-            f'<span class="ladder-row-verdict">'
-            f'<span class="ladder-glyph" aria-hidden="true">{glyph}</span>'
-            f'<span class="ladder-label">{label}</span>'
+        cta = ""
+        if market_url:
+            link_text = f"See {team} on {venue_name or 'the market'}"
+            cta = (
+                f'<a class="lc-link" href="{escape(market_url)}" rel="nofollow noopener" '
+                f'target="_blank" aria-label="{escape(link_text)}">'
+                f'<span aria-hidden="true">{escape(link_text)} ↗</span></a>'
+            )
+        cards.append(
+            f'<article class="lc-card is-{state}">'
+            f'<header class="lc-head">'
+            f'<span class="lc-team">{escape(team)}</span>'
+            f'<span class="lc-verdict">'
+            f'<span class="lc-glyph" aria-hidden="true">{glyph}</span>'
+            f'<span class="lc-lab">{label}</span>'
             f'</span>'
-            f'</div>'
-            f'<div class="ladder-row-stats">'
-            f'<span class="stat"><span class="stat-k">Model</span><span class="stat-v">{fmt_pct(model_p)}</span></span>'
-            f'<span class="stat"><span class="stat-k">Market</span><span class="stat-v">{fmt_pct(market_p)}</span></span>'
-            f'<span class="stat"><span class="stat-k">Edge</span><span class="stat-v stat-edge{edge_class}">{fmt_edge(edge_pp) or "—"}</span></span>'
-            f'</div>'
-            f'<p class="ladder-blurb">{escape(blurb)}</p>'
+            f'</header>'
+            f'<dl class="lc-stats">'
+            f'<div><dt>Model</dt><dd>{fmt_pct(model_p)}</dd></div>'
+            f'<div><dt>Market</dt><dd>{fmt_pct(market_p)}</dd></div>'
+            f'<div><dt>Edge</dt><dd class="lc-edge{edge_class}">{fmt_edge(edge_pp) or "—"}</dd></div>'
+            f'</dl>'
+            f'<p class="lc-blurb">{escape(blurb)}</p>'
+            f'{cta}'
             f'</article>'
         )
     return (
         '<section class="ladder">'
         '<h2>Verdicts across the field</h2>'
-        f'<div class="ladder-list">{"".join(rows_html)}</div>'
+        f'<div class="lc-grid">{"".join(cards)}</div>'
         '</section>'
     )
 

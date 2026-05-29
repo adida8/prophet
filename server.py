@@ -476,24 +476,31 @@ if (SITE_PUBLIC / "index.html").exists():
         state = (data.get("verdict") or {}).get("state")
         return state in ("pick", "avoid")
 
-    def _any_outright_has_decision() -> bool:
+    def _decisive_outright_ids() -> list[str]:
         p = _outrights_root() / "index.json"
         if not p.is_file():
-            return False
+            return []
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
         except (OSError, ValueError):
-            return False
-        for row in data.get("outrights") or []:
-            if row.get("verdict") in ("pick", "avoid"):
-                return True
-        return False
+            return []
+        return [
+            row.get("outright_id", "")
+            for row in (data.get("outrights") or [])
+            if row.get("verdict") in ("pick", "avoid") and row.get("outright_id")
+        ]
 
     @app.get("/outrights", include_in_schema=False)
     @app.get("/outrights/", include_in_schema=False)
     async def site_outrights():
-        if not _any_outright_has_decision():
+        ids = _decisive_outright_ids()
+        if not ids:
             return _site_not_found()
+        # When exactly one outright market has a decisive verdict, the
+        # "list of 1 card" landing page is redundant — bounce straight
+        # to the per-team grid so the reader lands on the content.
+        if len(ids) == 1:
+            return RedirectResponse(url=f"/outrights/{ids[0]}", status_code=301)
         return _serve_site("outrights/index.html")
 
     @app.get("/outrights/wc26", include_in_schema=False)
