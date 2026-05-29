@@ -12,7 +12,7 @@ Writes:
   site/public/matches/index.html            (all matches, grouped by date)
   site/public/m/{match_id}.html             (per-match page)
   site/public/outrights/index.html          (outright winners or "coming soon")
-  site/public/o/{outright_id}.html          (per-outright page)
+  site/public/outrights/{outright_id}.html  (per-outright page)
 
 Pure stdlib. No jinja. Templates inlined as f-strings.
 
@@ -627,56 +627,67 @@ a { color: inherit; }
 }
 .blurb p + p { margin-top: 14px; }
 
-/* Ladder — per-team verdict table on the per-outright page. Same
-   eyebrow shape as .drivers; numeric columns are mono + right-aligned
-   so 48 rows of probabilities scan cleanly. */
+/* Ladder — per-team verdict block on the per-outright page. One
+   <article> per team, sorted by model_p desc, each carrying stats
+   + a one-line editorial blurb so a reader can scan the field. */
 .ladder { margin: 32px 0 0; }
 .ladder h2 {
   font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
   letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
   margin: 0 0 12px; padding-bottom: 8px; border-bottom: var(--hairline);
 }
-.ladder-table {
-  width: 100%; border-collapse: collapse;
-  font-family: var(--font-sans); font-size: 14px;
+.ladder-list { display: flex; flex-direction: column; }
+.ladder-row {
+  padding: 16px 0; border-bottom: var(--hairline-soft);
 }
-.ladder-table thead th {
-  text-align: left; font-weight: 700; font-size: 10.5px;
-  letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--graphite-soft);
-  padding: 8px 10px; border-bottom: var(--hairline);
+.ladder-row:last-child { border-bottom: none; }
+.ladder-row.is-pick {
+  background: rgba(217, 70, 28, 0.04);
+  padding: 16px 14px; margin: 0 -14px;
+  border-bottom: var(--hairline);
 }
-.ladder-table th.ladder-num,
-.ladder-table td.ladder-num { text-align: right; }
-.ladder-table th.ladder-verdict,
-.ladder-table td.ladder-verdict { text-align: right; white-space: nowrap; }
-.ladder-row td {
-  padding: 10px; border-bottom: var(--hairline-soft); vertical-align: middle;
+.ladder-row-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 16px;
 }
-.ladder-row:last-child td { border-bottom: none; }
-.ladder-row.is-pick { background: rgba(217, 70, 28, 0.04); }
 .ladder-team {
-  font-family: var(--font-serif); font-size: 15px; color: var(--ink);
+  font-family: var(--font-serif); font-size: 17px; font-weight: 600;
+  color: var(--ink);
 }
-.ladder-num {
-  font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft);
-  font-variant-numeric: tabular-nums;
-}
-.ladder-edge { color: var(--ink); font-weight: 600; }
-.ladder-edge.is-neg { color: var(--graphite-soft); font-weight: 400; }
+.ladder-row-verdict { white-space: nowrap; }
 .ladder-glyph {
   display: inline-block; margin-right: 6px;
   font-family: var(--font-mono); font-size: 11px;
   color: var(--graphite-soft);
 }
-.ladder-row.is-pick .ladder-glyph { color: var(--flame-deep); }
-.ladder-row.is-avoid .ladder-glyph { color: var(--ink); }
 .ladder-label {
   font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--graphite-soft);
 }
+.ladder-row.is-pick .ladder-glyph,
 .ladder-row.is-pick .ladder-label { color: var(--flame-deep); }
+.ladder-row.is-avoid .ladder-glyph,
 .ladder-row.is-avoid .ladder-label { color: var(--ink); }
+.ladder-row-stats {
+  display: flex; flex-wrap: wrap; gap: 18px; margin-top: 6px;
+  font-family: var(--font-sans); font-size: 12px;
+}
+.ladder-row-stats .stat { display: inline-flex; align-items: baseline; gap: 4px; }
+.ladder-row-stats .stat-k {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--graphite-soft);
+}
+.ladder-row-stats .stat-v {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+.ladder-row-stats .stat-edge { color: var(--ink); font-weight: 600; }
+.ladder-row-stats .stat-edge.is-neg { color: var(--graphite-soft); font-weight: 400; }
+.ladder-blurb {
+  margin: 8px 0 0; max-width: 64ch;
+  font-family: var(--font-serif); font-size: 14.5px; line-height: 1.55;
+  color: var(--ink-soft);
+}
 
 /* Sources — verifiable links behind the press chorus in the blurb.
    One row per outlet; each row links to the article and shows the
@@ -3026,7 +3037,7 @@ def render_outright_card(outright: dict) -> str:
     v = outright.get("verdict", {})
     state = v.get("state", "pass")
     state_class = f"is-{state}"
-    href = f"/o/{outright['outright_id']}"
+    href = f"/outrights/{outright['outright_id']}"
 
     resolves_at = outright.get("resolves_at")
     when = ""
@@ -3140,10 +3151,72 @@ def render_outrights_index(outrights: list[dict]) -> str:
     )
 
 
+def _ladder_blurb_for(row: dict) -> str:
+    """One-sentence editorial read for a single team in the ladder.
+    The wording branches on verdict + edge sign so a reader can scan
+    48 rows and instantly see which way the model leans on each side."""
+    team = row.get("team", "this team")
+    mp = row.get("model_p") or 0.0
+    mkp = row.get("yes_market_p") or 0.0
+    edge = row.get("yes_edge_pp")
+    lower = row.get("yes_lower_edge_pp")
+    state = row.get("verdict", "pass")
+    mp_pct = f"{mp * 100:.1f}%"
+    mkp_pct = f"{mkp * 100:.1f}%"
+    if state == "pick":
+        tail = ""
+        if isinstance(lower, (int, float)):
+            tail = (
+                f" Bootstrap lower bound ({lower:+.1f}pp) clears the +3.0pp"
+                f" Pick threshold."
+            )
+        return (
+            f"Model rates {team} at {mp_pct}; market prices that side at"
+            f" {mkp_pct}. The {edge:+.1f}pp gap is the basis for the Pick."
+            f"{tail}"
+        )
+    if state == "avoid":
+        return (
+            f"Model rates {team} at {mp_pct}, well below market {mkp_pct}"
+            f" ({edge:+.1f}pp). The market is paying a premium the model"
+            f" does not back."
+        )
+    if not isinstance(edge, (int, float)):
+        return f"Model {mp_pct} · market {mkp_pct}. No verdict computed."
+    if edge >= 1.5:
+        tail = ""
+        if isinstance(lower, (int, float)):
+            if lower > 0:
+                tail = (
+                    f" Bootstrap lower bound ({lower:+.1f}pp) is positive"
+                    f" but doesn't clear the +3.0pp threshold."
+                )
+            else:
+                tail = (
+                    f" Bootstrap lower bound ({lower:+.1f}pp) crosses zero,"
+                    f" so the edge isn't robust enough to act on."
+                )
+        return (
+            f"Model leans yes — {mp_pct} vs market {mkp_pct} ({edge:+.1f}pp)."
+            f"{tail}"
+        )
+    if edge <= -1.5:
+        return (
+            f"Model leans no — {mp_pct} vs market {mkp_pct} ({edge:+.1f}pp)."
+            f" The market is paying more than the model thinks the side is"
+            f" worth."
+        )
+    return (
+        f"Priced close to fair: model {mp_pct} vs market {mkp_pct}"
+        f" ({edge:+.1f}pp). No edge in either direction."
+    )
+
+
 def render_outright_ladder(outright: dict) -> str:
     """Per-team verdict ladder for an outright. Sorted by model_p desc;
     every row shows the YES-side read (model probability the team wins
-    vs market probability the team wins, signed edge in pp, verdict)."""
+    vs market probability the team wins, signed edge in pp, verdict)
+    plus a one-sentence blurb specific to that team's situation."""
     ladder = outright.get("ladder") or []
     if not ladder:
         return ""
@@ -3160,31 +3233,28 @@ def render_outright_ladder(outright: dict) -> str:
         edge_class = ""
         if isinstance(edge_pp, (int, float)) and edge_pp < 0:
             edge_class = " is-neg"
+        blurb = _ladder_blurb_for(row)
         rows_html.append(
-            f'<tr class="ladder-row is-{state}">'
-            f'<td class="ladder-team">{escape(team)}</td>'
-            f'<td class="ladder-num">{fmt_pct(model_p)}</td>'
-            f'<td class="ladder-num">{fmt_pct(market_p)}</td>'
-            f'<td class="ladder-num ladder-edge{edge_class}">{fmt_edge(edge_pp) or "—"}</td>'
-            f'<td class="ladder-verdict">'
+            f'<article class="ladder-row is-{state}">'
+            f'<div class="ladder-row-head">'
+            f'<span class="ladder-team">{escape(team)}</span>'
+            f'<span class="ladder-row-verdict">'
             f'<span class="ladder-glyph" aria-hidden="true">{glyph}</span>'
             f'<span class="ladder-label">{label}</span>'
-            f'</td>'
-            f'</tr>'
+            f'</span>'
+            f'</div>'
+            f'<div class="ladder-row-stats">'
+            f'<span class="stat"><span class="stat-k">Model</span><span class="stat-v">{fmt_pct(model_p)}</span></span>'
+            f'<span class="stat"><span class="stat-k">Market</span><span class="stat-v">{fmt_pct(market_p)}</span></span>'
+            f'<span class="stat"><span class="stat-k">Edge</span><span class="stat-v stat-edge{edge_class}">{fmt_edge(edge_pp) or "—"}</span></span>'
+            f'</div>'
+            f'<p class="ladder-blurb">{escape(blurb)}</p>'
+            f'</article>'
         )
     return (
         '<section class="ladder">'
         '<h2>Verdicts across the field</h2>'
-        '<table class="ladder-table">'
-        '<thead><tr>'
-        '<th class="ladder-team">Team</th>'
-        '<th class="ladder-num">Model</th>'
-        '<th class="ladder-num">Market</th>'
-        '<th class="ladder-num">Edge</th>'
-        '<th class="ladder-verdict">Verdict</th>'
-        '</tr></thead>'
-        f'<tbody>{"".join(rows_html)}</tbody>'
-        '</table>'
+        f'<div class="ladder-list">{"".join(rows_html)}</div>'
         '</section>'
     )
 
@@ -3219,7 +3289,7 @@ def render_outright_page(outright: dict) -> str:
         chrome_head(
             f"{title} · Odds Primer",
             description=summary or f"Verdict and per-team ladder for the {title} market.",
-            path=f"/o/{outright.get('outright_id', '')}",
+            path=f"/outrights/{outright.get('outright_id', '')}",
         )
         + chrome_masthead("outrights")
         + '<main class="page">'
@@ -3398,7 +3468,6 @@ def main():
     SITE_OUT.mkdir(parents=True, exist_ok=True)
     (SITE_OUT / "m").mkdir(exist_ok=True)
     (SITE_OUT / "matches").mkdir(exist_ok=True)
-    (SITE_OUT / "o").mkdir(exist_ok=True)
     (SITE_OUT / "outrights").mkdir(exist_ok=True)
 
     matches = load_matches()
@@ -3436,42 +3505,50 @@ def main():
 
     # Outrights pages render only for markets whose verdict is Pick or
     # Avoid. Pass-state outrights are left out so search engines don't
-    # index the placeholder and the server's /outrights + /o/{id} gate
-    # falls through to the on-brand 404.
+    # index the placeholder and the server's /outrights gate falls
+    # through to the on-brand 404.
     decisive = [
         o for o in outrights
         if (o.get("verdict") or {}).get("state") in ("pick", "avoid")
     ]
-    out_idx = SITE_OUT / "outrights" / "index.html"
-    o_dir = SITE_OUT / "o"
+    out_dir = SITE_OUT / "outrights"
+    out_idx = out_dir / "index.html"
+    legacy_o_dir = SITE_OUT / "o"
     if decisive:
-        out_idx.parent.mkdir(parents=True, exist_ok=True)
+        out_dir.mkdir(parents=True, exist_ok=True)
         out_idx.write_text(render_outrights_index(decisive))
         log(f"Wrote          : outrights/index.html ({len(decisive)} decisive)")
-        o_dir.mkdir(parents=True, exist_ok=True)
         kept_ids = set()
         for o in decisive:
-            (o_dir / f"{o['outright_id']}.html").write_text(render_outright_page(o))
+            (out_dir / f"{o['outright_id']}.html").write_text(render_outright_page(o))
             kept_ids.add(o["outright_id"])
-        log(f"Wrote          : {len(decisive)} outright page(s) in o/")
+        log(f"Wrote          : {len(decisive)} outright page(s) in outrights/")
         n_removed = 0
-        for stale in o_dir.glob("*.html"):
-            if stale.stem not in kept_ids:
-                stale.unlink()
-                n_removed += 1
+        for stale in out_dir.glob("*.html"):
+            if stale.name == "index.html" or stale.stem in kept_ids:
+                continue
+            stale.unlink()
+            n_removed += 1
         if n_removed:
-            log(f"Removed        : {n_removed} stale outright page(s) in o/")
+            log(f"Removed        : {n_removed} stale outright page(s) in outrights/")
     else:
         if out_idx.exists():
             out_idx.unlink()
             log("Removed        : outrights/index.html (no pick/avoid verdict)")
-        n_removed = 0
-        if o_dir.is_dir():
-            for stale in o_dir.glob("*.html"):
-                stale.unlink()
-                n_removed += 1
-        if n_removed:
-            log(f"Removed        : {n_removed} stale outright page(s) in o/")
+        for stale in out_dir.glob("*.html"):
+            if stale.name == "index.html":
+                continue
+            stale.unlink()
+    # Sweep the retired /o/ output dir on every build — the server now
+    # 301s /o/{id} to /outrights/{id}, so any leftover static HTML there
+    # would be unreachable and confuse search engines if rediscovered.
+    if legacy_o_dir.is_dir():
+        n_legacy = 0
+        for stale in legacy_o_dir.glob("*.html"):
+            stale.unlink()
+            n_legacy += 1
+        if n_legacy:
+            log(f"Removed        : {n_legacy} retired page(s) in legacy o/")
 
     # Hand-written editorial pages live under site/public/ as flat HTML;
     # the generator doesn't rewrite them, but it does inject (or strip)

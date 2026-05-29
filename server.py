@@ -501,14 +501,25 @@ if (SITE_PUBLIC / "index.html").exists():
     async def site_outrights_wc26():
         if not _outright_has_decision("fb-wc26-winner"):
             return _site_not_found()
-        return RedirectResponse(url="/o/fb-wc26-winner", status_code=301)
+        return RedirectResponse(url="/outrights/fb-wc26-winner", status_code=301)
 
-    @app.get("/o/{outright_id}", include_in_schema=False)
-    async def site_outright(outright_id: str):
+    @app.get("/outrights/{outright_id}", include_in_schema=False)
+    async def site_outright_page(outright_id: str):
         outright_id = outright_id.removesuffix("/").removesuffix(".html")
         if not _outright_has_decision(outright_id):
             return _site_not_found()
-        return _serve_site(f"o/{outright_id}.html")
+        return _serve_site(f"outrights/{outright_id}.html")
+
+    # Legacy short URL — every per-outright page used to live at /o/{id}.
+    # Preserve external links with a 301 to the canonical location under
+    # /outrights/. The decision gate matches the new route so an unknown
+    # or pass-state outright still 404s instead of redirecting to nothing.
+    @app.get("/o/{outright_id}", include_in_schema=False)
+    async def site_outright_legacy(outright_id: str):
+        outright_id = outright_id.removesuffix("/").removesuffix(".html")
+        if not _outright_has_decision(outright_id):
+            return _site_not_found()
+        return RedirectResponse(url=f"/outrights/{outright_id}", status_code=301)
 
     # ── Editorial / trust pages (sourced from handover-v4) ────────────
     # `learn` and `world-cup` are intentionally absent: the React SPA owns
