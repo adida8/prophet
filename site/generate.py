@@ -3391,24 +3391,34 @@ def render_outright_team_card(outright: dict, row: dict, *, show_overlay: bool =
     if edge_str:
         reads += f'<span class="edge{edge_class}">{edge_str}</span>'
 
-    if state == "pass":
-        foot = (
-            '<div class="lv-foot">'
-            f'<div class="lv-reads">{reads}</div>'
-            '</div>'
-        )
-    else:
-        # Pick / Avoid get a "Read the case" tertiary link pointing at
-        # the team page (matches the per-match card convention).
-        action = (
-            f'<a class="cta cta--ghost" href="{href}">Read the case <span class="arr">→</span></a>'
-        )
-        foot = (
-            '<div class="lv-foot">'
-            f'<div class="lv-reads">{reads}</div>'
-            f'<div class="lv-action">{action}</div>'
-            '</div>'
-        )
+    # Foot CTAs — Polymarket + Kalshi pills, plus an optional "Read the
+    # case" tertiary link. On the team's own drill-down page
+    # (`show_overlay=False`) the self-link is dropped so the foot only
+    # carries the two market pills.
+    top_verdict = outright.get("verdict") or {}
+    cta_dict = {
+        "market_url":   top_verdict.get("market_url")   or outright.get("market_url"),
+        "market_venue": top_verdict.get("market_venue") or outright.get("market_venue"),
+    }
+    # Price only applies on the top-level Pick team (e.g. Argentina YES
+    # on the WC26 winner market); other rows share the same Polymarket
+    # event URL but no per-team price.
+    row_price = top_verdict.get("price") if (
+        state == "pick" and top_verdict.get("team") == team
+    ) else None
+    detail_href = href if show_overlay else None
+    cta_html = market_cta(
+        cta_dict,
+        price=row_price,
+        search_key="World Cup 2026 winner",
+        detail_href=detail_href,
+    )
+    foot = (
+        '<div class="lv-foot">'
+        f'<div class="lv-reads">{reads}</div>'
+        f'<div class="lv-action">{cta_html}</div>'
+        '</div>'
+    )
 
     overlay = (
         f'<a class="lv-card-link" href="{href}" aria-label="Read the case for {escape(team)}"></a>'
