@@ -21,6 +21,16 @@ export function fmtClockUTC(iso) {
   return `${hh}:${mm}:${ss}Z`;
 }
 
+export function fmtDateUTC(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const yyyy = d.getUTCFullYear();
+  const mm   = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const dd   = String(d.getUTCDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export function fmtUSD(n) {
   if (n === null || n === undefined) return "—";
   if (n === 0) return "$0";

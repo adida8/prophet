@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { fmtAgo, fmtClockUTC, fmtUSD, fetchJson } from "./util";
+import { fmtAgo, fmtClockUTC, fmtDateUTC, fmtUSD, fetchJson } from "./util";
 
 const SOURCE_LABELS = {
   polymarket_gamma: "Polymarket · gamma",
@@ -207,6 +207,7 @@ function RunHistory({ manifest, selectedRunId, onSelect }) {
       <thead>
         <tr>
           <th>Run</th>
+          <th>Date</th>
           <th>Start</th>
           <th>End</th>
           <th>Finished</th>
@@ -226,6 +227,7 @@ function RunHistory({ manifest, selectedRunId, onSelect }) {
             onClick={() => onSelect(row.run_id)}
           >
             <td className="mono small">{row.run_id}</td>
+            <td className="mono small">{fmtDateUTC(row.started_at)}</td>
             <td className="mono small">{fmtClockUTC(row.started_at)}</td>
             <td className="mono small">{fmtClockUTC(row.finished_at)}</td>
             <td className="small">{fmtAgo(row.finished_at)}</td>
