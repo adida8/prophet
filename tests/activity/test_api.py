@@ -31,6 +31,8 @@ class _FakeConn:
         s = sql.lower().lstrip()
         if s.startswith("insert into match_views"):
             self.store.views.append(args)
+        elif s.startswith("insert into cta_clicks"):
+            self.store.cta_clicks.append(args)
         elif s.startswith("insert into match_reactions"):
             match_id, anon_id, reaction = args[0], args[1], args[2]
             self.store.reactions[(match_id, anon_id)] = {
@@ -100,6 +102,7 @@ class _FakeStore:
         self.aggregates: dict[str, dict] = {}
         self.executes: list[tuple] = []
         self.extra_daily_count = 0
+        self.cta_clicks: list[tuple] = []
 
 
 @pytest.fixture
@@ -140,6 +143,61 @@ def test_post_view_reuses_existing_cookie(client: TestClient, store: _FakeStore)
 def test_post_view_rejects_empty_match_id(client: TestClient, store: _FakeStore) -> None:
     r = client.post("/api/activity/view", json={"match_id": ""})
     assert r.status_code == 422
+
+
+# --- cta -------------------------------------------------------------------
+
+
+def test_post_cta_inserts_polymarket(client: TestClient, store: _FakeStore) -> None:
+    r = client.post(
+        "/api/activity/cta",
+        json={"match_id": "fb-wc26-arg-aut-20260612", "venue": "polymarket"},
+    )
+    assert r.status_code == 204
+    assert ANON_COOKIE in r.cookies
+    assert len(store.cta_clicks) == 1
+    match_id, venue, anon_id, ip_hash = store.cta_clicks[0]
+    assert match_id == "fb-wc26-arg-aut-20260612"
+    assert venue == "polymarket"
+    assert anon_id == r.cookies[ANON_COOKIE]
+    assert len(ip_hash) == 32
+
+
+def test_post_cta_inserts_kalshi(client: TestClient, store: _FakeStore) -> None:
+    r = client.post(
+        "/api/activity/cta",
+        json={"match_id": "fb-wc26-fra-mex-20260612", "venue": "kalshi"},
+    )
+    assert r.status_code == 204
+    assert store.cta_clicks[0][1] == "kalshi"
+
+
+def test_post_cta_rejects_unknown_venue(client: TestClient, store: _FakeStore) -> None:
+    r = client.post(
+        "/api/activity/cta",
+        json={"match_id": "fb-wc26-fra-mex-20260612", "venue": "draftkings"},
+    )
+    assert r.status_code == 422
+    assert store.cta_clicks == []
+
+
+def test_post_cta_rejects_empty_match_id(client: TestClient, store: _FakeStore) -> None:
+    r = client.post(
+        "/api/activity/cta",
+        json={"match_id": "", "venue": "polymarket"},
+    )
+    assert r.status_code == 422
+    assert store.cta_clicks == []
+
+
+def test_post_cta_reuses_existing_cookie(client: TestClient, store: _FakeStore) -> None:
+    client.cookies.set(ANON_COOKIE, "fixed-anon-uuid")
+    r = client.post(
+        "/api/activity/cta",
+        json={"match_id": "fb-test-m1", "venue": "polymarket"},
+    )
+    assert r.status_code == 204
+    assert store.cta_clicks[0][2] == "fixed-anon-uuid"
 
 
 # --- vote ------------------------------------------------------------------

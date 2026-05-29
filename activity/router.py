@@ -1,8 +1,9 @@
 """FastAPI router mounted at `/api/activity/*`.
 
-Three endpoints:
+Four endpoints:
   POST /api/activity/view             body {match_id}              → 204
   POST /api/activity/vote             body {match_id, reaction}    → {your_vote, locked_at}
+  POST /api/activity/cta              body {match_id, venue}       → 204
   GET  /api/activity/{match_id}                                    → aggregate view-model
 
 Rate limits enforced server-side via SQL on the existing tables — no
@@ -59,6 +60,14 @@ class VoteBody(BaseModel):
     reaction: ReactionLiteral
 
 
+CtaVenueLiteral = Literal["polymarket", "kalshi"]
+
+
+class CtaBody(BaseModel):
+    match_id: str = Field(min_length=3, max_length=128)
+    venue: CtaVenueLiteral
+
+
 class VoteResponse(BaseModel):
     your_vote: ReactionLiteral
     locked_at: Optional[str] = None  # ISO 8601 or null
@@ -108,6 +117,24 @@ async def post_view(body: ViewBody, request: Request, response: Response) -> Non
             "INSERT INTO match_views (match_id, anon_id, ip_hash, seeded) "
             "VALUES ($1, $2, $3, false)",
             body.match_id, anon_id, ip,
+        )
+    return None
+
+
+@router.post("/cta", status_code=204)
+async def post_cta(body: CtaBody, request: Request, response: Response) -> None:
+    # Mirrors post_view — same anon cookie + IP-hash bookkeeping. Fired by
+    # site/public/js/activity.js via navigator.sendBeacon when the reader
+    # clicks any <a> stamped with data-cta-venue (the Polymarket or Kalshi
+    # pills). Daily report consumes the resulting rows.
+    anon_id = ensure_anon_id(request, response)
+    ip = hash_ip(client_ip(request))
+    pool = get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "INSERT INTO cta_clicks (match_id, venue, anon_id, ip_hash, seeded) "
+            "VALUES ($1, $2, $3, $4, false)",
+            body.match_id, body.venue, anon_id, ip,
         )
     return None
 

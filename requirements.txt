@@ -13,3 +13,9 @@ asyncpg>=0.29,<1.0
 # The desk package isn't pip-installed on Railway — it runs as a
 # subprocess module — so its own pyproject deps don't apply here.
 anthropic>=0.40,<1.0
+# Daily report template + PDF rendering (daily_report.py, daily_report_loop.py).
+# WeasyPrint depends on Cairo + Pango at the system level; on the Railway
+# image both are present. daily_report.py falls back to HTML-only when
+# WeasyPrint import or render fails so the email still goes out.
+jinja2>=3.1,<4.0
+weasyprint>=62.0,<70.0
