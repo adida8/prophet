@@ -715,8 +715,8 @@ def render_pdf(html: str) -> Optional[bytes]:
     """
     try:
         from weasyprint import HTML  # type: ignore
-    except ImportError as e:
-        log.warning("WeasyPrint not installed (%s); sending HTML-only email", e)
+    except (ImportError, OSError) as e:
+        log.warning("WeasyPrint unavailable (%s); sending HTML-only email", e)
         return None
     try:
         buf = io.BytesIO()
