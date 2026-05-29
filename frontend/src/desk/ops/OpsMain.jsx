@@ -20,6 +20,7 @@ export default function OpsMain() {
   const [report, setReport] = useState(null);
   const [manifest, setManifest] = useState([]);
   const [selectedRunId, setSelectedRunId] = useState(null);
+  const [dataSources, setDataSources] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -30,6 +31,13 @@ export default function OpsMain() {
       const m = await fetchJson("/api/desk/ops/runs?limit=5");
       const runs = m.runs || [];
       setManifest(runs);
+
+      // Data-sources panel — loads independently of run history so a
+      // fresh-deploy with no runs yet still surfaces external provider
+      // health.
+      fetchJson("/api/desk/ops/data-sources")
+        .then(setDataSources)
+        .catch(() => setDataSources(null));
 
       const target = runId || (runs[0] && runs[0].run_id);
       if (!target) {
@@ -78,6 +86,12 @@ export default function OpsMain() {
           onSelect={load}
         />
       </Section>
+
+      {dataSources && (
+        <Section title="External providers">
+          <ExternalProviders data={dataSources} />
+        </Section>
+      )}
 
       {report && (
         <>
@@ -231,4 +245,144 @@ function RunHistory({ manifest, selectedRunId, onSelect }) {
       </tbody>
     </table>
   );
+}
+
+// ── External providers ───────────────────────────────────────────────
+
+function ExternalProviders({ data }) {
+  const { api_football: af, elo, openweathermap: ow } = data || {};
+  return (
+    <div className="ops__providers">
+      {af && (
+        <ProviderCard
+          label="api-football"
+          configured={af.key_configured}
+          enabled={af.fetch_enabled}
+          dbExists={af.db_exists}
+          counts={[
+            ["teams resolved",        af.team_count],
+            ["form_delta rows",       af.form_delta_count],
+            ["injury penalties",      af.injury_penalty_count],
+            ["fixtures cached",       af.fixture_count],
+          ]}
+          fetches={af.fetches}
+          extras={[
+            af.injuries_enabled ? "DESK_INJURY_FETCH=1" : null,
+          ].filter(Boolean)}
+        />
+      )}
+      {elo && (
+        <ProviderCard
+          label="live Elo (eloratings + clubelo)"
+          configured={true}
+          enabled={elo.fetch_enabled}
+          dbExists={elo.db_exists}
+          counts={[
+            ["national Elo rows", elo.national_count],
+            ["club Elo rows",     elo.club_count],
+          ]}
+          fetches={elo.fetches.map((f) => ({
+            endpoint:    f.source_id,
+            last_fetched: f.last_fetched,
+            last_status: f.last_status,
+          }))}
+        />
+      )}
+      {ow && (
+        <ProviderCard
+          label="openweathermap"
+          configured={ow.key_configured}
+          enabled={false}
+          dbExists={false}
+          counts={[]}
+          fetches={[]}
+          status={ow.data_flow_status}
+          note={ow.note}
+        />
+      )}
+    </div>
+  );
+}
+
+function ProviderCard({
+  label, configured, enabled, dbExists, counts, fetches,
+  status, note, extras = [],
+}) {
+  return (
+    <div className="ops__provider">
+      <div className="ops__provider-head">
+        <h3 className="ops__provider-name">{label}</h3>
+        <ProviderStatus
+          configured={configured}
+          enabled={enabled}
+          dbExists={dbExists}
+          override={status}
+        />
+      </div>
+      {extras.length > 0 && (
+        <div className="ops__provider-extras small">
+          {extras.join(" · ")}
+        </div>
+      )}
+      {note && <div className="ops__provider-note small">{note}</div>}
+      {counts.length > 0 && (
+        <table className="ops__provider-counts">
+          <tbody>
+            {counts.map(([k, v]) => (
+              <tr key={k}>
+                <td className="small">{k}</td>
+                <td className="mono small num">{v ?? 0}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {fetches.length > 0 && (
+        <div className="ops__provider-fetches">
+          <div className="small ops__provider-fetches-title">Recent fetches</div>
+          <table>
+            <tbody>
+              {fetches.slice(0, 8).map((f, i) => (
+                <tr key={`${f.endpoint}-${i}`}>
+                  <td className="mono small">{f.endpoint}</td>
+                  <td>
+                    <span className={`ops__pill ops__pill--source-${normaliseStatus(f.last_status)}`}>
+                      {f.last_status}
+                    </span>
+                  </td>
+                  <td className="mono small">{fmtAgo(f.last_fetched)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProviderStatus({ configured, enabled, dbExists, override }) {
+  if (override === "not_wired") {
+    return <span className="ops__pill ops__pill--source-stale">probe-only</span>;
+  }
+  if (!configured) {
+    return <span className="ops__pill ops__pill--source-failed">no key</span>;
+  }
+  if (!enabled) {
+    return <span className="ops__pill ops__pill--source-stale">fetch off</span>;
+  }
+  if (!dbExists) {
+    return <span className="ops__pill ops__pill--source-stale">no cache yet</span>;
+  }
+  return <span className="ops__pill ops__pill--source-fresh">live</span>;
+}
+
+function normaliseStatus(s) {
+  if (!s) return "stale";
+  const v = String(s).toLowerCase();
+  if (v === "ok") return "fresh";
+  if (v.startsWith("http_") || v === "transient" || v === "parser_mismatch") {
+    return "failed";
+  }
+  return "stale";
 }

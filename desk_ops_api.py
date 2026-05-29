@@ -500,6 +500,186 @@ def _read_distribute_state(*, dead_limit: int) -> dict[str, Any]:
     return state
 
 
+# ── External data providers (api-football + openweathermap + live Elo) ─
+
+_DEFAULT_API_FOOTBALL_DB = _PROJECT_ROOT / "desk" / "data" / "api_football.db"
+_DEFAULT_ELO_DB          = _PROJECT_ROOT / "desk" / "data" / "elo.db"
+
+
+def _api_football_db_path() -> Path:
+    env = os.getenv("DESK_API_FOOTBALL_DB_PATH")
+    return Path(env) if env else _DEFAULT_API_FOOTBALL_DB
+
+
+def _elo_db_path() -> Path:
+    env = os.getenv("DESK_ELO_DB_PATH")
+    return Path(env) if env else _DEFAULT_ELO_DB
+
+
+def _ro_connect(db_path: Path) -> sqlite3.Connection | None:
+    """Read-only sqlite open. Returns None when the file is missing
+    or unopenable; never raises — the endpoint must not 500 on a
+    fresh deploy that hasn't fetched anything yet."""
+    if not db_path.is_file():
+        return None
+    uri = f"file:{db_path}?mode=ro"
+    try:
+        conn = sqlite3.connect(uri, uri=True, timeout=2.0)
+        conn.row_factory = sqlite3.Row
+        return conn
+    except sqlite3.Error as e:
+        log.warning("ops/data-sources open failed %s: %s", db_path, e)
+        return None
+
+
+def _api_football_state() -> dict[str, Any]:
+    """Snapshot the api-football cache for the dashboard.
+
+    Surfaces:
+      * `fetch_enabled` — DESK_RANK_FORM_FETCH=1 (form path enabled?)
+      * `injuries_enabled` — DESK_INJURY_FETCH=1
+      * `key_configured` — API_FOOTBALL_KEY non-empty (don't echo it)
+      * `db_path` / `db_exists`
+      * counts: n teams resolved, n form_delta rows, n injuries
+        penalties, n cached fixtures
+      * last_fetched per endpoint (most recent /fetches row,
+        already populated by the refresh path)
+    """
+    db_path = _api_football_db_path()
+    state: dict[str, Any] = {
+        "fetch_enabled":    os.getenv("DESK_RANK_FORM_FETCH", "0") == "1",
+        "injuries_enabled": os.getenv("DESK_INJURY_FETCH", "0") == "1",
+        "key_configured":   bool(os.getenv("API_FOOTBALL_KEY", "").strip()),
+        "db_path":          str(db_path),
+        "db_exists":        False,
+        "team_count":       0,
+        "form_delta_count": 0,
+        "injury_penalty_count": 0,
+        "fixture_count":    0,
+        "fetches":          [],
+    }
+    conn = _ro_connect(db_path)
+    if conn is None:
+        return state
+    state["db_exists"] = True
+    try:
+        for label, q in (
+            ("team_count",           "SELECT COUNT(*) AS c FROM team_resolution"),
+            ("form_delta_count",     "SELECT COUNT(*) AS c FROM form_deltas"),
+            ("injury_penalty_count", "SELECT COUNT(*) AS c FROM injury_penalties"),
+            ("fixture_count",        "SELECT COUNT(*) AS c FROM fixture_results"),
+        ):
+            try:
+                row = conn.execute(q).fetchone()
+                state[label] = int(row["c"] or 0)
+            except sqlite3.Error:
+                # Table missing on a stale schema — fine, leave at 0.
+                pass
+
+        try:
+            rows = conn.execute(
+                "SELECT endpoint, last_fetched, last_status "
+                "FROM api_fetches "
+                "ORDER BY last_fetched DESC LIMIT 20"
+            ).fetchall()
+            state["fetches"] = [
+                {
+                    "endpoint":     r["endpoint"],
+                    "last_fetched": r["last_fetched"],
+                    "last_status":  r["last_status"],
+                }
+                for r in rows
+            ]
+        except sqlite3.Error:
+            pass
+    finally:
+        conn.close()
+    return state
+
+
+def _elo_state() -> dict[str, Any]:
+    """Snapshot the live-Elo cache (eloratings + clubelo)."""
+    db_path = _elo_db_path()
+    state: dict[str, Any] = {
+        "fetch_enabled":   os.getenv("DESK_ELO_FETCH", "0") == "1",
+        "db_path":         str(db_path),
+        "db_exists":       False,
+        "national_count":  0,
+        "club_count":      0,
+        "fetches":         [],
+    }
+    conn = _ro_connect(db_path)
+    if conn is None:
+        return state
+    state["db_exists"] = True
+    try:
+        for label, q in (
+            ("national_count", "SELECT COUNT(*) AS c FROM national_elo"),
+            ("club_count",     "SELECT COUNT(*) AS c FROM club_elo"),
+        ):
+            try:
+                row = conn.execute(q).fetchone()
+                state[label] = int(row["c"] or 0)
+            except sqlite3.Error:
+                pass
+        try:
+            rows = conn.execute(
+                "SELECT source_id, last_fetched, last_status "
+                "FROM elo_fetches ORDER BY last_fetched DESC"
+            ).fetchall()
+            state["fetches"] = [
+                {
+                    "source_id":    r["source_id"],
+                    "last_fetched": r["last_fetched"],
+                    "last_status":  r["last_status"],
+                }
+                for r in rows
+            ]
+        except sqlite3.Error:
+            pass
+    finally:
+        conn.close()
+    return state
+
+
+def _openweathermap_state() -> dict[str, Any]:
+    """OpenWeatherMap status — honest snapshot.
+
+    The probe at `desk verify-data-sources` confirms the key works,
+    but **B.2 weather data flow is not yet wired** (no cache, no
+    forecast fetcher, no model hook). So the dashboard shows
+    `key_configured` + `data_flow_status: "not_wired"` rather than
+    pretending there's running data the operator can drill into.
+    """
+    return {
+        "key_configured":   bool(os.getenv("OPENWEATHERMAP_API_KEY", "").strip()),
+        "data_flow_status": "not_wired",
+        "note":             "Phase B.2 deferred. Key verified via "
+                            "`desk verify-data-sources`; no automated "
+                            "fetch / cache / model hook yet.",
+    }
+
+
+@router.get("/data-sources", dependencies=[Depends(_gate)])
+def get_data_sources_state() -> dict[str, Any]:
+    """Read-only view of the external data layer.
+
+    Surfaces three providers:
+      * api-football (form_delta + injuries + outcomes ingest)
+      * live Elo (eloratings.net + api.clubelo.com)
+      * openweathermap (probe-only; B.2 not wired)
+
+    Never 500s — missing caches collapse to empty counts so a fresh
+    deploy renders cleanly.
+    """
+    return {
+        "now":            _now_iso(),
+        "api_football":   _api_football_state(),
+        "elo":            _elo_state(),
+        "openweathermap": _openweathermap_state(),
+    }
+
+
 @router.get("/distribute", dependencies=[Depends(_gate)])
 def get_distribute_state(
     limit: int = Query(default=_DEAD_LIMIT_DEFAULT, ge=1, le=_DEAD_LIMIT_MAX),
