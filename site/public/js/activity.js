@@ -268,6 +268,27 @@
     return data;
   }
 
+  // -------------------- site-page ping --------------------
+  //
+  // Match pages already fire postView() per widget. For non-match pages
+  // (home, matches index, outrights, learn, about) we fire a single
+  // sentinel view with match_id `site:<slug>` so daily_report's unique-
+  // anon count covers the whole site, not just match-page traffic.
+  //
+  // Returns null to skip (match-page paths handle themselves; unknown
+  // paths aren't tracked to keep the sentinel set tight).
+  function siteKeyForPath(pathname) {
+    if (!pathname || pathname.startsWith("/m/") || pathname.startsWith("/o/")) {
+      return null;
+    }
+    if (pathname === "/" || pathname === "/index.html") return "site:home";
+    if (pathname === "/matches" || pathname.startsWith("/matches/")) return "site:matches";
+    if (pathname === "/outrights" || pathname.startsWith("/outrights/")) return "site:outrights";
+    if (pathname === "/learn" || pathname.startsWith("/learn/")) return "site:learn";
+    if (pathname === "/about" || pathname.startsWith("/about")) return "site:about";
+    return null;
+  }
+
   // -------------------- network ----------------------------
 
   async function postView(matchId) {
@@ -352,7 +373,8 @@
   function boot() {
     injectStyleOnce();
     wireCtaBeacon();
-    document.querySelectorAll(".op-activity[data-match-id]").forEach((root) => {
+    const widgets = document.querySelectorAll(".op-activity[data-match-id]");
+    widgets.forEach((root) => {
       const matchId = root.dataset.matchId;
       const state = {
         matchId,
@@ -365,6 +387,13 @@
       refresh(root, state);
       setInterval(() => refresh(root, state), POLL_MS);
     });
+
+    // Non-match pages: fire one sentinel view so site-wide uniques cover
+    // home/matches/outrights/learn/about, not just match-page traffic.
+    if (widgets.length === 0) {
+      const siteKey = siteKeyForPath(window.location.pathname);
+      if (siteKey) postView(siteKey);
+    }
   }
 
   if (document.readyState === "loading") {
