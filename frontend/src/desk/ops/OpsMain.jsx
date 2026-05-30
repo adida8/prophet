@@ -21,6 +21,7 @@ export default function OpsMain() {
   const [manifest, setManifest] = useState([]);
   const [selectedRunId, setSelectedRunId] = useState(null);
   const [dataSources, setDataSources] = useState(null);
+  const [dailyReport, setDailyReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -38,6 +39,11 @@ export default function OpsMain() {
       fetchJson("/api/desk/ops/data-sources")
         .then(setDataSources)
         .catch(() => setDataSources(null));
+
+      // Daily report status — same loose-coupling rationale.
+      fetchJson("/api/desk/ops/daily-report")
+        .then(setDailyReport)
+        .catch(() => setDailyReport(null));
 
       const target = runId || (runs[0] && runs[0].run_id);
       if (!target) {
@@ -87,6 +93,12 @@ export default function OpsMain() {
         />
       </Section>
 
+      {dailyReport && (
+        <Section title="Daily report">
+          <DailyReportStatus state={dailyReport} />
+        </Section>
+      )}
+
       {dataSources && (
         <Section title="External providers">
           <ExternalProviders data={dataSources} />
@@ -120,6 +132,22 @@ function Section({ title, children }) {
 
 function StatusPill({ status }) {
   return <span className={`ops__pill ops__pill--${status}`}>{status}</span>;
+}
+
+function DailyReportStatus({ state }) {
+  if (!state || !state.last_sent_date) {
+    return <div className="ops__empty">No daily report sent yet.</div>;
+  }
+  return (
+    <div className="ops__daily-report">
+      <div>
+        Covering <span className="mono">{state.last_sent_date}</span>
+        {" · "}
+        sent <span className="mono">{fmtClockUTC(state.sent_at)}</span>
+        {" "}({fmtAgo(state.sent_at)})
+      </div>
+    </div>
+  );
 }
 
 function Sources({ sources }) {
