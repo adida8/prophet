@@ -65,7 +65,12 @@ def _verdict_dict(verdict: OutrightVerdict) -> dict:
     }
 
 
-def _ladder_dict(verdict: OutrightVerdict, model: OutrightModelOutput) -> list[dict]:
+def _ladder_dict(
+    verdict: OutrightVerdict,
+    model: OutrightModelOutput,
+    *,
+    squad_notes: dict[str, str] | None = None,
+) -> list[dict]:
     """One row per team — both sides side-by-side, sorted by model
     P(win) descending. This is what the site renders as a full ladder.
 
@@ -96,6 +101,12 @@ def _ladder_dict(verdict: OutrightVerdict, model: OutrightModelOutput) -> list[d
             best_side = "YES"
         elif np_.lower_edge_pp >= pick_pp:
             best_side = "NO"
+        # Q4 squad-paragraph: deterministic one-line summary per team.
+        # Empty string when nothing known (no absences, no at-risk cards).
+        # Not under the per-match contract's ADR governance — the outright
+        # JSON has no Pydantic schema and no documented external
+        # subscriber. Additive-optional.
+        note = (squad_notes or {}).get(team, "")
         rows.append({
             "team":           team,
             "model_p":        round(yp.model_p, 4),         # P(win) — same on YES side
@@ -109,6 +120,7 @@ def _ladder_dict(verdict: OutrightVerdict, model: OutrightModelOutput) -> list[d
             "no_lower_edge_pp":  round(np_.lower_edge_pp, 2),
             "verdict":        "pick" if best_side else "pass",
             "pick_side":      best_side,
+            "squad_note":     note,
         })
     rows.sort(key=lambda r: -r["model_p"])
     return rows
@@ -135,6 +147,8 @@ def build_payload(
     verdict: OutrightVerdict,
     copy: OutrightCopy,
     hard_signal_adjustments: list[OutrightHardSignalAdjustment] | None = None,
+    *,
+    squad_notes: dict[str, str] | None = None,
 ) -> dict:
     oid = _outright_id(snapshot)
     model_block: dict = {
@@ -169,7 +183,7 @@ def build_payload(
             "drivers": list(copy.drivers),
         },
         "model":  model_block,
-        "ladder": _ladder_dict(verdict, model),
+        "ladder": _ladder_dict(verdict, model, squad_notes=squad_notes),
         "updated_at": datetime.now(tz=timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 
@@ -181,12 +195,15 @@ def write(
     verdict: OutrightVerdict,
     copy: OutrightCopy,
     hard_signal_adjustments: list[OutrightHardSignalAdjustment] | None = None,
+    *,
+    squad_notes: dict[str, str] | None = None,
 ) -> Path:
     """Write `<outright_id>.json` + a sibling `.etag` (SHA-256 of the
     canonical JSON). Returns the JSON path.
     """
     payload = build_payload(snapshot, model, verdict, copy,
-                            hard_signal_adjustments=hard_signal_adjustments)
+                            hard_signal_adjustments=hard_signal_adjustments,
+                            squad_notes=squad_notes)
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 

@@ -31,6 +31,7 @@ from desk.outrights.model import (
     run as run_model,
 )
 from desk.outrights.publish import write, write_index
+from desk.outrights.squad_note import squad_notes_for_teams
 from desk.outrights.signals_glue import tags_for_outright
 from desk.outrights.live_elo import (
     live_elo_overrides_for_field, merge_elo_overrides,
@@ -150,8 +151,31 @@ def run_once(
         verdict.candidate.label if verdict.candidate else "—",
     )
 
+    # Q4 squad-paragraph: build a per-team `squad_note` from the
+    # api-football cache. When the cache is absent, every team gets an
+    # empty string — the ladder JSON shape is unchanged for fresh
+    # deploys that haven't run `desk fetch-injuries` / `fetch-cards`.
+    squad_notes: dict[str, str] = {}
+    try:
+        from desk.data.api_football import APIFootballRuntime, default_cache_path
+        af_path = default_cache_path()
+        if af_path.exists():
+            with APIFootballRuntime(af_path) as af_rt:
+                squad_notes = squad_notes_for_teams(
+                    field, api_football_runtime=af_rt, competition="wc26",
+                )
+            populated = sum(1 for n in squad_notes.values() if n)
+            if populated:
+                log.info(
+                    "outrights: populated squad_note for %d/%d teams",
+                    populated, len(field),
+                )
+    except Exception as e:  # noqa: BLE001 — never block the ladder
+        log.warning("outrights: squad_note build failed: %s", e)
+
     json_path = write(out, snapshot, model, verdict, copy,
-                     hard_signal_adjustments=hard_audit)
+                     hard_signal_adjustments=hard_audit,
+                     squad_notes=squad_notes)
 
     # Index — for now just one outright; the manifest shape stays
     # forward-compatible with adding group winners / golden boot.
