@@ -14,6 +14,7 @@ from pydantic import ValidationError
 
 from desk.publish import (
     Competition,
+    MarketSource,
     MatchOutput,
     OutputIndex,
     Venue,
@@ -164,6 +165,58 @@ def test_verdict_side_draw_only_when_draw_in_market_outcomes(fra_mex_pick: Match
     payload["verdict"]["side"] = "draw"
     with pytest.raises(ValidationError):
         MatchOutput.model_validate(payload)
+
+
+# ── market_sources (outbound venue links) ─────────────────────────────
+
+def test_market_sources_default_empty(fra_mex_pick: MatchOutput) -> None:
+    """Additive field — absent in legacy payloads, defaults to []."""
+    payload = fra_mex_pick.model_dump(mode="json")
+    payload.pop("market_sources", None)
+    m = MatchOutput.model_validate(payload)
+    assert m.market_sources == []
+
+
+def test_market_sources_round_trip(fra_mex_pick: MatchOutput) -> None:
+    sources = [
+        MarketSource(
+            venue="polymarket",
+            name="Polymarket",
+            url="https://polymarket.com/sports/fifa-world-cup/fifwc-fra-mex-2026-06-12",
+            picked=True,
+            priced_sides=["a", "draw", "b"],
+        ),
+        MarketSource(
+            venue="kalshi",
+            name="Kalshi",
+            url="https://kalshi.com/category/sports/soccer/fifa-world-cup",
+            picked=False,
+            priced_sides=[],
+        ),
+    ]
+    m = fra_mex_pick.model_copy(update={"market_sources": sources})
+    reloaded = MatchOutput.model_validate_json(m.model_dump_json())
+    assert reloaded.market_sources == sources
+    assert reloaded.market_sources[0].picked is True
+    assert reloaded.market_sources[1].priced_sides == []
+
+
+def test_market_source_url_must_be_https() -> None:
+    with pytest.raises(ValidationError):
+        MarketSource(venue="polymarket", name="Polymarket", url="http://polymarket.com/x")
+
+
+def test_market_source_rejects_unknown_venue() -> None:
+    with pytest.raises(ValidationError):
+        MarketSource(venue="betfair", name="Betfair", url="https://betfair.com/x")  # type: ignore[arg-type]
+
+
+def test_market_source_rejects_unknown_side() -> None:
+    with pytest.raises(ValidationError):
+        MarketSource(
+            venue="polymarket", name="Polymarket",
+            url="https://polymarket.com/x", priced_sides=["a", "home"],  # type: ignore[list-item]
+        )
 
 
 # ── Match-id format ───────────────────────────────────────────────────

@@ -20,6 +20,7 @@ from desk.ops.report import IngestStats, SourceFreshness, SourceStatus
 from desk.publish.contract import (
     Copy,
     HardSignalAdjustment as ContractHardSignalAdjustment,
+    MarketSource,
     Verdict,
 )
 from desk.sport import FixtureRef, MarketSide
@@ -32,6 +33,10 @@ from desk.sports.football.hard_signals import (
     HardSignalAdjustment,
     apply_hard_signals,
 )
+from desk.sports.football.market_links import (
+    build_market_sources,
+    market_url_for_fixture as _market_url_for_fixture,
+)
 from desk.sports.football.model import FootballFeatures, compute as compute_model
 from desk.sports.football.priced import list_priced_fixtures_with_stats
 from desk.sports.football.signals_glue import tags_for as _football_signals_tags
@@ -40,32 +45,6 @@ from desk.verdict.compare import MarketSnapshot
 from desk.verdict.decide import DecisionMeta, decide as decide_verdict
 
 log = logging.getLogger("desk.sports.football")
-
-
-def _market_url_for_fixture(fx: FixtureRef) -> str | None:
-    """Build the venue-side deep link from the source slug.
-
-    Polymarket WC 2026 match events resolve at
-    `https://polymarket.com/sports/fifa-world-cup/{slug}` (slug e.g.
-    `fifwc-fra-mex-2026-06-12`). Other events still live under
-    `/event/{slug}`. We strip the optional `-more-markets` suffix
-    Polymarket sometimes appends, then front it with the right path.
-
-    Returns None when we can't construct a clean URL — caller decides
-    whether that downgrades a Pick to a Pass (see decide()).
-    """
-    slug = (fx.source_event_slug or "").strip().lower()
-    if not slug:
-        return None
-    if slug.endswith("-more-markets"):
-        slug = slug[: -len("-more-markets")]
-    if (fx.source_venue or "").lower() == "polymarket":
-        if slug.startswith("fifwc-"):
-            return f"https://polymarket.com/sports/fifa-world-cup/{slug}"
-        return f"https://polymarket.com/event/{slug}"
-    # Kalshi (and future venues) plug in here when their slug + URL
-    # pattern is known. Until then we don't fabricate a URL.
-    return None
 
 
 def _run_async(coro):
@@ -159,7 +138,7 @@ class FootballSport:
         fx: FixtureRef,
         snapshot: MarketSnapshot,
     ) -> Verdict:
-        verdict, _copy, _meta, _adjs = self.decide_and_explain(fx, snapshot)
+        verdict, *_ = self.decide_and_explain(fx, snapshot)
         return verdict
 
     def decide_and_explain(
@@ -170,9 +149,16 @@ class FootballSport:
         signals_runtime=None,
         api_football_runtime=None,
         elo_runtime=None,
-    ) -> tuple[Verdict, Copy, DecisionMeta, list[ContractHardSignalAdjustment]]:
+    ) -> tuple[
+        Verdict,
+        Copy,
+        DecisionMeta,
+        list[ContractHardSignalAdjustment],
+        list[MarketSource],
+    ]:
         """Compute the verdict, the editorial copy, the decision meta,
-        and the per-match hard-signal audit list in one pass.
+        the per-match hard-signal audit list, and the outbound
+        market-source links in one pass.
 
         Runs the model once and reuses its output for both branches.
         PR 5 will swap the templated copy for Haiku-generated prose.
@@ -192,6 +178,12 @@ class FootballSport:
         threads it onto `MatchOutput.hard_signal_adjustments` so the
         published JSON carries enough to answer 'did this signal change
         the verdict?'. Empty list when no adjustments fired.
+
+        The 5th element is the outbound `MarketSource` list — every
+        venue we link a trade CTA for, each with its deep link, whether
+        the Pick rode on it, and which sides it priced. The runner
+        threads it onto `MatchOutput.market_sources`. See
+        `desk/sports/football/market_links.py`.
         """
         features = build_features(
             fx,
@@ -377,7 +369,12 @@ class FootballSport:
             )
             for a in hard_adjustments
         ]
-        return verdict, copy, meta, contract_adjustments
+
+        # Outbound venue links — every CTA venue, deep-linked, with the
+        # picked flag + which sides each priced into the calculation.
+        market_sources = build_market_sources(fx, snapshot, verdict)
+
+        return verdict, copy, meta, contract_adjustments, market_sources
 
     # ── News-signals glue ───────────────────────────────────────────
 

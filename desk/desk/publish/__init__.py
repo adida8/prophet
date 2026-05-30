@@ -7,6 +7,7 @@ from desk.publish.contract import (  # noqa: F401
     Citation,
     Competition,
     Copy,
+    MarketSource,
     MatchOutput,
     MatchOutputIndexEntry,
     OutputIndex,

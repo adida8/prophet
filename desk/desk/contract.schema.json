@@ -258,6 +258,53 @@
         "title": "HardSignalAdjustment",
         "type": "object"
       },
+      "MarketSource": {
+        "additionalProperties": false,
+        "description": "One prediction-market / sportsbook venue we link out to for this\nfixture.\n\nThe list carries **every venue we surface a trade CTA for**, not just\nthe one the Pick rode on \u2014 so the front-of-house (and any external\nconsumer) can render the full row of outgoing buttons from the\ncontract alone.\n\nFields:\n- `venue`        \u2014 the canonical venue key (matches `MarketVenue`).\n- `name`         \u2014 display name for the button (\"Polymarket\").\n- `url`          \u2014 deep link to *this fixture's* page on the venue.\n                   Falls back to the venue's nearest landing page when\n                   no per-event deep link exists yet (see below).\n- `picked`       \u2014 true for the single venue whose price backs the\n                   Pick side. False on every venue when the verdict is\n                   not a Pick (pass / avoid / withdrawn).\n- `priced_sides` \u2014 which market sides this venue actually quoted into\n                   the calculation, in `a / draw / b` order. An empty\n                   list means the venue is linked for convenience but\n                   did **not** feed the model \u2014 e.g. a venue we don't\n                   yet ingest. This is the honest \"used in the\n                   calculation?\" signal inside an all-venues list: a\n                   picked Pick venue always has a non-empty\n                   `priced_sides`; a link-only venue has `[]`.",
+        "properties": {
+          "name": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "picked": {
+            "default": false,
+            "title": "Picked",
+            "type": "boolean"
+          },
+          "priced_sides": {
+            "items": {
+              "enum": [
+                "a",
+                "b",
+                "draw"
+              ],
+              "type": "string"
+            },
+            "maxItems": 3,
+            "title": "Priced Sides",
+            "type": "array"
+          },
+          "url": {
+            "maxLength": 512,
+            "minLength": 10,
+            "pattern": "^https://",
+            "title": "Url",
+            "type": "string"
+          },
+          "venue": {
+            "$ref": "#/$defs/MarketVenue"
+          }
+        },
+        "required": [
+          "venue",
+          "name",
+          "url"
+        ],
+        "title": "MarketSource",
+        "type": "object"
+      },
       "MarketVenue": {
         "enum": [
           "kalshi",
@@ -448,6 +495,14 @@
         "maxItems": 3,
         "minItems": 2,
         "title": "Market Outcomes",
+        "type": "array"
+      },
+      "market_sources": {
+        "items": {
+          "$ref": "#/$defs/MarketSource"
+        },
+        "maxItems": 8,
+        "title": "Market Sources",
         "type": "array"
       },
       "match_id": {
