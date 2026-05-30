@@ -155,6 +155,7 @@ class FootballSport:
         signals_runtime=None,
         api_football_runtime=None,
         elo_runtime=None,
+        oddsapi_cache=None,
     ) -> tuple[
         Verdict,
         Copy,
@@ -192,7 +193,35 @@ class FootballSport:
         the Pick rode on it, and which sides it priced. The runner
         threads it onto `MatchOutput.market_sources`. See
         `desk/sports/football/market_links.py`.
+
+        When `oddsapi_cache` is provided, the snapshot is enriched with
+        cached non-US sportsbook + exchange prices before the verdict
+        runs — Polymarket rows are re-emitted with `true_price`/`fair_p`
+        and Pinnacle/Betfair/etc rows are joined on. Without the cache
+        (or when no cached prices match this fixture's match_id), the
+        snapshot is left as-is and the path stays byte-identical to
+        pre-pivot.
         """
+        # Cross-venue cache merge (ADR 0004). Gated on the env-driven
+        # flag so flipping the flag is the one switch that activates
+        # both the data side AND the verdict side together. The merge
+        # itself never raises — a cache miss returns the input snapshot
+        # unchanged.
+        cross_enabled_pre = bool(getattr(__import__("desk.config",
+            fromlist=["CROSS_VENUE_EDGE_ENABLED"]),
+            "CROSS_VENUE_EDGE_ENABLED", False))
+        if cross_enabled_pre and oddsapi_cache is not None:
+            from desk.sports.football.oddsapi_prices import (
+                merge_oddsapi_into_snapshot,
+            )
+            try:
+                snapshot = merge_oddsapi_into_snapshot(
+                    snapshot, cache=oddsapi_cache,
+                )
+            except Exception as e:                       # noqa: BLE001
+                log.warning("oddsapi merge failed for %s: %s",
+                            fx.match_id, e)
+
         features = build_features(
             fx,
             form_source=api_football_runtime,

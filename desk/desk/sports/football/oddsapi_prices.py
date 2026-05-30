@@ -24,11 +24,16 @@ import logging
 from collections import defaultdict
 from typing import Iterable
 
+from typing import TYPE_CHECKING
+
 from desk.data.oddsapi.cache import PriceRow
 from desk.data.oddsapi.venues import (
     VENUE_REGIONS,
     venue_type_for,
 )
+
+if TYPE_CHECKING:
+    from desk.data.oddsapi.cache import OddsAPICache
 from desk.pricing.cost import (
     ExchangeCostInputs,
     PolymarketCostInputs,
@@ -150,6 +155,72 @@ def _true_price_for(
     return compute_true_price(
         VenueType.PREDICTION_MARKET,
         PolymarketCostInputs(ask=1.0 / decimal_odds),
+    )
+
+
+def merge_oddsapi_into_snapshot(
+    snapshot: "MarketSnapshot",
+    *,
+    cache: "OddsAPICache",
+    exchange_commission: float = DEFAULT_EXCHANGE_COMMISSION,
+) -> "MarketSnapshot":
+    """Read cached odds-api prices for `snapshot.match_id` and merge
+    enriched VenuePrices into the snapshot. Polymarket rows are also
+    re-emitted in enriched form so every row carries `true_price` and
+    the snapshot's `best_for_true_price(side)` ranks across all venues.
+
+    No-op when:
+    - The cache has no events resolved to this match_id, AND
+    - The cache has no prices keyed on a resolved event.
+
+    Importantly the function NEVER raises — a cache miss returns the
+    input snapshot unchanged. Callers can rely on this to be safe to
+    invoke unconditionally before deciding what to do with the result.
+    """
+    from desk.verdict.compare import MarketSnapshot
+
+    try:
+        events = cache.events_for_match_id(snapshot.match_id)
+    except Exception as e:                              # noqa: BLE001
+        log.warning("oddsapi events lookup failed for %s: %s",
+                    snapshot.match_id, e)
+        return snapshot
+
+    if not events:
+        return snapshot
+
+    # Pull every cached price row across all events resolved to this
+    # match_id. Most match_ids resolve to one event; allow many for
+    # robustness against duplicate Odds-API event ids.
+    cached_rows: list = []
+    for ev in events:
+        try:
+            cached_rows.extend(cache.prices_for_event(ev.event_id))
+        except Exception as e:                          # noqa: BLE001
+            log.warning("oddsapi prices_for_event failed for %s: %s",
+                        ev.event_id, e)
+
+    if not cached_rows:
+        return snapshot
+
+    enriched_oddsapi = venue_prices_from_oddsapi(
+        cached_rows, exchange_commission=exchange_commission,
+    )
+
+    # Drop the legacy Polymarket rows from the original snapshot and
+    # re-emit them in enriched form so they're directly comparable.
+    enriched_polymarket = enrich_polymarket_venue_prices(snapshot.prices)
+    non_polymarket_existing = [
+        p for p in enriched_polymarket if p.venue != "polymarket"
+    ]
+    polymarket_only = [
+        p for p in enriched_polymarket if p.venue == "polymarket"
+    ]
+
+    return MarketSnapshot(
+        match_id=snapshot.match_id,
+        asof=snapshot.asof,
+        prices=tuple(polymarket_only + non_polymarket_existing + enriched_oddsapi),
     )
 
 

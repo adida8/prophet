@@ -57,6 +57,31 @@ class RefreshReport:
         )
 
 
+def _resolve_event_match_ids(parsed_events, cache) -> int:
+    """For every parsed event, resolve event_id → canonical match_id
+    via the football glue and stamp it on the cached event row.
+
+    Lives here (instead of inside the football package) so the call is
+    a one-liner from `refresh_all` and the football import sits behind
+    the function-local scope — keeps the sport-agnostic `oddsapi`
+    package free of football imports at module load.
+    """
+    from desk.sports.football.oddsapi_glue import from_oddsapi_event
+
+    n = 0
+    for ev in parsed_events:
+        fx = from_oddsapi_event(ev)
+        if fx is None:
+            continue
+        try:
+            cache.set_event_resolution(ev["event_id"], fx.match_id)
+            n += 1
+        except Exception as e:                              # noqa: BLE001
+            log.warning("set_event_resolution failed for %s: %s",
+                        ev.get("event_id"), e)
+    return n
+
+
 async def refresh_all(
     *,
     api_key: str,
@@ -117,6 +142,11 @@ async def refresh_all(
                             venue_id=venue_id,
                             rows=rows,
                         )
+
+                # Resolve event_id → canonical match_id and stamp it
+                # on the row so the runtime merge can find it by
+                # `events_for_match_id(match_id)`.
+                _resolve_event_match_ids(parsed, cache)
 
                 if resp.rate_limit is not None and resp.rate_limit.last_call_cost is not None:
                     credits += resp.rate_limit.last_call_cost

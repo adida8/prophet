@@ -222,6 +222,19 @@ def run_once(
     if _elo_default_path().exists():
         elo_runtime = EloRuntime()
 
+    # Non-US pivot — odds-api cache (sportsbooks + exchange). When
+    # `DESK_CROSS_VENUE_EDGE=1` and the cache file exists, the sport
+    # adapter merges cached venues into each fixture's snapshot before
+    # the verdict runs. With the cache missing the flag is a no-op.
+    from desk.data.oddsapi import OddsAPICache, default_cache_path as _odds_default_path
+    oddsapi_cache = None
+    if config.CROSS_VENUE_EDGE_ENABLED and _odds_default_path().exists():
+        try:
+            oddsapi_cache = OddsAPICache(_odds_default_path())
+        except Exception as e:                          # noqa: BLE001
+            log.warning("odds-api cache open failed: %s", e)
+            oddsapi_cache = None
+
     # Forward-validation logger (Phase B.1 Shadow). Open once per run
     # so per-fixture inserts don't re-open the sqlite file. The logger
     # writes BOTH the published prediction (residual off, today's path)
@@ -318,6 +331,7 @@ def run_once(
                                 signals_runtime=signals_runtime,
                                 api_football_runtime=api_football_runtime,
                                 elo_runtime=elo_runtime,
+                                oddsapi_cache=oddsapi_cache,
                             )
                         except TypeError:
                             # Older sport adapters may not accept all
@@ -327,14 +341,22 @@ def run_once(
                                     fx, snapshot,
                                     signals_runtime=signals_runtime,
                                     api_football_runtime=api_football_runtime,
+                                    elo_runtime=elo_runtime,
                                 )
                             except TypeError:
                                 try:
                                     result = sport.decide_and_explain(
-                                        fx, snapshot, signals_runtime=signals_runtime,
+                                        fx, snapshot,
+                                        signals_runtime=signals_runtime,
+                                        api_football_runtime=api_football_runtime,
                                     )
                                 except TypeError:
-                                    result = sport.decide_and_explain(fx, snapshot)
+                                    try:
+                                        result = sport.decide_and_explain(
+                                            fx, snapshot, signals_runtime=signals_runtime,
+                                        )
+                                    except TypeError:
+                                        result = sport.decide_and_explain(fx, snapshot)
                         # decide_and_explain may return (v, copy),
                         # (v, copy, DecisionMeta),
                         # (v, copy, DecisionMeta, hard_signal_adjustments),
@@ -559,6 +581,12 @@ def run_once(
             forward_validation_log.close()
         except Exception as e:                          # noqa: BLE001
             log.warning("forward-validation log close failed: %s", e)
+
+    if oddsapi_cache is not None:
+        try:
+            oddsapi_cache.close()
+        except Exception as e:                          # noqa: BLE001
+            log.warning("odds-api cache close failed: %s", e)
 
     return written
 
