@@ -332,6 +332,35 @@ class FootballSport:
             "draw": snapshot.best_for("draw").implied_p if snapshot.best_for("draw") else 0.0,
             "b":    snapshot.best_for("b").implied_p    if snapshot.best_for("b")    else 0.0,
         }
+
+        # Cross-venue "best place to act" — surfaces in the picked
+        # driver line as "Cheapest way in on France is William Hill
+        # at an effective 60%." (ADR 0004). Only fires when:
+        #   - The verdict is a Pick.
+        #   - The DESK_CROSS_VENUE_EDGE flag is on (config-derived).
+        #   - The cheapest-true-price venue differs from the verdict's
+        #     headline market_venue (no information being added
+        #     otherwise).
+        best_venue_label: str | None = None
+        best_venue_true_price: float | None = None
+        cross_enabled = bool(getattr(__import__("desk.config",
+            fromlist=["CROSS_VENUE_EDGE_ENABLED"]),
+            "CROSS_VENUE_EDGE_ENABLED", False))
+        if cross_enabled and verdict.state in ("pick",):
+            from desk.data.oddsapi.venues import VENUE_DISPLAY_NAMES
+            picked_side = None
+            side_to_team = {"a": fx.team_a, "b": fx.team_b, "draw": "draw"}
+            for s, name in side_to_team.items():
+                if verdict.side == name:
+                    picked_side = s
+                    break
+            if picked_side is not None:
+                bv = snapshot.best_for_true_price(picked_side)
+                if bv is not None and bv.venue != (verdict.market_venue or ""):
+                    best_venue_label = VENUE_DISPLAY_NAMES.get(
+                        bv.venue, bv.venue.title())
+                    best_venue_true_price = bv.true_price or bv.implied_p
+
         copy = build_copy({
             "state":         verdict.state if isinstance(verdict.state, str) else verdict.state.value,
             "side":          verdict.side,
@@ -366,6 +395,8 @@ class FootballSport:
             "editorial_citations": editorial_cites,
             "team_a_news":        team_a_news,
             "team_b_news":        team_b_news,
+            "best_venue_label":      best_venue_label,
+            "best_venue_true_price": best_venue_true_price,
         })
         # Ride the citation list onto the published Copy. The blurb
         # already saw them inside build_copy; the contract surfaces them
