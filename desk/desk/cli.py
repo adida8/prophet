@@ -490,6 +490,59 @@ def _cmd_fetch_injuries(args: argparse.Namespace) -> int:
     return 0 if n_ok > 0 else 2
 
 
+def _cmd_fetch_cards(args: argparse.Namespace) -> int:
+    """Refresh api-football card accumulation per team (Q5 of the
+    squad-paragraph spec).
+
+    Calls `/players?team=&season=&league=` once per WC26 team and
+    derives `at_risk = (yellows == threshold-1)` per spec §Q1. Drops
+    any player already suspended from the at-risk set (suspension is
+    the confirmed absence; we'd never name the same player twice).
+    """
+    import asyncio
+
+    from desk import config
+    from desk.data.api_football import APIFootballCache
+    from desk.data.api_football.client import APIFootballClient
+    from desk.data.api_football.cards_refresh import refresh_cards_all
+    from desk.data.api_football.runtime import default_cache_path
+
+    if not config.API_FOOTBALL_KEY:
+        print("API_FOOTBALL_KEY not set", file=sys.stderr)
+        return 2
+
+    db_path = Path(args.db) if args.db else default_cache_path()
+
+    async def _run():
+        async with APIFootballClient(config.API_FOOTBALL_KEY) as client:
+            with APIFootballCache(db_path) as cache:
+                return await refresh_cards_all(
+                    season=args.season,
+                    competition=args.competition,
+                    client=client, cache=cache,
+                    iso3s=args.iso3 or None,
+                )
+
+    outcomes = asyncio.run(_run())
+    by_status: dict[str, int] = {}
+    for o in outcomes:
+        by_status[o.status] = by_status.get(o.status, 0) + 1
+        if o.error:
+            print(f"  {o.iso3:5s}  {o.status:14s}  err={o.error}")
+        else:
+            print(f"  {o.iso3:5s}  {o.status:14s}  "
+                  f"team_id={o.team_id}  rows={o.n_rows:2d}  "
+                  f"at_risk={o.n_at_risk}")
+    print()
+    for status, n in sorted(by_status.items()):
+        print(f"  {status:14s}  {n}")
+    print()
+    print(f"  total: {len(outcomes)}  competition: {args.competition}  "
+          f"(db: {db_path})")
+    n_ok = by_status.get("ok", 0)
+    return 0 if n_ok > 0 else 2
+
+
 def _cmd_fetch_lineups(args: argparse.Namespace) -> int:
     """Refresh api-football /fixtures/lineups for priced fixtures whose
     kickoff lands inside a window from now.
@@ -1124,6 +1177,18 @@ def build_parser() -> argparse.ArgumentParser:
     fi.add_argument("--iso3", action="append",
                     help="restrict to ISO3(s) (repeatable); default = WC26 registry")
     fi.set_defaults(func=_cmd_fetch_injuries)
+
+    fc = sub.add_parser(
+        "fetch-cards",
+        help="refresh api-football card accumulation per team (squad-paragraph Q5)",
+    )
+    fc.add_argument("--db", help="override api-football cache path")
+    fc.add_argument("--season", type=int, default=2026, help="season year (default 2026)")
+    fc.add_argument("--competition", default="wc26",
+                    help="competition code from CARD_RULES (default wc26)")
+    fc.add_argument("--iso3", action="append",
+                    help="restrict to ISO3(s) (repeatable); default = WC26 registry")
+    fc.set_defaults(func=_cmd_fetch_cards)
 
     fl = sub.add_parser(
         "fetch-lineups",
