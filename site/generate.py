@@ -37,7 +37,11 @@ from html import escape
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DESK_OUT = ROOT / "desk" / "data" / "output"
+# Honour DESK_OUTPUT_DIR so a Railway volume mount (e.g. /data/output)
+# can hold per-match + per-outright JSON across redeploys. Falls back to
+# the repo-relative default for local dev.
+_OUTPUT_ENV = os.getenv("DESK_OUTPUT_DIR")
+DESK_OUT = Path(_OUTPUT_ENV) if _OUTPUT_ENV else ROOT / "desk" / "data" / "output"
 FOOTBALL_DIR = DESK_OUT / "football"
 OUTRIGHTS_DIR = DESK_OUT / "outrights"
 SITE_OUT = ROOT / "site" / "public"
