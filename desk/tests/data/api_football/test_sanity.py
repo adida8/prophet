@@ -10,6 +10,8 @@ from desk.data.api_football.sanity import (
     REASON_FAILED_SANITY,
     REASON_OK,
     REASON_OUTSIDE_WINDOW,
+    check_at_risk_not_suspended,
+    check_card_counts,
     check_entity_match,
     check_fixture,
     check_form_delta_range,
@@ -89,3 +91,37 @@ def test_form_delta_in_range_passes():
 def test_form_delta_out_of_range_fails():
     assert check_form_delta_range(3.0) == REASON_FAILED_SANITY
     assert check_form_delta_range(-3.0) == REASON_FAILED_SANITY
+
+
+# ── check_card_counts (Q1 sanity gate) ────────────────────────────────
+
+def test_card_counts_in_range():
+    assert check_card_counts(0, 0) == REASON_OK
+    assert check_card_counts(1, 0) == REASON_OK
+    assert check_card_counts(20, 10) == REASON_OK
+
+
+def test_card_counts_negative_fail_sanity():
+    assert check_card_counts(-1, 0) == REASON_FAILED_SANITY
+    assert check_card_counts(0, -1) == REASON_FAILED_SANITY
+
+
+def test_card_counts_too_large_fail_sanity():
+    assert check_card_counts(21, 0) == REASON_FAILED_SANITY
+    assert check_card_counts(0, 11) == REASON_FAILED_SANITY
+
+
+# ── check_at_risk_not_suspended (Q1 sanity gate) ──────────────────────
+
+def test_at_risk_ok_when_player_not_suspended():
+    verdict = check_at_risk_not_suspended(
+        player_id=5, suspended_player_ids={1, 2, 3},
+    )
+    assert verdict == REASON_OK
+
+
+def test_at_risk_rejected_when_player_suspended():
+    verdict = check_at_risk_not_suspended(
+        player_id=2, suspended_player_ids={1, 2, 3},
+    )
+    assert verdict == REASON_FAILED_SANITY

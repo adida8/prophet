@@ -60,7 +60,7 @@ def _pick() -> Verdict:
         market_venue="polymarket",
         price="-145",
         edge_pp=4.2,
-        market_url="https://polymarket.com/sports/world-cup/fifwc-fra-mex-2026-06-12",
+        market_url="https://polymarket.com/event/fifwc-fra-mex-2026-06-12",
         model_p=0.46,
         market_p=0.42,
     )
@@ -70,12 +70,12 @@ def _pick() -> Verdict:
 
 def test_polymarket_deep_link_for_wc26_slug() -> None:
     url = market_url_for_fixture(_fx())
-    assert url == "https://polymarket.com/sports/world-cup/fifwc-fra-mex-2026-06-12"
+    assert url == "https://polymarket.com/event/fifwc-fra-mex-2026-06-12"
 
 
 def test_polymarket_strips_more_markets_suffix() -> None:
     url = market_url_for_fixture(_fx(source_event_slug="fifwc-fra-mex-2026-06-12-more-markets"))
-    assert url == "https://polymarket.com/sports/world-cup/fifwc-fra-mex-2026-06-12"
+    assert url == "https://polymarket.com/event/fifwc-fra-mex-2026-06-12"
 
 
 def test_non_fifwc_slug_uses_event_path() -> None:
@@ -113,7 +113,7 @@ def test_priced_sides_reflects_snapshot_per_venue() -> None:
 def test_pass_marks_no_venue_picked() -> None:
     pass_v = Verdict(
         state=VerdictState.PASS,
-        market_url="https://polymarket.com/sports/world-cup/fifwc-fra-mex-2026-06-12",
+        market_url="https://polymarket.com/event/fifwc-fra-mex-2026-06-12",
     )
     srcs = build_market_sources(_fx(), _poly_snapshot(), pass_v)
     assert all(s.picked is False for s in srcs)

@@ -42,8 +42,15 @@ _TIMEOUT_SECONDS = 30.0
 # Word-count guard for the blurb. VOICE.md targets 120-180 words; we
 # allow a wider [80, 220] window so reasonable Haiku outputs survive
 # without being too permissive. Outside the window → fall back to stub.
+#
+# Q3 squad-paragraph spec raises the ceiling to 240 words when either
+# side has a non-empty squad picture (confirmed lineup OR an absence OR
+# an at-risk card). The dedicated squad paragraph would otherwise
+# squeeze the verdict prose; +20 words is enough headroom for one
+# focused paragraph without inviting padding elsewhere.
 _BLURB_MIN_WORDS = 80
 _BLURB_MAX_WORDS = 220
+_BLURB_MAX_WORDS_WITH_SQUAD = 240
 
 
 # ── voice doc loader ────────────────────────────────────────────────
@@ -113,21 +120,49 @@ data for each side. Each carries:
   * absences   — players ruled out (injury / suspension), with position,
                  reason, source, and source_url when available.
   * lineup     — state ("confirmed" / "predicted" / "unknown"), source,
-                 and announced_at when confirmed.
+                 starters (when confirmed via api-football), and
+                 announced_at when confirmed.
+  * cards      — players one booking from a ban (state="at_risk"). Each
+                 carries name, position, yellows count, and importance.
   * materiality — directive for how forcefully the blurb must address
                  availability: "high" / "medium" / "low" / "none".
 
-You MUST address team news per the materiality matrix:
+SQUAD PARAGRAPH
 
-  materiality=high   → at least one sentence on the absences + their
-                       impact. Name at least one absent player.
-  materiality=medium → one short sentence noting the most important
-                       absence by name.
+When either side has a confirmed XI, an absence, or an at-risk player,
+the blurb MUST contain ONE dedicated paragraph covering the squad
+picture, kept separate from the verdict / edge paragraph. It covers,
+in priority order, only what is known:
+
+  1. Opening XI — when lineup.state="confirmed", name the formation
+     once and 1–2 recognisable starters. ("France open 4-3-3 with
+     Mbappé and Dembélé.") Never list all 11.
+  2. Out — name absent players (injury / suspension), attributing to
+     an outlet when source_url is present, stating the fact
+     unattributed when source is api-football.
+  3. At-risk — name players one booking from a ban, phrased as RISK,
+     never as fact. ("Tchouaméni is one yellow from a suspension.")
+
+If only some of the three are known, write only those. If none are
+known for either side, write NO squad paragraph and say nothing about
+availability — silence is the rule when there's no data.
+
+NEVER invent a starter, an absence, a formation, or a card count.
+NEVER name a player who is not in starters[], absences[], or cards[].
+NEVER present an at-risk player as already banned or suspended.
+
+Materiality matrix (controls how forcefully you address the absences,
+not whether the squad paragraph fires):
+
+  materiality=high   → the squad paragraph MUST name at least one
+                       absent player and the impact.
+  materiality=medium → one short sentence naming the most important
+                       absence.
   materiality=low    → optional; mention only when it fits the verdict
-                       narrative.
+                       narrative (e.g. when an at-risk card is the only
+                       availability content for the team).
   materiality=none   → say nothing about availability. Do not write
-                       "no injury concerns" or "fully fit" — silence is
-                       the rule when there's no data.
+                       "no injury concerns" or "fully fit".
 
 Attribution rules for absences:
   * When an absence carries source_url (an RSS outlet covered it),
@@ -140,18 +175,16 @@ Attribution rules for absences:
     outlet — do not name it.
 
 Lineup rules:
-  * When lineup.state="confirmed" AND starters[] is non-empty, you MUST
-    name 1–2 notable starters by surname. Pick the most globally
-    recognised attacker / captain / playmaker from the list — the
-    kind of name a casual reader would recognise from a World Cup
-    poster. Examples of the shape required:
+  * When lineup.state="confirmed" AND starters[] is non-empty, name
+    1–2 notable starters by surname. Pick the most globally recognised
+    attacker / captain / playmaker from the list — the kind of name a
+    casual reader would recognise from a World Cup poster. Examples:
 
       "Neymar opens for Brazil; Vinicius starts on the left."
       "Mbappé leads the France XI from a 4-3-3."
       "Argentina go 4-4-2 with Messi and Lautaro Martínez up top."
 
-    Do NOT list the full XI. One sentence, 1–2 names max, woven into
-    the prose.
+    Do NOT list the full XI. One sentence, 1–2 names max.
 
   * When lineup.state="confirmed" but starters[] is empty (RSS-only
     confirmed signal), state the announcement without naming starters.
@@ -168,13 +201,18 @@ Lineup rules:
 
   * When lineup.state="unknown", say nothing about formation or XI.
 
-  * NEVER invent player names. NEVER name a starter who is not in
-    starters[]. NEVER claim a player will start if they're in the
-    absences list.
-
-NEVER speculate about an absence we did not give you. NEVER invent
-formations, players, or claims. NEVER name a player who is not in the
-absences list.
+At-risk card rules:
+  * cards[] entries with state="at_risk" are players ONE BOOKING from
+    a ban. Phrase as risk, never as fact. Allowed shapes: "one yellow
+    from a suspension", "a booking away from missing the next round",
+    "carries one yellow into the match". Forbidden shapes: "will be
+    suspended", "is banned for the next match", "out of the next round".
+  * Name the player. Do not mention a card-count without naming the
+    player it belongs to.
+  * If the same player is in BOTH cards[] (state="at_risk") and
+    absences[] (type="suspension"), the absence wins — name them as
+    out, not as at-risk. The builder reconciles this for you; trust
+    the payload you receive.
 """
 
 _TOOL_SCHEMA = {
@@ -257,6 +295,24 @@ def _format_team_news(news: Any, *, label: str) -> str:
                 f"      position: {pos}\n"
                 f"      reason: {reason}\n"
                 f"      importance: {a.importance}\n"
+                f"      source: {src}\n"
+                f"      source_url: {url}"
+            )
+    cards = getattr(news, "cards", ()) or ()
+    if not cards:
+        lines.append("  cards:\n    [] (no at-risk players)")
+    else:
+        lines.append("  cards:")
+        for c in cards:
+            pos = getattr(c, "position", None) or "—"
+            url = getattr(c, "source_url", None) or ""
+            src = getattr(c, "source_name", None) or getattr(c, "source", "")
+            lines.append(
+                f"    - name: {c.name}\n"
+                f"      state: {c.state}\n"
+                f"      position: {pos}\n"
+                f"      yellows: {c.yellows}\n"
+                f"      importance: {c.importance}\n"
                 f"      source: {src}\n"
                 f"      source_url: {url}"
             )
@@ -457,10 +513,26 @@ _AVAILABILITY_KEYWORDS = (
     r"\bsidelined\b",
     r"\bunavailab(?:le|ility)\b",
     r"\babsent(?:ee|ees)?\b",
+    # Q3 squad-paragraph: at-risk card story keywords. Catch a
+    # hallucinated card paragraph when no cards data was supplied.
+    r"\bat[- ]risk\b",
+    r"\bone booking\b",
+    r"\bone yellow\b",
+    r"\byellow accumulation\b",
 )
 _AVAILABILITY_KEYWORDS_RE = _re.compile(
     "|".join(_AVAILABILITY_KEYWORDS), _re.IGNORECASE,
 )
+
+# Words that present a player as a confirmed absence (ban / suspension).
+# Used by the Q3 at-risk guard: an at-risk player named in the blurb
+# must NOT appear within `_AT_RISK_BAN_PROXIMITY` tokens of any of
+# these — otherwise the blurb is presenting risk as fact.
+_BAN_PROXIMITY_WORDS = (
+    "suspended", "suspension", "banned", "ban", "missing",
+    "ruled out", "out of",
+)
+_AT_RISK_BAN_PROXIMITY = 6   # words on either side of the player name
 
 
 def _names_from(news: Any) -> list[str]:
@@ -473,6 +545,76 @@ def _names_from(news: Any) -> list[str]:
         if n:
             out.append(n)
     return out
+
+
+def _card_names_from(news: Any) -> list[str]:
+    """Lowercased at-risk player names from a TeamNews payload."""
+    if news is None:
+        return []
+    out: list[str] = []
+    for c in getattr(news, "cards", ()) or ():
+        n = (getattr(c, "name", "") or "").strip().lower()
+        if n:
+            out.append(n)
+    return out
+
+
+def _has_squad_content(news: Any) -> bool:
+    """True when a side has anything that triggers the squad paragraph:
+    a confirmed lineup, an absence, or an at-risk card."""
+    if news is None:
+        return False
+    if (getattr(news, "absences", ()) or ()):
+        return True
+    if (getattr(news, "cards", ()) or ()):
+        return True
+    lu = getattr(news, "lineup", None)
+    state = getattr(lu, "state", "unknown") or "unknown"
+    if state == "confirmed":
+        return True
+    return False
+
+
+def _at_risk_player_presented_as_banned(
+    blurb: str, at_risk_names: list[str],
+) -> bool:
+    """Q3 spec: an at-risk player named in the blurb must NOT appear
+    within `_AT_RISK_BAN_PROXIMITY` words of a ban / suspension word.
+    Returns True when a violation is detected.
+
+    Approximation: tokenise the blurb on whitespace + lowercase, scan
+    for each at-risk surname (or full name), and inspect the surrounding
+    window for the ban keywords. False positives prefer fall-back over
+    shipping a wrong claim — strict mode rejects, soft mode warns.
+    """
+    if not at_risk_names:
+        return False
+    tokens = [t.strip(".,;:'\"()[]") for t in blurb.lower().split()]
+    if not tokens:
+        return False
+    ban_words = set()
+    for w in _BAN_PROXIMITY_WORDS:
+        # Single word entries go in directly; multi-word entries get
+        # joined back during proximity checks (rare here — only
+        # "ruled out" / "out of"). For the simple set we only need
+        # the leading token to flag the window.
+        ban_words.add(w.split()[0])
+    for name in at_risk_names:
+        # Match either full name or surname (last meaningful token).
+        surname_tokens = [t for t in name.split() if len(t) >= 3]
+        candidates = [name]
+        if surname_tokens:
+            candidates.append(surname_tokens[-1])
+        candidates = [c for c in candidates if c]
+        for idx, tok in enumerate(tokens):
+            if not any(c == tok or (len(c) > 3 and c in tok) for c in candidates):
+                continue
+            lo = max(0, idx - _AT_RISK_BAN_PROXIMITY)
+            hi = min(len(tokens), idx + _AT_RISK_BAN_PROXIMITY + 1)
+            window = tokens[lo:hi]
+            if any(w in ban_words for w in window):
+                return True
+    return False
 
 
 def _name_appears_in(blurb: str, names: list[str]) -> bool:
@@ -533,10 +675,18 @@ def post_check(
     for f in (title, summary, blurb):
         if not is_voice_clean(f):
             return False
+    # Q3 squad-paragraph: a side with squad content earns +20 words of
+    # headroom so the dedicated paragraph doesn't push the verdict
+    # prose into the floor.
+    max_words = (
+        _BLURB_MAX_WORDS_WITH_SQUAD
+        if _has_squad_content(team_a_news) or _has_squad_content(team_b_news)
+        else _BLURB_MAX_WORDS
+    )
     wc = _word_count(blurb)
-    if wc < _BLURB_MIN_WORDS or wc > _BLURB_MAX_WORDS:
+    if wc < _BLURB_MIN_WORDS or wc > max_words:
         _LOG.debug("blurb word count %d outside [%d, %d]",
-                   wc, _BLURB_MIN_WORDS, _BLURB_MAX_WORDS)
+                   wc, _BLURB_MIN_WORDS, max_words)
         return False
     if not _attributions_are_allowed(blurb, cites):
         _LOG.debug("blurb attribution names an outlet not in editorial_citations")
@@ -571,6 +721,24 @@ def post_check(
     if mat_a == "none" and mat_b == "none":
         if _AVAILABILITY_KEYWORDS_RE.search(blurb):
             _LOG.warning("blurb mentions availability but both sides have materiality=none")
+            if enforce_team_news:
+                return False
+
+    # Q3 squad-paragraph: an at-risk player named in the blurb must be
+    # phrased as risk, not as a confirmed ban. Approximation: if any
+    # at-risk name appears within `_AT_RISK_BAN_PROXIMITY` words of a
+    # ban / suspension keyword, that's a violation.
+    for side_label, news in (
+        ("team_a", team_a_news), ("team_b", team_b_news),
+    ):
+        at_risk_names = _card_names_from(news)
+        if not at_risk_names:
+            continue
+        if _at_risk_player_presented_as_banned(blurb, at_risk_names):
+            _LOG.warning(
+                "%s at-risk player presented as banned/suspended in blurb",
+                side_label,
+            )
             if enforce_team_news:
                 return False
 

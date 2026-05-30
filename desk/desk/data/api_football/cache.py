@@ -130,6 +130,30 @@ CREATE TABLE IF NOT EXISTS fixture_resolution (
 
 CREATE INDEX IF NOT EXISTS idx_fixture_resolution_kickoff
     ON fixture_resolution(kickoff_utc);
+
+-- Q1 — card accumulation (yellow / red) per player per competition.
+-- Delete-then-insert per team per refresh, mirroring the `injuries`
+-- pattern. `at_risk` is the precomputed "one booking from a ban" flag;
+-- the team_news builder reads it directly so no per-team derivation
+-- runs on the hot path. `competition` scopes the reset rule (WC26
+-- yellows wipe after the QFs — `CARD_RULES` in cards.py defines the
+-- threshold + wipe stage per competition code).
+CREATE TABLE IF NOT EXISTS card_accumulation (
+    api_football_team_id  INTEGER NOT NULL,
+    player_id             INTEGER NOT NULL,
+    player_name           TEXT    NOT NULL,
+    position              TEXT,
+    yellows               INTEGER NOT NULL,
+    reds                  INTEGER NOT NULL,
+    at_risk               INTEGER NOT NULL,
+    competition           TEXT    NOT NULL,
+    computed_at           TEXT    NOT NULL,
+    source_endpoint       TEXT    NOT NULL DEFAULT '',
+    PRIMARY KEY (api_football_team_id, player_id, competition)
+);
+
+CREATE INDEX IF NOT EXISTS idx_card_accumulation_team
+    ON card_accumulation(api_football_team_id, competition);
 """
 
 
@@ -219,6 +243,30 @@ class InjuryPenalty:
     computed_at:     str
     source_endpoint: str
     transform:       str
+
+
+@dataclass(frozen=True)
+class CardAccumulationRow:
+    """One player's card-accumulation state for a single competition.
+
+    `at_risk` is precomputed by the fetcher (yellows == threshold-1 per
+    the competition rule). Stored as int to match the sqlite schema —
+    the runtime helper exposes a bool view.
+    """
+    api_football_team_id: int
+    player_id:            int
+    player_name:          str
+    position:             str | None
+    yellows:              int
+    reds:                 int
+    at_risk:              int
+    competition:          str
+    computed_at:          str
+    source_endpoint:      str = ""
+
+    @property
+    def is_at_risk(self) -> bool:
+        return bool(self.at_risk)
 
 
 @dataclass(frozen=True)
@@ -634,6 +682,64 @@ class APIFootballCache:
             kickoff_utc=row["kickoff_utc"],
             resolved_at=row["resolved_at"],
         )
+
+    # ── Q1 card accumulation ──────────────────────────────────────
+
+    def replace_cards_for_team(
+        self,
+        api_football_team_id: int,
+        competition: str,
+        rows: list[CardAccumulationRow],
+    ) -> int:
+        """Delete-then-insert all rows for (team, competition). Empty
+        `rows` means the team has no carded players for the competition
+        — every previous row is wiped (cards cleared, e.g. post-QF wipe).
+        """
+        comp = competition.lower()
+        self._conn.execute(
+            "DELETE FROM card_accumulation "
+            "WHERE api_football_team_id = ? AND competition = ?",
+            (api_football_team_id, comp),
+        )
+        for r in rows:
+            self._conn.execute(
+                "INSERT INTO card_accumulation("
+                "  api_football_team_id, player_id, player_name, position, "
+                "  yellows, reds, at_risk, competition, computed_at, "
+                "  source_endpoint"
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    r.api_football_team_id, r.player_id, r.player_name,
+                    r.position, r.yellows, r.reds, r.at_risk,
+                    comp, r.computed_at, r.source_endpoint,
+                ),
+            )
+        return len(rows)
+
+    def cards_for_team(
+        self, *, api_football_team_id: int, competition: str,
+    ) -> list[CardAccumulationRow]:
+        rows = self._conn.execute(
+            "SELECT api_football_team_id, player_id, player_name, position, "
+            "       yellows, reds, at_risk, competition, computed_at, "
+            "       source_endpoint "
+            "FROM card_accumulation "
+            "WHERE api_football_team_id = ? AND competition = ? "
+            "ORDER BY player_id",
+            (api_football_team_id, competition.lower()),
+        ).fetchall()
+        return [CardAccumulationRow(
+            api_football_team_id=int(r["api_football_team_id"]),
+            player_id=int(r["player_id"]),
+            player_name=r["player_name"],
+            position=r["position"],
+            yellows=int(r["yellows"]),
+            reds=int(r["reds"]),
+            at_risk=int(r["at_risk"]),
+            competition=r["competition"],
+            computed_at=r["computed_at"],
+            source_endpoint=r["source_endpoint"] or "",
+        ) for r in rows]
 
     def list_fixture_resolutions_in_window(
         self, *, now: datetime, window_hours: float,

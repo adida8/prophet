@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from typing import Iterable
 
 from desk.explainer import build_copy
@@ -224,6 +225,12 @@ class FootballSport:
         b_penalty: float | None = None
         a_lineup_row = None
         b_lineup_row = None
+        a_cards: list = []
+        b_cards: list = []
+        # Q2 squad-paragraph: at-risk-cards threading is gated. Default
+        # is on once the data path exists, but the operator can disable
+        # the surfacing while at-risk derivations are being eyeballed.
+        cards_enabled = os.environ.get("DESK_CARD_AT_RISK", "1") != "0"
         if api_football_runtime is not None:
             try:
                 if team_a_iso3:
@@ -232,12 +239,20 @@ class FootballSport:
                     a_lineup_row = api_football_runtime.lineup_for_match_iso3(
                         match_id=fx.match_id, iso3=team_a_iso3,
                     )
+                    if cards_enabled:
+                        a_cards = list(api_football_runtime.cards_for_iso3(
+                            team_a_iso3, competition=fx.competition_code,
+                        ))
                 if team_b_iso3:
                     b_injuries = list(api_football_runtime.injuries_for_iso3(team_b_iso3))
                     b_penalty = api_football_runtime.injury_penalty_for_iso3(team_b_iso3)
                     b_lineup_row = api_football_runtime.lineup_for_match_iso3(
                         match_id=fx.match_id, iso3=team_b_iso3,
                     )
+                    if cards_enabled:
+                        b_cards = list(api_football_runtime.cards_for_iso3(
+                            team_b_iso3, competition=fx.competition_code,
+                        ))
             except Exception as e:  # noqa: BLE001 — never block prose on team-news lookup
                 log.warning("team-news lookup failed for %s: %s", fx.match_id, e)
         try:
@@ -245,11 +260,13 @@ class FootballSport:
                 team_name=fx.team_a, iso3=team_a_iso3,
                 injury_rows=a_injuries, signals=signal_pairs,
                 elo_penalty=a_penalty, lineup_row=a_lineup_row,
+                card_rows=a_cards,
             )
             team_b_news = build_team_news(
                 team_name=fx.team_b, iso3=team_b_iso3,
                 injury_rows=b_injuries, signals=signal_pairs,
                 elo_penalty=b_penalty, lineup_row=b_lineup_row,
+                card_rows=b_cards,
             )
         except Exception as e:  # noqa: BLE001 — builder shouldn't raise; belt-and-braces
             log.warning("team-news builder failed for %s: %s", fx.match_id, e)

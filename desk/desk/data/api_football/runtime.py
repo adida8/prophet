@@ -14,7 +14,9 @@ import os
 from pathlib import Path
 
 from desk import config
-from desk.data.api_football.cache import APIFootballCache, InjuryRow, LineupRow
+from desk.data.api_football.cache import (
+    APIFootballCache, CardAccumulationRow, InjuryRow, LineupRow,
+)
 
 
 def default_cache_path() -> Path:
@@ -91,6 +93,30 @@ class APIFootballRuntime:
         if team_id is None:
             return []
         return cache.injuries_for_team(team_id)
+
+    def cards_for_iso3(
+        self, iso3: str, *, competition: str = "wc26",
+    ) -> list[CardAccumulationRow]:
+        """Cached api-football card-accumulation rows for a national side.
+
+        Q2 of the squad-paragraph spec. Returns [] when:
+          * the cache file doesn't exist,
+          * the team isn't resolved to an api-football team_id,
+          * no cards have been fetched for the team in the competition.
+        Never raises — the team-news builder treats absent data as
+        "no card info" and produces an empty `cards` tuple.
+        """
+        if not iso3:
+            return []
+        cache = self._ensure()
+        if cache is None:
+            return []
+        team_id = cache.team_id_for_iso3(iso3)
+        if team_id is None:
+            return []
+        return cache.cards_for_team(
+            api_football_team_id=team_id, competition=competition,
+        )
 
     def lineup_for_match_iso3(
         self, *, match_id: str, iso3: str,

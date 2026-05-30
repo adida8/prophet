@@ -74,3 +74,33 @@ def check_form_delta_range(form_delta: float) -> str:
     if not (FORM_DELTA_MIN <= form_delta <= FORM_DELTA_MAX):
         return REASON_FAILED_SANITY
     return REASON_OK
+
+
+# Plausibility caps for card counts. A season total outside [0, 20]
+# yellows or [0, 10] reds is a data error. Mirrors the per-row drop in
+# `cards.py:_sane_row`; surfaced here so the squad-paragraph reconcile
+# can reject pathological derivations consistently.
+CARDS_MAX_YELLOWS: int = 20
+CARDS_MAX_REDS:    int = 10
+
+
+def check_card_counts(yellows: int, reds: int) -> str:
+    """Range sanity on per-player card counts. Reject negative or
+    implausibly large values (per spec §Q1 sanity gates)."""
+    if yellows < 0 or reds < 0:
+        return REASON_FAILED_SANITY
+    if yellows > CARDS_MAX_YELLOWS or reds > CARDS_MAX_REDS:
+        return REASON_FAILED_SANITY
+    return REASON_OK
+
+
+def check_at_risk_not_suspended(
+    *, player_id: int, suspended_player_ids: set[int],
+) -> str:
+    """A player flagged `at_risk` cannot also be in the team's current
+    suspension set — they're already a confirmed absence (per spec §Q1
+    sanity gates: "prefer the suspension"). Caller drops the at_risk
+    flag for any player_id this check rejects."""
+    if player_id in suspended_player_ids:
+        return REASON_FAILED_SANITY
+    return REASON_OK

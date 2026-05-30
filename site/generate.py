@@ -2257,10 +2257,11 @@ def _polymarket_url_for(verdict: dict, fallback_search: str | None = None) -> st
     search on the event slug. Never returns empty; the venue is always
     surfaceable.
 
-    Safety net: Polymarket migrated WC 2026 match pages from
-    `/event/{slug}` to `/sports/world-cup/{slug}` (the old paths
-    404). We detect stale URLs and rewrite them at build-time so a
-    `verdict.market_url` written by an older tick still resolves.
+    Safety net: Polymarket's marketing `/sports/world-cup/{slug}` hub
+    only renders for featured matches and 404s on the rest. The
+    canonical `/event/{slug}` URL resolves for every event, so we
+    rewrite any stale `/sports/{fifa-,}world-cup/fifwc-…` value back
+    to `/event/fifwc-…` at build-time.
     """
     url = (verdict.get("market_url") or "").strip()
     if url and "polymarket.com" in url.lower():
@@ -2273,25 +2274,28 @@ def _polymarket_url_for(verdict: dict, fallback_search: str | None = None) -> st
 
 
 def _normalise_polymarket_url(url: str) -> str:
-    """Rewrite Polymarket URLs that still point at retired paths.
-    Safe to call on already-correct URLs.
+    """Rewrite Polymarket URLs that don't render universally back to
+    the canonical `/event/{slug}` path. Safe to call on already-correct
+    URLs.
 
-    Three known rewrites today:
-      - per-match: `/event/fifwc-...` → `/sports/world-cup/fifwc-...`
-      - per-match (older shim): `/sports/fifa-world-cup/fifwc-...` →
-        `/sports/world-cup/fifwc-...` (Polymarket dropped the "fifa-"
-        prefix from the WC path)
+    Two known rewrites today:
+      - per-match: `/sports/{fifa-,}world-cup/fifwc-…` → `/event/fifwc-…`.
+        Polymarket's WC hub only renders for featured matches; the
+        canonical `/event/{slug}` URL resolves for every event. We
+        tried the hub path first (earlier on 2026-05-30) and
+        non-featured fixtures like ARG-AUT and BIH-QAT 404'd —
+        reverted.
       - outright winner: `/event/2026-fifa-world-cup-winner-595` →
-        `/event/world-cup-winner` (the canonical short slug Polymarket
-        now uses on its UI).
+        `/event/world-cup-winner` (canonical short slug).
     """
-    old_event = "polymarket.com/event/fifwc-"
-    new_path = "polymarket.com/sports/world-cup/fifwc-"
-    if old_event in url:
-        url = url.replace(old_event, new_path, 1)
-    legacy_sports = "polymarket.com/sports/fifa-world-cup/fifwc-"
-    if legacy_sports in url:
-        url = url.replace(legacy_sports, new_path, 1)
+    canonical_prefix = "polymarket.com/event/fifwc-"
+    for stale in (
+        "polymarket.com/sports/world-cup/fifwc-",
+        "polymarket.com/sports/fifa-world-cup/fifwc-",
+    ):
+        if stale in url:
+            url = url.replace(stale, canonical_prefix, 1)
+            break
     outright_old = "polymarket.com/event/2026-fifa-world-cup-winner-595"
     outright_new = "polymarket.com/event/world-cup-winner"
     if outright_old in url:

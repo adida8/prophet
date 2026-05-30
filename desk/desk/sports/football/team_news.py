@@ -46,7 +46,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Iterable, Literal
 
-from desk.data.api_football.cache import InjuryRow, LineupRow
+from desk.data.api_football.cache import CardAccumulationRow, InjuryRow, LineupRow
 from desk.data.api_football.injury_penalty import COUNTED_INJURY_TYPES
 from desk.signals.models import Signal, SignalType, Source
 from desk.sport import FixtureRef
@@ -117,12 +117,45 @@ class LineupStatus:
 
 
 @dataclass(frozen=True)
+class CardStatus:
+    """One player flagged at-risk for cards (Q2 of the squad-paragraph spec).
+
+    `state="at_risk"` is "one booking from a ban" — the only state v1
+    surfaces. `"banned"` is reserved for a future merge with `absences`;
+    today, a player already serving a card-accumulation ban shows up as
+    an `injury`-side `PlayerAbsence(type="suspension")` and is dropped
+    from `cards` by the builder reconcile so the squad paragraph never
+    names the same player twice.
+
+    `source` is always "api-football" in v1 — the cards data path
+    derives from the api-football /players endpoint. `source_url` may
+    carry an RSS outlet's URL when a press piece flagged the same
+    player; the reconcile copies it onto the row.
+    """
+    name:        str
+    position:    str | None
+    yellows:     int
+    state:       Literal["at_risk", "banned"]
+    source:      str
+    source_url:  str | None
+    source_name: str | None = None
+    importance:  Literal["high", "medium", "low"] = "medium"
+
+
+@dataclass(frozen=True)
 class TeamNews:
-    """Per-team team-news payload threaded onto the explainer's Inputs."""
+    """Per-team team-news payload threaded onto the explainer's Inputs.
+
+    `cards` is the at-risk-for-cards list (Q2). Reconciled against
+    `absences`: a player both already-suspended AND at-risk is dropped
+    from `cards`, since the suspension is the confirmed absence. v1
+    only surfaces `state="at_risk"` rows here.
+    """
     team:        str
     absences:    tuple[PlayerAbsence, ...]
     lineup:      LineupStatus
     materiality: Literal["high", "medium", "low", "none"]
+    cards:       tuple[CardStatus, ...] = ()
 
 
 # ── builder ─────────────────────────────────────────────────────────
@@ -325,18 +358,23 @@ def _materiality_for(
     absences: tuple[PlayerAbsence, ...],
     *,
     elo_penalty: float | None,
+    cards: tuple[CardStatus, ...] = (),
 ) -> Literal["high", "medium", "low", "none"]:
     """Decide how forcefully the blurb should address availability.
 
-    Rules:
-      * No absences and no Elo penalty → none.
+    Rules (Q2: at-risk cards never raise materiality above 'low' on
+    their own; they're an availability *risk*, not a *fact*):
+      * No absences, no Elo penalty, no at-risk cards → none.
       * Any GK / CB / captain absence → high.
       * Elo penalty ≥ 30 → high.
       * ≥ 3 absences → high.
       * Elo penalty 10–30 → medium.
-      * Otherwise (some absences, low total impact) → low.
+      * Some absences but small impact → medium / low (existing rules).
+      * No absences, no penalty, but ≥ 1 at-risk card → low (the squad
+        paragraph mentions cards optionally; the rest of the blurb is
+        free to skip the topic if there's no other availability content).
     """
-    if not absences and not elo_penalty:
+    if not absences and not elo_penalty and not cards:
         return "none"
     if any(a.importance == "high" for a in absences):
         return "high"
@@ -348,7 +386,60 @@ def _materiality_for(
         return "medium"
     if absences:
         return "medium" if any(a.importance == "medium" for a in absences) else "low"
+    # absences empty + no big penalty → cards-only path.
     return "low"
+
+
+def _card_row_to_status(row: CardAccumulationRow) -> CardStatus | None:
+    """Convert a CardAccumulationRow into a CardStatus.
+
+    v1 only surfaces `at_risk=1` rows. Rows with `at_risk=0` are
+    populated (the fetcher writes the whole squad's card snapshot) but
+    the blurb only needs the at-risk subset.
+    """
+    if not row.is_at_risk:
+        return None
+    return CardStatus(
+        name=row.player_name or "",
+        position=row.position,
+        yellows=row.yellows,
+        state="at_risk",
+        source="api-football",
+        source_url=None,
+        source_name=None,
+        importance=_importance_for(row.position),
+    )
+
+
+def _reconcile_cards_with_absences(
+    cards: list[CardStatus],
+    absences: tuple[PlayerAbsence, ...],
+) -> tuple[CardStatus, ...]:
+    """Drop any at-risk card whose player already appears in `absences`
+    as a `suspension`. A player serving a card-accumulation ban is the
+    confirmed absence; naming them as 'at-risk' as well would be wrong.
+
+    Match by NFD-normalised name with substring fallback (covers
+    "Bellingham" vs "Jude Bellingham"). Mirrors the same dedupe shape
+    the absence merge uses.
+    """
+    suspended_keys = {
+        _norm(a.name) for a in absences if a.type == "suspension"
+    }
+    suspended_keys.discard("")
+    out: list[CardStatus] = []
+    for c in cards:
+        key = _norm(c.name)
+        if not key:
+            continue
+        # Direct match — drop.
+        if key in suspended_keys:
+            continue
+        # Substring match in either direction.
+        if any(key in sk or sk in key for sk in suspended_keys):
+            continue
+        out.append(c)
+    return tuple(out)
 
 
 def build_team_news(
@@ -359,6 +450,7 @@ def build_team_news(
     signals: Iterable[tuple[Signal, Source]],
     elo_penalty: float | None,
     lineup_row: LineupRow | None = None,
+    card_rows: list[CardAccumulationRow] | None = None,
 ) -> TeamNews:
     """Build the per-team payload threaded onto Inputs.
 
@@ -376,6 +468,11 @@ def build_team_news(
       * `elo_penalty` — the api-football B.3 Elo penalty already cached
                  for this side. Drives the materiality threshold when
                  absences are missing position data.
+      * `card_rows` — api-football card-accumulation rows for this team
+                 in the competition. v1 only surfaces `at_risk=1` rows
+                 (the rest stay in cache for future use). Players whose
+                 absence in `injury_rows` already lists `type="suspension"`
+                 are reconciled out of the cards list.
     """
     # Per-team filter on the signal pool. Hard-track signals carry the
     # team name as the extractor saw it; matching tolerates case +
@@ -426,13 +523,25 @@ def build_team_news(
             api_absences.append(a)
 
     merged = _merge_absences(api_absences, sig_absences)
-    materiality = _materiality_for(merged, elo_penalty=elo_penalty)
+
+    # Card accumulation (Q2). Only `at_risk=1` rows produce a CardStatus;
+    # the reconcile drops any player already serving a suspension so the
+    # squad paragraph never names the same player both ways.
+    cards_raw: list[CardStatus] = []
+    for row in (card_rows or []):
+        cs = _card_row_to_status(row)
+        if cs is not None:
+            cards_raw.append(cs)
+    cards = _reconcile_cards_with_absences(cards_raw, merged)
+
+    materiality = _materiality_for(merged, elo_penalty=elo_penalty, cards=cards)
 
     return TeamNews(
         team=team_name,
         absences=merged,
         lineup=lineup,
         materiality=materiality,
+        cards=cards,
     )
 
 
