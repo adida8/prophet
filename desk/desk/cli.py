@@ -490,6 +490,93 @@ def _cmd_fetch_injuries(args: argparse.Namespace) -> int:
     return 0 if n_ok > 0 else 2
 
 
+def _cmd_fetch_lineups(args: argparse.Namespace) -> int:
+    """Refresh api-football /fixtures/lineups for priced fixtures whose
+    kickoff lands inside a window from now.
+
+    Two callers:
+      * daily refresh tick — `--window-hours 24` (default)
+      * T-90m polling loop — `--window-hours 2`
+
+    Builds the target list from the live football priced-fixture pool
+    so we never fetch lineups for matches the engine isn't publishing.
+    Cost: 1 call to /fixtures (cached forever per match) + 1 call to
+    /fixtures/lineups per fixture. Well under Pro-tier 7,500/day even
+    at the tightest loop cadence.
+    """
+    import asyncio
+
+    from desk import config
+    from desk.data.api_football import APIFootballCache
+    from desk.data.api_football.client import APIFootballClient
+    from desk.data.api_football.lineups_refresh import (
+        LineupRefreshTarget, fixtures_in_window, refresh_lineups_for_targets,
+    )
+    from desk.data.api_football.runtime import default_cache_path
+    from desk.sports.football.fixtures import list_priced_football_fixtures
+    from desk.sports.football.teams import iso3_for_name
+
+    if not config.API_FOOTBALL_KEY:
+        print("API_FOOTBALL_KEY not set", file=sys.stderr)
+        return 2
+
+    db_path = Path(args.db) if args.db else default_cache_path()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+
+    async def _gather_targets() -> list[LineupRefreshTarget]:
+        targets: list[LineupRefreshTarget] = []
+        # `list_priced_football_fixtures()` is async; awaitable here.
+        fixtures = await list_priced_football_fixtures()
+        for fx in fixtures:
+            home_iso3 = iso3_for_name(fx.team_a)
+            away_iso3 = iso3_for_name(fx.team_b)
+            if not home_iso3 or not away_iso3:
+                continue
+            targets.append(LineupRefreshTarget(
+                match_id=fx.match_id,
+                home_iso3=home_iso3,
+                away_iso3=away_iso3,
+                kickoff_utc=fx.kickoff_utc,
+            ))
+        return targets
+
+    async def _run():
+        targets = await _gather_targets()
+        scoped = fixtures_in_window(targets, window_hours=args.window_hours)
+        if args.match_id:
+            wanted = set(args.match_id)
+            scoped = [t for t in scoped if t.match_id in wanted]
+        if not scoped:
+            return [], 0
+        async with APIFootballClient(config.API_FOOTBALL_KEY) as client:
+            with APIFootballCache(db_path) as cache:
+                outcomes = await refresh_lineups_for_targets(
+                    scoped, season=args.season,
+                    client=client, cache=cache,
+                )
+        return outcomes, len(scoped)
+
+    outcomes, n_targets = asyncio.run(_run())
+    by_status: dict[str, int] = {}
+    for o in outcomes:
+        by_status[o.status] = by_status.get(o.status, 0) + 1
+        suffix = ""
+        if o.home_lineup is not None:
+            suffix += f"  home={o.home_lineup.state}/{len(o.home_lineup.starters)}"
+        if o.away_lineup is not None:
+            suffix += f"  away={o.away_lineup.state}/{len(o.away_lineup.starters)}"
+        if o.error:
+            suffix += f"  err={o.error}"
+        print(f"  {o.match_id:42s}  {o.status:18s}{suffix}")
+    print()
+    for status, n in sorted(by_status.items()):
+        print(f"  {status:18s}  {n}")
+    print()
+    print(f"  targets: {n_targets}  attempted: {len(outcomes)}  (db: {db_path})")
+    n_ok = by_status.get("ok", 0)
+    return 0 if n_targets == 0 or n_ok > 0 else 2
+
+
 def _cmd_fetch_elo(args: argparse.Namespace) -> int:
     """Refresh live Elo values (national + club) into the cache.
 
@@ -1037,6 +1124,18 @@ def build_parser() -> argparse.ArgumentParser:
     fi.add_argument("--iso3", action="append",
                     help="restrict to ISO3(s) (repeatable); default = WC26 registry")
     fi.set_defaults(func=_cmd_fetch_injuries)
+
+    fl = sub.add_parser(
+        "fetch-lineups",
+        help="refresh api-football /fixtures/lineups for fixtures inside a kickoff window",
+    )
+    fl.add_argument("--db", help="override api-football cache path")
+    fl.add_argument("--season", type=int, default=2026, help="season year (default 2026)")
+    fl.add_argument("--window-hours", type=float, default=24.0,
+                    help="kickoff window from now (hours). Default 24; T-90m loop uses 2")
+    fl.add_argument("--match-id", action="append",
+                    help="restrict to match_id(s) (repeatable)")
+    fl.set_defaults(func=_cmd_fetch_lineups)
 
     fe = sub.add_parser(
         "fetch-elo",

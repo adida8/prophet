@@ -46,7 +46,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Iterable, Literal
 
-from desk.data.api_football.cache import InjuryRow
+from desk.data.api_football.cache import InjuryRow, LineupRow
 from desk.data.api_football.injury_penalty import COUNTED_INJURY_TYPES
 from desk.signals.models import Signal, SignalType, Source
 from desk.sport import FixtureRef
@@ -94,14 +94,22 @@ class PlayerAbsence:
 class LineupStatus:
     """The fixture's lineup status from the team's side.
 
-    `state="confirmed"` only when a trusted source has explicitly
-    announced the XI (`Signal.type == CONFIRMED_LINEUP`) — predicted
+    `state="confirmed"` when a trusted source has explicitly announced
+    the XI — either an RSS `CONFIRMED_LINEUP` signal OR an api-football
+    `/fixtures/lineups` row with all 11 starters populated. Predicted
     XIs from speculation pieces stay at `state="predicted"`. Absent
     information yields `state="unknown"`.
+
+    `starters` carries the official 11 (in lineup order) when source is
+    api-football, empty otherwise. The Haiku prompt uses these names to
+    write "Neymar opens for Brazil" style highlights when the XI is
+    confirmed.
     """
     state:        Literal["confirmed", "predicted", "unknown"]
     formation:    str | None = None
     changes:      tuple[str, ...] = ()
+    starters:     tuple[str, ...] = ()
+    coach:        str | None = None
     source:       str | None = None
     source_url:   str | None = None
     source_name:  str | None = None
@@ -187,6 +195,33 @@ def _signal_to_absence(signal: Signal, source: Source) -> PlayerAbsence | None:
         source_url=signal.url,
         source_name=source.name,
         importance="medium",
+    )
+
+
+def _api_football_lineup_to_status(row: LineupRow) -> LineupStatus:
+    """Wrap an api-football LineupRow as a LineupStatus.
+
+    api-football is the fact engine, not a press outlet — `source` is
+    set to "api-football" and `source_url` stays None. The Haiku prompt
+    has an explicit allowance for "official lineup confirms…" prose
+    without naming a press outlet when this is the only source.
+    """
+    announced: datetime | None = None
+    if row.announced_at:
+        try:
+            announced = datetime.fromisoformat(row.announced_at)
+        except (TypeError, ValueError):
+            announced = None
+    return LineupStatus(
+        state=row.state if row.state in ("confirmed", "predicted") else "unknown",  # type: ignore[arg-type]
+        formation=row.formation,
+        changes=(),
+        starters=tuple(row.starters or ()),
+        coach=row.coach_name,
+        source="api-football",
+        source_url=None,
+        source_name=None,
+        announced_at=announced,
     )
 
 
@@ -323,6 +358,7 @@ def build_team_news(
     injury_rows: list[InjuryRow] | None,
     signals: Iterable[tuple[Signal, Source]],
     elo_penalty: float | None,
+    lineup_row: LineupRow | None = None,
 ) -> TeamNews:
     """Build the per-team payload threaded onto Inputs.
 
@@ -347,8 +383,18 @@ def build_team_news(
     norm_team = _norm(team_name)
     norm_iso3 = (iso3 or "").strip().lower()
     sig_absences: list[PlayerAbsence] = []
-    lineup: LineupStatus = LineupStatus(state="unknown")
-    best_lineup_rank = -1  # confirmed (2) > predicted (1) > unknown (0)
+
+    # api-football lineup wins outright when present — it carries the
+    # structured 11 names + formation. RSS confirmed_lineup signals
+    # have neither. So if we have the api-football row, we lock the
+    # lineup status to it and let RSS lineup signals only fill in when
+    # api-football has none.
+    if lineup_row is not None:
+        lineup: LineupStatus = _api_football_lineup_to_status(lineup_row)
+        best_lineup_rank = 3  # api-football > confirmed RSS > predicted RSS
+    else:
+        lineup = LineupStatus(state="unknown")
+        best_lineup_rank = -1   # confirmed (2) > predicted (1) > unknown (0)
 
     for signal, source in signals:
         sig_team = _norm(signal.team)

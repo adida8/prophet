@@ -312,6 +312,17 @@ def _tick() -> None:
              cwd=DESK_DIR, timeout=300,
              label="desk fetch-elo", extra_env=sub_env)
 
+    # Slice B / N3 — refresh api-football lineups for fixtures inside the
+    # next 24h. Confirmed XI lands ~1h pre-kickoff, so the daily tick
+    # catches it only for fixtures kicking off late tomorrow. The T-90m
+    # polling loop in `desk_lineups_refresh_loop.py` is the main writer.
+    # Both share the same cache + idempotent upsert.
+    if (os.getenv("DESK_LINEUP_FETCH", "0") == "1"
+            and os.getenv("API_FOOTBALL_KEY")):
+        _run([py, "-m", "desk", "fetch-lineups", "--window-hours", "24"],
+             cwd=DESK_DIR, timeout=300,
+             label="desk fetch-lineups", extra_env=sub_env)
+
     # Phase B.1 measurement loop — ingest resolved match outcomes so
     # the forward-validation report can score them. Piggy-backs on
     # the form-fetch flag because both need the same api-football key.
@@ -361,12 +372,29 @@ async def run_desk_loop() -> None:
 
     # Boot tick — only when the loop is enabled. This gives a fresh
     # deploy current data without waiting for the next scheduled hour.
+    # `DESK_FORCE_TICK_ON_BOOT=1` overrides control.json so a redeploy
+    # can guarantee a refresh even when the schedule is empty or paused.
     boot_control = _read_control()
-    if boot_control["enabled"] and boot_control["hours"]:
+    force_boot = os.getenv("DESK_FORCE_TICK_ON_BOOT", "0") == "1"
+    should_boot = force_boot or (
+        boot_control["enabled"] and boot_control["hours"]
+    )
+    if should_boot:
+        if force_boot:
+            log.info("desk refresh: boot tick FORCED via DESK_FORCE_TICK_ON_BOOT=1")
+        else:
+            log.info("desk refresh: boot tick starting (scheduled hours=%s)",
+                     boot_control["hours"])
         try:
             await asyncio.to_thread(_tick)
         except Exception:
             log.exception("desk refresh tick failed (boot)")
+    else:
+        log.info(
+            "desk refresh: boot tick skipped (enabled=%s, hours=%s); "
+            "set DESK_FORCE_TICK_ON_BOOT=1 to override",
+            boot_control["enabled"], boot_control["hours"],
+        )
 
     while True:
         control = _read_control()

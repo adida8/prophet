@@ -1,6 +1,16 @@
 # The Desk — Team news in blurbs (injuries + lineups)
 
-**Status:** v0.1 draft, 2026-05-30. Author: Adi.
+**Status:** v0.2, 2026-05-30. Slices A + B + C all shipped to staging.
+**Live in production:** awaiting eyeball confirmation.
+
+## Shipping status
+
+- ✅ **Slice A (commit `c5bce0b`)** — `TeamNews` payload + builder + Haiku prompt mandate + post-checks. Injuries reach blurbs via api-football cache + RSS hard signals.
+- ✅ **Slice B (this commit)** — api-football `/fixtures/lineups` fetcher + cache + CLI `desk fetch-lineups` + runtime + lineup integration into team_news + starter-name highlights in Haiku prompt (`"Neymar opens for Brazil"` style).
+- ✅ **Slice C (this commit)** — T-90m polling loop at `desk_lineups_refresh_loop.py`. 15-min cadence, 2h kickoff window, re-publishes affected matches on every successful fetch.
+- ✅ **Force-tick** — `DESK_FORCE_TICK_ON_BOOT=1` overrides `control.json` so a deploy guarantees a refresh on boot.
+
+Author: Adi.
 **Companion to:** `THE_DESK_OPTIMIZATION_SPEC.md` (B.3), `THE_DESK_DATA_LAYER_SPEC.md` (§5), `THE_DESK_NEWS_SIGNALS_SPEC.md` (PR D + F), `desk/VOICE.md`.
 
 ---

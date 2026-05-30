@@ -140,14 +140,37 @@ Attribution rules for absences:
     outlet — do not name it.
 
 Lineup rules:
-  * When lineup.state="confirmed", lead the team-news content with it.
-    If the source is an RSS outlet, attribute per the usual rules.
-    If the source is "api-football" (no source_url), write "official
-    lineup confirms ..." — that phrasing is allowed without naming a
-    press outlet.
+  * When lineup.state="confirmed" AND starters[] is non-empty, you MUST
+    name 1–2 notable starters by surname. Pick the most globally
+    recognised attacker / captain / playmaker from the list — the
+    kind of name a casual reader would recognise from a World Cup
+    poster. Examples of the shape required:
+
+      "Neymar opens for Brazil; Vinicius starts on the left."
+      "Mbappé leads the France XI from a 4-3-3."
+      "Argentina go 4-4-2 with Messi and Lautaro Martínez up top."
+
+    Do NOT list the full XI. One sentence, 1–2 names max, woven into
+    the prose.
+
+  * When lineup.state="confirmed" but starters[] is empty (RSS-only
+    confirmed signal), state the announcement without naming starters.
+
+  * When lineup.state="confirmed" AND lineup.formation is present,
+    name the formation once ("4-3-3", "3-5-2", etc.).
+
+  * When the lineup source is "api-football" with no source_url, write
+    "official lineup confirms ..." — that phrasing is allowed without
+    naming a press outlet.
+
   * When lineup.state="predicted", you MAY mention the expected XI
     only with explicit hedging ("ESPN expects ..." with attribution).
+
   * When lineup.state="unknown", say nothing about formation or XI.
+
+  * NEVER invent player names. NEVER name a starter who is not in
+    starters[]. NEVER claim a player will start if they're in the
+    absences list.
 
 NEVER speculate about an absence we did not give you. NEVER invent
 formations, players, or claims. NEVER name a player who is not in the
@@ -242,12 +265,21 @@ def _format_team_news(news: Any, *, label: str) -> str:
     else:
         state = getattr(lineup, "state", "unknown")
         formation = getattr(lineup, "formation", None) or "—"
+        coach = getattr(lineup, "coach", None) or "—"
         src = getattr(lineup, "source_name", None) or getattr(lineup, "source", None) or "—"
         url = getattr(lineup, "source_url", None) or ""
+        starters = getattr(lineup, "starters", ()) or ()
+        # Render starters as a flat list — Haiku reads names left-to-right.
+        if starters:
+            starters_str = ", ".join(str(s) for s in starters)
+        else:
+            starters_str = "[] (no starters listed)"
         lines.append(
             f"  lineup:\n"
             f"    state: {state}\n"
             f"    formation: {formation}\n"
+            f"    coach: {coach}\n"
+            f"    starters: {starters_str}\n"
             f"    source: {src}\n"
             f"    source_url: {url}"
         )
@@ -411,22 +443,24 @@ def _attributions_are_allowed(blurb: str, cites: list[Citation] | None) -> bool:
     return True
 
 
-# Keywords that indicate the blurb talks about availability. Used by the
-# materiality=none guard to detect prose that mentions team news when no
-# team-news data was supplied. Word-boundary anchored to avoid false
-# positives ("about" matching "out", etc.).
-_TEAM_NEWS_KEYWORDS = (
+# Availability-specific keywords. Used by the materiality=none guard
+# to detect prose that talks about injuries/suspensions when no team
+# news data was supplied. Lineup keywords are NOT in this list because
+# materiality measures availability only — a team with materiality=none
+# (no injuries) can still have a confirmed lineup the blurb legitimately
+# mentions.
+_AVAILABILITY_KEYWORDS = (
     r"\binjur(?:y|ies|ed)\b",
     r"\bsuspen(?:ded|sion|sions)\b",
     r"\bruled out\b",
     r"\bmissing the (?:match|fixture|game)\b",
     r"\bsidelined\b",
-    r"\bstarting (?:xi|eleven)\b",
-    r"\bformation\b",
     r"\bunavailab(?:le|ility)\b",
     r"\babsent(?:ee|ees)?\b",
 )
-_TEAM_NEWS_KEYWORDS_RE = _re.compile("|".join(_TEAM_NEWS_KEYWORDS), _re.IGNORECASE)
+_AVAILABILITY_KEYWORDS_RE = _re.compile(
+    "|".join(_AVAILABILITY_KEYWORDS), _re.IGNORECASE,
+)
 
 
 def _names_from(news: Any) -> list[str]:
@@ -529,21 +563,43 @@ def post_check(
             if enforce_team_news:
                 return False
 
-    # materiality=none on BOTH sides → blurb must not contain availability
-    # keywords. One-sided 'none' is fine because the other side may have
-    # high materiality and legitimate prose.
+    # materiality=none on BOTH sides → blurb must not contain
+    # availability-specific keywords (injuries / suspensions / absences).
+    # Lineup keywords (formation / starting XI) are NOT blocked here —
+    # a side with materiality=none can still have a confirmed lineup and
+    # legitimately mention it.
     if mat_a == "none" and mat_b == "none":
-        if _TEAM_NEWS_KEYWORDS_RE.search(blurb):
+        if _AVAILABILITY_KEYWORDS_RE.search(blurb):
             _LOG.warning("blurb mentions availability but both sides have materiality=none")
             if enforce_team_news:
                 return False
 
-    # confirmed lineup → blurb should mention lineup or formation. Soft
-    # until N3 lands real formation strings — log only, don't fail.
-    if lineup_a == "confirmed" or lineup_b == "confirmed":
-        if not _re.search(r"\b(lineup|formation|starting (?:xi|eleven)|line-up)\b",
-                          blurb, _re.IGNORECASE):
-            _LOG.info("confirmed lineup present but blurb does not mention it")
+    # confirmed lineup with starters[] non-empty → blurb must mention
+    # at least one starter or the formation/lineup hook word. Soft by
+    # default; strict mode rejects on miss.
+    for side_label, news, state in (
+        ("team_a", team_a_news, lineup_a),
+        ("team_b", team_b_news, lineup_b),
+    ):
+        if state != "confirmed":
+            continue
+        lineup_obj = getattr(news, "lineup", None)
+        starters = getattr(lineup_obj, "starters", ()) or ()
+        formation = getattr(lineup_obj, "formation", None)
+        if not starters and not formation:
+            continue
+        names_ok = _name_appears_in(blurb, [s.lower() for s in starters])
+        hook_ok = bool(_re.search(
+            r"\b(lineup|formation|starting (?:xi|eleven)|line-up|opens? for|starts? for)\b",
+            blurb, _re.IGNORECASE,
+        ))
+        if not (names_ok or hook_ok):
+            _LOG.warning(
+                "%s confirmed lineup present but blurb does not name a "
+                "starter or mention the formation", side_label,
+            )
+            if enforce_team_news:
+                return False
 
     return True
 

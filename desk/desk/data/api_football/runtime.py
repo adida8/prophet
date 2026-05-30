@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 
 from desk import config
-from desk.data.api_football.cache import APIFootballCache, InjuryRow
+from desk.data.api_football.cache import APIFootballCache, InjuryRow, LineupRow
 
 
 def default_cache_path() -> Path:
@@ -91,6 +91,40 @@ class APIFootballRuntime:
         if team_id is None:
             return []
         return cache.injuries_for_team(team_id)
+
+    def lineup_for_match_iso3(
+        self, *, match_id: str, iso3: str,
+    ) -> LineupRow | None:
+        """Cached lineup row for `(match_id, iso3)`.
+
+        Resolves the fixture_resolution row for `match_id` to get the
+        api-football fixture_id, then reads the lineup keyed on
+        (fixture_id, team_id). Returns None when:
+          * the cache file doesn't exist,
+          * fixture_resolution hasn't been populated for this match,
+          * the team isn't resolved to a team_id,
+          * no lineup row has been written for this (fixture, team).
+
+        The hot-path builder treats None as `state="unknown"`.
+        """
+        if not match_id or not iso3:
+            return None
+        cache = self._ensure()
+        if cache is None:
+            return None
+        team_id = cache.team_id_for_iso3(iso3)
+        if team_id is None:
+            return None
+        resolution = cache.fixture_resolution_for(match_id)
+        if resolution is None:
+            # Fall back to most-recent lineup for this team — useful when
+            # the T-90m loop has written lineups but the fixture_resolution
+            # was written under a different match_id (e.g. slug drift).
+            return cache.lineup_for_team(api_football_team_id=team_id)
+        return cache.lineup_for(
+            fixture_id=resolution.api_football_fixture_id,
+            api_football_team_id=team_id,
+        )
 
     def close(self) -> None:
         if self._cache is not None:

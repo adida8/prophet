@@ -230,26 +230,34 @@ class FootballSport:
         b_injuries: list = []
         a_penalty: float | None = None
         b_penalty: float | None = None
+        a_lineup_row = None
+        b_lineup_row = None
         if api_football_runtime is not None:
             try:
                 if team_a_iso3:
                     a_injuries = list(api_football_runtime.injuries_for_iso3(team_a_iso3))
                     a_penalty = api_football_runtime.injury_penalty_for_iso3(team_a_iso3)
+                    a_lineup_row = api_football_runtime.lineup_for_match_iso3(
+                        match_id=fx.match_id, iso3=team_a_iso3,
+                    )
                 if team_b_iso3:
                     b_injuries = list(api_football_runtime.injuries_for_iso3(team_b_iso3))
                     b_penalty = api_football_runtime.injury_penalty_for_iso3(team_b_iso3)
+                    b_lineup_row = api_football_runtime.lineup_for_match_iso3(
+                        match_id=fx.match_id, iso3=team_b_iso3,
+                    )
             except Exception as e:  # noqa: BLE001 — never block prose on team-news lookup
                 log.warning("team-news lookup failed for %s: %s", fx.match_id, e)
         try:
             team_a_news = build_team_news(
                 team_name=fx.team_a, iso3=team_a_iso3,
                 injury_rows=a_injuries, signals=signal_pairs,
-                elo_penalty=a_penalty,
+                elo_penalty=a_penalty, lineup_row=a_lineup_row,
             )
             team_b_news = build_team_news(
                 team_name=fx.team_b, iso3=team_b_iso3,
                 injury_rows=b_injuries, signals=signal_pairs,
-                elo_penalty=b_penalty,
+                elo_penalty=b_penalty, lineup_row=b_lineup_row,
             )
         except Exception as e:  # noqa: BLE001 — builder shouldn't raise; belt-and-braces
             log.warning("team-news builder failed for %s: %s", fx.match_id, e)

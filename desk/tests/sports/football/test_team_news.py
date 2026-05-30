@@ -256,3 +256,64 @@ def test_builder_returns_empty_team_news_on_empty_iso3() -> None:
     )
     assert isinstance(news, TeamNews)
     assert news.materiality == "none"
+
+
+# ── lineup integration (Slice B / N3) ───────────────────────────────
+
+from desk.data.api_football.cache import LineupRow  # noqa: E402
+
+
+def _lineup_row(*, state: str = "confirmed", starters_n: int = 11) -> LineupRow:
+    return LineupRow(
+        fixture_id=999,
+        api_football_team_id=33,
+        state=state,
+        formation="4-3-3",
+        coach_name="Didier Deschamps",
+        starters=tuple(f"Player{i}" for i in range(1, starters_n + 1)),
+        substitutes=("Sub1", "Sub2"),
+        fetched_at="2026-06-12T17:00:00+00:00",
+        announced_at=None,
+    )
+
+
+def test_api_football_lineup_wins_over_rss() -> None:
+    """When api-football has the row, RSS lineup signals don't overwrite."""
+    rss_pred = _signal(
+        team="France", type=SignalType.PREDICTED_LINEUP,
+        claim="France expected to start in 4-2-3-1",
+    )
+    news = build_team_news(
+        team_name="France", iso3="fra", injury_rows=[],
+        signals=[(rss_pred, _source())], elo_penalty=None,
+        lineup_row=_lineup_row(),
+    )
+    assert news.lineup.state == "confirmed"
+    assert news.lineup.formation == "4-3-3"
+    assert news.lineup.source == "api-football"
+    assert len(news.lineup.starters) == 11
+
+
+def test_lineup_starters_carried_onto_status() -> None:
+    news = build_team_news(
+        team_name="France", iso3="fra", injury_rows=[],
+        signals=[], elo_penalty=None,
+        lineup_row=_lineup_row(),
+    )
+    assert news.lineup.starters[0] == "Player1"
+    assert news.lineup.coach == "Didier Deschamps"
+
+
+def test_no_lineup_row_falls_through_to_rss_signals() -> None:
+    confirmed = _signal(
+        team="France", type=SignalType.CONFIRMED_LINEUP,
+        claim="France official XI announced",
+    )
+    news = build_team_news(
+        team_name="France", iso3="fra", injury_rows=[],
+        signals=[(confirmed, _source())], elo_penalty=None,
+        lineup_row=None,
+    )
+    assert news.lineup.state == "confirmed"
+    assert news.lineup.source == "guardian-football"  # RSS source preserved
+    assert news.lineup.starters == ()
