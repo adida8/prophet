@@ -956,6 +956,46 @@ def _cmd_verify_data_sources(args: argparse.Namespace) -> int:
     return rc
 
 
+def _cmd_fetch_odds(args: argparse.Namespace) -> int:
+    """Pull h2h prices from The Odds API into the oddsapi cache.
+
+    v1 launch surface: `soccer_epl`. Override the sport key with
+    --sport-key. Cost: 1 credit per region asked per call; default
+    regions = `uk,eu` (2 credits per tick).
+
+    Exit codes:
+      0 — refresh succeeded, at least one row persisted
+      1 — refresh ran but no rows persisted (likely region misconfig
+          or empty card the day of)
+      2 — API key missing / call failed
+    """
+    import asyncio
+    from pathlib import Path
+
+    from desk import config
+    from desk.data.oddsapi import refresh_all
+
+    if not config.ODDS_API_KEY:
+        print("ODDS_API_KEY not set in .env", file=sys.stderr)
+        return 2
+
+    sport_keys = tuple(args.sport_key) if args.sport_key else None
+    cache_path = Path(args.db) if args.db else None
+
+    report = asyncio.run(refresh_all(
+        api_key=config.ODDS_API_KEY,
+        sport_keys=sport_keys or ("soccer_epl",),
+        cache_path=cache_path,
+        regions=args.regions,
+    ))
+    print(report.headline())
+    if report.error:
+        return 2
+    if report.events_persisted == 0:
+        return 1
+    return 0
+
+
 def _cmd_social_draft_daily(args: argparse.Namespace) -> int:
     """Run the daily social-draft path.
 
@@ -1222,6 +1262,17 @@ def build_parser() -> argparse.ArgumentParser:
     fl.add_argument("--match-id", action="append",
                     help="restrict to match_id(s) (repeatable)")
     fl.set_defaults(func=_cmd_fetch_lineups)
+
+    fo = sub.add_parser(
+        "fetch-odds",
+        help="pull h2h sportsbook + exchange prices from The Odds API (non-US pivot)",
+    )
+    fo.add_argument("--db", help="override oddsapi cache path (default: desk/data/oddsapi.db)")
+    fo.add_argument("--sport-key", action="append",
+                    help="sport_key to fetch (repeatable). Default: soccer_epl")
+    fo.add_argument("--regions", default="uk,eu",
+                    help="Odds API regions list (default uk,eu)")
+    fo.set_defaults(func=_cmd_fetch_odds)
 
     fe = sub.add_parser(
         "fetch-elo",

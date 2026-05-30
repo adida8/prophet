@@ -45,6 +45,10 @@ from desk.data.oddsapi.events import (
     parse_event_payload,
     venue_ids_in_events,
 )
+from desk.data.oddsapi.refresh import (
+    RefreshReport,
+    refresh_all,
+)
 from desk.data.oddsapi.status import (
     QuotaStatus,
     fetch_quota_status,
@@ -72,6 +76,8 @@ __all__ = [
     "fetch_events_h2h",
     "parse_event_payload",
     "venue_ids_in_events",
+    "RefreshReport",
+    "refresh_all",
     "QuotaStatus",
     "fetch_quota_status",
     "LAUNCH_VENUE_IDS",

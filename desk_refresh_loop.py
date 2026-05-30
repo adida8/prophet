@@ -325,6 +325,18 @@ def _tick() -> None:
              cwd=DESK_DIR, timeout=300,
              label="desk fetch-elo", extra_env=sub_env)
 
+    # Non-US pivot — pull sportsbook + exchange prices from The Odds
+    # API into the oddsapi cache. Gated on `DESK_ODDS_FETCH=1` AND a
+    # valid `ODDS_API_KEY` so a fresh deploy doesn't burn credits.
+    # `DESK_CROSS_VENUE_EDGE` is the **separate** flag that promotes
+    # the prices to the verdict path — the operator can prime the
+    # cache without flipping the verdict surface until they're ready.
+    if (os.getenv("DESK_ODDS_FETCH", "0") == "1"
+            and os.getenv("ODDS_API_KEY")):
+        _run([py, "-m", "desk", "fetch-odds"],
+             cwd=DESK_DIR, timeout=120,
+             label="desk fetch-odds", extra_env=sub_env)
+
     # Slice B / N3 — refresh api-football lineups for fixtures inside the
     # next 24h. Confirmed XI lands ~1h pre-kickoff, so the daily tick
     # catches it only for fixtures kicking off late tomorrow. The T-90m
