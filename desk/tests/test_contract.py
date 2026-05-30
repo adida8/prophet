@@ -182,7 +182,7 @@ def test_market_sources_round_trip(fra_mex_pick: MatchOutput) -> None:
         MarketSource(
             venue="polymarket",
             name="Polymarket",
-            url="https://polymarket.com/sports/fifa-world-cup/fifwc-fra-mex-2026-06-12",
+            url="https://polymarket.com/sports/world-cup/fifwc-fra-mex-2026-06-12",
             picked=True,
             priced_sides=["a", "draw", "b"],
         ),

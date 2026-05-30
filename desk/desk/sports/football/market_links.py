@@ -44,7 +44,7 @@ def market_url_for_fixture(fx: FixtureRef) -> str | None:
     """Build the Polymarket-side deep link from the source slug.
 
     Polymarket WC 2026 match events resolve at
-    `https://polymarket.com/sports/fifa-world-cup/{slug}` (slug e.g.
+    `https://polymarket.com/sports/world-cup/{slug}` (slug e.g.
     `fifwc-fra-mex-2026-06-12`). Other events still live under
     `/event/{slug}`. We strip the optional `-more-markets` suffix
     Polymarket sometimes appends, then front it with the right path.
@@ -60,7 +60,7 @@ def market_url_for_fixture(fx: FixtureRef) -> str | None:
         slug = slug[: -len("-more-markets")]
     if (fx.source_venue or "").lower() == "polymarket":
         if slug.startswith("fifwc-"):
-            return f"https://polymarket.com/sports/fifa-world-cup/{slug}"
+            return f"https://polymarket.com/sports/world-cup/{slug}"
         return f"https://polymarket.com/event/{slug}"
     # Kalshi (and future venues) plug in here when their slug + URL
     # pattern is known. Until then we don't fabricate a URL.

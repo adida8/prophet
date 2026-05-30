@@ -2258,9 +2258,9 @@ def _polymarket_url_for(verdict: dict, fallback_search: str | None = None) -> st
     surfaceable.
 
     Safety net: Polymarket migrated WC 2026 match pages from
-    `/event/{slug}` to `/sports/fifa-world-cup/{slug}` (the old path
-    404s). We detect old-style FIFWC URLs and rewrite them at
-    build-time so a stale `verdict.market_url` still resolves.
+    `/event/{slug}` to `/sports/world-cup/{slug}` (the old paths
+    404). We detect stale URLs and rewrite them at build-time so a
+    `verdict.market_url` written by an older tick still resolves.
     """
     url = (verdict.get("market_url") or "").strip()
     if url and "polymarket.com" in url.lower():
@@ -2276,16 +2276,22 @@ def _normalise_polymarket_url(url: str) -> str:
     """Rewrite Polymarket URLs that still point at retired paths.
     Safe to call on already-correct URLs.
 
-    Two known rewrites today:
-      - per-match: `/event/fifwc-...` → `/sports/fifa-world-cup/fifwc-...`
+    Three known rewrites today:
+      - per-match: `/event/fifwc-...` → `/sports/world-cup/fifwc-...`
+      - per-match (older shim): `/sports/fifa-world-cup/fifwc-...` →
+        `/sports/world-cup/fifwc-...` (Polymarket dropped the "fifa-"
+        prefix from the WC path)
       - outright winner: `/event/2026-fifa-world-cup-winner-595` →
         `/event/world-cup-winner` (the canonical short slug Polymarket
         now uses on its UI).
     """
-    old_prefix = "polymarket.com/event/fifwc-"
-    new_prefix = "polymarket.com/sports/fifa-world-cup/fifwc-"
-    if old_prefix in url:
-        url = url.replace(old_prefix, new_prefix, 1)
+    old_event = "polymarket.com/event/fifwc-"
+    new_path = "polymarket.com/sports/world-cup/fifwc-"
+    if old_event in url:
+        url = url.replace(old_event, new_path, 1)
+    legacy_sports = "polymarket.com/sports/fifa-world-cup/fifwc-"
+    if legacy_sports in url:
+        url = url.replace(legacy_sports, new_path, 1)
     outright_old = "polymarket.com/event/2026-fifa-world-cup-winner-595"
     outright_new = "polymarket.com/event/world-cup-winner"
     if outright_old in url:
