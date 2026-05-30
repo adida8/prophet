@@ -927,6 +927,27 @@ def _cmd_verify_data_sources(args: argparse.Namespace) -> int:
                 if not ow.ok:
                     rc = max(rc, 2)
 
+        # ── odds-api (non-US sportsbooks) ──────────────────────────
+        if not config.ODDS_API_KEY:
+            lines.append("odds-api · SKIP — ODDS_API_KEY not set")
+            # Soft-skip — odds-api is optional in v1 (non-US adapter); don't
+            # bump rc.
+        else:
+            from desk.data.oddsapi import (
+                OddsAPIClient, OddsAPIError, fetch_quota_status,
+            )
+            try:
+                async with OddsAPIClient(config.ODDS_API_KEY) as c:
+                    qs = await fetch_quota_status(c)
+            except OddsAPIError as e:
+                lines.append(f"odds-api · FAIL ({e.kind}) — {e}")
+                rc = max(rc, 2)
+            else:
+                lines.append(qs.headline())
+                if not qs.key_ok:
+                    lines.append("  WARNING: /v4/sports returned empty list")
+                    rc = max(rc, 2)
+
         return rc, lines
 
     rc, lines = asyncio.run(_run())

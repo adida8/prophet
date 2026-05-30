@@ -41,6 +41,10 @@ ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
 API_FOOTBALL_KEY:        str = os.getenv("API_FOOTBALL_KEY", "")
 # Phase 3 weather (B.2). OpenWeatherMap One Call 3.0.
 OPENWEATHERMAP_API_KEY:  str = os.getenv("OPENWEATHERMAP_API_KEY", "")
+# Non-US sportsbook adapter — The Odds API (the-odds-api.com).
+# Powers Pinnacle, Betfair Exchange, William Hill, Sky Bet pricing
+# (per THE_DESK_NONUS_SPORTSBOOK_SCOPING.md).
+ODDS_API_KEY:            str = os.getenv("ODDS_API_KEY", "")
 
 # ── Sport registry default ────────────────────────────────────────────
 # v1 ships football only. Sports config in v2 reads sources.yaml.
