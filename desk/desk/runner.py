@@ -74,6 +74,7 @@ def _build_match(
     now: datetime,
     copy=None,
     hard_signal_adjustments=None,
+    market_sources=None,
 ) -> MatchOutput:
     venue = None
     if fx.venue_city and fx.venue_stadium and fx.venue_country:
@@ -100,6 +101,8 @@ def _build_match(
     )
     if copy is not None:
         kwargs["copy"] = copy
+    if market_sources:
+        kwargs["market_sources"] = list(market_sources)
     if hard_signal_adjustments:
         kwargs["hard_signal_adjustments"] = list(hard_signal_adjustments)
     return MatchOutput(**kwargs)
@@ -294,6 +297,7 @@ def run_once(
             for fx, snapshot in pairs:
                 copy = None
                 hard_adjustments = None
+                market_sources = None
                 try:
                     if hasattr(sport, "decide_and_explain"):
                         # Pass the signals runtime through (PR F). Sports
@@ -324,11 +328,14 @@ def run_once(
                                 except TypeError:
                                     result = sport.decide_and_explain(fx, snapshot)
                         # decide_and_explain may return (v, copy),
-                        # (v, copy, DecisionMeta), or
-                        # (v, copy, DecisionMeta, hard_signal_adjustments).
-                        # Older sports without meta + adjustments just
-                        # don't populate those slots.
-                        if len(result) == 4:
+                        # (v, copy, DecisionMeta),
+                        # (v, copy, DecisionMeta, hard_signal_adjustments),
+                        # or that plus a 5th market_sources list. Older
+                        # sports without the later slots just don't
+                        # populate them.
+                        if len(result) == 5:
+                            v, copy, meta, hard_adjustments, market_sources = result
+                        elif len(result) == 4:
                             v, copy, meta, hard_adjustments = result
                         elif len(result) == 3:
                             v, copy, meta = result
@@ -352,6 +359,7 @@ def run_once(
                     m = _build_match(
                         fx, verdict=v, now=now, copy=copy,
                         hard_signal_adjustments=hard_adjustments,
+                        market_sources=market_sources,
                     )
                 except Exception as e:                      # noqa: BLE001
                     log.warning("build_match failed for %s: %s", fx.match_id, e)

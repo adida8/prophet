@@ -180,14 +180,30 @@ def yesterday_utc(now: Optional[datetime] = None) -> date:
 
 
 async def q_views(conn: Any, w: Window) -> int:
+    # Match-page views only. `site:*` sentinel rows (home, outrights, etc.)
+    # are excluded so the "Views" KPI stays match-specific.
     return int(await conn.fetchval(
         "SELECT count(*) FROM match_views "
-        "WHERE seeded = false AND viewed_at >= $1 AND viewed_at < $2",
+        "WHERE seeded = false AND match_id LIKE 'fb-%' "
+        "AND viewed_at >= $1 AND viewed_at < $2",
         w.start, w.end,
     ) or 0)
 
 
 async def q_unique_anons(conn: Any, w: Window) -> int:
+    # Match-page unique readers (anons that hit at least one /m/<id>).
+    return int(await conn.fetchval(
+        "SELECT count(DISTINCT anon_id) FROM match_views "
+        "WHERE seeded = false AND match_id LIKE 'fb-%' "
+        "AND viewed_at >= $1 AND viewed_at < $2",
+        w.start, w.end,
+    ) or 0)
+
+
+async def q_site_visitors(conn: Any, w: Window) -> int:
+    # True site-wide uniques: distinct anons across every page that fires
+    # POST /view — match pages AND the `site:*` sentinels for home,
+    # matches, outrights, learn, about.
     return int(await conn.fetchval(
         "SELECT count(DISTINCT anon_id) FROM match_views "
         "WHERE seeded = false AND viewed_at >= $1 AND viewed_at < $2",
@@ -280,28 +296,71 @@ async def q_reactions_breakdown(conn: Any, w: Window) -> dict[str, int]:
 
 async def q_top_matches(conn: Any, w: Window, limit: int = 5) -> list[dict]:
     """Top-N matches by views inside the window. Each row carries views,
-    votes (lifetime, not windowed — reactions are sparse), and aligned_pct
-    from match_aggregates when present."""
+    real-vote count, and aligned_pct — all computed from
+    `match_reactions` with `seeded = false` so the seeder traffic never
+    leaks into the report. The unfiltered `match_aggregates` table is
+    deliberately bypassed."""
     rows = await conn.fetch(
         "SELECT match_id, count(*) AS views FROM match_views "
-        "WHERE seeded = false AND viewed_at >= $1 AND viewed_at < $2 "
+        "WHERE seeded = false AND match_id LIKE 'fb-%' "
+        "AND viewed_at >= $1 AND viewed_at < $2 "
         "GROUP BY match_id ORDER BY views DESC LIMIT $3",
         w.start, w.end, limit,
     )
     out: list[dict] = []
     for r in rows:
         mid = str(r["match_id"])
-        agg = await conn.fetchrow(
-            "SELECT votes_total, aligned_pct FROM match_aggregates "
-            "WHERE match_id = $1",
+        vote_row = await conn.fetchrow(
+            "SELECT "
+            "  count(*) AS votes_total, "
+            "  count(*) FILTER (WHERE reaction IN ('sharp_call','fair_call')) AS aligned "
+            "FROM match_reactions "
+            "WHERE seeded = false AND match_id = $1",
             mid,
         )
+        votes_total = int(vote_row["votes_total"]) if vote_row else 0
+        aligned     = int(vote_row["aligned"]) if vote_row else 0
+        aligned_pct = round(aligned / votes_total * 100) if votes_total else None
         out.append({
-            "match_id": mid,
-            "views": int(r["views"]),
-            "votes": int(agg["votes_total"]) if agg else 0,
-            "aligned_pct": int(agg["aligned_pct"]) if agg and agg["aligned_pct"] is not None else None,
+            "match_id":    mid,
+            "views":       int(r["views"]),
+            "votes":       votes_total,
+            "aligned_pct": aligned_pct,
         })
+    return out
+
+
+async def q_unique_anons_by_day(
+    conn: Any, *, end_date: date, days: int = 7,
+) -> list[dict]:
+    """Per-day unique-readers series for the last `days` days, inclusive
+    of `end_date`. Oldest-first so the consumer can draw a left-to-right
+    line. Filters `seeded = false` — seeder anon ids never appear in
+    the chart."""
+    start = datetime.combine(
+        end_date - timedelta(days=days - 1), time(0, 0, 0), tzinfo=timezone.utc,
+    )
+    end = datetime.combine(
+        end_date + timedelta(days=1), time(0, 0, 0), tzinfo=timezone.utc,
+    )
+    rows = await conn.fetch(
+        "SELECT DATE_TRUNC('day', viewed_at)::date AS day, "
+        "       count(DISTINCT anon_id) AS uniques "
+        "FROM match_views "
+        "WHERE seeded = false AND viewed_at >= $1 AND viewed_at < $2 "
+        "GROUP BY day ORDER BY day",
+        start, end,
+    )
+    by_day: dict[date, int] = {}
+    for r in rows:
+        d = r["day"]
+        if isinstance(d, datetime):
+            d = d.date()
+        by_day[d] = int(r["uniques"])
+    out: list[dict] = []
+    for i in range(days):
+        d = end_date - timedelta(days=days - 1 - i)
+        out.append({"date": d, "uniques": by_day.get(d, 0)})
     return out
 
 
@@ -466,7 +525,9 @@ def _delta_label(curr: int, prev: int) -> tuple[str, str]:
     return ("flat vs yesterday", "")
 
 
-def status_line(*, views: int, votes: int, cta_total: int, desk_status: str) -> dict:
+def status_line(
+    *, views: int, visitors: int, votes: int, cta_total: int, desk_status: str,
+) -> dict:
     """Compose the one-line top-of-report banner."""
     if desk_status == "fail":
         return {
@@ -474,22 +535,26 @@ def status_line(*, views: int, votes: int, cta_total: int, desk_status: str) -> 
             "label": "Pipeline failed",
             "line": "The Desk's last tick failed. Verdicts may be stale — investigate before reading further.",
         }
-    if views == 0 and votes == 0 and cta_total == 0:
+    if views == 0 and votes == 0 and cta_total == 0 and visitors == 0:
         return {
             "color": "amber",
             "label": "Quiet day",
             "line": "No reader activity recorded yesterday. Either traffic was zero or the activity logger wasn't running.",
         }
+    body = (
+        f"{visitors} unique visitors, {views} match views, "
+        f"{votes} votes, {cta_total} CTA clicks"
+    )
     if views < 25:
         return {
             "color": "amber",
             "label": "Low traffic",
-            "line": f"{views} views, {votes} votes, {cta_total} CTA clicks. Under launch-rate floor.",
+            "line": f"{body}. Under launch-rate floor.",
         }
     return {
         "color": "green",
         "label": "Healthy",
-        "line": f"{views} views, {votes} votes, {cta_total} CTA clicks. Pipeline {desk_status}.",
+        "line": f"{body}. Pipeline {desk_status}.",
     }
 
 
@@ -527,6 +592,145 @@ def build_sentiment(reactions: dict[str, int]) -> dict:
     aligned = reactions.get("sharp_call", 0) + reactions.get("fair_call", 0)
     aligned_pct = round(aligned / total * 100) if total else 0
     return {"total": total, "rows": rows, "aligned_pct": aligned_pct}
+
+
+def build_weekly_chart(
+    series: list[dict],
+    *,
+    width: int = 520,
+    height: int = 140,
+) -> dict:
+    """Render a 7-day uniques line chart as an inline SVG.
+
+    WeasyPrint renders SVG natively, so no client-side JS is needed
+    and the same markup works in the email's HTML alternative + the PDF
+    attachment.
+
+    Returns:
+      {
+        "svg":       "<svg ...>...</svg>",
+        "latest":    int,       # uniques on the most recent day in series
+        "max":       int,       # peak across the 7 days (>=1 for sizing)
+        "wow_delta": str | None,# week-over-week change label, or None
+        "wow_cls":   "up"|"down"|"",  # delta colour class
+      }
+
+    Empty series → empty svg. Series with all zeros → flat baseline.
+    """
+    n = len(series)
+    if n == 0:
+        return {"svg": "", "latest": 0, "max": 0, "wow_delta": None, "wow_cls": ""}
+
+    counts = [int(r.get("uniques") or 0) for r in series]
+    peak = max(counts)
+    latest = counts[-1]
+    first = counts[0]
+    wow_delta, wow_cls = (None, "")
+    if first > 0:
+        pct = round((latest - first) / first * 100)
+        if pct > 0:
+            wow_delta, wow_cls = (f"▲ +{pct}% vs 7d ago", "up")
+        elif pct < 0:
+            wow_delta, wow_cls = (f"▼ {pct}% vs 7d ago", "down")
+        else:
+            wow_delta, wow_cls = ("flat vs 7d ago", "")
+    elif latest > 0:
+        wow_delta, wow_cls = ("▲ new vs 7d ago", "up")
+
+    # SVG geometry — leave room for axis labels + day strip beneath.
+    pad_l, pad_r, pad_t, pad_b = 36, 12, 14, 28
+    plot_w = width - pad_l - pad_r
+    plot_h = height - pad_t - pad_b
+    y_scale = max(peak, 1)
+    step = plot_w / max(n - 1, 1)
+
+    points: list[tuple[float, float]] = []
+    for i, c in enumerate(counts):
+        x = pad_l + step * i
+        y = pad_t + plot_h - (c / y_scale) * plot_h
+        points.append((x, y))
+
+    # Build the polyline + area-fill path. Area sits behind the stroke
+    # so the chart reads at a glance even when the line is flat.
+    poly = " ".join(f"{x:.1f},{y:.1f}" for x, y in points)
+    area = (
+        f"M{points[0][0]:.1f},{pad_t + plot_h:.1f} "
+        + " ".join(f"L{x:.1f},{y:.1f}" for x, y in points)
+        + f" L{points[-1][0]:.1f},{pad_t + plot_h:.1f} Z"
+    )
+
+    # Three y-axis gridlines (0, mid, peak) — useful when peak isn't
+    # immediately obvious from the line shape.
+    grid_vals = sorted({0, max(peak // 2, 0), peak})
+    grid_lines = []
+    y_labels = []
+    for v in grid_vals:
+        gy = pad_t + plot_h - (v / y_scale) * plot_h
+        grid_lines.append(
+            f'<line x1="{pad_l}" y1="{gy:.1f}" x2="{pad_l + plot_w}" y2="{gy:.1f}" '
+            f'stroke="#EDE7D6" stroke-width="1" />'
+        )
+        y_labels.append(
+            f'<text x="{pad_l - 6}" y="{gy + 3:.1f}" font-size="8" font-family="JetBrains Mono, monospace" '
+            f'fill="#6B7079" text-anchor="end">{v}</text>'
+        )
+
+    # Day-of-week strip (Mon/Tue/...) + "today" label on the most recent point.
+    day_labels = []
+    for i, row in enumerate(series):
+        d = row.get("date")
+        if isinstance(d, datetime):
+            d = d.date()
+        if not isinstance(d, date):
+            txt = ""
+        elif i == n - 1:
+            txt = "today"
+        else:
+            txt = d.strftime("%a")
+        x = pad_l + step * i
+        day_labels.append(
+            f'<text x="{x:.1f}" y="{height - 8}" font-size="8" font-family="Inter Tight, sans-serif" '
+            f'fill="#6B7079" text-anchor="middle">{txt}</text>'
+        )
+
+    # Per-point dots + the latest-point value bubble.
+    dots = []
+    for i, (x, y) in enumerate(points):
+        is_latest = i == n - 1
+        r = 3.5 if is_latest else 2.5
+        fill = "#D9461C" if is_latest else "#A8341A"
+        dots.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r}" fill="{fill}" />')
+
+    # Latest-value label, nudged to keep it inside the plot.
+    lx, ly = points[-1]
+    label_y = max(ly - 8, pad_t + 8)
+    latest_label = (
+        f'<text x="{lx:.1f}" y="{label_y:.1f}" font-size="10" '
+        f'font-family="JetBrains Mono, monospace" fill="#0E2240" '
+        f'text-anchor="end" font-weight="600">{latest}</text>'
+    )
+
+    svg = (
+        f'<svg viewBox="0 0 {width} {height}" width="100%" height="{height}" '
+        f'xmlns="http://www.w3.org/2000/svg" role="img" '
+        f'aria-label="Last 7 days of unique readers, peaked at {peak}, latest {latest}">'
+        + "".join(grid_lines)
+        + f'<path d="{area}" fill="#F7E4DA" opacity="0.65" />'
+        + f'<polyline points="{poly}" fill="none" stroke="#D9461C" stroke-width="1.6" '
+          'stroke-linejoin="round" stroke-linecap="round" />'
+        + "".join(dots)
+        + "".join(y_labels)
+        + "".join(day_labels)
+        + latest_label
+        + '</svg>'
+    )
+    return {
+        "svg":       svg,
+        "latest":    latest,
+        "max":       peak,
+        "wow_delta": wow_delta,
+        "wow_cls":   wow_cls,
+    }
 
 
 def build_funnel(views: int, votes: int, cta_total: int) -> dict:
@@ -590,6 +794,8 @@ async def build_context(cfg: Config, conn: Any, w: Window) -> dict:
     views_prev = await q_views(conn, w.prior)
     uniques_curr = await q_unique_anons(conn, w)
     uniques_prev = await q_unique_anons(conn, w.prior)
+    visitors_curr = await q_site_visitors(conn, w)
+    visitors_prev = await q_site_visitors(conn, w.prior)
     votes_curr = await q_votes(conn, w)
     votes_prev = await q_votes(conn, w.prior)
     cta_curr = await q_cta_total(conn, w)
@@ -604,6 +810,7 @@ async def build_context(cfg: Config, conn: Any, w: Window) -> dict:
     cta_by_venue_map = await q_cta_by_venue(conn, w)
     reactions = await q_reactions_breakdown(conn, w)
     top = await q_top_matches(conn, w, limit=5)
+    weekly_uniques_series = await q_unique_anons_by_day(conn, end_date=w.label_date, days=7)
 
     pick_ids = list_live_pick_match_ids()
     zc_ids = await q_zero_click_picks(conn, w, pick_ids, limit=5)
@@ -644,14 +851,17 @@ async def build_context(cfg: Config, conn: Any, w: Window) -> dict:
     desk = build_desk_section(run, tick_total)
     sentiment = build_sentiment(reactions)
     funnel = build_funnel(views_curr, votes_curr, cta_curr)
+    weekly_uniques = build_weekly_chart(weekly_uniques_series)
 
     views_delta, views_cls       = _delta_label(views_curr, views_prev)
     uniques_delta, uniques_cls   = _delta_label(uniques_curr, uniques_prev)
+    visitors_delta, visitors_cls = _delta_label(visitors_curr, visitors_prev)
     votes_delta, votes_cls       = _delta_label(votes_curr, votes_prev)
     cta_delta, cta_cls           = _delta_label(cta_curr, cta_prev)
 
     status = status_line(
-        views=views_curr, votes=votes_curr, cta_total=cta_curr,
+        views=views_curr, visitors=visitors_curr, votes=votes_curr,
+        cta_total=cta_curr,
         desk_status=(desk["last_run_status"] or "unknown"),
     )
 
@@ -664,6 +874,9 @@ async def build_context(cfg: Config, conn: Any, w: Window) -> dict:
         "window_end":       w.end.isoformat(),
         "status":           status,
         "kpi": {
+            "visitors":             visitors_curr,
+            "visitors_delta":       visitors_delta,
+            "visitors_delta_cls":   visitors_cls,
             "views":              views_curr,
             "views_delta":        views_delta,
             "views_delta_cls":    views_cls,
@@ -687,6 +900,7 @@ async def build_context(cfg: Config, conn: Any, w: Window) -> dict:
         "sentiment":        sentiment,
         "zero_click_picks": zero_click_rows,
         "funnel":           funnel,
+        "weekly_uniques":   weekly_uniques,
         "desk":             desk,
     }
 

@@ -20,6 +20,7 @@ from desk.ops.report import IngestStats, SourceFreshness, SourceStatus
 from desk.publish.contract import (
     Copy,
     HardSignalAdjustment as ContractHardSignalAdjustment,
+    MarketSource,
     Verdict,
 )
 from desk.sport import FixtureRef, MarketSide
@@ -32,39 +33,18 @@ from desk.sports.football.hard_signals import (
     HardSignalAdjustment,
     apply_hard_signals,
 )
+from desk.sports.football.market_links import (
+    build_market_sources,
+    market_url_for_fixture as _market_url_for_fixture,
+)
 from desk.sports.football.model import FootballFeatures, compute as compute_model
 from desk.sports.football.priced import list_priced_fixtures_with_stats
 from desk.sports.football.signals_glue import tags_for as _football_signals_tags
+from desk.sports.football.team_news import build_team_news, iso3_for_team
 from desk.verdict.compare import MarketSnapshot
 from desk.verdict.decide import DecisionMeta, decide as decide_verdict
 
 log = logging.getLogger("desk.sports.football")
-
-
-def _market_url_for_fixture(fx: FixtureRef) -> str | None:
-    """Build the venue-side deep link from the source slug.
-
-    Polymarket WC 2026 match events resolve at
-    `https://polymarket.com/sports/fifa-world-cup/{slug}` (slug e.g.
-    `fifwc-fra-mex-2026-06-12`). Other events still live under
-    `/event/{slug}`. We strip the optional `-more-markets` suffix
-    Polymarket sometimes appends, then front it with the right path.
-
-    Returns None when we can't construct a clean URL — caller decides
-    whether that downgrades a Pick to a Pass (see decide()).
-    """
-    slug = (fx.source_event_slug or "").strip().lower()
-    if not slug:
-        return None
-    if slug.endswith("-more-markets"):
-        slug = slug[: -len("-more-markets")]
-    if (fx.source_venue or "").lower() == "polymarket":
-        if slug.startswith("fifwc-"):
-            return f"https://polymarket.com/sports/fifa-world-cup/{slug}"
-        return f"https://polymarket.com/event/{slug}"
-    # Kalshi (and future venues) plug in here when their slug + URL
-    # pattern is known. Until then we don't fabricate a URL.
-    return None
 
 
 def _run_async(coro):
@@ -158,7 +138,7 @@ class FootballSport:
         fx: FixtureRef,
         snapshot: MarketSnapshot,
     ) -> Verdict:
-        verdict, _copy, _meta, _adjs = self.decide_and_explain(fx, snapshot)
+        verdict, *_ = self.decide_and_explain(fx, snapshot)
         return verdict
 
     def decide_and_explain(
@@ -169,9 +149,16 @@ class FootballSport:
         signals_runtime=None,
         api_football_runtime=None,
         elo_runtime=None,
-    ) -> tuple[Verdict, Copy, DecisionMeta, list[ContractHardSignalAdjustment]]:
+    ) -> tuple[
+        Verdict,
+        Copy,
+        DecisionMeta,
+        list[ContractHardSignalAdjustment],
+        list[MarketSource],
+    ]:
         """Compute the verdict, the editorial copy, the decision meta,
-        and the per-match hard-signal audit list in one pass.
+        the per-match hard-signal audit list, and the outbound
+        market-source links in one pass.
 
         Runs the model once and reuses its output for both branches.
         PR 5 will swap the templated copy for Haiku-generated prose.
@@ -191,6 +178,12 @@ class FootballSport:
         threads it onto `MatchOutput.hard_signal_adjustments` so the
         published JSON carries enough to answer 'did this signal change
         the verdict?'. Empty list when no adjustments fired.
+
+        The 5th element is the outbound `MarketSource` list — every
+        venue we link a trade CTA for, each with its deep link, whether
+        the Pick rode on it, and which sides it priced. The runner
+        threads it onto `MatchOutput.market_sources`. See
+        `desk/sports/football/market_links.py`.
         """
         features = build_features(
             fx,
@@ -198,15 +191,16 @@ class FootballSport:
             elo_source=elo_runtime,
         )
         hard_adjustments: list[HardSignalAdjustment] = []
+        signal_pairs: list = []
         if signals_runtime is not None:
             try:
-                pairs = signals_runtime.hard_signals_for(fx)
+                signal_pairs = list(signals_runtime.hard_signals_for(fx))
             except Exception as e:  # noqa: BLE001 — never block the model on signals
                 log.warning("hard-signal lookup failed for %s: %s", fx.match_id, e)
-                pairs = []
-            if pairs:
+                signal_pairs = []
+            if signal_pairs:
                 features, hard_adjustments = apply_hard_signals(
-                    features, fx=fx, signals=pairs,
+                    features, fx=fx, signals=signal_pairs,
                 )
                 if hard_adjustments:
                     log.info(
@@ -216,6 +210,50 @@ class FootballSport:
                         sum(a.delta_elo for a in hard_adjustments if a.side == "b"),
                     )
         self._last_hard_signal_adjustments.extend(hard_adjustments)
+
+        # ── Team news (Slice A) — build per-side payloads for the blurb
+        # writer. Pulls api-football injury rows from the runtime cache
+        # (when present) + filters the hard-signal pool by team. Failures
+        # degrade silently to TeamNews(materiality="none"); the blurb
+        # path treats absent data the same as "no info to share".
+        team_a_iso3 = iso3_for_team(fx.team_a)
+        team_b_iso3 = iso3_for_team(fx.team_b)
+        a_injuries: list = []
+        b_injuries: list = []
+        a_penalty: float | None = None
+        b_penalty: float | None = None
+        a_lineup_row = None
+        b_lineup_row = None
+        if api_football_runtime is not None:
+            try:
+                if team_a_iso3:
+                    a_injuries = list(api_football_runtime.injuries_for_iso3(team_a_iso3))
+                    a_penalty = api_football_runtime.injury_penalty_for_iso3(team_a_iso3)
+                    a_lineup_row = api_football_runtime.lineup_for_match_iso3(
+                        match_id=fx.match_id, iso3=team_a_iso3,
+                    )
+                if team_b_iso3:
+                    b_injuries = list(api_football_runtime.injuries_for_iso3(team_b_iso3))
+                    b_penalty = api_football_runtime.injury_penalty_for_iso3(team_b_iso3)
+                    b_lineup_row = api_football_runtime.lineup_for_match_iso3(
+                        match_id=fx.match_id, iso3=team_b_iso3,
+                    )
+            except Exception as e:  # noqa: BLE001 — never block prose on team-news lookup
+                log.warning("team-news lookup failed for %s: %s", fx.match_id, e)
+        try:
+            team_a_news = build_team_news(
+                team_name=fx.team_a, iso3=team_a_iso3,
+                injury_rows=a_injuries, signals=signal_pairs,
+                elo_penalty=a_penalty, lineup_row=a_lineup_row,
+            )
+            team_b_news = build_team_news(
+                team_name=fx.team_b, iso3=team_b_iso3,
+                injury_rows=b_injuries, signals=signal_pairs,
+                elo_penalty=b_penalty, lineup_row=b_lineup_row,
+            )
+        except Exception as e:  # noqa: BLE001 — builder shouldn't raise; belt-and-braces
+            log.warning("team-news builder failed for %s: %s", fx.match_id, e)
+            team_a_news = team_b_news = None
 
         # Editorial citations covering this fixture — used by the
         # templated explainer to append a press-chorus sentence to the
@@ -302,6 +340,8 @@ class FootballSport:
             "venue_country":      fx.venue_country,
             "kickoff_utc":        fx.kickoff_utc.isoformat() if fx.kickoff_utc else None,
             "editorial_citations": editorial_cites,
+            "team_a_news":        team_a_news,
+            "team_b_news":        team_b_news,
         })
         # Ride the citation list onto the published Copy. The blurb
         # already saw them inside build_copy; the contract surfaces them
@@ -329,7 +369,12 @@ class FootballSport:
             )
             for a in hard_adjustments
         ]
-        return verdict, copy, meta, contract_adjustments
+
+        # Outbound venue links — every CTA venue, deep-linked, with the
+        # picked flag + which sides each priced into the calculation.
+        market_sources = build_market_sources(fx, snapshot, verdict)
+
+        return verdict, copy, meta, contract_adjustments, market_sources
 
     # ── News-signals glue ───────────────────────────────────────────
 

@@ -74,6 +74,14 @@ class Inputs(TypedDict, total=False):
     # appends one extra "press chorus" sentence when ≥ 2 citations land
     # — until PR 5 wires real Haiku prose around them.
     editorial_citations: list[Citation] | None
+    # Team-news payloads (injuries + lineup status) per side. Threaded
+    # onto Inputs so the Haiku blurb writer can address availability
+    # explicitly per the team-news spec. Stub ignores these — they only
+    # drive Haiku's prompt + post-checks. `object` typing keeps the
+    # forward-ref free for the stub side, which never imports the
+    # football-package payload type.
+    team_a_news: object | None
+    team_b_news: object | None
 
 
 def _pct(p: float | None) -> str:

@@ -16,6 +16,54 @@ the migration notes consumers need.
 
 ---
 
+## 2026-05-30 — v1.2.0 · `add`
+
+**Add `MatchOutput.market_sources`**
+
+A new top-level list of the prediction-market / sportsbook venues we
+link a trade CTA for on a fixture — so a consumer can render the full
+row of outgoing buttons from the contract alone, not just the single
+venue the Pick rode on.
+
+```jsonc
+"market_sources": [
+  { "venue": "polymarket", "name": "Polymarket",
+    "url": "https://polymarket.com/sports/fifa-world-cup/fifwc-fra-mex-2026-06-12",
+    "picked": true,  "priced_sides": ["a","draw","b"] },
+  { "venue": "kalshi", "name": "Kalshi",
+    "url": "https://kalshi.com/category/sports/soccer/fifa-world-cup",
+    "picked": false, "priced_sides": [] }
+]
+```
+
+- **Driver:** front-of-house outgoing trade buttons + external-consumer
+  wire (Market Tips AI) needs every venue + its deep link, with a flag
+  for which one the Pick is on — not only the chosen venue.
+- **ADR:** `desk/docs/adr/0003-market-sources.md`
+- **Fields:** `venue` (`polymarket` | `kalshi`, matches
+  `verdict.market_venue`'s enum), `name` (display string), `url` (https
+  deep link to the fixture's page on the venue, or the venue's nearest
+  landing page when no per-event deep link exists yet), `picked`
+  (boolean — `true` only on the Pick's venue, `false` on every venue for
+  pass/avoid/withdrawn), `priced_sides` (list of `a` / `draw` / `b` the
+  venue actually quoted into the calculation; **empty ⇒ linked for
+  convenience but did not feed the model**, e.g. a venue we don't yet
+  ingest).
+- **Schema delta:** `MatchOutput` gains `market_sources`
+  (array, max 8, default `[]`) and a new `$defs/MarketSource`. No removed
+  fields. No changed fields.
+- **Migration:** purely additive. Consumers that ignore unknown fields
+  need no change. `extra="forbid"` / strict validators must add the
+  optional `market_sources` array before accepting new payloads; absent
+  ⇒ treat as `[]`. To render the button row, iterate the list, draw a
+  button per entry from `name` + `url`, and badge the `picked: true`
+  one. Note: today only Polymarket feeds the model, so the Kalshi entry
+  carries the WC landing page and `priced_sides: []`; that upgrades to a
+  per-event Kalshi deep link + populated sides when Kalshi ingest lands,
+  with no further contract change.
+
+---
+
 ## 2026-05-24 — v1.1.0 · `add`
 
 **Add `VerdictState.WITHDRAWN = "withdrawn"`**

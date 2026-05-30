@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import sqlite3
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 _SCHEMA = """
@@ -92,6 +92,44 @@ CREATE TABLE IF NOT EXISTS injury_penalties (
     source_endpoint TEXT NOT NULL DEFAULT '',
     transform       TEXT NOT NULL DEFAULT 'compute_injury_penalty'
 );
+
+-- Slice B / N3 lineups — one row per (fixture_id, api_football_team_id).
+-- Holds the confirmed (or pre-confirmed) starting XI + formation + coach
+-- + 'state' marker that distinguishes a fully announced XI from an
+-- expected one. Match-id resolution comes from `fixture_resolution`
+-- below; lineups land ~1h pre-kickoff, so the T-90m loop is the main
+-- writer once it ships.
+CREATE TABLE IF NOT EXISTS lineups (
+    fixture_id            INTEGER NOT NULL,
+    api_football_team_id  INTEGER NOT NULL,
+    state                 TEXT    NOT NULL,   -- "confirmed" / "predicted"
+    formation             TEXT,                -- "4-3-3" / "3-5-2" / etc.
+    coach_name            TEXT,
+    starters              TEXT    NOT NULL,   -- JSON array of starter names
+    substitutes           TEXT    NOT NULL,   -- JSON array of sub names
+    fetched_at            TEXT    NOT NULL,
+    announced_at          TEXT,                -- ISO-8601 when api-football flagged the row
+    PRIMARY KEY (fixture_id, api_football_team_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_lineups_team
+    ON lineups(api_football_team_id);
+
+-- One row per (home_team_id, away_team_id, kickoff_date). Maps the
+-- engine's FixtureRef (canonical match_id) to the api-football fixture_id
+-- needed by the /fixtures/lineups endpoint. Populated by `resolve_fixture_id`
+-- on first lookup; reused by every subsequent fetch.
+CREATE TABLE IF NOT EXISTS fixture_resolution (
+    match_id              TEXT PRIMARY KEY,
+    api_football_fixture_id INTEGER NOT NULL,
+    home_team_id          INTEGER NOT NULL,
+    away_team_id          INTEGER NOT NULL,
+    kickoff_utc           TEXT    NOT NULL,
+    resolved_at           TEXT    NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_fixture_resolution_kickoff
+    ON fixture_resolution(kickoff_utc);
 """
 
 
@@ -128,6 +166,38 @@ class FixtureResult:
         if self.team_goals == self.opponent_goals:
             return 1
         return 0
+
+
+@dataclass(frozen=True)
+class LineupRow:
+    """One team's lineup for a single fixture.
+
+    `state` distinguishes 'confirmed' (api-football marks the row as
+    the official XI announced pre-kickoff) from 'predicted' (any
+    earlier read). The state is computed by the fetcher from the
+    response shape — see lineups.py.
+    """
+    fixture_id:           int
+    api_football_team_id: int
+    state:                str        # "confirmed" / "predicted"
+    formation:            str | None
+    coach_name:           str | None
+    starters:             tuple[str, ...]   # 11 names in lineup order
+    substitutes:          tuple[str, ...]
+    fetched_at:           str
+    announced_at:         str | None = None
+
+
+@dataclass(frozen=True)
+class FixtureResolution:
+    """match_id ↔ api-football fixture_id mapping, cached after first
+    resolution so subsequent lineup fetches don't re-query /fixtures."""
+    match_id:                str
+    api_football_fixture_id: int
+    home_team_id:            int
+    away_team_id:            int
+    kickoff_utc:             str
+    resolved_at:             str
 
 
 @dataclass(frozen=True)
@@ -427,3 +497,165 @@ class APIFootballCache:
             source_endpoint=row["source_endpoint"] or "",
             transform=row["transform"] or "compute_injury_penalty",
         )
+
+    # ── B-Slice lineups ──────────────────────────────────────────
+
+    def upsert_lineup(self, row: LineupRow) -> None:
+        """Insert or replace one team's lineup for a fixture."""
+        import json as _json
+        self._conn.execute(
+            "INSERT INTO lineups("
+            "  fixture_id, api_football_team_id, state, formation, "
+            "  coach_name, starters, substitutes, fetched_at, announced_at"
+            ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) "
+            "ON CONFLICT(fixture_id, api_football_team_id) DO UPDATE SET "
+            "  state = excluded.state, "
+            "  formation = excluded.formation, "
+            "  coach_name = excluded.coach_name, "
+            "  starters = excluded.starters, "
+            "  substitutes = excluded.substitutes, "
+            "  fetched_at = excluded.fetched_at, "
+            "  announced_at = excluded.announced_at",
+            (
+                row.fixture_id, row.api_football_team_id, row.state,
+                row.formation, row.coach_name,
+                _json.dumps(list(row.starters)),
+                _json.dumps(list(row.substitutes)),
+                row.fetched_at, row.announced_at,
+            ),
+        )
+
+    def lineup_for(
+        self, *, fixture_id: int, api_football_team_id: int,
+    ) -> LineupRow | None:
+        import json as _json
+        row = self._conn.execute(
+            "SELECT fixture_id, api_football_team_id, state, formation, "
+            "       coach_name, starters, substitutes, fetched_at, announced_at "
+            "FROM lineups WHERE fixture_id = ? AND api_football_team_id = ?",
+            (fixture_id, api_football_team_id),
+        ).fetchone()
+        if not row:
+            return None
+        try:
+            starters = tuple(_json.loads(row["starters"] or "[]"))
+            subs = tuple(_json.loads(row["substitutes"] or "[]"))
+        except (TypeError, ValueError):
+            starters, subs = (), ()
+        return LineupRow(
+            fixture_id=int(row["fixture_id"]),
+            api_football_team_id=int(row["api_football_team_id"]),
+            state=row["state"],
+            formation=row["formation"],
+            coach_name=row["coach_name"],
+            starters=starters,
+            substitutes=subs,
+            fetched_at=row["fetched_at"],
+            announced_at=row["announced_at"],
+        )
+
+    def lineup_for_team(
+        self, *, api_football_team_id: int,
+    ) -> LineupRow | None:
+        """Most-recent lineup for this team across any fixture. Used by
+        the hot path when the runtime doesn't know the fixture_id yet —
+        the lineup table only carries upcoming fixtures, so the latest
+        row is the relevant one for the next match.
+        """
+        import json as _json
+        row = self._conn.execute(
+            "SELECT fixture_id, api_football_team_id, state, formation, "
+            "       coach_name, starters, substitutes, fetched_at, announced_at "
+            "FROM lineups WHERE api_football_team_id = ? "
+            "ORDER BY fetched_at DESC LIMIT 1",
+            (api_football_team_id,),
+        ).fetchone()
+        if not row:
+            return None
+        try:
+            starters = tuple(_json.loads(row["starters"] or "[]"))
+            subs = tuple(_json.loads(row["substitutes"] or "[]"))
+        except (TypeError, ValueError):
+            starters, subs = (), ()
+        return LineupRow(
+            fixture_id=int(row["fixture_id"]),
+            api_football_team_id=int(row["api_football_team_id"]),
+            state=row["state"],
+            formation=row["formation"],
+            coach_name=row["coach_name"],
+            starters=starters,
+            substitutes=subs,
+            fetched_at=row["fetched_at"],
+            announced_at=row["announced_at"],
+        )
+
+    # ── Fixture resolution (match_id ↔ api-football fixture_id) ──
+
+    def upsert_fixture_resolution(
+        self, *, match_id: str, api_football_fixture_id: int,
+        home_team_id: int, away_team_id: int,
+        kickoff_utc: datetime | str,
+        resolved_at: datetime | None = None,
+    ) -> None:
+        if isinstance(kickoff_utc, datetime):
+            kickoff_utc = kickoff_utc.isoformat()
+        ts = (resolved_at or datetime.now(tz=timezone.utc)).isoformat()
+        self._conn.execute(
+            "INSERT INTO fixture_resolution("
+            "  match_id, api_football_fixture_id, home_team_id, away_team_id, "
+            "  kickoff_utc, resolved_at"
+            ") VALUES (?, ?, ?, ?, ?, ?) "
+            "ON CONFLICT(match_id) DO UPDATE SET "
+            "  api_football_fixture_id = excluded.api_football_fixture_id, "
+            "  home_team_id = excluded.home_team_id, "
+            "  away_team_id = excluded.away_team_id, "
+            "  kickoff_utc = excluded.kickoff_utc, "
+            "  resolved_at = excluded.resolved_at",
+            (
+                match_id, api_football_fixture_id, home_team_id, away_team_id,
+                kickoff_utc, ts,
+            ),
+        )
+
+    def fixture_resolution_for(self, match_id: str) -> FixtureResolution | None:
+        row = self._conn.execute(
+            "SELECT match_id, api_football_fixture_id, home_team_id, "
+            "       away_team_id, kickoff_utc, resolved_at "
+            "FROM fixture_resolution WHERE match_id = ?",
+            (match_id,),
+        ).fetchone()
+        if not row:
+            return None
+        return FixtureResolution(
+            match_id=row["match_id"],
+            api_football_fixture_id=int(row["api_football_fixture_id"]),
+            home_team_id=int(row["home_team_id"]),
+            away_team_id=int(row["away_team_id"]),
+            kickoff_utc=row["kickoff_utc"],
+            resolved_at=row["resolved_at"],
+        )
+
+    def list_fixture_resolutions_in_window(
+        self, *, now: datetime, window_hours: float,
+    ) -> list[FixtureResolution]:
+        """Resolutions whose kickoff lands inside [now, now+window].
+        Used by the T-90m loop to pick fixtures to refresh lineups for.
+        """
+        upper = (now + timedelta(hours=window_hours)).isoformat()
+        lower = now.isoformat()
+        rows = self._conn.execute(
+            "SELECT match_id, api_football_fixture_id, home_team_id, "
+            "       away_team_id, kickoff_utc, resolved_at "
+            "FROM fixture_resolution "
+            "WHERE kickoff_utc >= ? AND kickoff_utc <= ? "
+            "ORDER BY kickoff_utc",
+            (lower, upper),
+        ).fetchall()
+        return [FixtureResolution(
+            match_id=r["match_id"],
+            api_football_fixture_id=int(r["api_football_fixture_id"]),
+            home_team_id=int(r["home_team_id"]),
+            away_team_id=int(r["away_team_id"]),
+            kickoff_utc=r["kickoff_utc"],
+            resolved_at=r["resolved_at"],
+        ) for r in rows]

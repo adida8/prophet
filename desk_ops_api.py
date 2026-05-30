@@ -106,6 +106,13 @@ def _tick_totals_path() -> Path:
     return _ops_root() / "tick-totals.jsonl"
 
 
+def _daily_report_state_path() -> Path:
+    # Mirrors daily_report.Config.state_path so the dashboard reads from
+    # the same file the sender writes to. Pointing DESK_OPS_DIR at a
+    # Railway volume keeps both in sync across deploys.
+    return _ops_root() / "daily_report" / "last_sent.json"
+
+
 # ── Control state ─────────────────────────────────────────────────────
 # Mirrors the helpers in desk_refresh_loop.py — we keep the two in
 # sync by hand because neither file can import from the other (the
@@ -384,6 +391,24 @@ def get_run(run_id: str) -> dict:
             "breakdown": cost.get("breakdown") or {},
         }
     return body
+
+
+# ── Daily report status (read-only) ───────────────────────────────────
+
+@router.get("/daily-report", dependencies=[Depends(_gate)])
+def get_daily_report_status() -> dict:
+    """Read daily_report's last_sent marker. Returns the report_date the
+    last send covered + the timestamp it went out. Always 200 — a
+    never-sent state returns nulls so the UI can show "Not yet sent"."""
+    path = _daily_report_state_path()
+    try:
+        state = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        state = {}
+    return {
+        "last_sent_date": state.get("last_sent_date"),
+        "sent_at":        state.get("sent_at"),
+    }
 
 
 # ── Control: enable/disable + frequency ───────────────────────────────

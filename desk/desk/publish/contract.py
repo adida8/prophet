@@ -142,6 +142,42 @@ class Verdict(BaseModel):
         return self
 
 
+class MarketSource(BaseModel):
+    """One prediction-market / sportsbook venue we link out to for this
+    fixture.
+
+    The list carries **every venue we surface a trade CTA for**, not just
+    the one the Pick rode on — so the front-of-house (and any external
+    consumer) can render the full row of outgoing buttons from the
+    contract alone.
+
+    Fields:
+    - `venue`        — the canonical venue key (matches `MarketVenue`).
+    - `name`         — display name for the button ("Polymarket").
+    - `url`          — deep link to *this fixture's* page on the venue.
+                       Falls back to the venue's nearest landing page when
+                       no per-event deep link exists yet (see below).
+    - `picked`       — true for the single venue whose price backs the
+                       Pick side. False on every venue when the verdict is
+                       not a Pick (pass / avoid / withdrawn).
+    - `priced_sides` — which market sides this venue actually quoted into
+                       the calculation, in `a / draw / b` order. An empty
+                       list means the venue is linked for convenience but
+                       did **not** feed the model — e.g. a venue we don't
+                       yet ingest. This is the honest "used in the
+                       calculation?" signal inside an all-venues list: a
+                       picked Pick venue always has a non-empty
+                       `priced_sides`; a link-only venue has `[]`.
+    """
+    model_config = ConfigDict(extra="forbid", use_enum_values=True)
+
+    venue:        MarketVenue
+    name:         Annotated[str, StringConstraints(min_length=1, max_length=64)]
+    url:          Annotated[str, StringConstraints(min_length=10, max_length=512, pattern=r"^https://")]
+    picked:       bool = False
+    priced_sides: list[Literal["a", "b", "draw"]] = Field(default_factory=list, max_length=3)
+
+
 class Citation(BaseModel):
     """An attributed reference behind a claim in the editorial blurb.
 
@@ -244,6 +280,7 @@ class MatchOutput(BaseModel):
     market_outcomes: list[Literal["a", "b", "draw"]] = Field(min_length=2, max_length=3)
     verdict:         Verdict
     copy:            Copy = Field(default_factory=Copy)
+    market_sources:  list[MarketSource] = Field(default_factory=list, max_length=8)
     hard_signal_adjustments: list[HardSignalAdjustment] = Field(default_factory=list, max_length=20)
     updated_at:      datetime
 
