@@ -2273,13 +2273,23 @@ def _polymarket_url_for(verdict: dict, fallback_search: str | None = None) -> st
 
 
 def _normalise_polymarket_url(url: str) -> str:
-    """Rewrite Polymarket URLs that still point at the retired
-    `/event/fifwc-...` path. Safe to call on already-correct URLs.
+    """Rewrite Polymarket URLs that still point at retired paths.
+    Safe to call on already-correct URLs.
+
+    Two known rewrites today:
+      - per-match: `/event/fifwc-...` → `/sports/fifa-world-cup/fifwc-...`
+      - outright winner: `/event/2026-fifa-world-cup-winner-595` →
+        `/event/world-cup-winner` (the canonical short slug Polymarket
+        now uses on its UI).
     """
     old_prefix = "polymarket.com/event/fifwc-"
     new_prefix = "polymarket.com/sports/fifa-world-cup/fifwc-"
     if old_prefix in url:
-        return url.replace(old_prefix, new_prefix, 1)
+        url = url.replace(old_prefix, new_prefix, 1)
+    outright_old = "polymarket.com/event/2026-fifa-world-cup-winner-595"
+    outright_new = "polymarket.com/event/world-cup-winner"
+    if outright_old in url:
+        url = url.replace(outright_old, outright_new, 1)
     return url
 
 
@@ -2468,6 +2478,129 @@ def _kalshi_url_for(
     return (KALSHI_WC_LANDING, False)
 
 
+# ── Kalshi outright winner deep links ──
+#
+# Kalshi's WC 2026 outright is its own series (KXMENWORLDCUP), one
+# event (KXMENWORLDCUP-26), and one binary market per team. Each market
+# ticker carries an ISO 3166-1 alpha-2 country code, e.g.
+# `KXMENWORLDCUP-26-ES` (Spain). UI URL shape (confirmed via
+# address-bar inspection):
+#
+#   https://kalshi.com/markets/kxmenworldcup/mens-world-cup-winner/kxmenworldcup-26
+#       ?op_market_ticker={MARKET_TICKER_UPPER}
+#
+# Names from Polymarket don't always match Kalshi's display strings
+# 1:1 ("USA" vs "United States", "IR Iran" vs "Iran", etc.), so we
+# normalise both sides before matching.
+KALSHI_OUTRIGHT_SERIES = "KXMENWORLDCUP"
+KALSHI_OUTRIGHT_SERIES_SLUG = "mens-world-cup-winner"
+KALSHI_OUTRIGHT_EVENT_TICKER = "KXMENWORLDCUP-26"
+KALSHI_OUTRIGHT_LANDING = (
+    f"https://kalshi.com/markets/{KALSHI_OUTRIGHT_SERIES.lower()}/"
+    f"{KALSHI_OUTRIGHT_SERIES_SLUG}/{KALSHI_OUTRIGHT_EVENT_TICKER.lower()}"
+)
+
+
+def _normalise_team_for_kalshi(name: str) -> str:
+    """Squash Polymarket / Kalshi naming variants down to a lookup key."""
+    n = (name or "").strip().lower()
+    aliases = {
+        "usa": "united states",
+        "united states of america": "united states",
+        "ir iran": "iran",
+        "korea republic": "south korea",
+        "republic of korea": "south korea",
+        "türkiye": "turkey",
+        "turkiye": "turkey",
+        "côte d'ivoire": "ivory coast",
+        "cote d'ivoire": "ivory coast",
+        "dr congo": "democratic republic of the congo",
+        "congo dr": "democratic republic of the congo",
+        "cabo verde": "cape verde",
+        "bosnia and herzegovina": "bosnia-herzegovina",
+        "curaçao": "curacao",
+    }
+    return aliases.get(n, n)
+
+
+def _load_kalshi_outright_index() -> dict[str, str]:
+    """Fetch every market under KXMENWORLDCUP-26, return team-name → market_ticker.
+
+    Pure stdlib (urllib) so generate.py stays dependency-free. On any
+    network failure, returns {} and the Kalshi outright CTA falls back
+    to the event landing page (no preselected team).
+    """
+    import urllib.request, urllib.error
+
+    markets: list[dict] = []
+    cursor: str | None = None
+    base = "https://api.elections.kalshi.com/trade-api/v2/markets"
+    try:
+        while True:
+            qs = f"event_ticker={KALSHI_OUTRIGHT_EVENT_TICKER}&limit=200"
+            if cursor:
+                from urllib.parse import quote
+                qs += f"&cursor={quote(cursor)}"
+            with urllib.request.urlopen(f"{base}?{qs}", timeout=10) as r:
+                payload = json.loads(r.read().decode("utf-8")) or {}
+            page = payload.get("markets") or []
+            markets.extend(page)
+            cursor = payload.get("cursor")
+            if not cursor or not page:
+                break
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:
+        print(
+            f"  kalshi outright: fetch failed ({e}) — outright CTAs will fall back to event landing",
+            file=sys.stderr,
+        )
+        return {}
+
+    index: dict[str, str] = {}
+    for m in markets:
+        ticker = (m.get("ticker") or "").strip()
+        if not ticker.startswith(f"{KALSHI_OUTRIGHT_EVENT_TICKER}-"):
+            continue
+        # Kalshi exposes the team display name in a few places. Try the
+        # richest first and fall back so we tolerate response shape drift.
+        name = (
+            m.get("yes_sub_title")
+            or m.get("subtitle")
+            or m.get("title")
+            or ""
+        ).strip()
+        if not name:
+            continue
+        key = _normalise_team_for_kalshi(name)
+        # First-write-wins. Kalshi shouldn't repeat tickers per team but
+        # keep the guard so a duplicate doesn't silently overwrite.
+        index.setdefault(key, ticker)
+    return index
+
+
+KALSHI_OUTRIGHT_INDEX: dict[str, str] = {}
+
+
+def _kalshi_outright_url_for(team: str | None) -> tuple[str, bool]:
+    """Return (url, is_live) for an outright-winner CTA on Kalshi.
+
+    is_live=True  → real per-team deep link with `op_market_ticker=` set.
+    is_live=False → the event landing page (no team preselected). Used
+                    when we have no team (Pass row), when Kalshi's index
+                    is empty (network failure), or when the team doesn't
+                    map to any Kalshi market.
+    """
+    if not team or not KALSHI_OUTRIGHT_INDEX:
+        return (KALSHI_OUTRIGHT_LANDING, False)
+    ticker = KALSHI_OUTRIGHT_INDEX.get(_normalise_team_for_kalshi(team))
+    if not ticker:
+        return (KALSHI_OUTRIGHT_LANDING, False)
+    from urllib.parse import quote
+    return (
+        f"{KALSHI_OUTRIGHT_LANDING}?op_market_ticker={quote(ticker)}",
+        True,
+    )
+
+
 def _cta_pill(
     label: str,
     url: str,
@@ -2557,6 +2690,7 @@ def market_cta(
     match_id: str | None = None,
     team_a: str | None = None,
     team_b: str | None = None,
+    outright_team: str | None = None,
 ) -> str:
     """Render the CTAs for a card.
 
@@ -2565,16 +2699,23 @@ def market_cta(
     on the venue Desk's verdict was struck against. Kalshi gets a real
     deep-link when we resolved a live event for this fixture; falls
     back to the WC 2026 landing page when we didn't.
+
+    For outright winner cards, callers pass `outright_team=` and the
+    Kalshi URL resolves through the WC26-winner market index instead of
+    the per-match `KXWCGAME` one.
     """
     poly_price   = (verdict.get("market_venue") or "").lower() == "polymarket" and price
     kalshi_price = verdict.get("kalshi_price")    # not produced yet; future hook
 
     poly_url = _polymarket_url_for(verdict, fallback_search=search_key)
 
-    pick_side_iso3 = _pick_side_iso3(
-        verdict.get("side"), match_id=match_id, team_a=team_a, team_b=team_b,
-    )
-    kalshi_url, kalshi_is_live = _kalshi_url_for(match_id, pick_side_iso3=pick_side_iso3)
+    if outright_team is not None:
+        kalshi_url, kalshi_is_live = _kalshi_outright_url_for(outright_team)
+    else:
+        pick_side_iso3 = _pick_side_iso3(
+            verdict.get("side"), match_id=match_id, team_a=team_a, team_b=team_b,
+        )
+        kalshi_url, kalshi_is_live = _kalshi_url_for(match_id, pick_side_iso3=pick_side_iso3)
 
     # Captions — only show one when we have something specific to say.
     poly_caption: str | None = None
@@ -3238,6 +3379,45 @@ def render_match_page(match: dict) -> str:
 
 # ─── Outrights ───
 
+
+def _outright_cta_row(market_url: str | None, team: str | None) -> str:
+    """Dual-venue CTA row for an outright page: Polymarket first (the
+    canonical source for the WC26 winner market today), Kalshi second
+    when the team maps to a Kalshi market ticker. Mirrors the per-match
+    page's two-CTA pattern; falls back to the Kalshi event landing when
+    no team is known (Pass) or the team isn't mapped.
+
+    `market_url` is the Polymarket URL already passed through
+    `_normalise_polymarket_url`. `team` is the team display name from
+    the verdict / ladder row.
+    """
+    pills: list[str] = []
+    if market_url:
+        pills.append(
+            '<a class="open-market" '
+            f'href="{escape(market_url)}" rel="nofollow noopener" target="_blank">'
+            'See price on <span class="venue-name">Polymarket</span> '
+            '<span class="arr">↗</span></a>'
+        )
+    kalshi_url, _is_live = _kalshi_outright_url_for(team)
+    if kalshi_url:
+        pills.append(
+            '<a class="open-market" '
+            f'href="{escape(kalshi_url)}" rel="nofollow noopener" target="_blank">'
+            'See price on <span class="venue-name">Kalshi</span> '
+            '<span class="arr">↗</span></a>'
+        )
+    if not pills:
+        return ""
+    return (
+        '<div class="cta-row">'
+        + "".join(pills)
+        + '<span class="meta-note">Affiliate link. Odds Primer may earn '
+          'a commission. Editorial verdicts are independent.</span>'
+        + '</div>'
+    )
+
+
 def render_outright_card(outright: dict) -> str:
     """Render an outright as an lv-card. Mirrors the match card shape."""
     v = outright.get("verdict", {})
@@ -3283,8 +3463,14 @@ def render_outright_card(outright: dict) -> str:
 
     search_key = "World Cup 2026 winner"
 
+    # On Pick state we know the candidate team and can deep-link Kalshi;
+    # on Pass we have no team, so Kalshi falls back to the event landing.
+    pick_team = v.get("team") or v.get("candidate") if state == "pick" else None
     if state == "pass":
-        cta_html = market_cta(cta_dict, search_key=search_key, detail_href=href)
+        cta_html = market_cta(
+            cta_dict, search_key=search_key, detail_href=href,
+            outright_team=pick_team,
+        )
         foot = (
             '<div class="lv-foot">'
             '<span class="lv-flat-msg">Markets agree on this field.</span>'
@@ -3302,7 +3488,10 @@ def render_outright_card(outright: dict) -> str:
         )
         if edge_str:
             reads += f'<span class="edge{edge_class}">{edge_str}</span>'
-        action = market_cta(cta_dict, price=v.get("price"), search_key=search_key, detail_href=href)
+        action = market_cta(
+            cta_dict, price=v.get("price"), search_key=search_key, detail_href=href,
+            outright_team=pick_team,
+        )
         foot = f'<div class="lv-foot"><div class="lv-reads">{reads}</div><div class="lv-action">{action}</div></div>'
 
     return (
@@ -3412,6 +3601,7 @@ def render_outright_team_card(outright: dict, row: dict, *, show_overlay: bool =
         price=row_price,
         search_key="World Cup 2026 winner",
         detail_href=detail_href,
+        outright_team=team,
     )
     foot = (
         '<div class="lv-foot">'
@@ -3848,8 +4038,8 @@ def render_outright_ladder(outright: dict) -> str:
     if not ladder:
         return ""
     rows_sorted = sorted(ladder, key=lambda r: -(r.get("model_p") or 0))
-    market_url = outright.get("market_url") or (outright.get("verdict") or {}).get("market_url") or ""
-    venue_name = (outright.get("market_venue") or (outright.get("verdict") or {}).get("market_venue") or "").title()
+    poly_url_raw = outright.get("market_url") or (outright.get("verdict") or {}).get("market_url") or ""
+    poly_url = _normalise_polymarket_url(poly_url_raw) if poly_url_raw else ""
     cards = []
     for row in rows_sorted:
         team = row.get("team", "—")
@@ -3863,14 +4053,23 @@ def render_outright_ladder(outright: dict) -> str:
         if isinstance(edge_pp, (int, float)) and edge_pp < 0:
             edge_class = " is-neg"
         blurb = _ladder_blurb_for(row)
-        cta = ""
-        if market_url:
-            link_text = f"See {team} on {venue_name or 'the market'}"
-            cta = (
-                f'<a class="lc-link" href="{escape(market_url)}" rel="nofollow noopener" '
-                f'target="_blank" aria-label="{escape(link_text)}">'
-                f'<span aria-hidden="true">{escape(link_text)} ↗</span></a>'
+        links: list[str] = []
+        if poly_url:
+            poly_text = f"See {team} on Polymarket"
+            links.append(
+                f'<a class="lc-link" href="{escape(poly_url)}" rel="nofollow noopener" '
+                f'target="_blank" aria-label="{escape(poly_text)}">'
+                f'<span aria-hidden="true">{escape(poly_text)} ↗</span></a>'
             )
+        kalshi_url, kalshi_is_live = _kalshi_outright_url_for(team)
+        if kalshi_url and kalshi_is_live:
+            kalshi_text = f"See {team} on Kalshi"
+            links.append(
+                f'<a class="lc-link" href="{escape(kalshi_url)}" rel="nofollow noopener" '
+                f'target="_blank" aria-label="{escape(kalshi_text)}">'
+                f'<span aria-hidden="true">{escape(kalshi_text)} ↗</span></a>'
+            )
+        cta = "".join(links)
         cards.append(
             f'<article class="lc-card is-{state}">'
             f'<header class="lc-head">'
@@ -4115,18 +4314,7 @@ def render_outright_team_page(outright: dict, row: dict) -> str:
     market_url = outright.get("market_url") or (outright.get("verdict") or {}).get("market_url")
     if market_url:
         market_url = _normalise_polymarket_url(market_url)
-    venue_name = (outright.get("market_venue") or (outright.get("verdict") or {}).get("market_venue") or "").title()
-    cta_row = ""
-    if market_url:
-        cta_row = (
-            '<div class="cta-row">'
-            f'<a class="open-market" href="{escape(market_url)}" rel="nofollow noopener" target="_blank">'
-            f'See price on <span class="venue-name">{escape(venue_name) if venue_name else "the source"}</span> '
-            f'<span class="arr">↗</span></a>'
-            '<span class="meta-note">Affiliate link. Odds Primer may earn a commission. '
-            'Editorial verdicts are independent.</span>'
-            '</div>'
-        )
+    cta_row = _outright_cta_row(market_url, team)
 
     description = paragraphs[0] if paragraphs else f"Verdict for {team} in the {market_label} market."
 
@@ -4167,19 +4355,11 @@ def render_outright_page(outright: dict) -> str:
         drivers_html = f'<section class="drivers"><h2>The drivers</h2><ol>{items}</ol></section>'
 
     v = outright.get("verdict", {})
-    market_url = v.get("market_url")
+    market_url = v.get("market_url") or outright.get("market_url")
     if market_url:
         market_url = _normalise_polymarket_url(market_url)
-    venue_name = (v.get("market_venue") or "").title()
-    cta_row = ""
-    if market_url:
-        cta_row = (
-            '<div class="cta-row">'
-            f'<a class="open-market" href="{escape(market_url)}" rel="nofollow noopener" target="_blank">'
-            f'See price on <span class="venue-name">{escape(venue_name) if venue_name else "the source"}</span> <span class="arr">↗</span></a>'
-            '<span class="meta-note">Affiliate link. Odds Primer may earn a commission. Editorial verdicts are independent.</span>'
-            '</div>'
-        )
+    candidate = v.get("team") or v.get("candidate") or outright.get("candidate")
+    cta_row = _outright_cta_row(market_url, candidate)
 
     return (
         chrome_head(
@@ -4382,9 +4562,11 @@ def main():
 
     # Pull the Kalshi WC 2026 event index so every "Trade on Kalshi"
     # button can deep-link to the right market.
-    global KALSHI_EVENT_INDEX
+    global KALSHI_EVENT_INDEX, KALSHI_OUTRIGHT_INDEX
     KALSHI_EVENT_INDEX = _load_kalshi_event_index()
     log(f"Loaded kalshi  : {len(KALSHI_EVENT_INDEX)} WC26 events")
+    KALSHI_OUTRIGHT_INDEX = _load_kalshi_outright_index()
+    log(f"Loaded kalshi  : {len(KALSHI_OUTRIGHT_INDEX)} outright markets")
 
     # Home
     (SITE_OUT / "index.html").write_text(render_home(matches, outrights))
