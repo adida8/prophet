@@ -525,3 +525,163 @@ def test_parse_tool_use_returns_none_when_fields_empty() -> None:
         "title": "t", "summary": "", "blurb": "b",
     })])
     assert haiku.parse_tool_use(resp) is None
+
+
+# ── squad-paragraph guards (Q3) ─────────────────────────────────────
+
+from desk.sports.football.team_news import CardStatus  # noqa: E402
+
+
+def _team_news_with_cards(
+    *, team: str, card_names: tuple[str, ...] = (),
+    materiality: str = "low",
+) -> TeamNews:
+    cards = tuple(
+        CardStatus(
+            name=n, position="Midfielder",
+            yellows=1, state="at_risk",
+            source="api-football", source_url=None,
+            source_name=None, importance="medium",
+        )
+        for n in card_names
+    )
+    return TeamNews(
+        team=team, absences=(),
+        lineup=LineupStatus(state="unknown"),
+        materiality=materiality,   # type: ignore[arg-type]
+        cards=cards,
+    )
+
+
+def test_system_prompt_has_squad_paragraph_section() -> None:
+    system_blocks, _ = haiku.build_messages(_pick_inputs())
+    text = system_blocks[0]["text"]
+    assert "SQUAD PARAGRAPH" in text
+    # Card-specific instructions land in the prompt too.
+    assert "at-risk" in text.lower() or "at_risk" in text.lower()
+    assert "one booking" in text.lower() or "one yellow" in text.lower()
+
+
+def test_user_message_includes_cards_block() -> None:
+    news = _team_news_with_cards(team="France", card_names=("Tchouaméni",))
+    inp = _pick_inputs(team_a_news=news, team_b_news=None)
+    msg = haiku.build_user_message(inp)
+    assert "cards:" in msg
+    assert "Tchouaméni" in msg
+    assert "state: at_risk" in msg
+
+
+def test_user_message_empty_cards_block_marker() -> None:
+    """Both sides absent cards → block still rendered with explicit marker."""
+    news = _team_news(team="France", materiality="none")
+    inp = _pick_inputs(team_a_news=news, team_b_news=None)
+    msg = haiku.build_user_message(inp)
+    assert "[] (no at-risk players)" in msg
+
+
+def test_materiality_none_strict_catches_at_risk_keyword(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The materiality=none guard catches a hallucinated at-risk story:
+    'at risk', 'one booking', 'one yellow', 'yellow accumulation' are
+    now in the availability keyword set."""
+    monkeypatch.setenv("DESK_TEAM_NEWS_BLURB_REQUIRED", "1")
+    p = _good_payload()
+    p["blurb"] = p["blurb"] + " A defender is at risk of a suspension."
+    none_a = _team_news(team="France", materiality="none")
+    none_b = _team_news(team="Mexico", materiality="none")
+    assert haiku.post_check(
+        p, cites=None, team_a_news=none_a, team_b_news=none_b,
+    ) is False
+
+
+def test_materiality_none_strict_catches_one_booking(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DESK_TEAM_NEWS_BLURB_REQUIRED", "1")
+    p = _good_payload()
+    p["blurb"] = p["blurb"] + " One booking from a ban is on the cards."
+    none_a = _team_news(team="France", materiality="none")
+    none_b = _team_news(team="Mexico", materiality="none")
+    assert haiku.post_check(
+        p, cites=None, team_a_news=none_a, team_b_news=none_b,
+    ) is False
+
+
+def test_at_risk_player_named_as_banned_fails_strict(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Spec §Q3 post-check: an at-risk player must not be presented as
+    a confirmed ban. Word 'suspended' next to the player's name = fail."""
+    monkeypatch.setenv("DESK_TEAM_NEWS_BLURB_REQUIRED", "1")
+    p = _good_payload()
+    p["blurb"] = p["blurb"] + " Tchouaméni is suspended for the match."
+    news = _team_news_with_cards(team="France", card_names=("Tchouaméni",))
+    assert haiku.post_check(
+        p, cites=None, team_a_news=news, team_b_news=None,
+    ) is False
+
+
+def test_at_risk_player_phrased_as_risk_passes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DESK_TEAM_NEWS_BLURB_REQUIRED", "1")
+    p = _good_payload()
+    p["blurb"] = (
+        p["blurb"] + " Tchouaméni carries one yellow into the match."
+    )
+    news = _team_news_with_cards(team="France", card_names=("Tchouaméni",))
+    assert haiku.post_check(
+        p, cites=None, team_a_news=news, team_b_news=None,
+    ) is True
+
+
+def test_at_risk_guard_soft_mode_only_warns(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Default mode (DESK_TEAM_NEWS_BLURB_REQUIRED unset) → soft."""
+    monkeypatch.delenv("DESK_TEAM_NEWS_BLURB_REQUIRED", raising=False)
+    p = _good_payload()
+    p["blurb"] = p["blurb"] + " Tchouaméni is banned for the match."
+    news = _team_news_with_cards(team="France", card_names=("Tchouaméni",))
+    # Soft mode → True even with the violation logged.
+    assert haiku.post_check(
+        p, cites=None, team_a_news=news, team_b_news=None,
+    ) is True
+
+
+def test_word_budget_240_when_squad_content_present() -> None:
+    """Spec §Q3: max words bumps to 240 when either side has a
+    confirmed lineup, an absence, or an at-risk card."""
+    p = _good_payload()
+    long_blurb = " ".join(["word"] * 235) + " " + p["blurb"]
+    p["blurb"] = " ".join(long_blurb.split()[:235])   # exactly 235
+    news = _team_news_with_lineup(
+        team="France", starters=("Mbappé",), formation="4-3-3",
+    )
+    # 235 > 220 (old ceiling) but ≤ 240 (new ceiling). Passes.
+    assert haiku.post_check(
+        p, cites=None, team_a_news=news, team_b_news=None,
+    ) is True
+
+
+def test_word_budget_stays_220_when_no_squad_content() -> None:
+    """Without squad content, the ceiling stays 220."""
+    p = _good_payload()
+    long_blurb = " ".join(["word"] * 235)
+    p["blurb"] = long_blurb
+    none_a = _team_news(team="France", materiality="none")
+    none_b = _team_news(team="Mexico", materiality="none")
+    assert haiku.post_check(
+        p, cites=None, team_a_news=none_a, team_b_news=none_b,
+    ) is False
+
+
+def test_word_budget_cards_alone_lifts_ceiling() -> None:
+    """An at-risk card alone is enough squad content for the 240 ceiling."""
+    p = _good_payload()
+    p["blurb"] = " ".join(["word"] * 235)
+    news = _team_news_with_cards(team="France", card_names=("Foden",))
+    assert haiku.post_check(
+        p, cites=None, team_a_news=news, team_b_news=None,
+    ) is True
