@@ -75,6 +75,8 @@ def _build_match(
     copy=None,
     hard_signal_adjustments=None,
     market_sources=None,
+    market_prices=None,
+    consensus_fair=None,
 ) -> MatchOutput:
     venue = None
     if fx.venue_city and fx.venue_stadium and fx.venue_country:
@@ -103,6 +105,10 @@ def _build_match(
         kwargs["copy"] = copy
     if market_sources:
         kwargs["market_sources"] = list(market_sources)
+    if market_prices:
+        kwargs["market_prices"] = list(market_prices)
+    if consensus_fair:
+        kwargs["consensus_fair"] = dict(consensus_fair)
     if hard_signal_adjustments:
         kwargs["hard_signal_adjustments"] = list(hard_signal_adjustments)
     return MatchOutput(**kwargs)
@@ -298,6 +304,8 @@ def run_once(
                 copy = None
                 hard_adjustments = None
                 market_sources = None
+                market_prices = None
+                consensus_fair_pkt = None
                 try:
                     if hasattr(sport, "decide_and_explain"):
                         # Pass the signals runtime through (PR F). Sports
@@ -330,10 +338,15 @@ def run_once(
                         # decide_and_explain may return (v, copy),
                         # (v, copy, DecisionMeta),
                         # (v, copy, DecisionMeta, hard_signal_adjustments),
-                        # or that plus a 5th market_sources list. Older
-                        # sports without the later slots just don't
-                        # populate them.
-                        if len(result) == 5:
+                        # (v, ..., market_sources), or that plus the
+                        # cross-venue (market_prices, consensus_fair).
+                        # Older sports without the later slots leave
+                        # them None.
+                        if len(result) == 7:
+                            (v, copy, meta, hard_adjustments,
+                             market_sources, market_prices,
+                             consensus_fair_pkt) = result
+                        elif len(result) == 5:
                             v, copy, meta, hard_adjustments, market_sources = result
                         elif len(result) == 4:
                             v, copy, meta, hard_adjustments = result
@@ -360,6 +373,8 @@ def run_once(
                         fx, verdict=v, now=now, copy=copy,
                         hard_signal_adjustments=hard_adjustments,
                         market_sources=market_sources,
+                        market_prices=market_prices,
+                        consensus_fair=consensus_fair_pkt,
                     )
                 except Exception as e:                      # noqa: BLE001
                     log.warning("build_match failed for %s: %s", fx.match_id, e)

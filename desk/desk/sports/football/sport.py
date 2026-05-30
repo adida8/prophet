@@ -21,8 +21,13 @@ from desk.ops.report import IngestStats, SourceFreshness, SourceStatus
 from desk.publish.contract import (
     Copy,
     HardSignalAdjustment as ContractHardSignalAdjustment,
+    MarketPriceRow,
     MarketSource,
     Verdict,
+)
+from desk.publish.market_prices import (
+    build_consensus_fair,
+    build_market_prices,
 )
 from desk.sport import FixtureRef, MarketSide
 from desk.sports.football.features_builder import build_features
@@ -156,6 +161,8 @@ class FootballSport:
         DecisionMeta,
         list[ContractHardSignalAdjustment],
         list[MarketSource],
+        list[MarketPriceRow],
+        dict | None,
     ]:
         """Compute the verdict, the editorial copy, the decision meta,
         the per-match hard-signal audit list, and the outbound
@@ -391,7 +398,23 @@ class FootballSport:
         # picked flag + which sides each priced into the calculation.
         market_sources = build_market_sources(fx, snapshot, verdict)
 
-        return verdict, copy, meta, contract_adjustments, market_sources
+        # Cross-venue contract block (ADR 0004). The publisher emits
+        # [] / None on legacy snapshots (no true_price on any row),
+        # so flag-off behaviour stays byte-identical to today.
+        cross_enabled = bool(getattr(__import__("desk.config",
+            fromlist=["CROSS_VENUE_EDGE_ENABLED"]),
+            "CROSS_VENUE_EDGE_ENABLED", False))
+        if cross_enabled:
+            market_prices = build_market_prices(snapshot)
+            consensus     = build_consensus_fair(snapshot)
+        else:
+            market_prices = []
+            consensus     = None
+
+        return (
+            verdict, copy, meta, contract_adjustments, market_sources,
+            market_prices, consensus,
+        )
 
     # ── News-signals glue ───────────────────────────────────────────
 
