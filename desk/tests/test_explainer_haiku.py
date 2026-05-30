@@ -278,6 +278,162 @@ def test_parse_tool_use_returns_none_when_tool_missing() -> None:
     assert haiku.parse_tool_use(resp) is None
 
 
+# ── team news guards (Slice A) ──────────────────────────────────────
+
+from desk.sports.football.team_news import (  # noqa: E402
+    LineupStatus, PlayerAbsence, TeamNews,
+)
+
+
+def _team_news(
+    *, team: str, materiality: str,
+    absences: tuple[PlayerAbsence, ...] = (),
+    lineup_state: str = "unknown",
+) -> TeamNews:
+    return TeamNews(
+        team=team, absences=absences,
+        lineup=LineupStatus(state=lineup_state),  # type: ignore[arg-type]
+        materiality=materiality,  # type: ignore[arg-type]
+    )
+
+
+def _absence(name: str, *, importance: str = "high") -> PlayerAbsence:
+    return PlayerAbsence(
+        name=name, position="Goalkeeper",
+        type="injury", reason=None,
+        source="api-football", source_url=None,
+        source_name=None,
+        importance=importance,  # type: ignore[arg-type]
+    )
+
+
+def test_post_check_passes_when_no_team_news_supplied() -> None:
+    # Existing callers (and tests) call post_check without team_news;
+    # the guards must default to "nothing to enforce".
+    assert haiku.post_check(_good_payload(), cites=None) is True
+
+
+def test_materiality_high_warns_without_player_name_default_soft(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Default mode (DESK_TEAM_NEWS_BLURB_REQUIRED unset) → soft fail."""
+    monkeypatch.delenv("DESK_TEAM_NEWS_BLURB_REQUIRED", raising=False)
+    p = _good_payload()
+    news = _team_news(
+        team="France", materiality="high",
+        absences=(_absence("Maignan"),),
+    )
+    # Blurb does NOT contain "Maignan" → would fail strict mode but
+    # passes soft mode.
+    assert haiku.post_check(
+        p, cites=None, team_a_news=news, team_b_news=None,
+    ) is True
+
+
+def test_materiality_high_strict_mode_fails_without_player_name(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DESK_TEAM_NEWS_BLURB_REQUIRED", "1")
+    p = _good_payload()
+    news = _team_news(
+        team="France", materiality="high",
+        absences=(_absence("Maignan"),),
+    )
+    assert haiku.post_check(
+        p, cites=None, team_a_news=news, team_b_news=None,
+    ) is False
+
+
+def test_materiality_high_passes_when_player_named(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DESK_TEAM_NEWS_BLURB_REQUIRED", "1")
+    p = _good_payload()
+    p["blurb"] = p["blurb"] + " Maignan is out of the France squad."
+    news = _team_news(
+        team="France", materiality="high",
+        absences=(_absence("Maignan"),),
+    )
+    assert haiku.post_check(
+        p, cites=None, team_a_news=news, team_b_news=None,
+    ) is True
+
+
+def test_materiality_high_matches_on_surname(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Player name 'Kylian Mbappé' should match surname-only mention."""
+    monkeypatch.setenv("DESK_TEAM_NEWS_BLURB_REQUIRED", "1")
+    p = _good_payload()
+    p["blurb"] = p["blurb"] + " Mbappé will miss the match."
+    news = _team_news(
+        team="France", materiality="high",
+        absences=(_absence("Kylian Mbappé"),),
+    )
+    assert haiku.post_check(
+        p, cites=None, team_a_news=news, team_b_news=None,
+    ) is True
+
+
+def test_materiality_none_strict_rejects_availability_keywords(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DESK_TEAM_NEWS_BLURB_REQUIRED", "1")
+    p = _good_payload()
+    p["blurb"] = p["blurb"] + " There are no major injuries to report."
+    # Both sides materiality=none.
+    none_a = _team_news(team="France", materiality="none")
+    none_b = _team_news(team="Mexico", materiality="none")
+    assert haiku.post_check(
+        p, cites=None, team_a_news=none_a, team_b_news=none_b,
+    ) is False
+
+
+def test_materiality_none_soft_only_warns(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("DESK_TEAM_NEWS_BLURB_REQUIRED", raising=False)
+    p = _good_payload()
+    p["blurb"] = p["blurb"] + " There are no major injuries to report."
+    none_a = _team_news(team="France", materiality="none")
+    none_b = _team_news(team="Mexico", materiality="none")
+    # Soft mode → still True.
+    assert haiku.post_check(
+        p, cites=None, team_a_news=none_a, team_b_news=none_b,
+    ) is True
+
+
+def test_materiality_none_passes_with_clean_blurb() -> None:
+    # Default blurb has no availability keywords; both-sides-none is fine.
+    p = _good_payload()
+    none_a = _team_news(team="France", materiality="none")
+    none_b = _team_news(team="Mexico", materiality="none")
+    assert haiku.post_check(
+        p, cites=None, team_a_news=none_a, team_b_news=none_b,
+    ) is True
+
+
+def test_user_message_includes_team_news_block() -> None:
+    news = _team_news(
+        team="France", materiality="high",
+        absences=(_absence("Maignan"),),
+    )
+    inp = _pick_inputs(team_a_news=news, team_b_news=None)
+    msg = haiku.build_user_message(inp)
+    assert "team_a_news" in msg
+    assert "team_b_news" in msg
+    assert "materiality: high" in msg
+    assert "Maignan" in msg
+    assert "(no data)" in msg  # team_b_news=None marker
+
+
+def test_system_prompt_mentions_team_news_policy() -> None:
+    system_blocks, _ = haiku.build_messages(_pick_inputs())
+    text = system_blocks[0]["text"]
+    assert "TEAM NEWS POLICY" in text
+    assert "materiality" in text
+
+
 def test_parse_tool_use_returns_none_when_fields_empty() -> None:
     resp = _Response([_Block(type="tool_use", name="write_blurb", input={
         "title": "t", "summary": "", "blurb": "b",

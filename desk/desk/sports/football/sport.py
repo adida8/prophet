@@ -35,6 +35,7 @@ from desk.sports.football.hard_signals import (
 from desk.sports.football.model import FootballFeatures, compute as compute_model
 from desk.sports.football.priced import list_priced_fixtures_with_stats
 from desk.sports.football.signals_glue import tags_for as _football_signals_tags
+from desk.sports.football.team_news import build_team_news, iso3_for_team
 from desk.verdict.compare import MarketSnapshot
 from desk.verdict.decide import DecisionMeta, decide as decide_verdict
 
@@ -198,15 +199,16 @@ class FootballSport:
             elo_source=elo_runtime,
         )
         hard_adjustments: list[HardSignalAdjustment] = []
+        signal_pairs: list = []
         if signals_runtime is not None:
             try:
-                pairs = signals_runtime.hard_signals_for(fx)
+                signal_pairs = list(signals_runtime.hard_signals_for(fx))
             except Exception as e:  # noqa: BLE001 — never block the model on signals
                 log.warning("hard-signal lookup failed for %s: %s", fx.match_id, e)
-                pairs = []
-            if pairs:
+                signal_pairs = []
+            if signal_pairs:
                 features, hard_adjustments = apply_hard_signals(
-                    features, fx=fx, signals=pairs,
+                    features, fx=fx, signals=signal_pairs,
                 )
                 if hard_adjustments:
                     log.info(
@@ -216,6 +218,42 @@ class FootballSport:
                         sum(a.delta_elo for a in hard_adjustments if a.side == "b"),
                     )
         self._last_hard_signal_adjustments.extend(hard_adjustments)
+
+        # ── Team news (Slice A) — build per-side payloads for the blurb
+        # writer. Pulls api-football injury rows from the runtime cache
+        # (when present) + filters the hard-signal pool by team. Failures
+        # degrade silently to TeamNews(materiality="none"); the blurb
+        # path treats absent data the same as "no info to share".
+        team_a_iso3 = iso3_for_team(fx.team_a)
+        team_b_iso3 = iso3_for_team(fx.team_b)
+        a_injuries: list = []
+        b_injuries: list = []
+        a_penalty: float | None = None
+        b_penalty: float | None = None
+        if api_football_runtime is not None:
+            try:
+                if team_a_iso3:
+                    a_injuries = list(api_football_runtime.injuries_for_iso3(team_a_iso3))
+                    a_penalty = api_football_runtime.injury_penalty_for_iso3(team_a_iso3)
+                if team_b_iso3:
+                    b_injuries = list(api_football_runtime.injuries_for_iso3(team_b_iso3))
+                    b_penalty = api_football_runtime.injury_penalty_for_iso3(team_b_iso3)
+            except Exception as e:  # noqa: BLE001 — never block prose on team-news lookup
+                log.warning("team-news lookup failed for %s: %s", fx.match_id, e)
+        try:
+            team_a_news = build_team_news(
+                team_name=fx.team_a, iso3=team_a_iso3,
+                injury_rows=a_injuries, signals=signal_pairs,
+                elo_penalty=a_penalty,
+            )
+            team_b_news = build_team_news(
+                team_name=fx.team_b, iso3=team_b_iso3,
+                injury_rows=b_injuries, signals=signal_pairs,
+                elo_penalty=b_penalty,
+            )
+        except Exception as e:  # noqa: BLE001 — builder shouldn't raise; belt-and-braces
+            log.warning("team-news builder failed for %s: %s", fx.match_id, e)
+            team_a_news = team_b_news = None
 
         # Editorial citations covering this fixture — used by the
         # templated explainer to append a press-chorus sentence to the
@@ -302,6 +340,8 @@ class FootballSport:
             "venue_country":      fx.venue_country,
             "kickoff_utc":        fx.kickoff_utc.isoformat() if fx.kickoff_utc else None,
             "editorial_citations": editorial_cites,
+            "team_a_news":        team_a_news,
+            "team_b_news":        team_b_news,
         })
         # Ride the citation list onto the published Copy. The blurb
         # already saw them inside build_copy; the contract surfaces them

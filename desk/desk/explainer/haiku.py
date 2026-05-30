@@ -105,6 +105,53 @@ Additional hard constraints:
   it does not predict outcomes.
 - Never use exclamation marks or emoji.
 - Sentence case throughout, except proper nouns.
+
+TEAM NEWS POLICY
+
+You are given `team_a_news` and `team_b_news` — structured availability
+data for each side. Each carries:
+  * absences   — players ruled out (injury / suspension), with position,
+                 reason, source, and source_url when available.
+  * lineup     — state ("confirmed" / "predicted" / "unknown"), source,
+                 and announced_at when confirmed.
+  * materiality — directive for how forcefully the blurb must address
+                 availability: "high" / "medium" / "low" / "none".
+
+You MUST address team news per the materiality matrix:
+
+  materiality=high   → at least one sentence on the absences + their
+                       impact. Name at least one absent player.
+  materiality=medium → one short sentence noting the most important
+                       absence by name.
+  materiality=low    → optional; mention only when it fits the verdict
+                       narrative.
+  materiality=none   → say nothing about availability. Do not write
+                       "no injury concerns" or "fully fit" — silence is
+                       the rule when there's no data.
+
+Attribution rules for absences:
+  * When an absence carries source_url (an RSS outlet covered it),
+    attribute using the outlet name once on first mention, following
+    the normal allowed-outlet rules. Example: "per Guardian, Mbappé
+    will miss the match with a calf strain."
+  * When source is "api-football" with no source_url, state the fact
+    without press attribution. Example: "Vázquez and Pizarro are out
+    for Mexico." api-football is the fact engine, not an editorial
+    outlet — do not name it.
+
+Lineup rules:
+  * When lineup.state="confirmed", lead the team-news content with it.
+    If the source is an RSS outlet, attribute per the usual rules.
+    If the source is "api-football" (no source_url), write "official
+    lineup confirms ..." — that phrasing is allowed without naming a
+    press outlet.
+  * When lineup.state="predicted", you MAY mention the expected XI
+    only with explicit hedging ("ESPN expects ..." with attribution).
+  * When lineup.state="unknown", say nothing about formation or XI.
+
+NEVER speculate about an absence we did not give you. NEVER invent
+formations, players, or claims. NEVER name a player who is not in the
+absences list.
 """
 
 _TOOL_SCHEMA = {
@@ -153,6 +200,58 @@ def _pct(p: float | None) -> str:
     if p is None:
         return "—"
     return f"{p * 100:.0f}%"
+
+
+def _format_team_news(news: Any, *, label: str) -> str:
+    """Render a TeamNews payload as a compact YAML-ish block.
+
+    Returns "<label>: (no data)\n" when news is None — so the prompt
+    always carries the two `team_a_news` / `team_b_news` keys, just with
+    a clear absence marker the model can read.
+    """
+    if news is None:
+        return f"{label}: (no data)\n"
+    absences = getattr(news, "absences", ()) or ()
+    lineup = getattr(news, "lineup", None)
+    materiality = getattr(news, "materiality", "none")
+
+    lines = [
+        f"{label}:",
+        f"  materiality: {materiality}",
+        f"  absences:",
+    ]
+    if not absences:
+        lines.append("    [] (no players ruled out)")
+    else:
+        for a in absences:
+            url = getattr(a, "source_url", None) or ""
+            src = getattr(a, "source_name", None) or getattr(a, "source", "")
+            pos = getattr(a, "position", None) or "—"
+            reason = getattr(a, "reason", None) or "—"
+            lines.append(
+                f"    - name: {a.name}\n"
+                f"      type: {a.type}\n"
+                f"      position: {pos}\n"
+                f"      reason: {reason}\n"
+                f"      importance: {a.importance}\n"
+                f"      source: {src}\n"
+                f"      source_url: {url}"
+            )
+    if lineup is None:
+        lines.append("  lineup:\n    state: unknown")
+    else:
+        state = getattr(lineup, "state", "unknown")
+        formation = getattr(lineup, "formation", None) or "—"
+        src = getattr(lineup, "source_name", None) or getattr(lineup, "source", None) or "—"
+        url = getattr(lineup, "source_url", None) or ""
+        lines.append(
+            f"  lineup:\n"
+            f"    state: {state}\n"
+            f"    formation: {formation}\n"
+            f"    source: {src}\n"
+            f"    source_url: {url}"
+        )
+    return "\n".join(lines) + "\n"
 
 
 def build_user_message(i: Inputs) -> str:
@@ -214,6 +313,9 @@ def build_user_message(i: Inputs) -> str:
         f"\n"
         f"editorial_citations (the ONLY outlets you may attribute):\n"
         f"{_format_citations(cites)}\n"
+        f"\n"
+        f"{_format_team_news(i.get('team_a_news'), label=f'team_a_news ({a})')}"
+        f"{_format_team_news(i.get('team_b_news'), label=f'team_b_news ({b})')}"
     )
 
 
@@ -309,12 +411,90 @@ def _attributions_are_allowed(blurb: str, cites: list[Citation] | None) -> bool:
     return True
 
 
+# Keywords that indicate the blurb talks about availability. Used by the
+# materiality=none guard to detect prose that mentions team news when no
+# team-news data was supplied. Word-boundary anchored to avoid false
+# positives ("about" matching "out", etc.).
+_TEAM_NEWS_KEYWORDS = (
+    r"\binjur(?:y|ies|ed)\b",
+    r"\bsuspen(?:ded|sion|sions)\b",
+    r"\bruled out\b",
+    r"\bmissing the (?:match|fixture|game)\b",
+    r"\bsidelined\b",
+    r"\bstarting (?:xi|eleven)\b",
+    r"\bformation\b",
+    r"\bunavailab(?:le|ility)\b",
+    r"\babsent(?:ee|ees)?\b",
+)
+_TEAM_NEWS_KEYWORDS_RE = _re.compile("|".join(_TEAM_NEWS_KEYWORDS), _re.IGNORECASE)
+
+
+def _names_from(news: Any) -> list[str]:
+    """Lowercased absence-player names from a TeamNews payload."""
+    if news is None:
+        return []
+    out: list[str] = []
+    for a in getattr(news, "absences", ()) or ():
+        n = (getattr(a, "name", "") or "").strip().lower()
+        if n:
+            out.append(n)
+    return out
+
+
+def _name_appears_in(blurb: str, names: list[str]) -> bool:
+    """True if any absence name (or its last-word surname) appears in blurb.
+
+    Case-insensitive. Sub-name match handles "Mbappé" vs "Kylian Mbappé"
+    by also looking for the last token of each name. Player names
+    almost always survive Haiku's prose without modification.
+    """
+    if not names:
+        return False
+    lowered = blurb.lower()
+    for n in names:
+        if n in lowered:
+            return True
+        # Surname-only fallback — covers "Mbappé" → matched on full
+        # name "Kylian Mbappé", and vice versa.
+        tokens = [t for t in n.split() if len(t) >= 3]
+        if tokens and tokens[-1] in lowered:
+            return True
+    return False
+
+
+def _materiality_of(news: Any) -> str:
+    return getattr(news, "materiality", "none") or "none"
+
+
+def _lineup_state_of(news: Any) -> str:
+    lu = getattr(news, "lineup", None)
+    return getattr(lu, "state", "unknown") or "unknown"
+
+
 def post_check(
     fields: dict[str, str],
     *,
     cites: list[Citation] | None,
+    team_a_news: Any = None,
+    team_b_news: Any = None,
+    enforce_team_news: bool | None = None,
 ) -> bool:
-    """Return True only when every guard passes."""
+    """Return True only when every guard passes.
+
+    Team-news guards (Slice A of THE_DESK_TEAM_NEWS_BLURB_SPEC):
+
+      * materiality=high → blurb must mention at least one absent
+        player name from that side. Failure → fall back to stub.
+      * lineup.state="confirmed" → blurb must mention "lineup" or the
+        formation OR a named change. Soft until N3 ships real formations.
+      * materiality=none on BOTH sides → blurb must NOT contain
+        availability keywords. Prevents Haiku hallucinating injuries.
+
+    The `enforce_team_news` knob ships the new guards as warnings-only
+    when False (default behaviour driven by env so the operator can
+    flip to strict after eyeballing). When env var
+    `DESK_TEAM_NEWS_BLURB_REQUIRED=1`, guards are hard.
+    """
     title, summary, blurb = fields["title"], fields["summary"], fields["blurb"]
     for f in (title, summary, blurb):
         if not is_voice_clean(f):
@@ -327,6 +507,44 @@ def post_check(
     if not _attributions_are_allowed(blurb, cites):
         _LOG.debug("blurb attribution names an outlet not in editorial_citations")
         return False
+
+    # ── Team-news guards ────────────────────────────────────────────
+    if enforce_team_news is None:
+        enforce_team_news = os.getenv("DESK_TEAM_NEWS_BLURB_REQUIRED", "0") == "1"
+
+    mat_a = _materiality_of(team_a_news)
+    mat_b = _materiality_of(team_b_news)
+    lineup_a = _lineup_state_of(team_a_news)
+    lineup_b = _lineup_state_of(team_b_news)
+
+    # materiality=high → blurb must name an absent player from that side.
+    if mat_a == "high":
+        if not _name_appears_in(blurb, _names_from(team_a_news)):
+            _LOG.warning("team_a materiality=high but blurb names no absent player")
+            if enforce_team_news:
+                return False
+    if mat_b == "high":
+        if not _name_appears_in(blurb, _names_from(team_b_news)):
+            _LOG.warning("team_b materiality=high but blurb names no absent player")
+            if enforce_team_news:
+                return False
+
+    # materiality=none on BOTH sides → blurb must not contain availability
+    # keywords. One-sided 'none' is fine because the other side may have
+    # high materiality and legitimate prose.
+    if mat_a == "none" and mat_b == "none":
+        if _TEAM_NEWS_KEYWORDS_RE.search(blurb):
+            _LOG.warning("blurb mentions availability but both sides have materiality=none")
+            if enforce_team_news:
+                return False
+
+    # confirmed lineup → blurb should mention lineup or formation. Soft
+    # until N3 lands real formation strings — log only, don't fail.
+    if lineup_a == "confirmed" or lineup_b == "confirmed":
+        if not _re.search(r"\b(lineup|formation|starting (?:xi|eleven)|line-up)\b",
+                          blurb, _re.IGNORECASE):
+            _LOG.info("confirmed lineup present but blurb does not mention it")
+
     return True
 
 
@@ -418,7 +636,12 @@ def try_haiku_copy(
     if raw is None:
         return None
 
-    if not post_check(raw, cites=i.get("editorial_citations")):
+    if not post_check(
+        raw,
+        cites=i.get("editorial_citations"),
+        team_a_news=i.get("team_a_news"),
+        team_b_news=i.get("team_b_news"),
+    ):
         return None
 
     return Copy(

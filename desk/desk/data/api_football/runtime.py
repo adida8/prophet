@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 
 from desk import config
-from desk.data.api_football.cache import APIFootballCache
+from desk.data.api_football.cache import APIFootballCache, InjuryRow
 
 
 def default_cache_path() -> Path:
@@ -73,6 +73,24 @@ class APIFootballRuntime:
             return None
         row = cache.injury_penalty_for_iso3(iso3)
         return row.elo_penalty if row else None
+
+    def injuries_for_iso3(self, iso3: str) -> list[InjuryRow]:
+        """Cached api-football InjuryRow list for a national side.
+
+        Returns [] when the cache file doesn't exist, when the team
+        hasn't been resolved to an api-football team_id yet, or when
+        no injuries have been fetched. Never raises — the blurb path
+        treats absent data as "no info" not "fail loud".
+        """
+        if not iso3:
+            return []
+        cache = self._ensure()
+        if cache is None:
+            return []
+        team_id = cache.team_id_for_iso3(iso3)
+        if team_id is None:
+            return []
+        return cache.injuries_for_team(team_id)
 
     def close(self) -> None:
         if self._cache is not None:
