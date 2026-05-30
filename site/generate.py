@@ -2401,12 +2401,16 @@ def _fixture_key_from_match_id(match_id: str) -> tuple | None:
     return (kickoff, frozenset({parts[-3].lower(), parts[-2].lower()}))
 
 
-# Kalshi UI URL pattern (confirmed via address-bar inspection on a
-# real WC 2026 event page):
+# Kalshi UI URL pattern (event landing page — the reader picks the
+# side on the page itself):
 #
 #   https://kalshi.com/markets/{series_lower}/{series_slug}/{event_ticker_lower}
-#       ?op_market_ticker={MARKET_TICKER_UPPER}
-#       &op_side=BUY&op_order_side=yes&op_order_type=dollars
+#
+# We used to append `?op_market_ticker=…&op_side=BUY&op_order_side=yes
+# &op_order_type=dollars` to preselect the picked side, but Kalshi
+# retired those query params (dropped 2026-05-30); the URL with them
+# stops resolving. If a new preselect param appears later, slot it
+# into `_kalshi_market_ticker_for_side` + `_kalshi_url_for`.
 #
 # `series_slug` is a separate hyphenated slug for the series (NOT the
 # series ticker). For KXWCGAME it's "world-cup-game", derived from the
@@ -2452,12 +2456,19 @@ def _kalshi_url_for(
 ) -> tuple[str, bool]:
     """Return (url, is_live).
 
-    is_live=True  → real Kalshi event URL. The picked side is preselected
-                    via `op_market_ticker=` when a side is known; for
-                    Pass/Avoid we just land on the event page.
+    is_live=True  → real Kalshi event URL — lands on the event page; the
+                    reader picks the side. We used to append
+                    `?op_market_ticker=…&op_side=BUY&…` to preselect the
+                    picked side, but Kalshi retired those query params
+                    and the URL stopped resolving. Dropped 2026-05-30.
     is_live=False → WC landing page fallback (Kalshi has no event for
                     this fixture, or series slug not yet mapped).
+
+    `pick_side_iso3` is currently unused but kept on the signature so the
+    site renderer's call sites don't churn — if Kalshi exposes a new
+    side-preselect param later, it slots back in here.
     """
+    _ = pick_side_iso3  # reserved; see docstring
     if match_id and KALSHI_EVENT_INDEX:
         key = _fixture_key_from_match_id(match_id)
         event_ticker = KALSHI_EVENT_INDEX.get(key) if key else None
@@ -2470,16 +2481,6 @@ def _kalshi_url_for(
                 f"https://kalshi.com/markets/{series_upper.lower()}/"
                 f"{series_slug}/{event_ticker.lower()}"
             )
-            market_ticker = _kalshi_market_ticker_for_side(
-                event_ticker, pick_side_iso3=pick_side_iso3,
-            )
-            if market_ticker:
-                from urllib.parse import quote
-                return (
-                    f"{base}?op_market_ticker={quote(market_ticker)}"
-                    f"&op_side=BUY&op_order_side=yes&op_order_type=dollars",
-                    True,
-                )
             return (base, True)
     return (KALSHI_WC_LANDING, False)
 
@@ -2489,11 +2490,14 @@ def _kalshi_url_for(
 # Kalshi's WC 2026 outright is its own series (KXMENWORLDCUP), one
 # event (KXMENWORLDCUP-26), and one binary market per team. Each market
 # ticker carries an ISO 3166-1 alpha-2 country code, e.g.
-# `KXMENWORLDCUP-26-ES` (Spain). UI URL shape (confirmed via
-# address-bar inspection):
+# `KXMENWORLDCUP-26-ES` (Spain). UI URL shape (event landing — the
+# reader picks the team on the page itself):
 #
 #   https://kalshi.com/markets/kxmenworldcup/mens-world-cup-winner/kxmenworldcup-26
-#       ?op_market_ticker={MARKET_TICKER_UPPER}
+#
+# We used to append `?op_market_ticker={MARKET_TICKER_UPPER}` to land
+# directly on a per-team market, but Kalshi retired that query param
+# (dropped 2026-05-30); the URL stops resolving.
 #
 # Names from Polymarket don't always match Kalshi's display strings
 # 1:1 ("USA" vs "United States", "IR Iran" vs "Iran", etc.), so we
@@ -2589,7 +2593,12 @@ KALSHI_OUTRIGHT_INDEX: dict[str, str] = {}
 def _kalshi_outright_url_for(team: str | None) -> tuple[str, bool]:
     """Return (url, is_live) for an outright-winner CTA on Kalshi.
 
-    is_live=True  → real per-team deep link with `op_market_ticker=` set.
+    is_live=True  → real Kalshi event URL (no team preselected). We used
+                    to append `?op_market_ticker=…` to land directly on
+                    the per-team market, but Kalshi retired that query
+                    param and the URL stopped resolving. Dropped
+                    2026-05-30; the reader picks the team on the event
+                    page itself.
     is_live=False → the event landing page (no team preselected). Used
                     when we have no team (Pass row), when Kalshi's index
                     is empty (network failure), or when the team doesn't
@@ -2600,11 +2609,7 @@ def _kalshi_outright_url_for(team: str | None) -> tuple[str, bool]:
     ticker = KALSHI_OUTRIGHT_INDEX.get(_normalise_team_for_kalshi(team))
     if not ticker:
         return (KALSHI_OUTRIGHT_LANDING, False)
-    from urllib.parse import quote
-    return (
-        f"{KALSHI_OUTRIGHT_LANDING}?op_market_ticker={quote(ticker)}",
-        True,
-    )
+    return (KALSHI_OUTRIGHT_LANDING, True)
 
 
 def _cta_pill(
