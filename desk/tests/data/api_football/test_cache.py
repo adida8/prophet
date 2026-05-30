@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from desk.data.api_football.cache import (
-    APIFootballCache, FixtureResult,
+    APIFootballCache, CardAccumulationRow, FixtureResult,
 )
 
 
@@ -137,3 +137,63 @@ def test_points_property_on_fixture_result(cache):
         status_short="FT",
     )
     assert blank.points == 0
+
+
+# ── Q1 card_accumulation ──────────────────────────────────────────────
+
+def _card(*, player_id: int, yellows: int, at_risk: int = 0,
+          team_id: int = 33, name: str | None = None) -> CardAccumulationRow:
+    return CardAccumulationRow(
+        api_football_team_id=team_id,
+        player_id=player_id,
+        player_name=name or f"Player {player_id}",
+        position="Midfielder",
+        yellows=yellows, reds=0,
+        at_risk=at_risk,
+        competition="wc26",
+        computed_at=datetime.now(tz=timezone.utc).isoformat(),
+        source_endpoint="/players?team=33&season=2026&league=1",
+    )
+
+
+def test_card_accumulation_replace_then_read(cache):
+    cache.replace_cards_for_team(33, "wc26", [
+        _card(player_id=1, yellows=1, at_risk=1),
+        _card(player_id=2, yellows=0),
+    ])
+    rows = cache.cards_for_team(api_football_team_id=33, competition="wc26")
+    assert len(rows) == 2
+    by_id = {r.player_id: r for r in rows}
+    assert by_id[1].is_at_risk
+    assert not by_id[2].is_at_risk
+
+
+def test_card_accumulation_replace_overwrites_per_team_per_competition(cache):
+    cache.replace_cards_for_team(33, "wc26", [
+        _card(player_id=1, yellows=1, at_risk=1),
+    ])
+    # A subsequent refresh with a different player set wipes the first.
+    cache.replace_cards_for_team(33, "wc26", [
+        _card(player_id=2, yellows=0),
+    ])
+    rows = cache.cards_for_team(api_football_team_id=33, competition="wc26")
+    assert [r.player_id for r in rows] == [2]
+
+
+def test_card_accumulation_scoped_per_team_and_competition(cache):
+    """Cards for different competitions / teams coexist independently."""
+    cache.replace_cards_for_team(33, "wc26", [_card(player_id=1, yellows=1)])
+    cache.replace_cards_for_team(33, "ucl",  [_card(player_id=9, yellows=2)])
+    cache.replace_cards_for_team(44, "wc26", [_card(player_id=5, yellows=0, team_id=44)])
+
+    rows_wc = cache.cards_for_team(api_football_team_id=33, competition="wc26")
+    rows_uc = cache.cards_for_team(api_football_team_id=33, competition="ucl")
+    rows_44 = cache.cards_for_team(api_football_team_id=44, competition="wc26")
+    assert [r.player_id for r in rows_wc] == [1]
+    assert [r.player_id for r in rows_uc] == [9]
+    assert [r.player_id for r in rows_44] == [5]
+
+
+def test_cards_for_team_empty_returns_empty_list(cache):
+    rows = cache.cards_for_team(api_football_team_id=999, competition="wc26")
+    assert rows == []
