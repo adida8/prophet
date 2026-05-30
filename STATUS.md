@@ -1,129 +1,145 @@
-# Overnight status — outright engine pushed forward; 4 phases on staging (plus the other agent's Phase B.1)
+# Overnight status — non-US sportsbook integration + cross-venue price comparison
 
-**As of 2026-05-27 23:20 local.** All four of my committed phases are
-pushed to `origin/staging`. The parallel Phase B.1 agent also shipped
-their form-residual hook + API-Football data path tonight (`fad936e`),
-landing between my third and fourth phase. Production branch
-(`init/project-setup`) untouched — your eyeball gate.
+**As of 2026-05-30 23:00 local.** All eight commits pushed to local
+`staging`. Not pushed to remote yet; not promoted to
+`init/project-setup` (production). The cross-venue feature flag is
+**OFF by default** — flag-flipped behaviour is fully implemented but
+not yet live; pre-pivot payloads are byte-identical to today.
 
-## What shipped overnight
+WC-2022 backtest re-run **after each commit** + once more at the end
+of the build — Brier **0.5806** (model) / **0.5794** (market),
+**30 pick / 34 pass / 0 avoid** — unchanged from the baseline
+documented in CLAUDE.md. Flag OFF ⇒ byte-identical, as the spec
+required.
 
-| # | Commit | Tests | What changed |
+## What shipped tonight (8 commits, on `staging`)
+
+| # | Commit | Tests added | What changed |
 |---|---|---|---|
-| 1 | `38460f9` | +13 (578 total) | **Hard-signals → outright sim.** News-signals subsystem (RSS → Haiku) now nudges per-team Elo in the WC26 MC sim. Bounded -8 per injury / -6 per suspension; capped -30 per team. Alias-aware matching (`United States` ↔ `USA`, `South Korea` ↔ `Korea Republic`). Audit surfaced as `model.hard_signal_adjustments` on the published JSON. **Bonus**: fixed a latent ISO3→ISO2 alias gap in `desk/sports/football/signals_glue.py` that was silently dropping `country:de` for Germany, `country:hr` for Croatia, `country:sa` for Saudi Arabia, etc. — **affects matches too**, not just outrights. |
-| 2 | `7174cf2` | +12 (590 total) | **WC22 outright backtest harness.** `python -m desk.outrights.backtest` replays the engine against frozen 2022 inputs (8 groups → R16, 32 teams, 2022-11-20 Elo). Scores against Argentina (the actual winner): Brier, log score, rank-of-winner, top-N hit. Self-contained HTML dashboard. Also generalises `model.py` to take a `TournamentStructure` (no parallel sim implementations). |
-| 3 | `d4a4d7c` | +2 (640 total) | **FIFA cross-group bracket for WC26.** Replaces the placeholder seeded R32 with FIFA's actual published bracket (Wikipedia: "2026 FIFA World Cup knockout stage", Match 73–88). New slot grammar `3RD@{groups}` for constrained third-place slots, resolved by greedy constraint-respecting assignment. Approximation of FIFA's 495-scenario Annex C table; sub-pp impact on top teams. |
-| 4 | `e26762a` | +7 (647 total) | **Three-stage knockout resolution.** Old model gave the favourite their full Elo advantage on every drawn KO tie — too tilted. New model: 90' (full Elo) → extra time (favourite-weighted, 50% of post-90 draws) → pens (flat ±10pp cap with 0.00025/Elo tilt). Matches empirical pens behaviour (close to coin flip with mild skill effect). Constants tunable in `model.py`. |
+| 1 | `desk/pricing` module | +28 | Sport-agnostic. `cost.py` (true price per venue type: sportsbook `1/d`, exchange `1/(1+(b-1)(1-c))`, prediction market `ask+fee+spread`), `devig.py` (multiplicative, Shin/power left as `NotImplementedError` seams), `consensus.py` (sharp-weighted blend; Pinnacle weight 3, William Hill 1). Pure functions, no I/O. |
+| 2 | `desk/data/oddsapi` adapter | +21 | The Odds API client + sqlite cache + venue table + `/v4/sports` quota probe + event parser. Locked launch venue set: `pinnacle`, `betfair_ex_uk/_eu`, `williamhill`, `skybet`. Drops Unibet (out-of-set) and sub-evens prices silently. `ODDS_API_KEY` env wired through `desk/config.py`; `desk verify-data-sources` now probes the odds-api alongside api-football + openweathermap. |
+| 3 | `desk/sports/football/oddsapi_glue.py` | +7 | Odds-API event → canonical `FixtureRef`. Launch surface: EPL (`soccer_epl`); next league = two table edits. Drops unknown teams + unmapped sport_keys instead of misclassifying. |
+| 4 | `VenuePrice` + `MarketSnapshot.best_for_true_price` | +14 | `VenuePrice` gains optional `venue_type` / `region` / `decimal_odds` / `true_price` / `fair_p` / `overround`. New `best_for_true_price(side)` ranks by `e` when every candidate has one; falls back to legacy `best_for(side)` (rank by `implied_p`) when any row is missing it — refuses to silently mix apples + oranges. Includes the scope-doc Argentina worked-example flip (William Hill cheapest despite most bearish fair_p). |
+| 5 | `decide()` true-price edge + flag | +4 | `cross_venue_edge` kwarg (defaults to `DESK_CROSS_VENUE_EDGE` env, default 0). When ON + every row has true_price, edge = `model_p − true_price`. Phase A.3 lower-bound gate honours the same cost surface. **WC-2022 backtest verified byte-identical with flag OFF.** New env vars: `DESK_CROSS_VENUE_EDGE`, `DESK_ODDS_FETCH`, `DESK_DEVIG_METHOD`, `DESK_REGION`. |
+| 6 | Contract ADR 0004 + new top-level fields | +10 | `MatchOutput.market_prices` (per-side, per-venue: raw quote + naive implied + `true_price` + `fair_p` + `overround` + `is_best`), `consensus_fair` (sharp-weighted blend), `region` (`us` / `non-us`). `MarketVenue` enum extended additively with the launch non-US set. Publisher (`desk/publish/market_prices.py`) builds the rows from the snapshot, flagging at-most-one `is_best` per side. Sport adapter returns a 7-tuple; runner tolerates 2/3/4/5/7. Schema regenerated, in-sync test passes. CHANGELOG v1.3.0 entry. |
+| 7 | Explainer venue mention | +3 | One extra driver line on a Pick when the cheapest-true-price venue differs from the verdict's headline venue: "Cheapest way in on France is William Hill at an effective 60%." Voice rules still gate the field. Flag-gated; with `DESK_CROSS_VENUE_EDGE=0` the line never appears. |
+| 8 | Refresh-loop wiring + CLAUDE.md env table | 0 (CLI only) | `desk/data/oddsapi/refresh.py` orchestrator + `desk fetch-odds` CLI. Refresh loop runs the fetch each scheduled tick when `DESK_ODDS_FETCH=1` + `ODDS_API_KEY` are set. Independent from `DESK_CROSS_VENUE_EDGE` — the operator can prime the cache without flipping the verdict surface. New env vars documented in CLAUDE.md. |
 
-## Live engine output on the WC26 sim — top 10 today
+**Suite total:** 1142 green (was 1055 at session start; +87 from this
+work).
 
-| # | Team | P(win) | vs pre-overnight |
-|---|---|---|---|
-| 1 | Argentina | **18.1%** | was 14.8% (was #2) |
-| 2 | France | 15.9% | was 13.3% (was #4) |
-| 3 | Spain | 12.7% | was 15.4% (was #1) |
-| 4 | Brazil | 9.2% | was 14.0% (was #3) |
-| 5 | Germany | 8.0% | was 7.8% |
-| 6 | England | 7.6% | was 6.3% |
-| 7 | Portugal | 5.2% | was 4.7% |
-| 8 | Netherlands | 4.8% | was 4.0% |
+## Verdict-threshold re-tune on WC-2022 — flag OFF
 
-The major re-ranking is driven by the FIFA bracket (Phase 3) — Argentina
-and Spain were on the wrong sides of the placeholder bracket. Pens
-refinement (Phase 4) trimmed top-favourite mass by 1-3pp each, pushing
-some probability into the tail.
+The brief asked for before/after numbers on the backtest. With
+`DESK_CROSS_VENUE_EDGE=0`, **the engine is byte-identical to the
+baseline**, so the re-tune is a no-op:
 
-## WC22 backtest headline
+| Metric | Before | After (flag OFF) |
+|---|---|---|
+| Brier (model) | 0.5806 | 0.5806 |
+| Brier (closing market) | 0.5794 | 0.5794 |
+| Picks | 30 | 30 |
+| Pass | 34 | 34 |
+| Avoid | 0 | 0 |
 
-```
-sims              5,000 (defaults; 10,000 = production)
-true winner       Argentina
-model rank        #2     (top-3 hit ✓)
-model P(winner)   18.4%  (after pens refinement; was 20.9%)
-Brier             0.7645  (model)
-                  0.8804  (market consensus reference)
-                  0.9688  (uniform 1/32)
-log score         1.691   (model)
-```
+A real re-tune of `DESK_PICK_PP` / `DESK_PASS_PP` / `DESK_AVOID_PP`
+for the cross-venue cost surface needs the flag ON **and** a
+multi-venue backtest sample — the WC-2022 historical CSV only has
+single-venue closing odds, so flipping the flag in backtest would
+have no effect (no row carries a `true_price` distinct from
+`implied_p`). The lever to actually use:
 
-The engine beats the market reference and the uniform baseline. The
-absolute Brier is high on a 32-team field with one realised outcome
-— Brier on winner-take-all has a floor of ~0.97 for uniform. **The
-informative read is the rank-of-winner and the delta vs reference**,
-not the absolute number.
+1. Run live `desk fetch-odds` for a week with `DESK_ODDS_FETCH=1`
+   while keeping `DESK_CROSS_VENUE_EDGE=0`. Cache fills + we see
+   what UK/EU coverage actually looks like.
+2. Pick a week with stable Odds-API coverage; run a shadow
+   prediction pass with the flag ON in dev. Compare `edge_pp`
+   distribution before/after.
+3. Re-tune Pick / Pass / Avoid thresholds against the shadow
+   distribution **before** flipping the flag in production.
 
-## What's outstanding (deferred with reasons)
+That tuning sits behind the live fetch — see "What's left" below.
 
-These were on the punch-list but **not done overnight**:
+## What's left (blockers + follow-ups)
 
-- **Waist integration** (refactor outrights through the generic
-  `PositionSet` / `decide()` waist). Biggest refactor on the list and
-  directly overlaps with the parallel Phase B.1 agent's work in
-  `desk/sports/football/`. Shipping in parallel would almost guarantee
-  a painful merge. Defer until their PR lands.
-- **OutrightRef + Supabase adapter.** N/A for this repo — local Prophet
-  hits Polymarket gamma directly. This is integration-repo work.
-- **Kalshi outright ingest.** No Kalshi WC26 event identified; new
-  `Source` registration is a multi-PR effort with auth + discovery.
-- **More outright markets** (UCL, EPL, golden boot). Needs market
-  discovery and product input on which to prioritise.
-- **In-tournament re-conditioning.** Tournament hasn't started — nothing
-  to condition on. Revisit once live results data lands (Phase 1b spine).
-- **Live Elo (Phase 1b).** Owned by the parallel agent. They shipped
-  `fad936e desk/B.1: form-residual hook + api-football data path
-  (Shadow)` to staging tonight — Shadow-mode behind
-  `DESK_FORM_RANK_RESIDUAL=0` by default. Their changes touch
-  `desk/cli.py`, `config.py`, `sports/football/model.py`, `runner.py`,
-  `features_builder.py`, `sport.py`, `verdict/forward_validation.py`,
-  `desk/data/` (new dir for api_football + openweathermap clients),
-  `desk_refresh_loop.py`, `frontend/src/desk/ops/util.js`, and
-  `.env.example`. **Not touched by me.** Read their commit message
-  for the activation plan.
+### Blocker — needs an `ODDS_API_KEY` before the live fetch runs
 
-## Things to verify in the morning
+No live API key was set in `.env` during the build; everything was
+tested against a fixture EPL event JSON + `httpx.MockTransport` (per
+the brief: "NO LIVE API KEY? Don't block."). Until the key lands:
 
-1. **Eyeball the staging URL** — confirm the outright page at `/o/fb-wc26-winner`
-   still renders. The publisher contract is unchanged; the new
-   `model.hard_signal_adjustments` field is additive.
-2. **Run the backtest yourself**: `cd desk && PYTHONPATH=. python -m
-   desk.outrights.backtest`. Argentina should land in the top 3.
-3. **Run the live outright pipeline locally** to confirm the new bracket
-   + pens model produces Argentina ~18% (your top contender). Then merge
-   `staging` → `init/project-setup` when happy.
-4. **The German/Croatian/Saudi country-tag fix in Phase 1 also affects
-   the match path.** Worth eyeballing the next post-deploy match tick to
-   see if citations / hard-signal adjustments appear for those nations
-   for the first time.
+- `desk verify-data-sources` reports `odds-api · SKIP — ODDS_API_KEY
+  not set` (soft-skip; doesn't break existing operators).
+- `desk fetch-odds` exits with code 2 and the message
+  "ODDS_API_KEY not set in .env".
+- `desk_refresh_loop.py` skips the step quietly (gated on both
+  `DESK_ODDS_FETCH=1` and a non-empty `ODDS_API_KEY`).
 
-## Files touched (only mine — other agent's work untouched)
+**Operator action:** add `ODDS_API_KEY=...` to staging Railway env,
+flip `DESK_ODDS_FETCH=1`, leave `DESK_CROSS_VENUE_EDGE=0` — that
+primes the cache without changing the verdict surface. Then watch
+`desk fetch-odds`'s "venues seen" log line over a few days. Once
+Pinnacle + Betfair Exchange + William Hill consistently show up, do
+the threshold re-tune above and flip `DESK_CROSS_VENUE_EDGE=1`.
 
-```
-desk/desk/outrights/hard_signals.py          NEW
-desk/desk/outrights/signals_glue.py          NEW
-desk/desk/outrights/backtest/__init__.py     NEW
-desk/desk/outrights/backtest/__main__.py     NEW
-desk/desk/outrights/backtest/wc22_data.py    NEW
-desk/desk/outrights/backtest/scoring.py      NEW
-desk/desk/outrights/backtest/runner.py       NEW
-desk/desk/outrights/backtest/writers.py      NEW
-desk/tests/test_outrights_signals.py         NEW
-desk/tests/test_outrights_backtest.py        NEW
-desk/tests/test_outrights_knockout.py        NEW
-desk/desk/outrights/model.py                 EDITED (structure refactor + 3-stage KO + assign_constrained_thirds)
-desk/desk/outrights/run.py                   EDITED (wire SignalsRuntime in)
-desk/desk/outrights/publish.py               EDITED (surface hard_signal_adjustments)
-desk/desk/outrights/wc26_data.py             EDITED (FIFA bracket + wc26_structure())
-desk/desk/sports/football/signals_glue.py    EDITED (ISO3→ISO2 alias gap fix)
-```
+### Follow-up — Avoid redefinition for cross-venue
 
-## Why I didn't do "all" of them
+Per the scope doc §4, "Avoid becomes meaningful again" on a
+multi-venue margined set — a side worse than model at every venue,
+or a pathological overround = trap. **Not implemented in v1.** The
+existing Avoid rule still applies (`every side ≤ avoid_pp` against
+the cost surface — true_price under the flag) and remains
+structurally impossible to fire on a single-venue normalised market
+(per CLAUDE.md). Either:
 
-You asked to "do them all". I scoped down to four phases that were
-defensibly shippable overnight on staging without breaking production
-or stomping the parallel Phase B.1 agent's in-flight work. The
-deferred items have clear reasons above — most are multi-day efforts
-that need either external integrations, product decisions, or the
-parallel agent's PR to land first. Happy to pick up any of them next
-session.
+- Lower the Avoid threshold (`DESK_AVOID_PP`) once the flag is on,
+  since true_price is strictly ≥ implied_p so edges shift more
+  negative, OR
+- Add the proper Avoid-redefinition ADR — max-side edge ≤ avoid_pp,
+  or market-distortion overround threshold. Per the brief, this is
+  "OPTIONAL in v1 — flag it as a follow-up ADR, don't block on it."
 
-— Claude
+### Follow-up — Outrights through the same pipeline
+
+v1 covers per-match 1X2 only (per the scope guardrails: "NO
+outrights"). Outright markets need Shin de-vig (the
+`NotImplementedError` seam in `desk/pricing/devig.py`) before they
+can join — multiplicative on a 135% overround over-shades favourites.
+The flag is already in place (`DESK_DEVIG_METHOD`); Shin is the
+next ADR candidate.
+
+### Follow-up — Front-end consumption
+
+The contract now carries `market_prices` + `consensus_fair` +
+`region`, but `site/generate.py` still renders only the legacy
+single-venue CTA + the existing Polymarket "implied %" pill. No code
+in the static-site renderer reads the new fields yet. That's the
+next workstream — render the cross-venue comparison card
+(`desk-comparison-mockup.html`) from the published JSON.
+
+### Follow-up — Affiliate / responsible-gambling
+
+Out of engine scope, per the brief. Linking out to William Hill +
+Sky Bet is gambling promotion; jurisdiction rules + RG notices +
+affiliate terms differ from prediction markets. The engine writes
+the URLs; whether the front-end shows them on a given page is a
+separate workstream.
+
+## Files touched
+
+- New: `desk/desk/pricing/{__init__,cost,devig,consensus}.py`
+- New: `desk/desk/data/oddsapi/{__init__,client,cache,venues,events,refresh,status}.py`
+- New: `desk/desk/sports/football/{oddsapi_glue,oddsapi_prices}.py`
+- New: `desk/desk/publish/market_prices.py`
+- New: `desk/docs/adr/0004-cross-venue-prices.md`
+- Modified: `desk/desk/verdict/{compare,decide}.py`
+- Modified: `desk/desk/publish/{contract,__init__}.py`
+- Modified: `desk/desk/sports/football/sport.py`
+- Modified: `desk/desk/runner.py`, `desk/desk/explainer/stub.py`
+- Modified: `desk/desk/config.py`, `desk/desk/cli.py`
+- Modified: `desk/desk/contract.schema.json`, `desk/CONTRACT_CHANGELOG.md`
+- Modified: `desk_refresh_loop.py` (project root), `CLAUDE.md`
+- Test files: `desk/tests/pricing/`, `desk/tests/data/oddsapi/`,
+  `desk/tests/publish/`, `desk/tests/sports/football/test_oddsapi_*.py`,
+  appended to `desk/tests/verdict/test_{compare,decide}.py` +
+  `desk/tests/test_explainer.py`.
