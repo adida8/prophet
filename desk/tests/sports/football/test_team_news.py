@@ -14,9 +14,10 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from desk.data.api_football.cache import InjuryRow
+from desk.data.api_football.cache import CardAccumulationRow, InjuryRow
 from desk.signals.models import Signal, SignalType, Source
 from desk.sports.football.team_news import (
+    CardStatus,
     PlayerAbsence,
     TeamNews,
     build_team_news,
@@ -317,3 +318,149 @@ def test_no_lineup_row_falls_through_to_rss_signals() -> None:
     assert news.lineup.state == "confirmed"
     assert news.lineup.source == "guardian-football"  # RSS source preserved
     assert news.lineup.starters == ()
+
+
+# ── cards (Q2 — squad-paragraph spec) ───────────────────────────────
+
+def _card_row(
+    *, player_id: int, name: str, yellows: int = 1, at_risk: int = 1,
+    position: str | None = "Midfielder",
+) -> CardAccumulationRow:
+    return CardAccumulationRow(
+        api_football_team_id=33,
+        player_id=player_id,
+        player_name=name,
+        position=position,
+        yellows=yellows, reds=0,
+        at_risk=at_risk,
+        competition="wc26",
+        computed_at="2026-06-12T06:00:00+00:00",
+        source_endpoint="/players?team=33&season=2026&league=1",
+    )
+
+
+def test_cards_at_risk_player_appears_in_cards_tuple() -> None:
+    news = build_team_news(
+        team_name="France", iso3="fra", injury_rows=[], signals=[],
+        elo_penalty=None,
+        card_rows=[_card_row(player_id=1, name="Tchouaméni", yellows=1)],
+    )
+    assert len(news.cards) == 1
+    c = news.cards[0]
+    assert isinstance(c, CardStatus)
+    assert c.name == "Tchouaméni"
+    assert c.yellows == 1
+    assert c.state == "at_risk"
+    assert c.source == "api-football"
+
+
+def test_cards_not_at_risk_rows_are_filtered() -> None:
+    """v1 only surfaces `at_risk=1` CardStatus rows."""
+    news = build_team_news(
+        team_name="France", iso3="fra", injury_rows=[], signals=[],
+        elo_penalty=None,
+        card_rows=[
+            _card_row(player_id=1, name="A", yellows=1, at_risk=1),
+            _card_row(player_id=2, name="B", yellows=0, at_risk=0),
+        ],
+    )
+    assert [c.name for c in news.cards] == ["A"]
+
+
+def test_cards_reconcile_drops_suspended_player() -> None:
+    """Spec §Q2: a player both at-risk AND already suspended is dropped
+    from `cards` — the suspension is the confirmed absence, naming them
+    as 'at-risk' as well would double-count."""
+    suspension_row = InjuryRow(
+        api_football_team_id=33,
+        player_id=99,
+        player_name="Bellingham",
+        type="Suspended",
+        reason="Yellow accumulation",
+        position="Midfielder",
+        fetched_at="2026-06-12T06:00:00+00:00",
+    )
+    news = build_team_news(
+        team_name="England", iso3="eng",
+        injury_rows=[suspension_row], signals=[], elo_penalty=None,
+        card_rows=[
+            _card_row(player_id=1, name="Foden",      yellows=1),
+            _card_row(player_id=99, name="Bellingham", yellows=1),
+        ],
+    )
+    # Bellingham is in absences as a suspension; cards drops the dup.
+    assert any(a.name == "Bellingham" and a.type == "suspension"
+               for a in news.absences)
+    assert [c.name for c in news.cards] == ["Foden"]
+
+
+def test_cards_reconcile_handles_partial_name_match() -> None:
+    """Substring fallback: 'Bellingham' (card row) vs 'Jude Bellingham'
+    (suspension absence) should still reconcile out."""
+    suspension_row = InjuryRow(
+        api_football_team_id=33,
+        player_id=99,
+        player_name="Jude Bellingham",   # full name
+        type="Suspended",
+        reason="Yellow accumulation",
+        position="Midfielder",
+        fetched_at="2026-06-12T06:00:00+00:00",
+    )
+    news = build_team_news(
+        team_name="England", iso3="eng",
+        injury_rows=[suspension_row], signals=[], elo_penalty=None,
+        card_rows=[_card_row(player_id=99, name="Bellingham", yellows=1)],
+    )
+    assert news.cards == ()
+
+
+def test_cards_dont_raise_materiality_above_low() -> None:
+    """Spec §Q2: at-risk cards never push materiality above 'low' on
+    their own — they're a risk, not a fact."""
+    news = build_team_news(
+        team_name="France", iso3="fra", injury_rows=[], signals=[],
+        elo_penalty=None,
+        card_rows=[
+            _card_row(player_id=1, name="A", yellows=1),
+            _card_row(player_id=2, name="B", yellows=1),
+            _card_row(player_id=3, name="C", yellows=1),
+            _card_row(player_id=4, name="D", yellows=1),   # 4 at-risk players
+        ],
+    )
+    assert news.materiality == "low"
+
+
+def test_cards_only_bumps_none_to_low() -> None:
+    """Empty absences + None penalty + ≥1 at-risk card → materiality=low
+    (was 'none' before cards). All other inputs unchanged."""
+    news_empty = build_team_news(
+        team_name="France", iso3="fra", injury_rows=[], signals=[],
+        elo_penalty=None,
+    )
+    assert news_empty.materiality == "none"
+
+    news_cards = build_team_news(
+        team_name="France", iso3="fra", injury_rows=[], signals=[],
+        elo_penalty=None,
+        card_rows=[_card_row(player_id=1, name="A", yellows=1)],
+    )
+    assert news_cards.materiality == "low"
+
+
+def test_cards_default_empty_tuple_when_no_card_rows() -> None:
+    """Existing callers that don't pass card_rows still get a TeamNews
+    with an empty cards tuple — backwards-compatible default."""
+    news = build_team_news(
+        team_name="France", iso3="fra", injury_rows=[], signals=[],
+        elo_penalty=None,
+    )
+    assert news.cards == ()
+
+
+def test_cards_skipped_when_card_rows_is_none() -> None:
+    """None for card_rows behaves identically to []."""
+    news = build_team_news(
+        team_name="France", iso3="fra", injury_rows=[], signals=[],
+        elo_penalty=None, card_rows=None,
+    )
+    assert news.cards == ()

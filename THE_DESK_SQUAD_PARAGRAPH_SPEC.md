@@ -4,8 +4,8 @@
 
 ## Shipping status
 
-- ✅ **PR Q1 — card-accumulation data path** (this commit). `desk/data/api_football/cards.py` + `card_accumulation` cache table + `CARD_RULES` + sanity gates (`check_card_counts`, `check_at_risk_not_suspended`). Off the hot path; nothing touches a published verdict yet. **Operator action pending:** confirm the WC26 yellow-card reset rule (wipe-after-QF) against the actual 2026 FIFA tournament regulations before `DESK_CARD_FETCH=1` goes live.
-- ⬜ PR Q2 — fold cards into `TeamNews` (CardStatus + reconcile)
+- ✅ **PR Q1 — card-accumulation data path** (commit `8e8d8e7`). `desk/data/api_football/cards.py` + `card_accumulation` cache table + `CARD_RULES` + sanity gates (`check_card_counts`, `check_at_risk_not_suspended`). Off the hot path; nothing touches a published verdict yet. **Operator action pending:** confirm the WC26 yellow-card reset rule (wipe-after-QF) against the actual 2026 FIFA tournament regulations before `DESK_CARD_FETCH=1` goes live.
+- ✅ **PR Q2 — fold cards into `TeamNews`** (this commit). `CardStatus` dataclass + `cards: tuple[CardStatus, ...]` field on `TeamNews`. Builder consumes the new `card_rows` kwarg, drops `at_risk=0` rows, reconciles at-risk against `absences` (a player both at-risk AND already suspended is dropped from cards — substring fallback covers "Bellingham" vs "Jude Bellingham"). At-risk cards bump `materiality` from `none → low` only — never higher. `APIFootballRuntime.cards_for_iso3(iso3, competition)` is the hot-path read. `FootballSport.decide_and_explain` threads card_rows onto `build_team_news` keyed on `fx.competition_code`, gated on `DESK_CARD_AT_RISK` (default `1`). Hot path is byte-identical when the cache is cold (no rows → empty `cards` → `materiality` math unchanged).
 - ⬜ PR Q3 — match-blurb dedicated-paragraph mandate
 - ⬜ PR Q4 — outright per-team squad_note
 - ⬜ PR Q5 — `desk fetch-cards` + daily-tick wiring
