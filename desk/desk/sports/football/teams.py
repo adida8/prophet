@@ -132,6 +132,7 @@ _NAME_TO_ISO3: dict[str, str] = {
     "Belgium":                 "bel",
     "Bolivia":                 "bol",
     "Bosnia and Herzegovina":  "bih",
+    "Bosnia & Herzegovina":    "bih",   # The Odds API + api-football variant
     "Brazil":                  "bra",
     "Cameroon":                "cmr",
     "Canada":                  "can",

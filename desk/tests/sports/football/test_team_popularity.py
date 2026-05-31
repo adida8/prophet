@@ -48,6 +48,9 @@ def test_name_variants_resolve_to_same_tier() -> None:
     assert tier_for_team("Curaçao") == tier_for_team("Curacao") == 4
     assert tier_for_team("USA") == tier_for_team("United States") == 2
     assert tier_for_team("Cape Verde") == tier_for_team("Cabo Verde") == 4
+    # The Odds API + api-football use ampersand; our own registry uses
+    # "and". Both must resolve identically.
+    assert tier_for_team("Bosnia and Herzegovina") == tier_for_team("Bosnia & Herzegovina")
 
 
 # --- match_popularity_multiplier ---------------------------------------------

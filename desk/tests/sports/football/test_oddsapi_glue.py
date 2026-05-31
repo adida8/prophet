@@ -92,6 +92,23 @@ def test_wc26_event_resolves_via_iso3() -> None:
     assert fx.team_b == "South Africa"
 
 
+def test_wc26_bosnia_ampersand_variant_resolves() -> None:
+    """The Odds API serves 'Bosnia & Herzegovina' (ampersand); our
+    own registry uses 'Bosnia and Herzegovina'. Both must map to the
+    same ISO3 ('bih') so the match_id lines up with Polymarket's."""
+    parsed_event = {
+        "event_id":      "wc-ev-bih",
+        "sport_key":     "soccer_fifa_world_cup",
+        "commence_time": datetime(2026, 6, 17, 19, 0, tzinfo=timezone.utc),
+        "home_team":     "Argentina",
+        "away_team":     "Bosnia & Herzegovina",
+        "price_rows":    [],
+    }
+    fx = from_oddsapi_event(parsed_event)
+    assert fx is not None
+    assert fx.match_id == "fb-wc26-arg-bih-20260617"
+
+
 def test_wc26_unknown_team_drops_event() -> None:
     """Same drop-on-unknown-team behaviour as EPL, but routed through
     the ISO3 lookup."""
