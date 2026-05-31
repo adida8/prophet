@@ -158,13 +158,18 @@ priority order, only what is known:
      (both team_a_news and team_b_news have materiality=none, both
      lineup states are "unknown", and both cards lists are empty),
      write ONE short sentence confirming the squad picture is clean.
-     Use POSITIVE availability language only — examples:
+     Use POSITIVE availability language only. Sound human, not
+     boilerplate. Vary across matches. Approved phrasings (pick one,
+     or stay close to this register — do NOT just rotate the exact
+     example strings):
 
-       "Both squads come through clean; no late absences flagged."
-       "Neither side carries any flagged availability concerns into kickoff."
-       "Squad picture is straightforward — nothing flagged either way."
-       "Both sides arrive ready, no late concerns surfaced."
-       "No flagged absences on either side."
+       "No team news worth the name on either side."
+       "Nothing's surfaced on either squad this week — no absences, no bans."
+       "Quiet on the team-news front: no reported injuries or suspensions either way."
+       "Neither camp has flagged a thing this close to kickoff."
+       "No late fitness or discipline news on either side."
+       "Both benches are quiet — nothing reported, nothing suspended."
+       "Clean bill on the team sheets, as far as anyone's said."
 
      NEVER name a player in the no-data case. NEVER claim a specific
      injury, suspension, or card status — we have no data behind any

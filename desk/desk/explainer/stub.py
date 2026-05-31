@@ -709,11 +709,18 @@ def _squad_blurb_for_inputs(i: Inputs) -> str:
     if parts:
         return " ".join(parts)
 
-    # No-data default — three positive variants rotated by salt.
+    # No-data default — seven positive variants rotated by salt so the
+    # stub doesn't sound like the same line on every match. Operator-
+    # voiced (2026-05-31): less boilerplate, more like something a
+    # human-written column would say.
     defaults = (
-        "Both squads come through clean, no late absences flagged either way.",
-        "No flagged availability concerns on either side ahead of kickoff.",
-        "Squad picture is straightforward — nothing flagged either way.",
+        "No team news worth the name on either side.",
+        "Nothing's surfaced on either squad this week — no absences, no bans.",
+        "Quiet on the team-news front: no reported injuries or suspensions either way.",
+        "Neither camp has flagged a thing this close to kickoff.",
+        "No late fitness or discipline news on either side.",
+        "Both benches are quiet — nothing reported, nothing suspended.",
+        "Clean bill on the team sheets, as far as anyone's said.",
     )
     return defaults[_variant_index(salt, len(defaults))]
 

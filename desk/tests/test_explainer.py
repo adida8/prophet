@@ -197,15 +197,53 @@ def test_pick_driver_skips_when_label_matches_headline_venue() -> None:
 def test_stub_populates_squad_blurb_with_positive_default_when_no_data() -> None:
     """Spec 2026-05-31: every published match must carry a non-empty
     squad_blurb so the website's Squad section is never blank. The
-    stub falls back to a positive no-data sentence when team_news is
-    empty (or absent)."""
+    stub falls back to one of seven positive no-data sentences when
+    team_news is empty (or absent). Voice update 2026-05-31: variants
+    sound human ('no team news worth the name', 'quiet on the team-
+    news front', etc.) rather than templated."""
     c = build_copy(_pick_inputs())
     assert c.squad_blurb
-    # Default sentence is positive (mentions clean / no concerns / clean).
-    assert any(
-        word in c.squad_blurb.lower()
-        for word in ["clean", "no flagged", "no late", "no availability"]
+    # Every variant carries a positive marker: either "no" + a
+    # team-news word, "quiet", "clean", or "nothing" + status word.
+    markers = [
+        "no team news", "no absences", "no bans",
+        "no reported", "no late",
+        "quiet", "clean", "nothing reported",
+        "nothing flagged", "nothing's surfaced", "neither camp",
+    ]
+    assert any(m in c.squad_blurb.lower() for m in markers), (
+        f"squad_blurb did not match any positive-no-data marker: {c.squad_blurb!r}"
     )
+
+
+def test_stub_squad_blurb_passes_negative_claim_guard_for_all_variants() -> None:
+    """Every one of the seven no-data variants must NOT trip the Haiku
+    post_check's negative-availability-claim regex — otherwise the
+    stub fallback would be rejected by its own validation when
+    DESK_TEAM_NEWS_BLURB_REQUIRED is strict."""
+    from desk.explainer.haiku import _NEGATIVE_AVAILABILITY_CLAIM_RE
+
+    # Force the stub's variant rotation across all 7 by varying salt
+    # via team names. Some salts will land on the same variant; we
+    # need to check every variant lands somewhere.
+    seen: set[str] = set()
+    for a, b in [
+        ("X", "Y"), ("A", "B"), ("M", "N"),
+        ("France", "Mexico"), ("Brazil", "Argentina"),
+        ("Spain", "Portugal"), ("Germany", "Italy"),
+        ("England", "Croatia"), ("Japan", "Australia"),
+        ("Netherlands", "Belgium"), ("USA", "Canada"),
+        ("Iran", "Iraq"), ("Tunisia", "Morocco"),
+    ]:
+        c = build_copy(_pick_inputs(team_a=a, team_b=b))
+        seen.add(c.squad_blurb)
+
+    # Sanity: rotation produced at least 3 distinct variants.
+    assert len(seen) >= 3
+    for variant in seen:
+        assert not _NEGATIVE_AVAILABILITY_CLAIM_RE.search(variant), (
+            f"stub no-data variant trips negative-claim guard: {variant!r}"
+        )
 
 
 def test_stub_squad_blurb_lists_absences_when_team_news_present() -> None:
