@@ -657,6 +657,12 @@
         "default": null,
         "title": "Consensus Fair"
       },
+      "content_type": {
+        "const": "match",
+        "default": "match",
+        "title": "Content Type",
+        "type": "string"
+      },
       "copy": {
         "$ref": "#/$defs/Copy"
       },
