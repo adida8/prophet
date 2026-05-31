@@ -376,13 +376,17 @@ def test_materiality_high_matches_on_surname(
     ) is True
 
 
-def test_materiality_none_strict_rejects_availability_keywords(
+def test_materiality_none_strict_rejects_negative_player_claim(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Spec-update 2026-05-31: materiality=none guard now rejects only
+    negative CLAIMS ('X is injured', 'ruled out', 'one yellow from a
+    ban'), not generic vocabulary. A concrete claim about a player's
+    availability when neither side has cached data is a hallucination
+    and falls back to the stub in strict mode."""
     monkeypatch.setenv("DESK_TEAM_NEWS_BLURB_REQUIRED", "1")
     p = _good_payload()
-    p["blurb"] = p["blurb"] + " There are no major injuries to report."
-    # Both sides materiality=none.
+    p["blurb"] = p["blurb"] + " Mbappé is injured for this match."
     none_a = _team_news(team="France", materiality="none")
     none_b = _team_news(team="Mexico", materiality="none")
     assert haiku.post_check(
@@ -390,18 +394,71 @@ def test_materiality_none_strict_rejects_availability_keywords(
     ) is False
 
 
-def test_materiality_none_soft_only_warns(
+def test_materiality_none_soft_only_warns_on_negative_claim(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv("DESK_TEAM_NEWS_BLURB_REQUIRED", raising=False)
     p = _good_payload()
-    p["blurb"] = p["blurb"] + " There are no major injuries to report."
+    p["blurb"] = p["blurb"] + " Mbappé is injured for this match."
     none_a = _team_news(team="France", materiality="none")
     none_b = _team_news(team="Mexico", materiality="none")
-    # Soft mode → still True.
+    # Soft mode → still True (warning only).
     assert haiku.post_check(
         p, cites=None, team_a_news=none_a, team_b_news=none_b,
     ) is True
+
+
+def test_materiality_none_allows_positive_squad_sentence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Spec-update 2026-05-31: the no-data case now prompts Haiku for a
+    positive squad sentence ('squad picture is clean', 'no flagged
+    absences'). Those phrasings MUST pass the materiality=none guard."""
+    monkeypatch.setenv("DESK_TEAM_NEWS_BLURB_REQUIRED", "1")
+    none_a = _team_news(team="France", materiality="none")
+    none_b = _team_news(team="Mexico", materiality="none")
+    # Each variant the prompt teaches Haiku to use must pass strict mode.
+    for positive_sentence in (
+        " Both squads come through clean; no late absences flagged.",
+        " Neither side carries any flagged availability concerns into kickoff.",
+        " Squad picture is straightforward — nothing flagged either way.",
+        " Both sides arrive ready, no late concerns surfaced.",
+        " No flagged absences on either side.",
+        " Both sides at full strength as far as we know.",
+    ):
+        p = _good_payload()
+        p["blurb"] = p["blurb"] + positive_sentence
+        assert haiku.post_check(
+            p, cites=None, team_a_news=none_a, team_b_news=none_b,
+        ) is True, f"strict guard rejected positive sentence: {positive_sentence!r}"
+
+
+def test_materiality_none_strict_rejects_ruled_out_claim(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DESK_TEAM_NEWS_BLURB_REQUIRED", "1")
+    p = _good_payload()
+    p["blurb"] = p["blurb"] + " A defender has been ruled out of the match."
+    none_a = _team_news(team="France", materiality="none")
+    none_b = _team_news(team="Mexico", materiality="none")
+    assert haiku.post_check(
+        p, cites=None, team_a_news=none_a, team_b_news=none_b,
+    ) is False
+
+
+def test_materiality_none_strict_rejects_hallucinated_card_claim(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Even in materiality=none, claiming a player is 'one yellow from a
+    ban' is a hallucination — we have no cards data."""
+    monkeypatch.setenv("DESK_TEAM_NEWS_BLURB_REQUIRED", "1")
+    p = _good_payload()
+    p["blurb"] = p["blurb"] + " Their captain is one yellow from a suspension."
+    none_a = _team_news(team="France", materiality="none")
+    none_b = _team_news(team="Mexico", materiality="none")
+    assert haiku.post_check(
+        p, cites=None, team_a_news=none_a, team_b_news=none_b,
+    ) is False
 
 
 def test_materiality_none_passes_with_clean_blurb() -> None:
@@ -560,6 +617,22 @@ def test_system_prompt_has_squad_paragraph_section() -> None:
     # Card-specific instructions land in the prompt too.
     assert "at-risk" in text.lower() or "at_risk" in text.lower()
     assert "one booking" in text.lower() or "one yellow" in text.lower()
+
+
+def test_system_prompt_has_no_data_positive_case() -> None:
+    """Spec-update 2026-05-31: the prompt MUST instruct Haiku to write
+    a positive squad sentence when both sides have no availability
+    data. Without that instruction, Haiku falls back to silence and the
+    operator never sees a squad paragraph on most matches pre-tournament."""
+    system_blocks, _ = haiku.build_messages(_pick_inputs())
+    text = system_blocks[0]["text"]
+    # Mandate language: explicit no-data case.
+    assert "no-data case" in text.lower() or "no data" in text.lower()
+    # At least one positive example phrase the prompt teaches.
+    positives = ["clean", "no flagged absences", "at full strength",
+                 "no late concerns", "ready"]
+    assert any(p in text.lower() for p in positives), \
+        "prompt must include positive-vocabulary examples for the no-data case"
 
 
 def test_user_message_includes_cards_block() -> None:

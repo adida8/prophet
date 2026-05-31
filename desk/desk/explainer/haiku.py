@@ -129,10 +129,9 @@ data for each side. Each carries:
 
 SQUAD PARAGRAPH
 
-When either side has a confirmed XI, an absence, or an at-risk player,
-the blurb MUST contain ONE dedicated paragraph covering the squad
-picture, kept separate from the verdict / edge paragraph. It covers,
-in priority order, only what is known:
+The blurb MUST contain ONE dedicated paragraph covering the squad
+picture, kept separate from the verdict / edge paragraph. It fires
+on every match. What goes into it depends on what's known:
 
   1. Opening XI — when lineup.state="confirmed", name the formation
      once and 1–2 recognisable starters. ("France open 4-3-3 with
@@ -142,17 +141,34 @@ in priority order, only what is known:
      unattributed when source is api-football.
   3. At-risk — name players one booking from a ban, phrased as RISK,
      never as fact. ("Tchouaméni is one yellow from a suspension.")
+  4. No-data case — when NONE of the above is known for either side
+     (both team_a_news and team_b_news have materiality=none, both
+     lineup states are "unknown", and both cards lists are empty),
+     write ONE short sentence confirming the squad picture is clean.
+     Use POSITIVE availability language only — examples:
 
-If only some of the three are known, write only those. If none are
-known for either side, write NO squad paragraph and say nothing about
-availability — silence is the rule when there's no data.
+       "Both squads come through clean; no late absences flagged."
+       "Neither side carries any flagged availability concerns into kickoff."
+       "Squad picture is straightforward — nothing flagged either way."
+       "Both sides arrive ready, no late concerns surfaced."
+       "No flagged absences on either side."
+
+     NEVER name a player in the no-data case. NEVER claim a specific
+     injury, suspension, or card status — we have no data behind any
+     such claim. NEVER use phrases like "is injured", "is suspended",
+     "ruled out", "out with", "one yellow from", "at risk of a ban"
+     in the no-data case. Vary the phrasing across matches to avoid
+     repetition.
+
+If some clauses (1)-(3) are known and others aren't, write only the
+known ones; don't pad with a no-data sentence on top.
 
 NEVER invent a starter, an absence, a formation, or a card count.
 NEVER name a player who is not in starters[], absences[], or cards[].
 NEVER present an at-risk player as already banned or suspended.
 
-Materiality matrix (controls how forcefully you address the absences,
-not whether the squad paragraph fires):
+Materiality matrix (controls how forcefully the squad paragraph
+addresses the absences, not whether it fires — it always fires):
 
   materiality=high   → the squad paragraph MUST name at least one
                        absent player and the impact.
@@ -161,8 +177,9 @@ not whether the squad paragraph fires):
   materiality=low    → optional; mention only when it fits the verdict
                        narrative (e.g. when an at-risk card is the only
                        availability content for the team).
-  materiality=none   → say nothing about availability. Do not write
-                       "no injury concerns" or "fully fit".
+  materiality=none   → write the no-data sentence per (4) above. Do
+                       NOT claim any specific player is injured /
+                       suspended / out — there's no data behind it.
 
 Attribution rules for absences:
   * When an absence carries source_url (an RSS outlet covered it),
@@ -499,29 +516,32 @@ def _attributions_are_allowed(blurb: str, cites: list[Citation] | None) -> bool:
     return True
 
 
-# Availability-specific keywords. Used by the materiality=none guard
-# to detect prose that talks about injuries/suspensions when no team
-# news data was supplied. Lineup keywords are NOT in this list because
-# materiality measures availability only — a team with materiality=none
-# (no injuries) can still have a confirmed lineup the blurb legitimately
-# mentions.
-_AVAILABILITY_KEYWORDS = (
-    r"\binjur(?:y|ies|ed)\b",
-    r"\bsuspen(?:ded|sion|sions)\b",
-    r"\bruled out\b",
-    r"\bmissing the (?:match|fixture|game)\b",
-    r"\bsidelined\b",
-    r"\bunavailab(?:le|ility)\b",
-    r"\babsent(?:ee|ees)?\b",
-    # Q3 squad-paragraph: at-risk card story keywords. Catch a
-    # hallucinated card paragraph when no cards data was supplied.
-    r"\bat[- ]risk\b",
-    r"\bone booking\b",
-    r"\bone yellow\b",
-    r"\byellow accumulation\b",
+# Negative-availability CLAIM patterns. Used by the materiality=none
+# guard to catch fabricated injury/suspension/card claims while still
+# allowing the positive "squad is clean" sentence the prompt mandates
+# in the no-data case.
+#
+# Rule: the guard rejects only phrasings that commit to a specific
+# negative state ("X is injured", "ruled out", "out with a knock",
+# "one yellow from a ban"). Generic vocabulary ("no flagged absences",
+# "no availability concerns", "at full strength") is allowed — those
+# are the positive sentences the prompt asks Haiku to write when there
+# are no absences, no at-risk cards, and no confirmed XI on either side.
+_NEGATIVE_AVAILABILITY_CLAIMS = (
+    r"\bis\s+(?:out|injured|suspended|sidelined|unavailable|absent|missing|ruled\s+out)\b",
+    r"\bare\s+(?:out|injured|suspended|sidelined|unavailable|absent|missing)\b",
+    r"\bruled\s+out\b",
+    r"\bout\s+(?:with|for|of\s+the\s+(?:squad|matchday|lineup|line[- ]?up|fixture|game|match))\b",
+    r"\bmissing\s+the\s+(?:match|fixture|game)\b",
+    r"\bsidelined\s+(?:with|by|for)\b",
+    # at-risk / card-status claims when no cards data was supplied
+    r"\bone\s+(?:booking|yellow)\s+(?:from|away)\b",
+    r"\bat[\s-]risk\s+of\s+(?:a\s+)?(?:ban|suspension)\b",
+    r"\bcarries\s+(?:a|one)\s+yellow\b",
+    r"\byellow\s+accumulation\b",
 )
-_AVAILABILITY_KEYWORDS_RE = _re.compile(
-    "|".join(_AVAILABILITY_KEYWORDS), _re.IGNORECASE,
+_NEGATIVE_AVAILABILITY_CLAIM_RE = _re.compile(
+    "|".join(_NEGATIVE_AVAILABILITY_CLAIMS), _re.IGNORECASE,
 )
 
 # Words that present a player as a confirmed absence (ban / suspension).
@@ -713,14 +733,14 @@ def post_check(
             if enforce_team_news:
                 return False
 
-    # materiality=none on BOTH sides → blurb must not contain
-    # availability-specific keywords (injuries / suspensions / absences).
-    # Lineup keywords (formation / starting XI) are NOT blocked here —
-    # a side with materiality=none can still have a confirmed lineup and
-    # legitimately mention it.
+    # materiality=none on BOTH sides → the prompt now mandates ONE
+    # positive squad sentence ("squad picture is clean", etc.). The
+    # guard rejects only NEGATIVE claims — phrasings that commit to a
+    # specific player being out, injured, suspended, or one card from
+    # a ban. Generic vocabulary ("no flagged absences") is allowed.
     if mat_a == "none" and mat_b == "none":
-        if _AVAILABILITY_KEYWORDS_RE.search(blurb):
-            _LOG.warning("blurb mentions availability but both sides have materiality=none")
+        if _NEGATIVE_AVAILABILITY_CLAIM_RE.search(blurb):
+            _LOG.warning("blurb makes a negative availability claim but both sides have materiality=none")
             if enforce_team_news:
                 return False
 
