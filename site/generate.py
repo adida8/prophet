@@ -663,19 +663,30 @@ a { color: inherit; }
 .blurb p + p { margin-top: 14px; }
 
 /* Squad section on per-match page — dedicated visible block for the
- * `copy.squad_blurb` field. Same chrome as .drivers / .sources so the
- * three blocks read as a consistent stack. Added 2026-05-31. */
-.squad { margin: 32px 0 0; max-width: 64ch; }
+ * `copy.squad_blurb` field. Positioned right after the verdict card,
+ * BEFORE the blurb prose, so the reader sees the squad picture before
+ * digesting the verdict narrative. Flame-coloured left accent + heading
+ * lift it off the page; deliberately doesn't match the .drivers /
+ * .sources chrome (those are read-only references; squad is a primary
+ * editorial block). Added 2026-05-31. */
+.squad {
+  margin: 24px 0;
+  max-width: 64ch;
+  padding: 14px 18px;
+  border-left: 4px solid var(--flame);
+  background: var(--paper-warm);
+}
 .squad h2 {
-  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
-  letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
-  margin: 0 0 12px; padding-bottom: 8px; border-bottom: var(--hairline);
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--flame);
+  margin: 0 0 10px;
 }
 .squad p {
-  font-family: var(--font-serif); font-size: 15.5px; line-height: 1.55;
-  color: var(--ink-soft); margin: 0;
+  font-family: var(--font-serif); font-size: 16px; line-height: 1.55;
+  color: var(--ink); margin: 0;
 }
-.squad p + p { margin-top: 12px; }
+.squad p + p { margin-top: 10px; }
 
 /* Ladder — per-team verdict grid on the per-outright page. Each
    <article class="lc-card"> is its own tile carrying team name,
@@ -1120,35 +1131,47 @@ table.standings { border-collapse: collapse; width: 100%; font-size: 14px; }
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink);
 }
 .cross-venue .cv-table {
-  width: 100%; border-collapse: collapse;
+  width: 100%; max-width: 480px; border-collapse: collapse;
   font-family: var(--font-sans); font-size: 13px;
 }
 .cross-venue .cv-table thead th {
-  text-align: left; padding: 7px 8px;
+  text-align: left; padding: 7px 10px;
   font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--graphite-soft); font-weight: 700;
   border-bottom: var(--hairline-soft);
-  cursor: help;
 }
 .cross-venue .cv-table thead th + th { text-align: right; }
+/* Pin the two numeric columns so they sit beside the venue name
+   rather than spreading to the container edge on wide screens. */
+.cross-venue .cv-table th:nth-child(2),
+.cross-venue .cv-table td:nth-child(2) { width: 76px; }
+.cross-venue .cv-table th:nth-child(3),
+.cross-venue .cv-table td:nth-child(3) { width: 92px; }
 .cross-venue .cv-table tbody td {
-  padding: 8px;
+  padding: 9px 10px;
   border-bottom: var(--hairline-soft);
   vertical-align: middle;
   font-variant-numeric: tabular-nums;
 }
 .cross-venue .cv-table tbody td + td { text-align: right; }
 .cross-venue .cv-table tbody .cv-venue { font-weight: 600; color: var(--ink); }
+.cross-venue .cv-table tbody .cv-decimal { color: var(--graphite-soft); }
 .cross-venue .cv-table tbody .cv-true {
-  font-family: var(--font-mono); font-size: 13px; color: var(--ink);
+  font-family: var(--font-mono); font-size: 15px; font-weight: 600; color: var(--ink);
+}
+.cross-venue .cv-row.is-best {
+  background: var(--paper-warm);
+  box-shadow: inset 3px 0 0 var(--flame-deep);
 }
 .cross-venue .cv-row.is-best .cv-true {
   font-weight: 700; color: var(--flame-deep);
 }
-.cross-venue .cv-row.is-best { background: var(--paper-warm); }
-.cross-venue .cv-consensus td {
-  border-top: 1px solid var(--rule);
+.cross-venue .cv-consensus {
+  margin: 9px 0 0; font-family: var(--font-sans); font-size: 11.5px;
   font-style: italic; color: var(--graphite-soft);
+}
+.cross-venue .cv-consensus strong {
+  font-style: normal; font-family: var(--font-mono); color: var(--ink);
 }
 
 .cross-venue .cv-type,
@@ -1158,16 +1181,22 @@ table.standings { border-collapse: collapse; width: 100%; font-size: 14px; }
   font-size: 9.5px; font-weight: 600;
   letter-spacing: 0.08em; text-transform: uppercase;
   border-radius: 2px;
+  vertical-align: middle;
 }
 .cross-venue .cv-type--book      { background: var(--paper-warm); color: var(--graphite); }
 .cross-venue .cv-type--exchange  { background: #eaf2f7;            color: #25506a; }
 .cross-venue .cv-type--pm        { background: #f1ecf6;            color: #523864; }
 .cross-venue .cv-region { background: transparent; border: 1px solid var(--rule); color: var(--graphite-soft); }
-.cross-venue .cv-best   { background: var(--flame-deep); color: #fff; margin-left: 8px; }
+.cross-venue .cv-best   { background: var(--flame-deep); color: #fff; }
 
 @media (max-width: 640px) {
   .cross-venue { padding: 18px 14px 14px; }
-  .cross-venue .cv-table { font-size: 12px; }
+  .cross-venue .cv-table { font-size: 12px; max-width: none; }
+  .cross-venue .cv-table tbody .cv-true { font-size: 14px; }
+  .cross-venue .cv-table th:nth-child(2),
+  .cross-venue .cv-table td:nth-child(2) { width: 62px; }
+  .cross-venue .cv-table th:nth-child(3),
+  .cross-venue .cv-table td:nth-child(3) { width: 76px; }
   .cross-venue .cv-type, .cross-venue .cv-region { display: none; }
 }
 
@@ -3519,13 +3548,11 @@ def _render_cross_venue_block(
             region      = v.get("region") or ""
             decimal_odds = v.get("decimal_odds")
             true_price   = v.get("true_price")
-            fair_p       = v.get("fair_p")
             is_best      = bool(v.get("is_best"))
 
             decimal_cell = f"{decimal_odds:.2f}" if isinstance(decimal_odds, (int, float)) else "—"
             true_cell    = (f"{true_price * 100:.1f}%" if isinstance(true_price, (int, float))
                             else "—")
-            fair_cell    = (f"{fair_p * 100:.1f}%" if isinstance(fair_p, (int, float)) else "—")
 
             type_badge = ""
             if venue_type == "exchange":
@@ -3537,15 +3564,14 @@ def _render_cross_venue_block(
 
             region_badge = (f'<span class="cv-region">{escape(region.upper())}</span>'
                             if region else "")
-            best_badge = '<span class="cv-best">Best price</span>' if is_best else ""
+            best_badge = '<span class="cv-best">Best</span>' if is_best else ""
             row_class = " is-best" if is_best else ""
 
             venue_rows.append(
                 f'<tr class="cv-row{row_class}">'
-                f'<td class="cv-venue">{escape(name)}{type_badge}{region_badge}</td>'
+                f'<td class="cv-venue">{escape(name)}{best_badge}{type_badge}{region_badge}</td>'
                 f'<td class="cv-decimal">{escape(decimal_cell)}</td>'
-                f'<td class="cv-true">{escape(true_cell)}{best_badge}</td>'
-                f'<td class="cv-fair">{escape(fair_cell)}</td>'
+                f'<td class="cv-true">{escape(true_cell)}</td>'
                 '</tr>'
             )
 
@@ -3553,10 +3579,8 @@ def _render_cross_venue_block(
         if consensus_fair and side in consensus_fair:
             cf = consensus_fair[side]
             consensus_html = (
-                f'<tr class="cv-consensus"><td>Sharp consensus</td>'
-                f'<td>—</td>'
-                f'<td>—</td>'
-                f'<td>{cf * 100:.1f}%</td></tr>'
+                f'<p class="cv-consensus">Sharp consensus fair value '
+                f'<strong>{cf * 100:.1f}%</strong></p>'
             )
 
         sections.append(
@@ -3566,10 +3590,10 @@ def _render_cross_venue_block(
             '<th scope="col">Venue</th>'
             '<th scope="col" title="Decimal odds quoted">Odds</th>'
             '<th scope="col" title="All-in cost you actually pay — margin, fee, spread, commission folded in">True price</th>'
-            '<th scope="col" title="Venue\'s de-vigged opinion (margin stripped)">Fair %</th>'
             '</tr></thead>'
-            f'<tbody>{"".join(venue_rows)}{consensus_html}</tbody>'
+            f'<tbody>{"".join(venue_rows)}</tbody>'
             '</table>'
+            f'{consensus_html}'
             '</section>'
         )
 
@@ -3579,9 +3603,9 @@ def _render_cross_venue_block(
     return (
         '<section class="cross-venue" aria-labelledby="cv-title">'
         '<h2 id="cv-title">Price across venues</h2>'
-        '<p class="cv-lede">The number that matters for the Pick is the '
-        '<em>true price</em> — what you actually pay once each venue\'s margin, fee, '
-        'spread, or commission is folded in. The cheapest true price wins.</p>'
+        '<p class="cv-lede">The number that matters is the <em>true price</em> — '
+        'what you actually pay once each venue\'s margin, fee, spread, or commission '
+        'is folded in. The cheapest true price wins.</p>'
         + "".join(sections) +
         '</section>'
     )
@@ -3723,8 +3747,8 @@ def render_match_page(match: dict) -> str:
         + trust_strip
         + render_card(match, is_lead=True, show_read_case=False)
         + disclaimer_html
-        + (f'<div class="blurb">{blurb_paras}</div>' if blurb_paras else "")
         + squad_html
+        + (f'<div class="blurb">{blurb_paras}</div>' if blurb_paras else "")
         + cta_row
         + cross_venue_html
         + why_disagrees_html
