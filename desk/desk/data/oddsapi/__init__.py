@@ -41,6 +41,7 @@ from desk.data.oddsapi.client import (
 )
 from desk.data.oddsapi.events import (
     DEFAULT_SPORT_KEY,
+    DEFAULT_SPORT_KEYS,
     fetch_events_h2h,
     parse_event_payload,
     venue_ids_in_events,
@@ -73,6 +74,7 @@ __all__ = [
     "OddsAPIRateLimit",
     "ODDS_API_BASE_URL",
     "DEFAULT_SPORT_KEY",
+    "DEFAULT_SPORT_KEYS",
     "fetch_events_h2h",
     "parse_event_payload",
     "venue_ids_in_events",

@@ -72,6 +72,40 @@ def test_unmapped_sport_key_returns_none() -> None:
     assert from_oddsapi_event(parsed_event) is None
 
 
+def test_wc26_event_resolves_via_iso3() -> None:
+    """A WC26 event from The Odds API resolves to the same canonical
+    match_id Polymarket would emit (ISO3 codes per `_NAME_TO_ISO3`)."""
+    parsed_event = {
+        "event_id":      "wc-ev1",
+        "sport_key":     "soccer_fifa_world_cup",
+        "commence_time": datetime(2026, 6, 11, 19, 0, tzinfo=timezone.utc),
+        "home_team":     "Mexico",
+        "away_team":     "South Africa",
+        "price_rows":    [],
+    }
+    fx = from_oddsapi_event(parsed_event)
+    assert fx is not None
+    assert fx.match_id    == "fb-wc26-mex-rsa-20260611"
+    assert fx.competition_code  == "wc26"
+    assert fx.competition_label == "FIFA World Cup 2026"
+    assert fx.team_a == "Mexico"
+    assert fx.team_b == "South Africa"
+
+
+def test_wc26_unknown_team_drops_event() -> None:
+    """Same drop-on-unknown-team behaviour as EPL, but routed through
+    the ISO3 lookup."""
+    parsed_event = {
+        "event_id":      "wc-ev1",
+        "sport_key":     "soccer_fifa_world_cup",
+        "commence_time": datetime(2026, 6, 11, 19, 0, tzinfo=timezone.utc),
+        "home_team":     "Atlantis",
+        "away_team":     "Mexico",
+        "price_rows":    [],
+    }
+    assert from_oddsapi_event(parsed_event) is None
+
+
 def test_dedupes_match_id() -> None:
     parsed = parse_event_payload(_sample())
     fixtures = fixtures_from_oddsapi_payload(parsed + parsed)   # double up

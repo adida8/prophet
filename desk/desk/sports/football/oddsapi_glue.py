@@ -26,6 +26,7 @@ from desk.sports.football.fixtures import (
     SPORT,
     make_match_id,
 )
+from desk.sports.football.teams import iso3_for_name
 
 log = logging.getLogger("desk.sports.football.oddsapi_glue")
 
@@ -38,11 +39,12 @@ class CompetitionMapping:
     label: str    # display label, e.g. "Premier League"
 
 
-# Odds API sport keys → our canonical competition codes. v1 ships EPL
-# only; the table is here so adding La Liga / Serie A / WC is a
-# one-line edit (the rest of the pipeline is sport-key-agnostic).
+# Odds API sport keys → our canonical competition codes. Per-fixture
+# team-name → short-code resolution is delegated to the per-competition
+# branch in `from_oddsapi_event` below.
 SPORT_KEY_TO_COMPETITION: Mapping[str, CompetitionMapping] = {
-    "soccer_epl": CompetitionMapping(code="epl", label="Premier League"),
+    "soccer_epl":             CompetitionMapping(code="epl",  label="Premier League"),
+    "soccer_fifa_world_cup":  CompetitionMapping(code="wc26", label="FIFA World Cup 2026"),
 }
 
 
@@ -130,9 +132,22 @@ def from_oddsapi_event(
                 home_team, away_team,
             )
             return None
+    elif comp.code == "wc26":
+        # National-team competition: resolve display name → canonical
+        # ISO3 via the existing `_NAME_TO_ISO3` table so the match_id
+        # lines up with Polymarket's (which uses ISO3 via `iso3_for_name`
+        # in `desk/sports/football/teams.py`).
+        home_short = iso3_for_name(home_team)
+        away_short = iso3_for_name(away_team)
+        if not home_short or not away_short:
+            log.warning(
+                "odds-api WC26 event missing ISO3 mapping: %s vs %s",
+                home_team, away_team,
+            )
+            return None
     else:
         # Place-holder for the next league. Other comps wouldn't reach
-        # this branch in v1 because they're not in SPORT_KEY_TO_COMPETITION;
+        # this branch because they're not in SPORT_KEY_TO_COMPETITION;
         # leave the slot so adding the next league + its name-table is
         # the only edit needed.
         return None

@@ -32,12 +32,18 @@ _LOG = logging.getLogger("desk.data.oddsapi.events")
 # than accepting an unexpected value.
 _DRAW_ALIASES: frozenset[str] = frozenset({"draw", "tie", "x"})
 
-# The launch sport_key for v1's single league. EPL is the cleanest UK
-# surface — coverage on Pinnacle + William Hill + Sky Bet + Betfair is
-# typically full, all three regions (uk/eu) carry it. Other leagues
-# pluggable by env override per `THE_DESK_NONUS_CODING_PROMPT.md` scope
-# guardrails.
-DEFAULT_SPORT_KEY = "soccer_epl"
+# The launch sport_key. WC26 is the headline surface on the site
+# (matches the default `DESK_COMPETITIONS=wc26` filter), so it goes
+# first. EPL was the original v1 launch surface and stays as a
+# secondary sport_key the operator can flip on.
+DEFAULT_SPORT_KEY = "soccer_fifa_world_cup"
+
+# Default tuple of sport_keys the refresh loop fetches per tick. WC26
+# is the only one ON by default; the operator overrides with
+# `DESK_ODDS_SPORT_KEYS=soccer_fifa_world_cup,soccer_epl,...` to add
+# leagues. Each comma-separated entry is one sport_key per The Odds
+# API's catalogue (https://the-odds-api.com/sports-odds-data/soccer.html).
+DEFAULT_SPORT_KEYS = ("soccer_fifa_world_cup",)
 
 
 async def fetch_events_h2h(

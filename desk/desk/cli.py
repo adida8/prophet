@@ -959,9 +959,13 @@ def _cmd_verify_data_sources(args: argparse.Namespace) -> int:
 def _cmd_fetch_odds(args: argparse.Namespace) -> int:
     """Pull h2h prices from The Odds API into the oddsapi cache.
 
-    v1 launch surface: `soccer_epl`. Override the sport key with
-    --sport-key. Cost: 1 credit per region asked per call; default
-    regions = `uk,eu` (2 credits per tick).
+    Default sport_key: `soccer_fifa_world_cup` (the headline launch
+    surface — matches the default DESK_COMPETITIONS=wc26 site filter).
+    Override with `--sport-key soccer_epl` (repeatable) or via the
+    `DESK_ODDS_SPORT_KEYS` env var (comma-separated).
+
+    Cost: 1 credit per region asked per call; default regions = `uk,eu`
+    (2 credits per sport_key per tick).
 
     Exit codes:
       0 — refresh succeeded, at least one row persisted
@@ -970,21 +974,33 @@ def _cmd_fetch_odds(args: argparse.Namespace) -> int:
       2 — API key missing / call failed
     """
     import asyncio
+    import os
     from pathlib import Path
 
     from desk import config
-    from desk.data.oddsapi import refresh_all
+    from desk.data.oddsapi import DEFAULT_SPORT_KEYS, refresh_all
 
     if not config.ODDS_API_KEY:
         print("ODDS_API_KEY not set in .env", file=sys.stderr)
         return 2
 
-    sport_keys = tuple(args.sport_key) if args.sport_key else None
+    if args.sport_key:
+        sport_keys = tuple(args.sport_key)
+    else:
+        # Env-driven override falls between CLI flags and the in-code
+        # default. Lets the operator change which leagues the refresh
+        # loop fetches without a redeploy.
+        env_keys = os.getenv("DESK_ODDS_SPORT_KEYS", "").strip()
+        if env_keys:
+            sport_keys = tuple(k.strip() for k in env_keys.split(",") if k.strip())
+        else:
+            sport_keys = DEFAULT_SPORT_KEYS
+
     cache_path = Path(args.db) if args.db else None
 
     report = asyncio.run(refresh_all(
         api_key=config.ODDS_API_KEY,
-        sport_keys=sport_keys or ("soccer_epl",),
+        sport_keys=sport_keys,
         cache_path=cache_path,
         regions=args.regions,
     ))
