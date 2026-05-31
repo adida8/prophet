@@ -326,7 +326,7 @@ a { color: inherit; }
 .lv-card {
   position: relative; display: grid;
   grid-template-columns: 6px minmax(0, 1fr);
-  grid-template-rows: auto auto auto auto auto;
+  grid-template-rows: auto auto auto auto auto auto;
   column-gap: 22px; row-gap: 6px;
   padding: 22px 26px 22px 0;
   background: var(--paper-pure);
@@ -414,8 +414,38 @@ a { color: inherit; }
 }
 .lv-card .lv-thesis em { font-style: italic; color: var(--ink); font-weight: 600; }
 
-.lv-card .lv-foot {
+/* Cross-venue strip — one-line summary embedded in the card (ADR 0004).
+   Sits between the thesis and the foot CTA row. Empty `lv-cv-strip`
+   collapses cleanly (no row gap) because the inner div is removed
+   when there's no cross-venue data. */
+.lv-card .lv-cv-strip {
   grid-column: 2; grid-row: 5;
+  display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline;
+  margin-top: 10px; padding-top: 12px;
+  border-top: 1px dashed var(--rule);
+  font-family: var(--font-sans); font-size: 12px;
+  color: var(--graphite);
+}
+.lv-card .lv-cv-count {
+  font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  font-size: 10px; color: var(--flame-deep);
+}
+.lv-card .lv-cv-sep { color: var(--graphite-soft); }
+.lv-card .lv-cv-best { color: var(--ink); }
+.lv-card .lv-cv-best strong {
+  font-weight: 700; color: var(--ink); font-family: var(--font-sans);
+}
+.lv-card .lv-cv-odds {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  color: var(--ink); font-weight: 700;
+}
+.lv-card .lv-cv-true {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  color: var(--flame-deep); font-weight: 700;
+}
+
+.lv-card .lv-foot {
+  grid-column: 2; grid-row: 6;
   display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: baseline;
   margin-top: 10px; padding-top: 14px;
   border-top: var(--hairline-soft);
@@ -3027,6 +3057,17 @@ def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = Tr
         f'data-verdict-state="{escape(state)}" '
         f'data-pick-side="{escape(pick_side or "")}"></div>'
     )
+    # Compact cross-venue strip (ADR 0004). Renders on the card itself
+    # so the comparison story is visible on the listing and the lead
+    # card without the reader having to drill into the detail page.
+    cv_strip_html = _render_card_venue_strip(
+        match.get("market_prices") or [],
+        state=state,
+        pick_side=pick_side,
+        team_a=match.get("team_a") or "",
+        team_b=match.get("team_b") or "",
+    )
+
     return (
         f'<div class="lv-card {state_class}">'
         f'{overlay_link}'
@@ -3035,8 +3076,91 @@ def render_card(match: dict, *, is_lead: bool = False, show_read_case: bool = Tr
         f'<h3 class="lv-teams">{title}</h3>'
         f'<p class="lv-venue-meta">{vmeta}</p>'
         f'<p class="lv-thesis">{thesis}</p>'
+        f'{cv_strip_html}'
         f'{foot}'
         f'{activity_slot}'
+        '</div>'
+    )
+
+
+def _render_card_venue_strip(
+    market_prices: list,
+    *,
+    state: str,
+    pick_side: str | None,
+    team_a: str,
+    team_b: str,
+) -> str:
+    """One-line compact 'N venues priced · cheapest X at Y%' strip.
+
+    Renders on every card with cross-venue data (legacy Poly-only
+    snapshots return ""). For Picks: shows the cheapest venue + true
+    price on the picked side. For Pass/Avoid: shows the side with the
+    largest cross-venue spread so the reader still sees the comparison
+    surface, just without an action.
+    """
+    if not market_prices:
+        return ""
+
+    # Pick the side to summarise.
+    side_to_team = {"a": team_a, "draw": "Draw", "b": team_b}
+    summary_side: str | None = None
+    if state == "pick" and pick_side:
+        for code, name in side_to_team.items():
+            if pick_side == name:
+                summary_side = code
+                break
+
+    # Index by side for quick lookup.
+    rows_by_side = {r.get("side"): r for r in market_prices if r.get("side")}
+
+    if summary_side is None:
+        # Pass / Avoid / unknown side: pick the side with the widest
+        # spread of true_price across venues — that's where the
+        # comparison story is most interesting.
+        widest_spread = -1.0
+        for s, r in rows_by_side.items():
+            tps = [v.get("true_price") for v in (r.get("venues") or [])
+                   if v.get("true_price") is not None]
+            if len(tps) < 2:
+                continue
+            spread = max(tps) - min(tps)
+            if spread > widest_spread:
+                widest_spread = spread
+                summary_side = s
+
+    if summary_side is None:
+        return ""
+
+    row = rows_by_side.get(summary_side)
+    if not row:
+        return ""
+    venues = row.get("venues") or []
+    priced = [v for v in venues if v.get("true_price") is not None]
+    if not priced:
+        return ""
+
+    best = next((v for v in priced if v.get("is_best")), None)
+    if best is None:
+        best = min(priced, key=lambda v: v["true_price"])
+    side_label = side_to_team.get(summary_side, summary_side)
+    n_venues = len(priced)
+    best_name = best.get("name") or best.get("venue") or "?"
+    best_true = best.get("true_price")
+    best_decimal = best.get("decimal_odds")
+
+    odds_bit = (f' <span class="lv-cv-odds">@ {best_decimal:.2f}</span>'
+                if isinstance(best_decimal, (int, float)) else "")
+    label_prefix = "Cheapest on "
+    return (
+        '<div class="lv-cv-strip">'
+        f'<span class="lv-cv-count">{n_venues} venues priced</span>'
+        '<span class="lv-cv-sep">·</span>'
+        f'<span class="lv-cv-best">{escape(label_prefix)}'
+        f'<strong>{escape(side_label)}</strong>: '
+        f'{escape(best_name)}{odds_bit} '
+        f'<span class="lv-cv-true">({best_true * 100:.1f}%)</span>'
+        '</span>'
         '</div>'
     )
 
