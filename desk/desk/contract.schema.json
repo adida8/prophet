@@ -167,6 +167,15 @@
         "title": "Copy",
         "type": "object"
       },
+      "DeployRegion": {
+        "description": "Which audience bucket this deploy serves.",
+        "enum": [
+          "us",
+          "non-us"
+        ],
+        "title": "DeployRegion",
+        "type": "string"
+      },
       "HardSignalAdjustment": {
         "additionalProperties": false,
         "description": "One news-signal-driven Elo nudge applied before the model ran.\n\nSurfaces the audit trail the engine keeps internally: which side was\nmoved, by how much, from which signal, and where to verify it. Lets\na reader answer \"did this signal change the verdict?\" from the\npublished JSON alone, without grepping run logs.\n\n`side` is `\"a\"` or `\"b\"` matching the fixture's `team_a` / `team_b`\nnaming; `delta_elo` is negative for a penalty (the v1 only direction).\n`capped` is true when the per-team penalty cap clipped this row \u2014\nuseful for spotting fixtures where multiple injuries piled up. The\n`signal_*` fields point back to the originating Signal so a reader\ncan chase the underlying claim.",
@@ -258,6 +267,141 @@
         "title": "HardSignalAdjustment",
         "type": "object"
       },
+      "MarketPriceRow": {
+        "additionalProperties": false,
+        "description": "All per-venue quotes for one side of one market.\n\nEach row appears at most once in `MatchOutput.market_prices`.\nOrder of `venues` follows render order \u2014 sharp anchor first, then\nexchange, then consumer books, then prediction market.",
+        "properties": {
+          "side": {
+            "enum": [
+              "a",
+              "draw",
+              "b"
+            ],
+            "title": "Side",
+            "type": "string"
+          },
+          "venues": {
+            "items": {
+              "$ref": "#/$defs/MarketPriceVenue"
+            },
+            "maxItems": 8,
+            "title": "Venues",
+            "type": "array"
+          }
+        },
+        "required": [
+          "side"
+        ],
+        "title": "MarketPriceRow",
+        "type": "object"
+      },
+      "MarketPriceVenue": {
+        "additionalProperties": false,
+        "description": "One venue's quote for one side, per ADR 0004.\n\nCarries everything the comparison card needs to render:\n- `decimal_odds` for the book quote (\"Pinnacle 5.40\")\n- `implied_p`    naive implied probability (`1/d` or `ask`)\n- `true_price`   effective implied paid (`e` per scope \u00a72)\n- `fair_p`       venue's de-vigged opinion (consensus narrative)\n- `overround`    per-venue margin sum (renders as \"Pinnacle 110%\")\n- `is_best`      cheapest venue for this side by `true_price`\n\n`decimal_odds` is None for prediction markets (they quote `ask`,\nnot decimal). `true_price` / `fair_p` / `overround` are None on\npartial-coverage rows where de-vig isn't possible.",
+        "properties": {
+          "decimal_odds": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 1.0,
+                "maximum": 1000.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Decimal Odds"
+          },
+          "fair_p": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Fair P"
+          },
+          "implied_p": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Implied P",
+            "type": "number"
+          },
+          "is_best": {
+            "default": false,
+            "title": "Is Best",
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "overround": {
+            "anyOf": [
+              {
+                "maximum": 3.0,
+                "minimum": 0.5,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Overround"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "maxLength": 8,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Region"
+          },
+          "true_price": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "True Price"
+          },
+          "venue": {
+            "$ref": "#/$defs/MarketVenue"
+          },
+          "venue_type": {
+            "$ref": "#/$defs/VenueType"
+          }
+        },
+        "required": [
+          "venue",
+          "name",
+          "venue_type",
+          "implied_p"
+        ],
+        "title": "MarketPriceVenue",
+        "type": "object"
+      },
       "MarketSource": {
         "additionalProperties": false,
         "description": "One prediction-market / sportsbook venue we link out to for this\nfixture.\n\nThe list carries **every venue we surface a trade CTA for**, not just\nthe one the Pick rode on \u2014 so the front-of-house (and any external\nconsumer) can render the full row of outgoing buttons from the\ncontract alone.\n\nFields:\n- `venue`        \u2014 the canonical venue key (matches `MarketVenue`).\n- `name`         \u2014 display name for the button (\"Polymarket\").\n- `url`          \u2014 deep link to *this fixture's* page on the venue.\n                   Falls back to the venue's nearest landing page when\n                   no per-event deep link exists yet (see below).\n- `picked`       \u2014 true for the single venue whose price backs the\n                   Pick side. False on every venue when the verdict is\n                   not a Pick (pass / avoid / withdrawn).\n- `priced_sides` \u2014 which market sides this venue actually quoted into\n                   the calculation, in `a / draw / b` order. An empty\n                   list means the venue is linked for convenience but\n                   did **not** feed the model \u2014 e.g. a venue we don't\n                   yet ingest. This is the honest \"used in the\n                   calculation?\" signal inside an all-venues list: a\n                   picked Pick venue always has a non-empty\n                   `priced_sides`; a link-only venue has `[]`.",
@@ -308,7 +452,12 @@
       "MarketVenue": {
         "enum": [
           "kalshi",
-          "polymarket"
+          "polymarket",
+          "pinnacle",
+          "williamhill",
+          "skybet",
+          "betfair_ex_uk",
+          "betfair_ex_eu"
         ],
         "title": "MarketVenue",
         "type": "string"
@@ -343,6 +492,16 @@
         ],
         "title": "Venue",
         "type": "object"
+      },
+      "VenueType": {
+        "description": "How a venue charges. Mirrors `desk.pricing.cost.VenueType`.",
+        "enum": [
+          "sportsbook",
+          "exchange",
+          "prediction_market"
+        ],
+        "title": "VenueType",
+        "type": "string"
       },
       "Verdict": {
         "additionalProperties": false,
@@ -467,6 +626,30 @@
       "competition": {
         "$ref": "#/$defs/Competition"
       },
+      "consensus_fair": {
+        "anyOf": [
+          {
+            "additionalProperties": {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "propertyNames": {
+              "enum": [
+                "a",
+                "draw",
+                "b"
+              ]
+            },
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Consensus Fair"
+      },
       "copy": {
         "$ref": "#/$defs/Copy"
       },
@@ -497,6 +680,14 @@
         "title": "Market Outcomes",
         "type": "array"
       },
+      "market_prices": {
+        "items": {
+          "$ref": "#/$defs/MarketPriceRow"
+        },
+        "maxItems": 3,
+        "title": "Market Prices",
+        "type": "array"
+      },
       "market_sources": {
         "items": {
           "$ref": "#/$defs/MarketSource"
@@ -509,6 +700,10 @@
         "pattern": "^[a-z0-9]{2,8}-[a-z0-9]+(?:-[a-z0-9]+){2,}-\\d{8}$",
         "title": "Match Id",
         "type": "string"
+      },
+      "region": {
+        "$ref": "#/$defs/DeployRegion",
+        "default": "non-us"
       },
       "sport": {
         "pattern": "^[a-z]+$",

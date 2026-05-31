@@ -490,6 +490,59 @@ def _cmd_fetch_injuries(args: argparse.Namespace) -> int:
     return 0 if n_ok > 0 else 2
 
 
+def _cmd_fetch_cards(args: argparse.Namespace) -> int:
+    """Refresh api-football card accumulation per team (Q5 of the
+    squad-paragraph spec).
+
+    Calls `/players?team=&season=&league=` once per WC26 team and
+    derives `at_risk = (yellows == threshold-1)` per spec §Q1. Drops
+    any player already suspended from the at-risk set (suspension is
+    the confirmed absence; we'd never name the same player twice).
+    """
+    import asyncio
+
+    from desk import config
+    from desk.data.api_football import APIFootballCache
+    from desk.data.api_football.client import APIFootballClient
+    from desk.data.api_football.cards_refresh import refresh_cards_all
+    from desk.data.api_football.runtime import default_cache_path
+
+    if not config.API_FOOTBALL_KEY:
+        print("API_FOOTBALL_KEY not set", file=sys.stderr)
+        return 2
+
+    db_path = Path(args.db) if args.db else default_cache_path()
+
+    async def _run():
+        async with APIFootballClient(config.API_FOOTBALL_KEY) as client:
+            with APIFootballCache(db_path) as cache:
+                return await refresh_cards_all(
+                    season=args.season,
+                    competition=args.competition,
+                    client=client, cache=cache,
+                    iso3s=args.iso3 or None,
+                )
+
+    outcomes = asyncio.run(_run())
+    by_status: dict[str, int] = {}
+    for o in outcomes:
+        by_status[o.status] = by_status.get(o.status, 0) + 1
+        if o.error:
+            print(f"  {o.iso3:5s}  {o.status:14s}  err={o.error}")
+        else:
+            print(f"  {o.iso3:5s}  {o.status:14s}  "
+                  f"team_id={o.team_id}  rows={o.n_rows:2d}  "
+                  f"at_risk={o.n_at_risk}")
+    print()
+    for status, n in sorted(by_status.items()):
+        print(f"  {status:14s}  {n}")
+    print()
+    print(f"  total: {len(outcomes)}  competition: {args.competition}  "
+          f"(db: {db_path})")
+    n_ok = by_status.get("ok", 0)
+    return 0 if n_ok > 0 else 2
+
+
 def _cmd_fetch_lineups(args: argparse.Namespace) -> int:
     """Refresh api-football /fixtures/lineups for priced fixtures whose
     kickoff lands inside a window from now.
@@ -874,12 +927,89 @@ def _cmd_verify_data_sources(args: argparse.Namespace) -> int:
                 if not ow.ok:
                     rc = max(rc, 2)
 
+        # ── odds-api (non-US sportsbooks) ──────────────────────────
+        if not config.ODDS_API_KEY:
+            lines.append("odds-api · SKIP — ODDS_API_KEY not set")
+            # Soft-skip — odds-api is optional in v1 (non-US adapter); don't
+            # bump rc.
+        else:
+            from desk.data.oddsapi import (
+                OddsAPIClient, OddsAPIError, fetch_quota_status,
+            )
+            try:
+                async with OddsAPIClient(config.ODDS_API_KEY) as c:
+                    qs = await fetch_quota_status(c)
+            except OddsAPIError as e:
+                lines.append(f"odds-api · FAIL ({e.kind}) — {e}")
+                rc = max(rc, 2)
+            else:
+                lines.append(qs.headline())
+                if not qs.key_ok:
+                    lines.append("  WARNING: /v4/sports returned empty list")
+                    rc = max(rc, 2)
+
         return rc, lines
 
     rc, lines = asyncio.run(_run())
     for line in lines:
         print(line)
     return rc
+
+
+def _cmd_fetch_odds(args: argparse.Namespace) -> int:
+    """Pull h2h prices from The Odds API into the oddsapi cache.
+
+    Default sport_key: `soccer_fifa_world_cup` (the headline launch
+    surface — matches the default DESK_COMPETITIONS=wc26 site filter).
+    Override with `--sport-key soccer_epl` (repeatable) or via the
+    `DESK_ODDS_SPORT_KEYS` env var (comma-separated).
+
+    Cost: 1 credit per region asked per call; default regions = `uk,eu`
+    (2 credits per sport_key per tick).
+
+    Exit codes:
+      0 — refresh succeeded, at least one row persisted
+      1 — refresh ran but no rows persisted (likely region misconfig
+          or empty card the day of)
+      2 — API key missing / call failed
+    """
+    import asyncio
+    import os
+    from pathlib import Path
+
+    from desk import config
+    from desk.data.oddsapi import DEFAULT_SPORT_KEYS, refresh_all
+
+    if not config.ODDS_API_KEY:
+        print("ODDS_API_KEY not set in .env", file=sys.stderr)
+        return 2
+
+    if args.sport_key:
+        sport_keys = tuple(args.sport_key)
+    else:
+        # Env-driven override falls between CLI flags and the in-code
+        # default. Lets the operator change which leagues the refresh
+        # loop fetches without a redeploy.
+        env_keys = os.getenv("DESK_ODDS_SPORT_KEYS", "").strip()
+        if env_keys:
+            sport_keys = tuple(k.strip() for k in env_keys.split(",") if k.strip())
+        else:
+            sport_keys = DEFAULT_SPORT_KEYS
+
+    cache_path = Path(args.db) if args.db else None
+
+    report = asyncio.run(refresh_all(
+        api_key=config.ODDS_API_KEY,
+        sport_keys=sport_keys,
+        cache_path=cache_path,
+        regions=args.regions,
+    ))
+    print(report.headline())
+    if report.error:
+        return 2
+    if report.events_persisted == 0:
+        return 1
+    return 0
 
 
 def _cmd_social_draft_daily(args: argparse.Namespace) -> int:
@@ -1125,6 +1255,18 @@ def build_parser() -> argparse.ArgumentParser:
                     help="restrict to ISO3(s) (repeatable); default = WC26 registry")
     fi.set_defaults(func=_cmd_fetch_injuries)
 
+    fc = sub.add_parser(
+        "fetch-cards",
+        help="refresh api-football card accumulation per team (squad-paragraph Q5)",
+    )
+    fc.add_argument("--db", help="override api-football cache path")
+    fc.add_argument("--season", type=int, default=2026, help="season year (default 2026)")
+    fc.add_argument("--competition", default="wc26",
+                    help="competition code from CARD_RULES (default wc26)")
+    fc.add_argument("--iso3", action="append",
+                    help="restrict to ISO3(s) (repeatable); default = WC26 registry")
+    fc.set_defaults(func=_cmd_fetch_cards)
+
     fl = sub.add_parser(
         "fetch-lineups",
         help="refresh api-football /fixtures/lineups for fixtures inside a kickoff window",
@@ -1136,6 +1278,17 @@ def build_parser() -> argparse.ArgumentParser:
     fl.add_argument("--match-id", action="append",
                     help="restrict to match_id(s) (repeatable)")
     fl.set_defaults(func=_cmd_fetch_lineups)
+
+    fo = sub.add_parser(
+        "fetch-odds",
+        help="pull h2h sportsbook + exchange prices from The Odds API (non-US pivot)",
+    )
+    fo.add_argument("--db", help="override oddsapi cache path (default: desk/data/oddsapi.db)")
+    fo.add_argument("--sport-key", action="append",
+                    help="sport_key to fetch (repeatable). Default: soccer_epl")
+    fo.add_argument("--regions", default="uk,eu",
+                    help="Odds API regions list (default uk,eu)")
+    fo.set_defaults(func=_cmd_fetch_odds)
 
     fe = sub.add_parser(
         "fetch-elo",

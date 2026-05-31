@@ -82,6 +82,13 @@ class Inputs(TypedDict, total=False):
     # football-package payload type.
     team_a_news: object | None
     team_b_news: object | None
+    # Cross-venue best-place-to-act (ADR 0004). When present, the
+    # picked-side driver list adds one line naming the cheapest venue
+    # + the effective implied % paid there. None when the cross-venue
+    # flag is off OR the picked venue is Polymarket (no new info to
+    # surface — `venue_label` already names it).
+    best_venue_label:      str  | None
+    best_venue_true_price: float | None
 
 
 def _pct(p: float | None) -> str:
@@ -688,6 +695,16 @@ def _pick_copy(i: Inputs) -> Copy:
         f"Bootstrap lower-bound on the {side_name} side still clears the Pick threshold.",
         f"Editorial analysis only — Odds Primer does not place trades or recommend a wager.",
     ]
+    # Cross-venue best-place line (ADR 0004). Slot it ahead of the
+    # generic Elo / threshold lines so it lands in the rendered top-3
+    # without re-tuning the rotation salt.
+    bv_label = i.get("best_venue_label")
+    bv_e     = i.get("best_venue_true_price")
+    if bv_label and bv_e is not None and bv_label != venue_label:
+        pick_driver_pool.insert(
+            0,
+            f"Cheapest way in on {side_name} is {bv_label} at an effective {_pct(bv_e)}.",
+        )
     _pd = _variant_index(salt + "/drivers", len(pick_driver_pool))
     drivers = [pick_driver_pool[(_pd + k) % len(pick_driver_pool)] for k in range(4)]
     return Copy(title=title, summary=summary, blurb=blurb, drivers=drivers)

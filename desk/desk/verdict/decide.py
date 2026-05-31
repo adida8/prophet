@@ -64,14 +64,35 @@ class _Edges:
     best_venues:    dict[Side, VenuePrice]
 
 
-def _compute_edges(model_p: Mapping[Side, float], market: MarketSnapshot, sides: tuple[Side, ...]) -> _Edges | None:
+def _compute_edges(
+    model_p: Mapping[Side, float],
+    market: MarketSnapshot,
+    sides: tuple[Side, ...],
+    *,
+    cross_venue_edge: bool = False,
+) -> _Edges | None:
+    """Per-side best venue + edge in pp.
+
+    When `cross_venue_edge` is True AND the snapshot's rows carry
+    `true_price`, edge is computed as `model_p − true_price` (the
+    actual cost of acting); otherwise it's the legacy
+    `model_p − implied_p`. Mixed snapshots (some rows have true_price,
+    some don't) fall back to legacy semantics inside
+    `best_for_true_price` — see desk/verdict/compare.py.
+    """
     edges_pp:    dict[Side, float]      = {}
     best_venues: dict[Side, VenuePrice] = {}
     for s in sides:
-        bv = market.best_for(s)
+        bv = (
+            market.best_for_true_price(s) if cross_venue_edge
+            else market.best_for(s)
+        )
         if bv is None:
             return None
-        edges_pp[s]    = (model_p[s] - bv.implied_p) * 100.0
+        # Edge runs against `true_price` whenever it's populated on
+        # the chosen venue; otherwise the naive implied stands in.
+        cost = bv.true_price if (cross_venue_edge and bv.true_price is not None) else bv.implied_p
+        edges_pp[s]    = (model_p[s] - cost) * 100.0
         best_venues[s] = bv
     return _Edges(by_side=edges_pp, best_venues=best_venues)
 
@@ -106,6 +127,7 @@ def decide(
     match_id:       str | None = None,        # for logs only
     model_p_lower:  Mapping[Side, float] | None = None,         # Phase A.3
     market_url:     str | None = None,        # deep link to venue page (CTA)
+    cross_venue_edge: bool | None = None,     # non-US pivot — None = read flag
 ) -> tuple[Verdict, DecisionMeta]:
     """Apply the Pick / Pass / Avoid ladder.
 
@@ -121,6 +143,13 @@ def decide(
     counts without parsing logs.
     """
     th = thresholds if thresholds is not None else _current_thresholds()
+
+    # Resolve the cross-venue edge flag. Explicit kwarg wins; otherwise
+    # read the env-driven config once per call so tests + the live
+    # refresh loop can flip the lever independently.
+    if cross_venue_edge is None:
+        from desk import config
+        cross_venue_edge = bool(config.CROSS_VENUE_EDGE_ENABLED)
 
     # ── Sanity gate: stub-Elo (PR 4.5) ─────────────────────────────
     # Stub Elo is the v1 fixed-default for unknown clubs. Issuing a
@@ -142,7 +171,9 @@ def decide(
             DecisionMeta(forced_pass_reason="illiquid", elo_sources=elo_sources),
         )
 
-    edges = _compute_edges(model_p, market, sides)
+    edges = _compute_edges(
+        model_p, market, sides, cross_venue_edge=cross_venue_edge,
+    )
     if edges is None:
         # Missing market data on at least one side — default to Pass per spec §9.
         return (
@@ -156,10 +187,19 @@ def decide(
     # threshold. This is the "honest about uncertainty" gate: shaky Elo
     # produces a wide band, and a wide band fails the lower-bound test.
     if model_p_lower is not None:
+        # Lower-bound gate runs against the same cost surface as
+        # `_compute_edges` chose — true_price when on + populated,
+        # naive implied_p otherwise.
+        def _cost(s: Side) -> float:
+            bv = edges.best_venues[s]
+            if cross_venue_edge and bv.true_price is not None:
+                return bv.true_price
+            return bv.implied_p
+
         pick_candidates = [
             (s, edges.by_side[s])
             for s in sides
-            if (model_p_lower[s] - edges.best_venues[s].implied_p) * 100.0 >= th.pick_pp
+            if (model_p_lower[s] - _cost(s)) * 100.0 >= th.pick_pp
         ]
     else:
         pick_candidates = [(s, edges.by_side[s]) for s in sides if edges.by_side[s] >= th.pick_pp]

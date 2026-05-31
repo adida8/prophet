@@ -41,6 +41,10 @@ ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
 API_FOOTBALL_KEY:        str = os.getenv("API_FOOTBALL_KEY", "")
 # Phase 3 weather (B.2). OpenWeatherMap One Call 3.0.
 OPENWEATHERMAP_API_KEY:  str = os.getenv("OPENWEATHERMAP_API_KEY", "")
+# Non-US sportsbook adapter — The Odds API (the-odds-api.com).
+# Powers Pinnacle, Betfair Exchange, William Hill, Sky Bet pricing
+# (per THE_DESK_NONUS_SPORTSBOOK_SCOPING.md).
+ODDS_API_KEY:            str = os.getenv("ODDS_API_KEY", "")
 
 # ── Sport registry default ────────────────────────────────────────────
 # v1 ships football only. Sports config in v2 reads sources.yaml.
@@ -76,3 +80,30 @@ FORM_RANK_RESIDUAL_ENABLED: bool = os.getenv("DESK_FORM_RANK_RESIDUAL", "0") == 
 # audit (`desk b3-audit`) clears + a forward-validation report shows
 # no Brier regression.
 INJURY_PENALTY_ENABLED: bool = os.getenv("DESK_INJURY_PENALTY", "0") == "1"
+
+# ── Non-US pivot: cross-venue edge + odds-API live fetch ─────────────
+# Master flag for the non-US sportsbook integration
+# (THE_DESK_NONUS_CODING_PROMPT.md). When OFF (default), every code
+# path is byte-identical to pre-pivot: verdict.edge is still computed
+# against Polymarket alone via `MarketSnapshot.best_for(side)` and the
+# odds-api fetch step is skipped. When ON:
+#   - `MarketSnapshot.best_for_true_price` is used in `decide()`.
+#   - The publisher emits the per-venue contract block.
+#   - The refresh loop runs the odds-api fetch (gated separately by
+#     `DESK_ODDS_FETCH` so the operator can prime the cache without
+#     promoting the verdict path).
+CROSS_VENUE_EDGE_ENABLED: bool = os.getenv("DESK_CROSS_VENUE_EDGE", "0") == "1"
+
+# Independent gate for the actual live fetch in the refresh loop.
+# Useful when the operator wants to prime the cache from CLI without
+# changing what gets published.
+ODDS_API_FETCH_ENABLED: bool = os.getenv("DESK_ODDS_FETCH", "0") == "1"
+
+# Pluggable de-vig method seam (multiplicative for v1; Shin / power
+# arrive with outrights).
+DEVIG_METHOD: str = os.getenv("DESK_DEVIG_METHOD", "multiplicative").strip().lower()
+
+# Region the deploy is serving. Lets the publisher tag every match
+# with the venue bucket so the front-end can render the right CTA
+# row. Defaults to "non-us" to match the launch pivot.
+REGION: str = os.getenv("DESK_REGION", "non-us").strip().lower()

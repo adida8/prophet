@@ -42,6 +42,27 @@ class VerdictState(str, Enum):
 class MarketVenue(str, Enum):
     KALSHI     = "kalshi"
     POLYMARKET = "polymarket"
+    # Non-US launch venue set (ADR 0004). Sportsbooks first, then the
+    # commission-model exchange. Bet365 is intentionally NOT here —
+    # The Odds API doesn't carry it for UK/EU football.
+    PINNACLE        = "pinnacle"
+    WILLIAMHILL     = "williamhill"
+    SKYBET          = "skybet"
+    BETFAIR_EX_UK   = "betfair_ex_uk"
+    BETFAIR_EX_EU   = "betfair_ex_eu"
+
+
+class VenueType(str, Enum):
+    """How a venue charges. Mirrors `desk.pricing.cost.VenueType`."""
+    SPORTSBOOK        = "sportsbook"
+    EXCHANGE          = "exchange"
+    PREDICTION_MARKET = "prediction_market"
+
+
+class DeployRegion(str, Enum):
+    """Which audience bucket this deploy serves."""
+    US     = "us"
+    NON_US = "non-us"
 
 
 # ── Constraints ───────────────────────────────────────────────────────
@@ -231,6 +252,58 @@ class HardSignalAdjustment(BaseModel):
     published_at: Optional[datetime] = None
 
 
+class MarketPriceVenue(BaseModel):
+    """One venue's quote for one side, per ADR 0004.
+
+    Carries everything the comparison card needs to render:
+    - `decimal_odds` for the book quote ("Pinnacle 5.40")
+    - `implied_p`    naive implied probability (`1/d` or `ask`)
+    - `true_price`   effective implied paid (`e` per scope §2)
+    - `fair_p`       venue's de-vigged opinion (consensus narrative)
+    - `overround`    per-venue margin sum (renders as "Pinnacle 110%")
+    - `is_best`      cheapest venue for this side by `true_price`
+
+    `decimal_odds` is None for prediction markets (they quote `ask`,
+    not decimal). `true_price` / `fair_p` / `overround` are None on
+    partial-coverage rows where de-vig isn't possible.
+    """
+    model_config = ConfigDict(extra="forbid", use_enum_values=True)
+
+    venue:        MarketVenue
+    name:         Annotated[str, StringConstraints(min_length=1, max_length=64)]
+    venue_type:   VenueType
+    region:       Optional[Annotated[str, StringConstraints(min_length=1, max_length=8)]] = None
+    decimal_odds: Optional[Annotated[float, Field(gt=1.0, le=1000.0)]] = None
+    implied_p:    Annotated[float, Field(ge=0.0, le=1.0)]
+    true_price:   Optional[Annotated[float, Field(ge=0.0, le=1.0)]] = None
+    fair_p:       Optional[Annotated[float, Field(ge=0.0, le=1.0)]] = None
+    overround:    Optional[Annotated[float, Field(ge=0.5, le=3.0)]] = None
+    is_best:      bool = False
+
+
+class MarketPriceRow(BaseModel):
+    """All per-venue quotes for one side of one market.
+
+    Each row appears at most once in `MatchOutput.market_prices`.
+    Order of `venues` follows render order — sharp anchor first, then
+    exchange, then consumer books, then prediction market.
+    """
+    model_config = ConfigDict(extra="forbid", use_enum_values=True)
+
+    side:   Literal["a", "draw", "b"]
+    venues: list[MarketPriceVenue] = Field(default_factory=list, max_length=8)
+
+    @model_validator(mode="after")
+    def _at_most_one_best(self) -> "MarketPriceRow":
+        best_count = sum(1 for v in self.venues if v.is_best)
+        if best_count > 1:
+            raise ValueError(
+                f"side {self.side!r}: {best_count} venues marked is_best; "
+                "the publisher must pick exactly one."
+            )
+        return self
+
+
 class Copy(BaseModel):
     """Editorial output. Voice rules enforced by explainer post-checks (PR 5).
 
@@ -281,6 +354,14 @@ class MatchOutput(BaseModel):
     verdict:         Verdict
     copy:            Copy = Field(default_factory=Copy)
     market_sources:  list[MarketSource] = Field(default_factory=list, max_length=8)
+    # ADR 0004 — non-US pivot. Empty when the cross-venue flag is off
+    # or the engine only sees Polymarket. `consensus_fair` is the
+    # narrative-only sharp-weighted blend (NOT used for edge); keys
+    # are a subset of `market_outcomes`. `region` tags which audience
+    # bucket this deploy serves.
+    market_prices:   list[MarketPriceRow] = Field(default_factory=list, max_length=3)
+    consensus_fair:  Optional[dict[Literal["a","draw","b"], Annotated[float, Field(ge=0.0, le=1.0)]]] = None
+    region:          DeployRegion = DeployRegion.NON_US
     hard_signal_adjustments: list[HardSignalAdjustment] = Field(default_factory=list, max_length=20)
     updated_at:      datetime
 

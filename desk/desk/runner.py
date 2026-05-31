@@ -75,6 +75,8 @@ def _build_match(
     copy=None,
     hard_signal_adjustments=None,
     market_sources=None,
+    market_prices=None,
+    consensus_fair=None,
 ) -> MatchOutput:
     venue = None
     if fx.venue_city and fx.venue_stadium and fx.venue_country:
@@ -103,6 +105,10 @@ def _build_match(
         kwargs["copy"] = copy
     if market_sources:
         kwargs["market_sources"] = list(market_sources)
+    if market_prices:
+        kwargs["market_prices"] = list(market_prices)
+    if consensus_fair:
+        kwargs["consensus_fair"] = dict(consensus_fair)
     if hard_signal_adjustments:
         kwargs["hard_signal_adjustments"] = list(hard_signal_adjustments)
     return MatchOutput(**kwargs)
@@ -216,6 +222,19 @@ def run_once(
     if _elo_default_path().exists():
         elo_runtime = EloRuntime()
 
+    # Non-US pivot — odds-api cache (sportsbooks + exchange). When
+    # `DESK_CROSS_VENUE_EDGE=1` and the cache file exists, the sport
+    # adapter merges cached venues into each fixture's snapshot before
+    # the verdict runs. With the cache missing the flag is a no-op.
+    from desk.data.oddsapi import OddsAPICache, default_cache_path as _odds_default_path
+    oddsapi_cache = None
+    if config.CROSS_VENUE_EDGE_ENABLED and _odds_default_path().exists():
+        try:
+            oddsapi_cache = OddsAPICache(_odds_default_path())
+        except Exception as e:                          # noqa: BLE001
+            log.warning("odds-api cache open failed: %s", e)
+            oddsapi_cache = None
+
     # Forward-validation logger (Phase B.1 Shadow). Open once per run
     # so per-fixture inserts don't re-open the sqlite file. The logger
     # writes BOTH the published prediction (residual off, today's path)
@@ -298,6 +317,8 @@ def run_once(
                 copy = None
                 hard_adjustments = None
                 market_sources = None
+                market_prices = None
+                consensus_fair_pkt = None
                 try:
                     if hasattr(sport, "decide_and_explain"):
                         # Pass the signals runtime through (PR F). Sports
@@ -310,6 +331,7 @@ def run_once(
                                 signals_runtime=signals_runtime,
                                 api_football_runtime=api_football_runtime,
                                 elo_runtime=elo_runtime,
+                                oddsapi_cache=oddsapi_cache,
                             )
                         except TypeError:
                             # Older sport adapters may not accept all
@@ -319,21 +341,34 @@ def run_once(
                                     fx, snapshot,
                                     signals_runtime=signals_runtime,
                                     api_football_runtime=api_football_runtime,
+                                    elo_runtime=elo_runtime,
                                 )
                             except TypeError:
                                 try:
                                     result = sport.decide_and_explain(
-                                        fx, snapshot, signals_runtime=signals_runtime,
+                                        fx, snapshot,
+                                        signals_runtime=signals_runtime,
+                                        api_football_runtime=api_football_runtime,
                                     )
                                 except TypeError:
-                                    result = sport.decide_and_explain(fx, snapshot)
+                                    try:
+                                        result = sport.decide_and_explain(
+                                            fx, snapshot, signals_runtime=signals_runtime,
+                                        )
+                                    except TypeError:
+                                        result = sport.decide_and_explain(fx, snapshot)
                         # decide_and_explain may return (v, copy),
                         # (v, copy, DecisionMeta),
                         # (v, copy, DecisionMeta, hard_signal_adjustments),
-                        # or that plus a 5th market_sources list. Older
-                        # sports without the later slots just don't
-                        # populate them.
-                        if len(result) == 5:
+                        # (v, ..., market_sources), or that plus the
+                        # cross-venue (market_prices, consensus_fair).
+                        # Older sports without the later slots leave
+                        # them None.
+                        if len(result) == 7:
+                            (v, copy, meta, hard_adjustments,
+                             market_sources, market_prices,
+                             consensus_fair_pkt) = result
+                        elif len(result) == 5:
                             v, copy, meta, hard_adjustments, market_sources = result
                         elif len(result) == 4:
                             v, copy, meta, hard_adjustments = result
@@ -360,6 +395,8 @@ def run_once(
                         fx, verdict=v, now=now, copy=copy,
                         hard_signal_adjustments=hard_adjustments,
                         market_sources=market_sources,
+                        market_prices=market_prices,
+                        consensus_fair=consensus_fair_pkt,
                     )
                 except Exception as e:                      # noqa: BLE001
                     log.warning("build_match failed for %s: %s", fx.match_id, e)
@@ -544,6 +581,12 @@ def run_once(
             forward_validation_log.close()
         except Exception as e:                          # noqa: BLE001
             log.warning("forward-validation log close failed: %s", e)
+
+    if oddsapi_cache is not None:
+        try:
+            oddsapi_cache.close()
+        except Exception as e:                          # noqa: BLE001
+            log.warning("odds-api cache close failed: %s", e)
 
     return written
 

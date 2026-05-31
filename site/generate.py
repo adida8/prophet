@@ -37,7 +37,11 @@ from html import escape
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DESK_OUT = ROOT / "desk" / "data" / "output"
+# Honour DESK_OUTPUT_DIR so a Railway volume mount (e.g. /data/output)
+# can hold per-match + per-outright JSON across redeploys. Falls back to
+# the repo-relative default for local dev.
+_OUTPUT_ENV = os.getenv("DESK_OUTPUT_DIR")
+DESK_OUT = Path(_OUTPUT_ENV) if _OUTPUT_ENV else ROOT / "desk" / "data" / "output"
 FOOTBALL_DIR = DESK_OUT / "football"
 OUTRIGHTS_DIR = DESK_OUT / "outrights"
 SITE_OUT = ROOT / "site" / "public"
@@ -1043,6 +1047,83 @@ table.standings { border-collapse: collapse; width: 100%; font-size: 14px; }
 .why-disagrees p {
   margin: 0; font-family: var(--font-serif); font-size: 16px; line-height: 1.55;
   color: var(--ink); max-width: 64ch;
+}
+
+/* ─── CROSS-VENUE PRICE COMPARISON (ADR 0004) ──────────────────────── */
+.cross-venue {
+  margin: 28px 0 24px;
+  padding: 22px 24px 20px;
+  border-top: var(--hairline-strong); border-bottom: var(--hairline);
+  background: var(--paper-pure);
+}
+.cross-venue h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--flame-deep);
+}
+.cross-venue .cv-lede {
+  margin: 0 0 18px; font-family: var(--font-serif);
+  font-size: 14.5px; line-height: 1.55; color: var(--graphite-soft);
+  max-width: 64ch;
+}
+.cross-venue .cv-side {
+  margin: 16px 0;
+}
+.cross-venue .cv-side h3 {
+  margin: 0 0 6px;
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink);
+}
+.cross-venue .cv-table {
+  width: 100%; border-collapse: collapse;
+  font-family: var(--font-sans); font-size: 13px;
+}
+.cross-venue .cv-table thead th {
+  text-align: left; padding: 7px 8px;
+  font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--graphite-soft); font-weight: 700;
+  border-bottom: var(--hairline-soft);
+  cursor: help;
+}
+.cross-venue .cv-table thead th + th { text-align: right; }
+.cross-venue .cv-table tbody td {
+  padding: 8px;
+  border-bottom: var(--hairline-soft);
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+.cross-venue .cv-table tbody td + td { text-align: right; }
+.cross-venue .cv-table tbody .cv-venue { font-weight: 600; color: var(--ink); }
+.cross-venue .cv-table tbody .cv-true {
+  font-family: var(--font-mono); font-size: 13px; color: var(--ink);
+}
+.cross-venue .cv-row.is-best .cv-true {
+  font-weight: 700; color: var(--flame-deep);
+}
+.cross-venue .cv-row.is-best { background: var(--paper-warm); }
+.cross-venue .cv-consensus td {
+  border-top: 1px solid var(--rule);
+  font-style: italic; color: var(--graphite-soft);
+}
+
+.cross-venue .cv-type,
+.cross-venue .cv-region,
+.cross-venue .cv-best {
+  display: inline-block; margin-left: 6px; padding: 1px 6px;
+  font-size: 9.5px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  border-radius: 2px;
+}
+.cross-venue .cv-type--book      { background: var(--paper-warm); color: var(--graphite); }
+.cross-venue .cv-type--exchange  { background: #eaf2f7;            color: #25506a; }
+.cross-venue .cv-type--pm        { background: #f1ecf6;            color: #523864; }
+.cross-venue .cv-region { background: transparent; border: 1px solid var(--rule); color: var(--graphite-soft); }
+.cross-venue .cv-best   { background: var(--flame-deep); color: #fff; margin-left: 8px; }
+
+@media (max-width: 640px) {
+  .cross-venue { padding: 18px 14px 14px; }
+  .cross-venue .cv-table { font-size: 12px; }
+  .cross-venue .cv-type, .cross-venue .cv-region { display: none; }
 }
 
 /* ─── HOW THE DESK WORKS ───────────────────────────────────────────── */
@@ -3261,6 +3342,112 @@ def _render_sources_block(citations: list[dict]) -> str:
     )
 
 
+def _render_cross_venue_block(
+    market_prices: list,
+    consensus_fair: dict | None,
+    *,
+    team_a: str,
+    team_b: str,
+) -> str:
+    """Per-match cross-venue comparison block (ADR 0004).
+
+    Reads the published `market_prices` rows + `consensus_fair` and
+    renders one table per side: home / draw / away. Each row inside a
+    side shows venue name + decimal odds (when present) + true price +
+    fair % + a "Best price" badge on the cheapest venue.
+
+    Returns "" when the contract carries no market_prices (legacy
+    payloads or flag-off path), so the section disappears entirely
+    rather than showing an empty header.
+    """
+    if not market_prices:
+        return ""
+
+    side_labels = {"a": team_a, "draw": "Draw", "b": team_b}
+
+    sections: list[str] = []
+    for row in market_prices:
+        side = row.get("side")
+        venues = row.get("venues") or []
+        if not venues:
+            continue
+        side_label = side_labels.get(side, side or "?")
+
+        venue_rows: list[str] = []
+        for v in venues:
+            name        = v.get("name") or v.get("venue") or ""
+            venue_type  = v.get("venue_type") or ""
+            region      = v.get("region") or ""
+            decimal_odds = v.get("decimal_odds")
+            true_price   = v.get("true_price")
+            fair_p       = v.get("fair_p")
+            is_best      = bool(v.get("is_best"))
+
+            decimal_cell = f"{decimal_odds:.2f}" if isinstance(decimal_odds, (int, float)) else "—"
+            true_cell    = (f"{true_price * 100:.1f}%" if isinstance(true_price, (int, float))
+                            else "—")
+            fair_cell    = (f"{fair_p * 100:.1f}%" if isinstance(fair_p, (int, float)) else "—")
+
+            type_badge = ""
+            if venue_type == "exchange":
+                type_badge = '<span class="cv-type cv-type--exchange" title="Exchange — commission on net winnings">Exchange</span>'
+            elif venue_type == "prediction_market":
+                type_badge = '<span class="cv-type cv-type--pm" title="Prediction market — fee + spread">Prediction market</span>'
+            elif venue_type == "sportsbook":
+                type_badge = '<span class="cv-type cv-type--book" title="Sportsbook — margin in price">Sportsbook</span>'
+
+            region_badge = (f'<span class="cv-region">{escape(region.upper())}</span>'
+                            if region else "")
+            best_badge = '<span class="cv-best">Best price</span>' if is_best else ""
+            row_class = " is-best" if is_best else ""
+
+            venue_rows.append(
+                f'<tr class="cv-row{row_class}">'
+                f'<td class="cv-venue">{escape(name)}{type_badge}{region_badge}</td>'
+                f'<td class="cv-decimal">{escape(decimal_cell)}</td>'
+                f'<td class="cv-true">{escape(true_cell)}{best_badge}</td>'
+                f'<td class="cv-fair">{escape(fair_cell)}</td>'
+                '</tr>'
+            )
+
+        consensus_html = ""
+        if consensus_fair and side in consensus_fair:
+            cf = consensus_fair[side]
+            consensus_html = (
+                f'<tr class="cv-consensus"><td>Sharp consensus</td>'
+                f'<td>—</td>'
+                f'<td>—</td>'
+                f'<td>{cf * 100:.1f}%</td></tr>'
+            )
+
+        sections.append(
+            f'<section class="cv-side"><h3>{escape(side_label)}</h3>'
+            '<table class="cv-table" role="table">'
+            '<thead><tr>'
+            '<th scope="col">Venue</th>'
+            '<th scope="col" title="Decimal odds quoted">Odds</th>'
+            '<th scope="col" title="All-in cost you actually pay — margin, fee, spread, commission folded in">True price</th>'
+            '<th scope="col" title="Venue\'s de-vigged opinion (margin stripped)">Fair %</th>'
+            '</tr></thead>'
+            f'<tbody>{"".join(venue_rows)}{consensus_html}</tbody>'
+            '</table>'
+            '</section>'
+        )
+
+    if not sections:
+        return ""
+
+    return (
+        '<section class="cross-venue" aria-labelledby="cv-title">'
+        '<h2 id="cv-title">Price across venues</h2>'
+        '<p class="cv-lede">The number that matters for the Pick is the '
+        '<em>true price</em> — what you actually pay once each venue\'s margin, fee, '
+        'spread, or commission is folded in. The cheapest true price wins.</p>'
+        + "".join(sections) +
+        '</section>'
+    )
+
+
 def render_match_page(match: dict) -> str:
     """Per-match page: header + lead card + blurb + drivers + sources."""
     title = match["copy"].get("title") or f"{match['team_a']} v {match['team_b']}"
@@ -3280,6 +3467,12 @@ def render_match_page(match: dict) -> str:
 
     sources_html = _render_sources_block(citations)
     adjustments_html = _render_model_adjustments_block(adjustments)
+    cross_venue_html = _render_cross_venue_block(
+        match.get("market_prices") or [],
+        match.get("consensus_fair") or None,
+        team_a=match.get("team_a") or "Home",
+        team_b=match.get("team_b") or "Away",
+    )
 
     # ── Trust strip: updated/model-refresh/market-snapshot timestamps ──
     updated_at = match.get("updated_at") or ""
@@ -3377,6 +3570,7 @@ def render_match_page(match: dict) -> str:
         + disclaimer_html
         + (f'<div class="blurb">{blurb_paras}</div>' if blurb_paras else "")
         + cta_row
+        + cross_venue_html
         + why_disagrees_html
         + drivers_html
         + adjustments_html

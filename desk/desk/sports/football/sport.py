@@ -21,8 +21,13 @@ from desk.ops.report import IngestStats, SourceFreshness, SourceStatus
 from desk.publish.contract import (
     Copy,
     HardSignalAdjustment as ContractHardSignalAdjustment,
+    MarketPriceRow,
     MarketSource,
     Verdict,
+)
+from desk.publish.market_prices import (
+    build_consensus_fair,
+    build_market_prices,
 )
 from desk.sport import FixtureRef, MarketSide
 from desk.sports.football.features_builder import build_features
@@ -150,12 +155,15 @@ class FootballSport:
         signals_runtime=None,
         api_football_runtime=None,
         elo_runtime=None,
+        oddsapi_cache=None,
     ) -> tuple[
         Verdict,
         Copy,
         DecisionMeta,
         list[ContractHardSignalAdjustment],
         list[MarketSource],
+        list[MarketPriceRow],
+        dict | None,
     ]:
         """Compute the verdict, the editorial copy, the decision meta,
         the per-match hard-signal audit list, and the outbound
@@ -185,7 +193,35 @@ class FootballSport:
         the Pick rode on it, and which sides it priced. The runner
         threads it onto `MatchOutput.market_sources`. See
         `desk/sports/football/market_links.py`.
+
+        When `oddsapi_cache` is provided, the snapshot is enriched with
+        cached non-US sportsbook + exchange prices before the verdict
+        runs — Polymarket rows are re-emitted with `true_price`/`fair_p`
+        and Pinnacle/Betfair/etc rows are joined on. Without the cache
+        (or when no cached prices match this fixture's match_id), the
+        snapshot is left as-is and the path stays byte-identical to
+        pre-pivot.
         """
+        # Cross-venue cache merge (ADR 0004). Gated on the env-driven
+        # flag so flipping the flag is the one switch that activates
+        # both the data side AND the verdict side together. The merge
+        # itself never raises — a cache miss returns the input snapshot
+        # unchanged.
+        cross_enabled_pre = bool(getattr(__import__("desk.config",
+            fromlist=["CROSS_VENUE_EDGE_ENABLED"]),
+            "CROSS_VENUE_EDGE_ENABLED", False))
+        if cross_enabled_pre and oddsapi_cache is not None:
+            from desk.sports.football.oddsapi_prices import (
+                merge_oddsapi_into_snapshot,
+            )
+            try:
+                snapshot = merge_oddsapi_into_snapshot(
+                    snapshot, cache=oddsapi_cache,
+                )
+            except Exception as e:                       # noqa: BLE001
+                log.warning("oddsapi merge failed for %s: %s",
+                            fx.match_id, e)
+
         features = build_features(
             fx,
             form_source=api_football_runtime,
@@ -325,6 +361,35 @@ class FootballSport:
             "draw": snapshot.best_for("draw").implied_p if snapshot.best_for("draw") else 0.0,
             "b":    snapshot.best_for("b").implied_p    if snapshot.best_for("b")    else 0.0,
         }
+
+        # Cross-venue "best place to act" — surfaces in the picked
+        # driver line as "Cheapest way in on France is William Hill
+        # at an effective 60%." (ADR 0004). Only fires when:
+        #   - The verdict is a Pick.
+        #   - The DESK_CROSS_VENUE_EDGE flag is on (config-derived).
+        #   - The cheapest-true-price venue differs from the verdict's
+        #     headline market_venue (no information being added
+        #     otherwise).
+        best_venue_label: str | None = None
+        best_venue_true_price: float | None = None
+        cross_enabled = bool(getattr(__import__("desk.config",
+            fromlist=["CROSS_VENUE_EDGE_ENABLED"]),
+            "CROSS_VENUE_EDGE_ENABLED", False))
+        if cross_enabled and verdict.state in ("pick",):
+            from desk.data.oddsapi.venues import VENUE_DISPLAY_NAMES
+            picked_side = None
+            side_to_team = {"a": fx.team_a, "b": fx.team_b, "draw": "draw"}
+            for s, name in side_to_team.items():
+                if verdict.side == name:
+                    picked_side = s
+                    break
+            if picked_side is not None:
+                bv = snapshot.best_for_true_price(picked_side)
+                if bv is not None and bv.venue != (verdict.market_venue or ""):
+                    best_venue_label = VENUE_DISPLAY_NAMES.get(
+                        bv.venue, bv.venue.title())
+                    best_venue_true_price = bv.true_price or bv.implied_p
+
         copy = build_copy({
             "state":         verdict.state if isinstance(verdict.state, str) else verdict.state.value,
             "side":          verdict.side,
@@ -359,6 +424,8 @@ class FootballSport:
             "editorial_citations": editorial_cites,
             "team_a_news":        team_a_news,
             "team_b_news":        team_b_news,
+            "best_venue_label":      best_venue_label,
+            "best_venue_true_price": best_venue_true_price,
         })
         # Ride the citation list onto the published Copy. The blurb
         # already saw them inside build_copy; the contract surfaces them
@@ -391,7 +458,23 @@ class FootballSport:
         # picked flag + which sides each priced into the calculation.
         market_sources = build_market_sources(fx, snapshot, verdict)
 
-        return verdict, copy, meta, contract_adjustments, market_sources
+        # Cross-venue contract block (ADR 0004). The publisher emits
+        # [] / None on legacy snapshots (no true_price on any row),
+        # so flag-off behaviour stays byte-identical to today.
+        cross_enabled = bool(getattr(__import__("desk.config",
+            fromlist=["CROSS_VENUE_EDGE_ENABLED"]),
+            "CROSS_VENUE_EDGE_ENABLED", False))
+        if cross_enabled:
+            market_prices = build_market_prices(snapshot)
+            consensus     = build_consensus_fair(snapshot)
+        else:
+            market_prices = []
+            consensus     = None
+
+        return (
+            verdict, copy, meta, contract_adjustments, market_sources,
+            market_prices, consensus,
+        )
 
     # ── News-signals glue ───────────────────────────────────────────
 

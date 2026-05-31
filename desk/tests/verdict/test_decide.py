@@ -331,3 +331,122 @@ def test_meta_clean_on_natural_pick() -> None:
     )
     assert v.state == VerdictState.PICK.value
     assert meta.forced_pass_reason is None
+
+
+# ── Non-US pivot: cross-venue edge ────────────────────────────────────
+
+def _xv_snap(rows: list[VenuePrice]) -> MarketSnapshot:
+    return MarketSnapshot(
+        match_id="fb-wc26-fra-mex-20260612",
+        asof=datetime.now(tz=timezone.utc),
+        prices=tuple(rows),
+    )
+
+
+def test_cross_venue_edge_uses_true_price_when_on() -> None:
+    """Polymarket row at implied=0.18 but true_price=0.20 (fee+spread).
+    With flag OFF edge_pp uses 0.18; with flag ON it uses 0.20.
+    """
+    model_p = {"a": 0.21, "draw": 0.40, "b": 0.39}
+    rows = [
+        VenuePrice(venue="polymarket", side="a",    implied_p=0.18,
+                   true_price=0.20),
+        VenuePrice(venue="polymarket", side="draw", implied_p=0.40,
+                   true_price=0.40),
+        VenuePrice(venue="polymarket", side="b",    implied_p=0.38,
+                   true_price=0.38),
+    ]
+    market = _xv_snap(rows)
+
+    # Flag OFF — legacy edge against implied_p (21 - 18 = 3.0pp).
+    v_off, _ = decide(
+        model_p=model_p, market=market, sides=SIDES,
+        team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+        market_url=_TEST_URL, cross_venue_edge=False,
+    )
+    # 3.0pp exactly clears the default pick threshold of 3.0.
+    assert v_off.state == VerdictState.PICK.value
+    assert v_off.edge_pp == pytest.approx(3.0, abs=0.01)
+
+    # Flag ON — edge against true_price (21 - 20 = 1.0pp) → no Pick.
+    v_on, _ = decide(
+        model_p=model_p, market=market, sides=SIDES,
+        team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+        market_url=_TEST_URL, cross_venue_edge=True,
+    )
+    assert v_on.state == VerdictState.PASS.value
+
+
+def test_cross_venue_edge_default_reads_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """`cross_venue_edge=None` defaults to the env-driven config."""
+    model_p = {"a": 0.21, "draw": 0.40, "b": 0.39}
+    rows = [
+        VenuePrice("polymarket", "a",    0.18, true_price=0.20),
+        VenuePrice("polymarket", "draw", 0.40, true_price=0.40),
+        VenuePrice("polymarket", "b",    0.38, true_price=0.38),
+    ]
+    market = _xv_snap(rows)
+
+    # Re-import + reload config so the env var bites.
+    monkeypatch.setenv("DESK_CROSS_VENUE_EDGE", "1")
+    import importlib
+
+    from desk import config
+    importlib.reload(config)
+    try:
+        v, _ = decide(
+            model_p=model_p, market=market, sides=SIDES,
+            team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+            market_url=_TEST_URL,        # cross_venue_edge unspecified
+        )
+        assert v.state == VerdictState.PASS.value
+    finally:
+        monkeypatch.delenv("DESK_CROSS_VENUE_EDGE", raising=False)
+        importlib.reload(config)
+
+
+def test_cross_venue_edge_falls_back_when_true_price_missing() -> None:
+    """Snapshot has no true_price on any row → cross-venue mode falls
+    through to legacy `best_for` + edge against implied_p."""
+    model_p = {"a": 0.50, "draw": 0.25, "b": 0.25}
+    market = _snap({
+        ("polymarket", "a"):    0.45,
+        ("polymarket", "draw"): 0.27,
+        ("polymarket", "b"):    0.27,
+    })
+    v_off, _ = decide(
+        model_p=model_p, market=market, sides=SIDES,
+        team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+        market_url=_TEST_URL, cross_venue_edge=False,
+    )
+    v_on, _ = decide(
+        model_p=model_p, market=market, sides=SIDES,
+        team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+        market_url=_TEST_URL, cross_venue_edge=True,
+    )
+    # Byte-identical verdicts because no row carried true_price.
+    assert v_off.state == VerdictState.PICK.value
+    assert v_on.state  == VerdictState.PICK.value
+    assert v_off.edge_pp == v_on.edge_pp
+
+
+def test_cross_venue_edge_lower_bound_uses_true_price() -> None:
+    """Phase A.3 lower-bound gate must also use true_price under the
+    cross-venue flag, otherwise the band-edge could clear the threshold
+    while the actual cost-edge doesn't."""
+    model_p       = {"a": 0.21, "draw": 0.40, "b": 0.39}
+    model_p_lower = {"a": 0.21, "draw": 0.40, "b": 0.39}    # tight band
+    rows = [
+        VenuePrice("polymarket", "a",    0.18, true_price=0.20),
+        VenuePrice("polymarket", "draw", 0.40, true_price=0.40),
+        VenuePrice("polymarket", "b",    0.38, true_price=0.38),
+    ]
+    market = _xv_snap(rows)
+    v_on, _ = decide(
+        model_p=model_p, market=market, sides=SIDES,
+        team_a="France", team_b="Mexico", thresholds=T_DEFAULT,
+        market_url=_TEST_URL, cross_venue_edge=True,
+        model_p_lower=model_p_lower,
+    )
+    # Lower-bound edge = 21 - 20 = 1.0pp, below 3.0pp threshold → Pass.
+    assert v_on.state == VerdictState.PASS.value

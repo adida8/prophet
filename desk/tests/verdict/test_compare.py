@@ -50,3 +50,64 @@ def test_stale_after_5_minutes() -> None:
     old   = _ms(asof=now - timedelta(minutes=10))
     assert not fresh.stale(now=now)
     assert old.stale(now=now)
+
+
+# ── Cross-venue true-price ranking (non-US pivot) ─────────────────────
+
+def test_best_for_true_price_uses_e_not_implied() -> None:
+    """The scope-doc Argentina case — William Hill holds the LOWEST
+    fair opinion (most bearish on Argentina) yet offers the LOWEST
+    `true_price` (cheapest place to act). naive `best_for` ranks by
+    raw implied; the new `best_for_true_price` ranks by `e`."""
+    from desk.pricing.cost import VenueType
+
+    snap = _ms(
+        VenuePrice(
+            venue="pinnacle", side="a", implied_p=1.0 / 5.40,
+            venue_type=VenueType.SPORTSBOOK, true_price=1.0 / 5.40,
+            fair_p=0.168,
+        ),
+        VenuePrice(
+            venue="williamhill", side="a", implied_p=1.0 / 5.50,
+            venue_type=VenueType.SPORTSBOOK, true_price=1.0 / 5.50,
+            fair_p=0.146,   # most bearish opinion
+        ),
+        VenuePrice(
+            venue="polymarket", side="a", implied_p=0.18,
+            venue_type=VenueType.PREDICTION_MARKET, true_price=0.18 + 0.0075,
+            fair_p=0.169,
+        ),
+    )
+    # William Hill has lowest e despite its lowest fair_p.
+    bv = snap.best_for_true_price("a")
+    assert bv is not None
+    assert bv.venue == "williamhill"
+
+
+def test_best_for_true_price_falls_back_when_data_missing() -> None:
+    """If any candidate row has no true_price, fall back to naive
+    best_for — refuses to silently mix apples (e) with oranges (implied)."""
+    from desk.pricing.cost import VenueType
+
+    snap = _ms(
+        VenuePrice("a-venue", "a", 0.50, venue_type=VenueType.SPORTSBOOK,
+                   true_price=0.50),
+        VenuePrice("b-venue", "a", 0.48),    # no true_price
+    )
+    bv = snap.best_for_true_price("a")
+    assert bv is not None
+    # Falls back to the naive comparison — b-venue at 0.48 wins.
+    assert bv.venue == "b-venue"
+
+
+def test_venue_price_legacy_constructor_unchanged() -> None:
+    """Pre-pivot callers pass three positional args. None of the new
+    fields are required; the dataclass tolerates the old shape."""
+    p = VenuePrice("polymarket", "a", 0.50)
+    assert p.venue == "polymarket"
+    assert p.side == "a"
+    assert p.implied_p == 0.50
+    assert p.venue_type is None
+    assert p.true_price is None
+    assert p.fair_p is None
+    assert p.region is None

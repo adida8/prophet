@@ -16,6 +16,67 @@ the migration notes consumers need.
 
 ---
 
+## 2026-05-30 — v1.3.0 · `add`
+
+**Add `MatchOutput.market_prices`, `consensus_fair`, `region` (non-US pivot)**
+
+Three new optional top-level fields driving the cross-venue
+comparison surface. See ADR
+[0004-cross-venue-prices](docs/adr/0004-cross-venue-prices.md) for
+the full motivation; in short, the site re-orients to non-US traffic
+and the comparison stops being Polymarket-vs-Kalshi and becomes
+Polymarket-vs-sportsbooks-vs-exchanges. The contract now carries one
+row per side, per venue, with the **true price** (`e`) the consumer
+actually pays + each venue's de-vigged opinion + a per-side
+`is_best` flag (cheapest venue by `true_price`).
+
+```jsonc
+"market_prices": [
+  { "side": "a",
+    "venues": [
+      {"venue":"pinnacle",     "name":"Pinnacle",          "venue_type":"sportsbook",
+       "region":"eu","decimal_odds":5.40,"implied_p":0.1852,
+       "true_price":0.1852,"fair_p":0.168,"overround":1.10,"is_best":false},
+      {"venue":"betfair_ex_uk","name":"Betfair Exchange (UK)","venue_type":"exchange",
+       "region":"uk","decimal_odds":5.00,"implied_p":0.2000,
+       "true_price":0.2033,"fair_p":0.187,"overround":1.07,"is_best":false},
+      {"venue":"williamhill",  "name":"William Hill",      "venue_type":"sportsbook",
+       "region":"uk","decimal_odds":5.50,"implied_p":0.1818,
+       "true_price":0.1818,"fair_p":0.146,"overround":1.35,"is_best":true}
+    ]}
+],
+"consensus_fair": {"a": 0.158, "draw": 0.255, "b": 0.587},
+"region": "non-us"
+```
+
+- **Driver:** non-US sportsbook integration
+  (`THE_DESK_NONUS_SPORTSBOOK_SCOPING.md`). Edge runs against
+  `true_price` (`= ask + fee + half_spread` on Polymarket,
+  `1/(1+(b-1)(1-c))` on Betfair Exchange, `1/decimal` on sportsbooks)
+  — the all-in cost of acting on a side at a venue. Comparing
+  `model_p` to a de-vigged `fair_p` instead is the classic mistake
+  the doc calls out.
+- **`market_prices`** is the per-venue, per-side detail.
+  `consensus_fair` is the sharp-weighted blend of `fair_p` across
+  venues (Pinnacle weight 3, William Hill 1) — narrative only,
+  **never used for edge**. `region` (`us` | `non-us`) tags the
+  audience bucket so the front-end can render the correct venue set.
+- **Flag-gated.** With `DESK_CROSS_VENUE_EDGE=0` (default) the engine
+  emits `market_prices=[]` and `consensus_fair=null`; pre-pivot
+  payloads remain byte-identical. WC-2022 backtest verified
+  byte-identical: Brier 0.5806 (model) / 0.5794 (market),
+  30 pick / 34 pass / 0 avoid.
+
+**Also extends the `MarketVenue` enum** with the non-US launch set:
+`pinnacle`, `betfair_ex_uk`, `betfair_ex_eu`, `williamhill`,
+`skybet`. Existing consumers that pattern-match the enum should
+treat new values as opaque and use `MarketPriceVenue.name` for
+display.
+
+- **Migration:** purely additive on the JSON wire. Pydantic / Zod
+  validators with `extra="forbid"` add the three optional fields.
+  Schema regenerated; the in-sync test enforces it.
+
 ## 2026-05-30 — v1.2.0 · `add`
 
 **Add `MatchOutput.market_sources`**

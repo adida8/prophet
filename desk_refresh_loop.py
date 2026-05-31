@@ -304,6 +304,19 @@ def _tick() -> None:
              cwd=DESK_DIR, timeout=300,
              label="desk fetch-injuries", extra_env=sub_env)
 
+    # Squad-paragraph Q5 — refresh api-football card accumulation per
+    # WC26 team. Runs AFTER `fetch-injuries` so the at-risk reconcile
+    # sees the latest suspension set. Cards change per match (not per
+    # minute), so the daily tick is enough — no T-90m loop needed.
+    # Cost: ~48 calls per tick (one per team). **Operator action:
+    # confirm the WC26 yellow-card reset rule against the 2026 FIFA
+    # tournament regulations before flipping `DESK_CARD_FETCH=1`.**
+    if (os.getenv("DESK_CARD_FETCH", "0") == "1"
+            and os.getenv("API_FOOTBALL_KEY")):
+        _run([py, "-m", "desk", "fetch-cards"],
+             cwd=DESK_DIR, timeout=300,
+             label="desk fetch-cards", extra_env=sub_env)
+
     # Phase 1b data side — refresh live Elo (eloratings.net + clubelo).
     # Free providers; no vendor key required. Gated so a fresh deploy
     # doesn't start fetching until the operator opts in.
@@ -311,6 +324,18 @@ def _tick() -> None:
         _run([py, "-m", "desk", "fetch-elo"],
              cwd=DESK_DIR, timeout=300,
              label="desk fetch-elo", extra_env=sub_env)
+
+    # Non-US pivot — pull sportsbook + exchange prices from The Odds
+    # API into the oddsapi cache. Gated on `DESK_ODDS_FETCH=1` AND a
+    # valid `ODDS_API_KEY` so a fresh deploy doesn't burn credits.
+    # `DESK_CROSS_VENUE_EDGE` is the **separate** flag that promotes
+    # the prices to the verdict path — the operator can prime the
+    # cache without flipping the verdict surface until they're ready.
+    if (os.getenv("DESK_ODDS_FETCH", "0") == "1"
+            and os.getenv("ODDS_API_KEY")):
+        _run([py, "-m", "desk", "fetch-odds"],
+             cwd=DESK_DIR, timeout=120,
+             label="desk fetch-odds", extra_env=sub_env)
 
     # Slice B / N3 — refresh api-football lineups for fixtures inside the
     # next 24h. Confirmed XI lands ~1h pre-kickoff, so the daily tick
