@@ -14,7 +14,8 @@ from desk.publish import MatchOutput
 
 
 def _cfg(*, push: bool = True, max_bytes: int = 60_000,
-         tmp_path: Path | None = None) -> DistributeConfig:
+         tmp_path: Path | None = None,
+         include_cross_venue: bool = True) -> DistributeConfig:
     return DistributeConfig(
         push_enabled=push,
         webhook_url="https://example/wh" if push else None,
@@ -23,6 +24,7 @@ def _cfg(*, push: bool = True, max_bytes: int = 60_000,
         rate_per_min=50,
         max_in_flight=8,
         max_body_bytes=max_bytes,
+        include_cross_venue=include_cross_venue,
     )
 
 
@@ -70,3 +72,63 @@ def test_oversized_body_raises_body_too_large(
     with Outbox(cfg.db_path) as box:
         with pytest.raises(BodyTooLarge):
             enqueue_match(fra_mex_pick, config=cfg, outbox=box)
+
+
+# ── Cross-venue field strip on the wire (ADR 0004 migration) ─────────
+
+def test_canonical_body_strips_cross_venue_when_flag_off(
+    fra_mex_pick: MatchOutput,
+) -> None:
+    """`include_cross_venue=False` removes market_prices / consensus_fair /
+    region from the wire body. Used while MTA's validator forbids
+    unknown fields — see DistributeConfig docstring."""
+    body = canonical_body(fra_mex_pick, include_cross_venue=False)
+    payload = json.loads(body)
+    assert "market_prices" not in payload
+    assert "consensus_fair" not in payload
+    assert "region" not in payload
+
+
+def test_canonical_body_default_includes_cross_venue(
+    fra_mex_pick: MatchOutput,
+) -> None:
+    """Default behaviour (no kwarg) keeps the full v1.3 contract."""
+    body = canonical_body(fra_mex_pick)
+    payload = json.loads(body)
+    # market_prices may be empty [] on the fixture but the KEY exists.
+    assert "market_prices" in payload
+    assert "region" in payload
+
+
+def test_enqueue_honours_config_include_cross_venue(
+    fra_mex_pick: MatchOutput, tmp_path: Path,
+) -> None:
+    """When `config.include_cross_venue` is False, the row enqueued to
+    the outbox is the stripped body."""
+    cfg = _cfg(push=True, tmp_path=tmp_path, include_cross_venue=False)
+    with Outbox(cfg.db_path) as box:
+        rid = enqueue_match(fra_mex_pick, config=cfg, outbox=box)
+        assert rid is not None
+        row = box.get(rid)
+        assert row is not None
+        payload = json.loads(row.body)
+        assert "market_prices" not in payload
+        assert "consensus_fair" not in payload
+        assert "region" not in payload
+
+
+def test_load_config_reads_include_cross_venue_env(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """`DESK_DISTRIBUTE_INCLUDE_CROSS_VENUE=1` flips the flag on."""
+    from desk.distribute.config import load_config
+    monkeypatch.setenv("DESK_DISTRIBUTE_PUSH", "1")
+    monkeypatch.setenv("DESK_DISTRIBUTE_WEBHOOK_URL", "https://x/wh")
+    monkeypatch.setenv("DESK_DISTRIBUTE_WEBHOOK_SECRET", "s")
+    # Unset → default OFF (strip).
+    monkeypatch.delenv("DESK_DISTRIBUTE_INCLUDE_CROSS_VENUE", raising=False)
+    assert load_config().include_cross_venue is False
+    monkeypatch.setenv("DESK_DISTRIBUTE_INCLUDE_CROSS_VENUE", "1")
+    assert load_config().include_cross_venue is True
+    monkeypatch.setenv("DESK_DISTRIBUTE_INCLUDE_CROSS_VENUE", "0")
+    assert load_config().include_cross_venue is False

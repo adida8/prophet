@@ -27,11 +27,34 @@ class BodyTooLarge(ValueError):
     """
 
 
-def canonical_body(match: MatchOutput) -> bytes:
+# Fields added by ADR 0004 (cross-venue prices). Stripped from the
+# wire body when the consumer's validator doesn't yet know about them
+# — see DistributeConfig.include_cross_venue.
+_CROSS_VENUE_FIELDS: tuple[str, ...] = ("market_prices", "consensus_fair", "region")
+
+
+def canonical_body(
+    match: MatchOutput,
+    *,
+    include_cross_venue: bool = True,
+) -> bytes:
     """The single canonical encoding used by both the disk writer and
     the distribute wire. `desk/desk/publish/etag.py::canonical_json` is
-    the source of truth for shape (sort_keys=True, no whitespace)."""
-    return canonical_json(match.model_dump(mode="json", exclude_none=False)).encode("utf-8")
+    the source of truth for shape (sort_keys=True, no whitespace).
+
+    When `include_cross_venue=False`, the three ADR 0004 fields
+    (`market_prices`, `consensus_fair`, `region`) are stripped before
+    encoding. Use this for consumers whose schema validator hasn't
+    been updated to accept the new optional fields yet — that
+    rejection looks like a 400 'Invalid request' on the receiver.
+    Disk writes ALWAYS keep the full payload; the strip only applies
+    to the wire copy.
+    """
+    payload = match.model_dump(mode="json", exclude_none=False)
+    if not include_cross_venue:
+        for k in _CROSS_VENUE_FIELDS:
+            payload.pop(k, None)
+    return canonical_json(payload).encode("utf-8")
 
 
 def enqueue_match(
@@ -55,7 +78,9 @@ def enqueue_match(
     if not config.push_enabled:
         return None
 
-    body = body if body is not None else canonical_body(match)
+    body = body if body is not None else canonical_body(
+        match, include_cross_venue=config.include_cross_venue,
+    )
     if len(body) > config.max_body_bytes:
         raise BodyTooLarge(
             f"match {match.match_id} body {len(body)} bytes exceeds "
