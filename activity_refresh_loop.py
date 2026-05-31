@@ -26,6 +26,7 @@ from activity.jobs import (
     prune_old_views,
     seed_match_activity,
 )
+from loop_registry import is_enabled
 
 log = logging.getLogger("activity.loop")
 
@@ -33,11 +34,20 @@ _AGGREGATE_INTERVAL_SEC = int(os.getenv("ACTIVITY_AGGREGATE_SEC", "60"))
 _SEED_INTERVAL_SEC = int(os.getenv("ACTIVITY_SEED_SEC", "480"))
 _PRUNE_INTERVAL_SEC = int(os.getenv("ACTIVITY_PRUNE_SEC", "86400"))
 _INITIAL_DELAY_SEC = int(os.getenv("ACTIVITY_INITIAL_DELAY_SEC", "30"))
+_IDLE_POLL_SEC = 60
 
 
-async def _safe_loop(name: str, interval: int, fn) -> None:
-    """Run `fn` forever on `interval`, logging exceptions without dying."""
+async def _safe_loop(name: str, loop_id: str, interval: int, fn) -> None:
+    """Run `fn` forever on `interval`, honouring the schedules.json toggle.
+
+    Logs exceptions without dying. When `loop_id` is disabled in
+    schedules.json, idles on `_IDLE_POLL_SEC` so the admin flip lands
+    within a minute.
+    """
     while True:
+        if not is_enabled(loop_id):
+            await asyncio.sleep(_IDLE_POLL_SEC)
+            continue
         try:
             result = await fn()
             log.info("activity:%s ok %s", name, result)
@@ -76,17 +86,20 @@ async def run_activity_loop() -> None:
 
     tasks = [
         asyncio.create_task(
-            _safe_loop("aggregate", _AGGREGATE_INTERVAL_SEC, aggregate_match_activity),
+            _safe_loop("aggregate", "activity_aggregate",
+                       _AGGREGATE_INTERVAL_SEC, aggregate_match_activity),
             name="activity:aggregate",
         ),
         asyncio.create_task(
-            _safe_loop("prune", _PRUNE_INTERVAL_SEC, prune_old_views),
+            _safe_loop("prune", "activity_prune",
+                       _PRUNE_INTERVAL_SEC, prune_old_views),
             name="activity:prune",
         ),
     ]
     if seed_enabled:
         tasks.append(asyncio.create_task(
-            _safe_loop("seed", _SEED_INTERVAL_SEC, seed_match_activity),
+            _safe_loop("seed", "activity_seed",
+                       _SEED_INTERVAL_SEC, seed_match_activity),
             name="activity:seed",
         ))
     else:

@@ -27,14 +27,18 @@ import subprocess
 import sys
 from pathlib import Path
 
+from loop_registry import is_enabled
+
 log = logging.getLogger("desk.distribute_loop")
 
+LOOP_ID  = "distribute"
 ROOT     = Path(__file__).resolve().parent
 DESK_DIR = ROOT / "desk"
 
 INITIAL_DELAY_SEC = int(os.getenv("DESK_DISTRIBUTE_INITIAL_DELAY_SEC", "75"))
 DEFAULT_TICK_SEC  = 30
 PROCESS_TIMEOUT_SEC = 120
+IDLE_POLL_SEC = 60
 
 
 def _tick() -> None:
@@ -86,12 +90,16 @@ async def run_distribute_loop() -> None:
         tick_sec = 5
 
     log.info(
-        "distribute loop online — tick every %ds (boot tick in %ds)",
+        "distribute loop online — tick every %ds (boot tick in %ds, "
+        "honours schedules.json toggle)",
         tick_sec, INITIAL_DELAY_SEC,
     )
     await asyncio.sleep(INITIAL_DELAY_SEC)
 
     while True:
+        if not is_enabled(LOOP_ID):
+            await asyncio.sleep(IDLE_POLL_SEC)
+            continue
         try:
             await asyncio.to_thread(_tick)
         except Exception:

@@ -22,9 +22,11 @@ import os
 from datetime import datetime, timezone
 
 from daily_report import load_config, run_once
+from loop_registry import is_enabled
 
 log = logging.getLogger("daily_report.loop")
 
+LOOP_ID = "daily_report"
 _TICK_SEC = int(os.getenv("DAILY_REPORT_TICK_SEC", "3600") or "3600")
 _INITIAL_DELAY_SEC = int(os.getenv("DAILY_REPORT_INITIAL_DELAY_SEC", "60") or "60")
 
@@ -68,6 +70,9 @@ async def run_daily_report_loop() -> None:
     )
 
     while True:
+        if not is_enabled(LOOP_ID):
+            await asyncio.sleep(min(_TICK_SEC, 60))
+            continue
         try:
             now = datetime.now(timezone.utc)
             if now.hour == cfg.daily_report_hour:

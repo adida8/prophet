@@ -21,9 +21,11 @@ import os
 from datetime import datetime, timezone
 
 from site_qa import load_config, run_once
+from loop_registry import is_enabled
 
 log = logging.getLogger("site_qa.loop")
 
+LOOP_ID = "site_qa"
 _TICK_SEC = int(os.getenv("SITE_QA_TICK_SEC", "3600") or "3600")
 _INITIAL_DELAY_SEC = int(os.getenv("SITE_QA_INITIAL_DELAY_SEC", "90") or "90")
 
@@ -61,6 +63,9 @@ async def run_site_qa_loop() -> None:
     )
 
     while True:
+        if not is_enabled(LOOP_ID):
+            await asyncio.sleep(min(_TICK_SEC, 60))
+            continue
         try:
             now = datetime.now(timezone.utc)
             if now.hour == cfg.qa_hour:

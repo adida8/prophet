@@ -30,8 +30,11 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from loop_registry import is_enabled
+
 log = logging.getLogger("desk.social.weekly_loop")
 
+LOOP_ID           = "social_weekly"
 INITIAL_DELAY_SEC = int(os.getenv("DESK_SOCIAL_INITIAL_DELAY_SEC", "120"))
 IDLE_POLL_SEC     = 60   # wake every minute when we're between firings
 
@@ -125,7 +128,7 @@ async def run_weekly_loop() -> None:
 
     while True:
         try:
-            if os.getenv("DESK_SOCIAL_ENABLED", "0") != "1":
+            if not is_enabled(LOOP_ID) or os.getenv("DESK_SOCIAL_ENABLED", "0") != "1":
                 await asyncio.sleep(IDLE_POLL_SEC)
                 continue
             now = datetime.now(tz=timezone.utc)
@@ -135,7 +138,7 @@ async def run_weekly_loop() -> None:
                      target.isoformat(), sleep_for)
             await asyncio.sleep(sleep_for)
             # Re-read enable flag — operator might have paused mid-sleep.
-            if os.getenv("DESK_SOCIAL_ENABLED", "0") != "1":
+            if not is_enabled(LOOP_ID) or os.getenv("DESK_SOCIAL_ENABLED", "0") != "1":
                 log.info("social weekly: paused at fire time, skipping")
                 continue
             await asyncio.to_thread(_fire_once)
