@@ -48,13 +48,21 @@ def default_db_path() -> Path:
 @dataclass(frozen=True)
 class DistributeConfig:
     """Resolved at process start; immutable thereafter."""
-    push_enabled:   bool
-    webhook_url:    str | None
-    webhook_secret: str | None
-    db_path:        Path
-    rate_per_min:   int
-    max_in_flight:  int
-    max_body_bytes: int
+    push_enabled:        bool
+    webhook_url:         str | None
+    webhook_secret:      str | None
+    db_path:             Path
+    rate_per_min:        int
+    max_in_flight:       int
+    max_body_bytes:      int
+    # Cross-venue (ADR 0004) fields are stripped from the wire body
+    # until consumers update their validators to accept them. Default
+    # OFF (= strip) because MTA's strict `extra="forbid"` validator
+    # rejects unknown fields as 400 — the dead-letters that surfaced
+    # on 2026-05-31 were caused by exactly this. Flip to ON once MTA
+    # has added the optional `market_prices`, `consensus_fair`, and
+    # `region` fields to its schema.
+    include_cross_venue: bool
 
 
 def load_config() -> DistributeConfig:
@@ -80,13 +88,14 @@ def load_config() -> DistributeConfig:
             )
 
     return DistributeConfig(
-        push_enabled   = push_enabled,
-        webhook_url    = webhook_url,
-        webhook_secret = webhook_secret,
-        db_path        = default_db_path(),
-        rate_per_min   = _int_env("DESK_DISTRIBUTE_RATE_PER_MIN", DEFAULT_RATE_PER_MIN),
-        max_in_flight  = _int_env("DESK_DISTRIBUTE_MAX_IN_FLIGHT", DEFAULT_MAX_IN_FLIGHT),
-        max_body_bytes = _int_env("DESK_DISTRIBUTE_MAX_BYTES", DEFAULT_MAX_BODY_BYTES),
+        push_enabled        = push_enabled,
+        webhook_url         = webhook_url,
+        webhook_secret      = webhook_secret,
+        db_path             = default_db_path(),
+        rate_per_min        = _int_env("DESK_DISTRIBUTE_RATE_PER_MIN", DEFAULT_RATE_PER_MIN),
+        max_in_flight       = _int_env("DESK_DISTRIBUTE_MAX_IN_FLIGHT", DEFAULT_MAX_IN_FLIGHT),
+        max_body_bytes      = _int_env("DESK_DISTRIBUTE_MAX_BYTES", DEFAULT_MAX_BODY_BYTES),
+        include_cross_venue = os.getenv("DESK_DISTRIBUTE_INCLUDE_CROSS_VENUE", "0") == "1",
     )
 
 
