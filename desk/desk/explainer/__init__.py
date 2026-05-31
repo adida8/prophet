@@ -42,12 +42,13 @@ def build_copy(i: Inputs) -> Copy:
         return fallback
 
     merged = fallback.model_copy(update={
-        "title":   overlay.title,
-        "summary": overlay.summary,
-        "blurb":   overlay.blurb,
+        "title":       overlay.title,
+        "summary":     overlay.summary,
+        "blurb":       overlay.blurb,
+        "squad_blurb": overlay.squad_blurb,
     })
-    for field in (merged.title, merged.summary, merged.blurb):
-        if not is_voice_clean(field):
+    for field in (merged.title, merged.summary, merged.blurb, merged.squad_blurb):
+        if field and not is_voice_clean(field):
             return fallback
     return merged
 

@@ -115,7 +115,7 @@
       },
       "Copy": {
         "additionalProperties": false,
-        "description": "Editorial output. Voice rules enforced by explainer post-checks (PR 5).\n\n`citations` is the legacy URL-only list \u2014 populated by the explainer\nstub today; the front-of-house renders it as a row of source links.\n\n`editorial_citations` is the structured form added in news-signals\nPR D \u2014 each entry carries outlet name + verbatim quote + (optional)\ntranslation. Populated when the signals cache has editorial-track\nsignals covering this fixture; empty otherwise, so this is a\npurely additive contract change.\n\n`drivers` is the structured \"Why this call?\" list \u2014 3-4 short\nbullets the front-of-house renders above the CTA. Each bullet is a\nplain-language sentence, not a data dump. The list is allowed to\nbe empty for fixtures the engine can't characterise (e.g. a Pass\non a tightly-priced market with nothing further to say).",
+        "description": "Editorial output. Voice rules enforced by explainer post-checks (PR 5).\n\n`citations` is the legacy URL-only list \u2014 populated by the explainer\nstub today; the front-of-house renders it as a row of source links.\n\n`editorial_citations` is the structured form added in news-signals\nPR D \u2014 each entry carries outlet name + verbatim quote + (optional)\ntranslation. Populated when the signals cache has editorial-track\nsignals covering this fixture; empty otherwise, so this is a\npurely additive contract change.\n\n`drivers` is the structured \"Why this call?\" list \u2014 3-4 short\nbullets the front-of-house renders above the CTA. Each bullet is a\nplain-language sentence, not a data dump. The list is allowed to\nbe empty for fixtures the engine can't characterise (e.g. a Pass\non a tightly-priced market with nothing further to say).\n\n`squad_blurb` is the dedicated squad-section prose (1-4 sentences):\nopening XI, who's out, who's at-risk \u2014 OR a clean-no-data line\n(\"both squads available, no flagged absences\"). Added 2026-05-31\nso the front-of-house can render it as its own visible Squad\nsection, not woven into the main `blurb`. Always populated when\nHaiku runs; defaults to \"\" for backwards compat when only the stub\nfires without team_news. Additive-optional \u2014 pre-2026-05-31\nconsumers reading `blurb` only still see the same verdict prose.",
         "properties": {
           "blurb": {
             "default": "",
@@ -148,6 +148,13 @@
             "maxItems": 10,
             "title": "Editorial Citations",
             "type": "array"
+          },
+          "squad_blurb": {
+            "default": "",
+            "maxLength": 1200,
+            "minLength": 0,
+            "title": "Squad Blurb",
+            "type": "string"
           },
           "summary": {
             "default": "",

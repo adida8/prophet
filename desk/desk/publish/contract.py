@@ -321,12 +321,22 @@ class Copy(BaseModel):
     plain-language sentence, not a data dump. The list is allowed to
     be empty for fixtures the engine can't characterise (e.g. a Pass
     on a tightly-priced market with nothing further to say).
+
+    `squad_blurb` is the dedicated squad-section prose (1-4 sentences):
+    opening XI, who's out, who's at-risk — OR a clean-no-data line
+    ("both squads available, no flagged absences"). Added 2026-05-31
+    so the front-of-house can render it as its own visible Squad
+    section, not woven into the main `blurb`. Always populated when
+    Haiku runs; defaults to "" for backwards compat when only the stub
+    fires without team_news. Additive-optional — pre-2026-05-31
+    consumers reading `blurb` only still see the same verdict prose.
     """
     model_config = ConfigDict(extra="forbid")
 
     title:               Annotated[str, StringConstraints(min_length=0, max_length=120)] = ""
     summary:             Annotated[str, StringConstraints(min_length=0, max_length=400)] = ""
     blurb:               Annotated[str, StringConstraints(min_length=0, max_length=4000)] = ""
+    squad_blurb:         Annotated[str, StringConstraints(min_length=0, max_length=1200)] = ""
     citations:           list[str] = Field(default_factory=list)
     editorial_citations: list[Citation] = Field(default_factory=list, max_length=10)
     drivers:             list[Annotated[str, StringConstraints(min_length=1, max_length=200)]] = Field(default_factory=list, max_length=6)

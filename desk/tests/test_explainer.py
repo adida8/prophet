@@ -156,3 +156,81 @@ def test_pick_driver_skips_when_label_matches_headline_venue() -> None:
     )
     c = build_copy(inp)
     assert isinstance(c.drivers, list)
+
+
+# ── Stub squad_blurb (2026-05-31 spec change) ────────────────────────
+
+def test_stub_populates_squad_blurb_with_positive_default_when_no_data() -> None:
+    """Spec 2026-05-31: every published match must carry a non-empty
+    squad_blurb so the website's Squad section is never blank. The
+    stub falls back to a positive no-data sentence when team_news is
+    empty (or absent)."""
+    c = build_copy(_pick_inputs())
+    assert c.squad_blurb
+    # Default sentence is positive (mentions clean / no concerns / clean).
+    assert any(
+        word in c.squad_blurb.lower()
+        for word in ["clean", "no flagged", "no late", "no availability"]
+    )
+
+
+def test_stub_squad_blurb_lists_absences_when_team_news_present() -> None:
+    """When team_news carries absences, the stub names them in
+    `Out for <team>: <names>` shape."""
+    from desk.sports.football.team_news import (
+        LineupStatus, PlayerAbsence, TeamNews,
+    )
+    a_news = TeamNews(
+        team="France", absences=(
+            PlayerAbsence(
+                name="Mbappé", position="Attacker", type="injury",
+                reason="Calf", source="api-football",
+                source_url=None, source_name=None, importance="high",
+            ),
+        ),
+        lineup=LineupStatus(state="unknown"),
+        materiality="high",
+    )
+    inp = _pick_inputs(team_a_news=a_news)
+    c = build_copy(inp)
+    assert "Mbappé" in c.squad_blurb
+    assert "Out for France" in c.squad_blurb
+
+
+def test_stub_squad_blurb_lists_at_risk_cards() -> None:
+    from desk.sports.football.team_news import (
+        CardStatus, LineupStatus, TeamNews,
+    )
+    a_news = TeamNews(
+        team="France", absences=(),
+        lineup=LineupStatus(state="unknown"),
+        materiality="low",
+        cards=(
+            CardStatus(
+                name="Tchouaméni", position="Midfielder", yellows=1,
+                state="at_risk", source="api-football",
+                source_url=None, source_name=None, importance="medium",
+            ),
+        ),
+    )
+    inp = _pick_inputs(team_a_news=a_news)
+    c = build_copy(inp)
+    assert "Tchouaméni" in c.squad_blurb
+    assert "yellow" in c.squad_blurb.lower()
+
+
+def test_stub_squad_blurb_default_varies_across_matches() -> None:
+    """The three positive variants rotate by salt so the stub doesn't
+    write the same sentence on every match in the slate."""
+    seen: set[str] = set()
+    for a_team, b_team in [
+        ("France", "Mexico"), ("Brazil", "Argentina"),
+        ("Spain", "Portugal"), ("Germany", "Italy"),
+        ("England", "Croatia"), ("Japan", "Australia"),
+    ]:
+        inp = _pick_inputs(team_a=a_team, team_b=b_team)
+        c = build_copy(inp)
+        seen.add(c.squad_blurb)
+    # With 3 variants and 6 distinct salts, we expect ≥2 unique outputs
+    # (proves the rotation isn't pinned to one variant).
+    assert len(seen) >= 2
