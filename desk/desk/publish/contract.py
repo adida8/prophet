@@ -353,6 +353,12 @@ class MatchOutput(BaseModel):
     """
     model_config = ConfigDict(extra="forbid", use_enum_values=True)
 
+    # Payload-type discriminator for external consumers that route match
+    # and outright payloads off one channel (Market Tips AI). Always
+    # "match" here; the outright wire carries "outright". Additive +
+    # defaulted — a consumer that defaults missing→"match" is unaffected.
+    # See docs/adr/0005-content-type-discriminator.md.
+    content_type:    Literal["match"] = "match"
     match_id:        MatchId
     sport:           Annotated[str, StringConstraints(pattern=r"^[a-z]+$")]
     competition:     Competition

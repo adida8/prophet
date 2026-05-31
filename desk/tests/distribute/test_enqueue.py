@@ -120,15 +120,15 @@ def test_enqueue_honours_config_include_cross_venue(
 def test_load_config_reads_include_cross_venue_env(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """`DESK_DISTRIBUTE_INCLUDE_CROSS_VENUE=1` flips the flag on."""
+    """`DESK_DISTRIBUTE_INCLUDE_CROSS_VENUE` toggles the flag; default ON."""
     from desk.distribute.config import load_config
     monkeypatch.setenv("DESK_DISTRIBUTE_PUSH", "1")
     monkeypatch.setenv("DESK_DISTRIBUTE_WEBHOOK_URL", "https://x/wh")
     monkeypatch.setenv("DESK_DISTRIBUTE_WEBHOOK_SECRET", "s")
-    # Unset → default OFF (strip).
+    # Unset → default ON (MTA confirmed acceptance 2026-05-31).
     monkeypatch.delenv("DESK_DISTRIBUTE_INCLUDE_CROSS_VENUE", raising=False)
-    assert load_config().include_cross_venue is False
-    monkeypatch.setenv("DESK_DISTRIBUTE_INCLUDE_CROSS_VENUE", "1")
     assert load_config().include_cross_venue is True
     monkeypatch.setenv("DESK_DISTRIBUTE_INCLUDE_CROSS_VENUE", "0")
     assert load_config().include_cross_venue is False
+    monkeypatch.setenv("DESK_DISTRIBUTE_INCLUDE_CROSS_VENUE", "1")
+    assert load_config().include_cross_venue is True

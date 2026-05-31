@@ -16,6 +16,34 @@ the migration notes consumers need.
 
 ---
 
+## 2026-05-31 — v1.5.0 · `add`
+
+**Add `MatchOutput.content_type`**
+
+A new payload-type discriminator: `content_type: Literal["match"]`,
+defaulting to `"match"`. Lets external consumers route match vs outright
+payloads off a single channel without sniffing fields.
+
+```jsonc
+{
+  "content_type": "match",        // always "match" on MatchOutput
+  "match_id": "fb-wc26-fra-mex-20260612",
+  ...
+}
+```
+
+- **Driver:** outright distribution to Market Tips AI shares one webhook
+  with matches. Outright payloads carry `content_type: "outright"`; this
+  gives matches the symmetric explicit tag. See
+  [ADR 0005](docs/adr/0005-content-type-discriminator.md).
+- **Migration:** none. Field is defaulted; a consumer that ignores it —
+  or defaults missing→`"match"` — is unaffected. MTA's missing→`"match"`
+  default is already live in prod.
+- **Wire:** both arms now self-declare type — `"match"` via the model,
+  `"outright"` via `desk/desk/distribute/outright.py::outright_wire_payload`.
+
+---
+
 ## 2026-05-31 — v1.4.0 · `add`
 
 **Add `MatchOutput.copy.squad_blurb`**

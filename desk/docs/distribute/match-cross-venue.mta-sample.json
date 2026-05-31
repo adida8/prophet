@@ -1,0 +1,86 @@
+{
+  "competition": {
+    "code": "wc26",
+    "label": "FIFA World Cup 2026",
+    "stage": null
+  },
+  "consensus_fair": {
+    "a": 0.41,
+    "b": 0.3,
+    "draw": 0.29
+  },
+  "content_type": "match",
+  "copy": {
+    "blurb": "Austria should win, and the price already says so. The model has Austria at 46%, the market at 44%. Strong favourites priced shorter than the model rates them is where we get Picks; the reverse — both numbers landing in the same place — is where we get a Pass. We'll check again near kickoff when the confirmed eleven and any fitness news land; until then, the price reads fair.",
+    "citations": [],
+    "drivers": [
+      "No side runs more than a couple of points clear of the model on this fixture.",
+      "Team news, weather, and the confirmed XI feed back into the prior as kickoff approaches.",
+      "Tight three-way pricing rarely produces a Pick — the disagreement isn't there to publish."
+    ],
+    "editorial_citations": [],
+    "squad_blurb": "",
+    "summary": "Any gap on Algeria v Austria sits inside the model's own uncertainty band. Pass — the signal isn't there yet.",
+    "title": "Algeria v Austria · no real gap to publish"
+  },
+  "hard_signal_adjustments": [],
+  "kickoff_utc": "2026-06-28T02:00:00Z",
+  "market_outcomes": [
+    "a",
+    "draw",
+    "b"
+  ],
+  "market_prices": [
+    {
+      "side": "a",
+      "venues": [
+        {
+          "decimal_odds": 2.44,
+          "fair_p": 0.41,
+          "implied_p": 0.41,
+          "is_best": true,
+          "name": "Pinnacle",
+          "overround": 1.05,
+          "region": "eu",
+          "true_price": 0.405,
+          "venue": "pinnacle",
+          "venue_type": "sportsbook"
+        },
+        {
+          "decimal_odds": null,
+          "fair_p": null,
+          "implied_p": 0.4,
+          "is_best": false,
+          "name": "Polymarket",
+          "overround": null,
+          "region": null,
+          "true_price": 0.42,
+          "venue": "polymarket",
+          "venue_type": "prediction_market"
+        }
+      ]
+    }
+  ],
+  "market_sources": [],
+  "match_id": "fb-wc26-alg-aut-20260628",
+  "region": "non-us",
+  "sport": "football",
+  "team_a": "Algeria",
+  "team_b": "Austria",
+  "updated_at": "2026-05-26T13:43:51.595206Z",
+  "venue": {
+    "city": "Kansas City",
+    "country": "US",
+    "stadium": "Arrowhead Stadium"
+  },
+  "verdict": {
+    "edge_pp": null,
+    "market_p": null,
+    "market_url": "https://polymarket.com/event/fifwc-alg-aut-2026-06-27",
+    "market_venue": null,
+    "model_p": null,
+    "price": null,
+    "side": null,
+    "state": "pass"
+  }
+}

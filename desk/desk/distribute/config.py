@@ -55,13 +55,14 @@ class DistributeConfig:
     rate_per_min:        int
     max_in_flight:       int
     max_body_bytes:      int
-    # Cross-venue (ADR 0004) fields are stripped from the wire body
-    # until consumers update their validators to accept them. Default
-    # OFF (= strip) because MTA's strict `extra="forbid"` validator
-    # rejects unknown fields as 400 — the dead-letters that surfaced
-    # on 2026-05-31 were caused by exactly this. Flip to ON once MTA
-    # has added the optional `market_prices`, `consensus_fair`, and
-    # `region` fields to its schema.
+    # Cross-venue (ADR 0004) fields ride the wire body. Default ON as of
+    # 2026-05-31: MTA confirmed its match validator accepts `market_prices`,
+    # `consensus_fair`, and `region` via top-level `.passthrough()` (they
+    # are top-level on MatchOutput, not nested in venue{} — validated
+    # against docs/distribute/match-cross-venue.mta-sample.json). The
+    # earlier dead-letters that forced a strip were a prior validator
+    # state. Override to OFF via DESK_DISTRIBUTE_INCLUDE_CROSS_VENUE=0 if a
+    # consumer regresses.
     include_cross_venue: bool
 
 
@@ -95,7 +96,7 @@ def load_config() -> DistributeConfig:
         rate_per_min        = _int_env("DESK_DISTRIBUTE_RATE_PER_MIN", DEFAULT_RATE_PER_MIN),
         max_in_flight       = _int_env("DESK_DISTRIBUTE_MAX_IN_FLIGHT", DEFAULT_MAX_IN_FLIGHT),
         max_body_bytes      = _int_env("DESK_DISTRIBUTE_MAX_BYTES", DEFAULT_MAX_BODY_BYTES),
-        include_cross_venue = os.getenv("DESK_DISTRIBUTE_INCLUDE_CROSS_VENUE", "0") == "1",
+        include_cross_venue = os.getenv("DESK_DISTRIBUTE_INCLUDE_CROSS_VENUE", "1") == "1",
     )
 
 
