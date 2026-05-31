@@ -31,6 +31,7 @@ from desk_distribute_loop import run_distribute_loop
 from desk_lineups_refresh_loop import run_lineups_loop
 from desk_refresh_loop import run_desk_loop
 from ledger.refresh_loop import run_refresh_loop as run_ledger_refresh_loop
+from site_qa_loop import run_site_qa_loop
 from social_weekly_cron import run_weekly_loop as run_social_weekly_loop
 from scheduler import Scheduler
 from server import app, set_scheduler, broadcast
@@ -68,6 +69,7 @@ async def main(port: int, paper_trade: bool) -> None:
         asyncio.create_task(run_activity_loop(),     name="activity_refresh"),
         asyncio.create_task(run_social_weekly_loop(), name="social_weekly"),
         asyncio.create_task(run_daily_report_loop(), name="daily_report"),
+        asyncio.create_task(run_site_qa_loop(),      name="site_qa"),
     ]
 
     if paper_trade:
