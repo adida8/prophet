@@ -16,6 +16,48 @@ the migration notes consumers need.
 
 ---
 
+## 2026-05-31 — v1.4.0 · `add`
+
+**Add `MatchOutput.copy.squad_blurb`**
+
+A new optional string field on `Copy`, max 1200 chars. Dedicated
+squad-section prose — 1-4 sentences covering the opening XI, who's
+out, who's at-risk, OR a clean-no-data line ("both squads come
+through clean, no late absences flagged").
+
+```jsonc
+"copy": {
+  "title": "...",
+  "summary": "...",
+  "blurb": "...",                                  // verdict / edge prose
+  "squad_blurb": "Both squads come through clean, no late absences flagged either way.",
+  "drivers": [...],
+  "editorial_citations": [...]
+}
+```
+
+- **Driver:** front-of-house wants a visible "Squad" section on every
+  match page, not just a sentence woven into the main blurb. Reader
+  expects to see SOMETHING about the squad on every page; the previous
+  in-blurb approach was easy to miss visually.
+- **Migration:** none. Field is optional + defaults to `""`. Consumers
+  that read `copy.blurb` only continue to see the verdict prose
+  unchanged (squad content has been moved out of `blurb` into
+  `squad_blurb`, so `blurb` is now strictly verdict / edge /
+  model-vs-market content).
+- **Site renderer:** `site/generate.py` adds a new
+  `<section class="squad"><h2>Squad</h2>…</section>` block between
+  the blurb and the CTA row when `squad_blurb` is non-empty.
+- **Haiku writer:** the `write_blurb` tool schema gains a required
+  `squad_blurb` field. The system prompt's `SQUAD BLURB` section
+  mandates the content (with materiality-driven directives + a
+  no-data positive-sentence case).
+- **Stub fallback:** populates `squad_blurb` deterministically from
+  team_news when present; otherwise emits one of three positive
+  no-data variants (rotated by salt to avoid repetition).
+
+---
+
 ## 2026-05-30 — v1.3.0 · `add`
 
 **Add `MatchOutput.market_prices`, `consensus_fair`, `region` (non-US pivot)**

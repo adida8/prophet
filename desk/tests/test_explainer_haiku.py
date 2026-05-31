@@ -268,10 +268,25 @@ class _Response:
 
 
 def test_parse_tool_use_returns_payload() -> None:
+    """As of 2026-05-31, parse_tool_use requires squad_blurb too — the
+    tool schema mandates it. A payload missing the field yields None."""
+    resp = _Response([_Block(type="tool_use", name="write_blurb", input={
+        "title": "t", "summary": "s", "blurb": "b",
+        "squad_blurb": "Both squads clean.",
+    })])
+    assert haiku.parse_tool_use(resp) == {
+        "title": "t", "summary": "s", "blurb": "b",
+        "squad_blurb": "Both squads clean.",
+    }
+
+
+def test_parse_tool_use_returns_none_when_squad_blurb_missing() -> None:
+    """Spec 2026-05-31: squad_blurb is required — payload without it
+    is treated as malformed (falls back to stub)."""
     resp = _Response([_Block(type="tool_use", name="write_blurb", input={
         "title": "t", "summary": "s", "blurb": "b",
     })])
-    assert haiku.parse_tool_use(resp) == {"title": "t", "summary": "s", "blurb": "b"}
+    assert haiku.parse_tool_use(resp) is None
 
 
 def test_parse_tool_use_returns_none_when_tool_missing() -> None:
@@ -613,7 +628,9 @@ def _team_news_with_cards(
 def test_system_prompt_has_squad_paragraph_section() -> None:
     system_blocks, _ = haiku.build_messages(_pick_inputs())
     text = system_blocks[0]["text"]
-    assert "SQUAD PARAGRAPH" in text
+    # Renamed 2026-05-31: squad content now lives in its own
+    # `squad_blurb` field, and the prompt section is titled "SQUAD BLURB".
+    assert "SQUAD BLURB" in text
     # Card-specific instructions land in the prompt too.
     assert "at-risk" in text.lower() or "at_risk" in text.lower()
     assert "one booking" in text.lower() or "one yellow" in text.lower()
@@ -723,23 +740,23 @@ def test_at_risk_guard_soft_mode_only_warns(
     ) is True
 
 
-def test_word_budget_240_when_squad_content_present() -> None:
-    """Spec §Q3: max words bumps to 240 when either side has a
-    confirmed lineup, an absence, or an at-risk card."""
+def test_word_budget_blurb_stays_220_now_that_squad_is_separate() -> None:
+    """Spec 2026-05-31: squad content moved to its own `squad_blurb`
+    field, so the main blurb's ceiling stays 220 regardless of
+    team_news content. Anything over 220 → reject."""
     p = _good_payload()
-    long_blurb = " ".join(["word"] * 235) + " " + p["blurb"]
-    p["blurb"] = " ".join(long_blurb.split()[:235])   # exactly 235
+    p["blurb"] = " ".join(["word"] * 235)   # over the 220 cap
     news = _team_news_with_lineup(
         team="France", starters=("Mbappé",), formation="4-3-3",
     )
-    # 235 > 220 (old ceiling) but ≤ 240 (new ceiling). Passes.
     assert haiku.post_check(
         p, cites=None, team_a_news=news, team_b_news=None,
-    ) is True
+    ) is False
 
 
 def test_word_budget_stays_220_when_no_squad_content() -> None:
-    """Without squad content, the ceiling stays 220."""
+    """Without squad content (or with — the rule is the same now), the
+    ceiling stays 220."""
     p = _good_payload()
     long_blurb = " ".join(["word"] * 235)
     p["blurb"] = long_blurb
@@ -750,11 +767,34 @@ def test_word_budget_stays_220_when_no_squad_content() -> None:
     ) is False
 
 
-def test_word_budget_cards_alone_lifts_ceiling() -> None:
-    """An at-risk card alone is enough squad content for the 240 ceiling."""
+def test_squad_blurb_word_budget_rejects_too_long() -> None:
+    """squad_blurb caps at 120 words (1-4 sentences). Anything over
+    falls back to the stub."""
     p = _good_payload()
-    p["blurb"] = " ".join(["word"] * 235)
-    news = _team_news_with_cards(team="France", card_names=("Foden",))
-    assert haiku.post_check(
-        p, cites=None, team_a_news=news, team_b_news=None,
-    ) is True
+    p["squad_blurb"] = " ".join(["word"] * 150)
+    assert haiku.post_check(p, cites=None) is False
+
+
+def test_squad_blurb_word_budget_rejects_too_short() -> None:
+    """squad_blurb has a small min (8 words) so a one-word fragment
+    or empty-ish response doesn't slip through."""
+    p = _good_payload()
+    p["squad_blurb"] = "Clean."
+    assert haiku.post_check(p, cites=None) is False
+
+
+def test_squad_blurb_word_budget_passes_typical() -> None:
+    p = _good_payload()
+    p["squad_blurb"] = (
+        "Both squads come through clean — no late absences flagged "
+        "either way ahead of kickoff."
+    )
+    assert haiku.post_check(p, cites=None) is True
+
+
+def test_squad_blurb_voice_rules_apply() -> None:
+    """Banned phrases / exclamations / emoji in squad_blurb → fall back."""
+    p = _good_payload()
+    p["squad_blurb"] = "Both squads at full strength and ready to go!"
+    # Exclamation mark fails voice check.
+    assert haiku.post_check(p, cites=None) is False

@@ -632,6 +632,21 @@ a { color: inherit; }
 }
 .blurb p + p { margin-top: 14px; }
 
+/* Squad section on per-match page — dedicated visible block for the
+ * `copy.squad_blurb` field. Same chrome as .drivers / .sources so the
+ * three blocks read as a consistent stack. Added 2026-05-31. */
+.squad { margin: 32px 0 0; max-width: 64ch; }
+.squad h2 {
+  font-family: var(--font-sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite-soft);
+  margin: 0 0 12px; padding-bottom: 8px; border-bottom: var(--hairline);
+}
+.squad p {
+  font-family: var(--font-serif); font-size: 15.5px; line-height: 1.55;
+  color: var(--ink-soft); margin: 0;
+}
+.squad p + p { margin-top: 12px; }
+
 /* Ladder — per-team verdict grid on the per-outright page. Each
    <article class="lc-card"> is its own tile carrying team name,
    verdict pill, model/market/edge stats, a one-line editorial blurb,
@@ -3449,16 +3464,32 @@ def _render_cross_venue_block(
 
 
 def render_match_page(match: dict) -> str:
-    """Per-match page: header + lead card + blurb + drivers + sources."""
+    """Per-match page: header + lead card + blurb + squad + drivers + sources."""
     title = match["copy"].get("title") or f"{match['team_a']} v {match['team_b']}"
     summary = match["copy"].get("summary") or ""
     blurb = _sanitize_copy(match["copy"].get("blurb") or "")
+    squad_blurb = _sanitize_copy(match["copy"].get("squad_blurb") or "")
     drivers = match["copy"].get("drivers") or []
     citations = match["copy"].get("editorial_citations") or []
     adjustments = match.get("hard_signal_adjustments") or []
     v = match["verdict"]
 
     blurb_paras = "\n".join(f"<p>{escape(p)}</p>" for p in blurb.split("\n\n") if p.strip())
+
+    # Squad section (added 2026-05-31). Renders the dedicated
+    # `copy.squad_blurb` field on its own block between the verdict
+    # blurb and the venue CTA, so the operator's "I want a visible
+    # squad section" mockup lands as designed.
+    squad_html = ""
+    if squad_blurb:
+        squad_paras = "\n".join(
+            f"<p>{escape(p)}</p>" for p in squad_blurb.split("\n\n") if p.strip()
+        )
+        squad_html = (
+            '<section class="squad"><h2>Squad</h2>'
+            f'{squad_paras}'
+            '</section>'
+        )
 
     drivers_html = ""
     if drivers:
@@ -3569,6 +3600,7 @@ def render_match_page(match: dict) -> str:
         + render_card(match, is_lead=True, show_read_case=False)
         + disclaimer_html
         + (f'<div class="blurb">{blurb_paras}</div>' if blurb_paras else "")
+        + squad_html
         + cta_row
         + cross_venue_html
         + why_disagrees_html

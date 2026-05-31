@@ -656,6 +656,68 @@ def _pick_blurb(
     ])
 
 
+def _squad_blurb_for_inputs(i: Inputs) -> str:
+    """Deterministic squad sentence for the stub.
+
+    Spec 2026-05-31: every published match must carry a non-empty
+    `squad_blurb` so the website's Squad section is never blank, even
+    when Haiku is unavailable.
+
+    Strategy:
+      * If team_a_news / team_b_news carry absences, render a short
+        "Out: Name (injury). Out for {team}: ..." line per side.
+      * If at-risk cards present, append "{Name} carries one yellow"
+        per side. Phrased as risk, not fact (matches the prompt rules).
+      * Otherwise: deterministic positive default. We rotate three
+        variants by a salt so the stub doesn't repeat the same sentence
+        across the slate.
+    """
+    a = i.get("team_a") or "Home"
+    b = i.get("team_b") or "Away"
+    salt = f"{a}|{b}|squad"
+
+    news_a = i.get("team_a_news")
+    news_b = i.get("team_b_news")
+
+    parts: list[str] = []
+
+    def _names_from(news, attr: str) -> list[str]:
+        if news is None:
+            return []
+        rows = getattr(news, attr, ()) or ()
+        names: list[str] = []
+        for r in rows:
+            n = (getattr(r, "name", "") or "").strip()
+            if n:
+                names.append(n)
+        return names
+
+    a_out = _names_from(news_a, "absences")
+    b_out = _names_from(news_b, "absences")
+    a_risk = _names_from(news_a, "cards")
+    b_risk = _names_from(news_b, "cards")
+
+    if a_out:
+        parts.append(f"Out for {a}: {', '.join(a_out)}.")
+    if b_out:
+        parts.append(f"Out for {b}: {', '.join(b_out)}.")
+    if a_risk:
+        parts.append(f"{', '.join(a_risk)} carries one yellow into the {a} fixture.")
+    if b_risk:
+        parts.append(f"{', '.join(b_risk)} carries one yellow into the {b} fixture.")
+
+    if parts:
+        return " ".join(parts)
+
+    # No-data default — three positive variants rotated by salt.
+    defaults = (
+        "Both squads come through clean, no late absences flagged either way.",
+        "No flagged availability concerns on either side ahead of kickoff.",
+        "Squad picture is straightforward — nothing flagged either way.",
+    )
+    return defaults[_variant_index(salt, len(defaults))]
+
+
 def _pick_copy(i: Inputs) -> Copy:
     side  = i["side"] or ""
     edge  = i["edge_pp"] or 0.0
@@ -707,7 +769,10 @@ def _pick_copy(i: Inputs) -> Copy:
         )
     _pd = _variant_index(salt + "/drivers", len(pick_driver_pool))
     drivers = [pick_driver_pool[(_pd + k) % len(pick_driver_pool)] for k in range(4)]
-    return Copy(title=title, summary=summary, blurb=blurb, drivers=drivers)
+    return Copy(
+        title=title, summary=summary, blurb=blurb, drivers=drivers,
+        squad_blurb=_squad_blurb_for_inputs(i),
+    )
 
 
 def _pass_copy(i: Inputs) -> Copy:
@@ -837,7 +902,10 @@ def _pass_copy(i: Inputs) -> Copy:
     # Pick three drivers, deterministic by fixture but rotated so cards differ.
     _d_idx = _variant_index(salt + "/drivers", len(driver_pool))
     drivers = [driver_pool[(_d_idx + k) % len(driver_pool)] for k in range(3)]
-    return Copy(title=title, summary=summary, blurb=blurb, drivers=drivers)
+    return Copy(
+        title=title, summary=summary, blurb=blurb, drivers=drivers,
+        squad_blurb=_squad_blurb_for_inputs(i),
+    )
 
 
 def _avoid_copy(i: Inputs) -> Copy:
@@ -968,7 +1036,10 @@ def _avoid_copy(i: Inputs) -> Copy:
     ]
     _ad = _variant_index(salt + "/drivers", len(avoid_driver_pool))
     drivers = [avoid_driver_pool[(_ad + k) % len(avoid_driver_pool)] for k in range(3)]
-    return Copy(title=title, summary=summary, blurb=blurb, drivers=drivers)
+    return Copy(
+        title=title, summary=summary, blurb=blurb, drivers=drivers,
+        squad_blurb=_squad_blurb_for_inputs(i),
+    )
 
 
 # ── Press chorus (news-signals stopgap until PR 5 / Haiku) ───────────

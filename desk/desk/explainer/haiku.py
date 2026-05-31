@@ -50,7 +50,12 @@ _TIMEOUT_SECONDS = 30.0
 # focused paragraph without inviting padding elsewhere.
 _BLURB_MIN_WORDS = 80
 _BLURB_MAX_WORDS = 220
-_BLURB_MAX_WORDS_WITH_SQUAD = 240
+_BLURB_MAX_WORDS_WITH_SQUAD = 240   # legacy — squad content used to live inside blurb
+
+# squad_blurb (its own field as of 2026-05-31). 1-4 sentences,
+# rendered as a dedicated Squad section on the match page.
+_SQUAD_BLURB_MIN_WORDS = 8
+_SQUAD_BLURB_MAX_WORDS = 120
 
 
 # ── voice doc loader ────────────────────────────────────────────────
@@ -86,15 +91,22 @@ _VOICE_DOC = _load_voice_doc()
 
 _SYSTEM_PROMPT = f"""\
 You write the editorial copy for one prediction-market football match.
-For each match you produce three fields via the `write_blurb` tool:
+For each match you produce FOUR fields via the `write_blurb` tool:
 
-  * title    — one line. Sentence case. Shape: "Team A v Team B · <hook>".
-  * summary  — 1-2 sentences, plain prose, no source attribution.
-  * blurb    — 5-8 sentences (~120-180 words). This is the main body.
-               Attribute every real-world claim inline to an outlet in the
-               provided `editorial_citations` list. If no citations are
-               provided, source against model and market only — and claim
-               nothing that would need a citation.
+  * title       — one line. Sentence case. Shape: "Team A v Team B · <hook>".
+  * summary     — 1-2 sentences, plain prose, no source attribution.
+  * blurb       — 5-8 sentences (~120-180 words). The verdict / edge /
+                  model-vs-market prose. **Do NOT include squad / lineup /
+                  injury / suspension / card content here** — that all
+                  goes in `squad_blurb`. Attribute every real-world claim
+                  inline to an outlet in the provided `editorial_citations`
+                  list. If no citations are provided, source against model
+                  and market only — and claim nothing that would need a
+                  citation.
+  * squad_blurb — 1-4 sentences (~20-100 words) covering the squad
+                  picture (opening XI, who's out, who's at-risk, OR a
+                  clean-no-data line). See SQUAD BLURB below for the
+                  mandate. ALWAYS POPULATED — never empty.
 
 You MUST emit via the `write_blurb` tool. Do not write any prose around
 the tool call.
@@ -127,11 +139,12 @@ data for each side. Each carries:
   * materiality — directive for how forcefully the blurb must address
                  availability: "high" / "medium" / "low" / "none".
 
-SQUAD PARAGRAPH
+SQUAD BLURB
 
-The blurb MUST contain ONE dedicated paragraph covering the squad
-picture, kept separate from the verdict / edge paragraph. It fires
-on every match. What goes into it depends on what's known:
+The `squad_blurb` field is its OWN editorial output, separate from
+`blurb`. The website renders it as a dedicated "Squad" section on the
+match page. It is ALWAYS POPULATED — never empty — and covers, in
+priority order, only what is known:
 
   1. Opening XI — when lineup.state="confirmed", name the formation
      once and 1–2 recognisable starters. ("France open 4-3-3 with
@@ -160,23 +173,29 @@ on every match. What goes into it depends on what's known:
      in the no-data case. Vary the phrasing across matches to avoid
      repetition.
 
-If some clauses (1)-(3) are known and others aren't, write only the
-known ones; don't pad with a no-data sentence on top.
+Length target: 20-100 words. One short paragraph. If some clauses
+(1)-(3) are known and others aren't, write only the known ones; don't
+pad with a no-data sentence on top.
+
+**Critical: squad content goes in `squad_blurb` ONLY.** The main
+`blurb` is verdict / edge / model-vs-market prose; it must NOT mention
+the XI, formations, absent players, at-risk cards, or "no flagged
+absences"-style content. If you find yourself writing squad content
+in `blurb`, move it to `squad_blurb`.
 
 NEVER invent a starter, an absence, a formation, or a card count.
 NEVER name a player who is not in starters[], absences[], or cards[].
 NEVER present an at-risk player as already banned or suspended.
 
-Materiality matrix (controls how forcefully the squad paragraph
+Materiality matrix (controls how forcefully the `squad_blurb`
 addresses the absences, not whether it fires — it always fires):
 
-  materiality=high   → the squad paragraph MUST name at least one
-                       absent player and the impact.
+  materiality=high   → squad_blurb MUST name at least one absent
+                       player and the impact.
   materiality=medium → one short sentence naming the most important
                        absence.
-  materiality=low    → optional; mention only when it fits the verdict
-                       narrative (e.g. when an at-risk card is the only
-                       availability content for the team).
+  materiality=low    → optional naming; mention an at-risk player if
+                       it's the only availability content for the team.
   materiality=none   → write the no-data sentence per (4) above. Do
                        NOT claim any specific player is injured /
                        suspended / out — there's no data behind it.
@@ -439,16 +458,25 @@ def build_messages(i: Inputs) -> tuple[list[dict], list[dict]]:
 
 def parse_tool_use(response: Any) -> dict[str, str] | None:
     """Pull the `write_blurb` tool input. Returns None when missing or
-    when required fields are absent / empty."""
+    when required fields are absent / empty.
+
+    `squad_blurb` is required as of 2026-05-31 — Haiku must always
+    produce squad content (positive sentence in the no-data case)."""
     for block in getattr(response, "content", []) or []:
         if getattr(block, "type", None) == "tool_use" and getattr(block, "name", None) == _TOOL_NAME:
             payload = getattr(block, "input", None) or {}
-            title = (payload.get("title") or "").strip()
-            summary = (payload.get("summary") or "").strip()
-            blurb = (payload.get("blurb") or "").strip()
-            if not (title and summary and blurb):
+            title       = (payload.get("title") or "").strip()
+            summary     = (payload.get("summary") or "").strip()
+            blurb       = (payload.get("blurb") or "").strip()
+            squad_blurb = (payload.get("squad_blurb") or "").strip()
+            if not (title and summary and blurb and squad_blurb):
                 return None
-            return {"title": title, "summary": summary, "blurb": blurb}
+            return {
+                "title":       title,
+                "summary":     summary,
+                "blurb":       blurb,
+                "squad_blurb": squad_blurb,
+            }
     return None
 
 
@@ -691,25 +719,36 @@ def post_check(
     flip to strict after eyeballing). When env var
     `DESK_TEAM_NEWS_BLURB_REQUIRED=1`, guards are hard.
     """
-    title, summary, blurb = fields["title"], fields["summary"], fields["blurb"]
-    for f in (title, summary, blurb):
-        if not is_voice_clean(f):
+    title       = fields["title"]
+    summary     = fields["summary"]
+    blurb       = fields["blurb"]
+    squad_blurb = fields.get("squad_blurb", "")
+    for f in (title, summary, blurb, squad_blurb):
+        if f and not is_voice_clean(f):
             return False
-    # Q3 squad-paragraph: a side with squad content earns +20 words of
-    # headroom so the dedicated paragraph doesn't push the verdict
-    # prose into the floor.
-    max_words = (
-        _BLURB_MAX_WORDS_WITH_SQUAD
-        if _has_squad_content(team_a_news) or _has_squad_content(team_b_news)
-        else _BLURB_MAX_WORDS
-    )
+    # Main blurb word count — squad content is now in its own field, so
+    # the main blurb returns to the original [80, 220] window.
     wc = _word_count(blurb)
-    if wc < _BLURB_MIN_WORDS or wc > max_words:
+    if wc < _BLURB_MIN_WORDS or wc > _BLURB_MAX_WORDS:
         _LOG.debug("blurb word count %d outside [%d, %d]",
-                   wc, _BLURB_MIN_WORDS, max_words)
+                   wc, _BLURB_MIN_WORDS, _BLURB_MAX_WORDS)
         return False
+    # squad_blurb word count — short paragraph, target 20-100 words.
+    # Allowed empty for backwards-compat when called without the field;
+    # Haiku is mandated to always populate it via the tool schema.
+    if squad_blurb:
+        swc = _word_count(squad_blurb)
+        if swc < _SQUAD_BLURB_MIN_WORDS or swc > _SQUAD_BLURB_MAX_WORDS:
+            _LOG.debug("squad_blurb word count %d outside [%d, %d]",
+                       swc, _SQUAD_BLURB_MIN_WORDS, _SQUAD_BLURB_MAX_WORDS)
+            return False
     if not _attributions_are_allowed(blurb, cites):
         _LOG.debug("blurb attribution names an outlet not in editorial_citations")
+        return False
+    # Same outlet-attribution check on squad_blurb — the squad section
+    # can attribute injuries to outlets (per-Guardian etc.).
+    if squad_blurb and not _attributions_are_allowed(squad_blurb, cites):
+        _LOG.debug("squad_blurb attribution names an outlet not in editorial_citations")
         return False
 
     # ── Team-news guards ────────────────────────────────────────────
@@ -892,4 +931,5 @@ def try_haiku_copy(
         title=raw["title"],
         summary=raw["summary"],
         blurb=raw["blurb"],
+        squad_blurb=raw.get("squad_blurb", ""),
     )
