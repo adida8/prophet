@@ -44,6 +44,16 @@ PUT /api/desk/ops/control  body: { enabled?, hours?: [int 0..23] }
     refresh loop picks up changes on its next scheduling decision —
     no restart needed.
 
+POST /api/desk/ops/run-now
+    Fire-and-forget trigger: spawn `python -m desk schedule --once` as
+    a detached subprocess so the operator can force a manual tick from
+    the admin UI instead of shelling into Railway. Returns 202 with the
+    spawn timestamp + PID; the tick takes 5-10 min to land in run
+    history. No lock — concurrent ticks are unsafe but operators only
+    click occasionally and the worst case is a doubled api-football
+    quota burn for one tick. Inherits the server process's env so all
+    DESK_* flags propagate.
+
 GET /api/desk/ops/distribute?limit=25
     Read-only view of the MTA push outbox (sqlite). Returns
     push_enabled / pending_count / dead_count + the most recent dead
@@ -431,6 +441,68 @@ def put_control(payload: dict = Body(default_factory=dict)) -> dict:
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
     return _write_control(patch)
+
+
+# ── Manual tick trigger ───────────────────────────────────────────────
+# Replaces the railway-ssh "cd /app/desk && python -m desk schedule
+# --once" dance with one button click in the admin UI. The endpoint
+# spawns a detached subprocess and returns immediately; the tick takes
+# 5-10 min and shows up in run history when it finishes.
+#
+# No lock by design — operators trigger this occasionally (not in a
+# loop) and the existing tick mechanism handles concurrent fetches OK
+# at the cost of one extra api-football quota burn worst case. If
+# concurrent triggers become a real issue, add a PID file under
+# {ops_root}/manual-trigger.pid + check liveness on entry.
+
+
+@router.post("/run-now", dependencies=[Depends(_gate)])
+def post_run_now() -> dict:
+    """Spawn `python -m desk schedule --once` as a detached subprocess.
+
+    Returns 202-style payload with the spawn timestamp + PID. The
+    subprocess inherits the server's env (so DESK_* flags propagate)
+    and detaches via start_new_session=True so it survives a server
+    reload mid-tick.
+    """
+    import subprocess
+    import sys
+
+    desk_dir = _PROJECT_ROOT / "desk"
+    if not desk_dir.is_dir():
+        # Defensive: deployment shape changed. Surface loud so the
+        # operator knows the button is wired wrong before any spawn.
+        raise HTTPException(
+            status_code=500,
+            detail=f"desk/ directory not found at {desk_dir}",
+        )
+
+    # Use the same interpreter the server is running under so we don't
+    # accidentally hit a different Python on PATH.
+    try:
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "desk", "schedule", "--once"],
+            cwd=str(desk_dir),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+    except OSError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"failed to spawn tick subprocess: {e}",
+        )
+
+    triggered_at = datetime.now(tz=timezone.utc).isoformat().replace("+00:00", "Z")
+    log.info("manual tick triggered via /run-now: pid=%d at=%s",
+             proc.pid, triggered_at)
+    return {
+        "ok":            True,
+        "triggered_at":  triggered_at,
+        "pid":           proc.pid,
+        "command":       "python -m desk schedule --once",
+        "estimated_seconds": 480,   # ~8 min typical for a full tick with Haiku
+    }
 
 
 # ── Distribute (MTA push wire) visibility ─────────────────────────────

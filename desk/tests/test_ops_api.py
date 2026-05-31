@@ -223,3 +223,100 @@ def test_unknown_run_id_returns_404(
         auth=("ops", "s3cret"),
     )
     assert r.status_code == 404
+
+
+# ── POST /run-now (manual tick trigger) ───────────────────────────────
+
+def test_run_now_spawns_subprocess_and_returns_202_shape(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    """Endpoint must spawn `python -m desk schedule --once` via
+    subprocess.Popen and return ok/triggered_at/pid + the command
+    string. We mock Popen to avoid actually running a 5-min tick."""
+    monkeypatch.setenv("DESK_OPS_USER", "ops")
+    monkeypatch.setenv("DESK_OPS_PASS", "s3cret")
+    app = _build_app(monkeypatch, tmp_path)
+
+    spawned: dict = {}
+
+    class _FakePopen:
+        def __init__(self, argv, **kwargs):
+            spawned["argv"]   = argv
+            spawned["cwd"]    = kwargs.get("cwd")
+            spawned["detach"] = kwargs.get("start_new_session", False)
+            self.pid = 12345
+
+    import desk_ops_api
+    monkeypatch.setattr(desk_ops_api.subprocess if hasattr(desk_ops_api, "subprocess") else __import__("subprocess"),
+                        "Popen", _FakePopen, raising=False)
+    # The endpoint imports `subprocess` lazily inside the handler, so
+    # patch the module-level reference too.
+    import subprocess as _subprocess
+    monkeypatch.setattr(_subprocess, "Popen", _FakePopen)
+
+    r = TestClient(app).post(
+        "/api/desk/ops/run-now", auth=("ops", "s3cret"), json={},
+    )
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["ok"] is True
+    assert body["pid"] == 12345
+    assert body["command"] == "python -m desk schedule --once"
+    assert body["estimated_seconds"] > 0
+    assert "triggered_at" in body
+
+    # Argv shape: <python> -m desk schedule --once
+    assert spawned["argv"][1:] == ["-m", "desk", "schedule", "--once"]
+    assert spawned["cwd"].endswith("/desk")
+    assert spawned["detach"] is True
+
+
+def test_run_now_requires_auth(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    monkeypatch.setenv("DESK_OPS_USER", "ops")
+    monkeypatch.setenv("DESK_OPS_PASS", "s3cret")
+    app = _build_app(monkeypatch, tmp_path)
+    # No auth → 401, no subprocess spawned.
+    r = TestClient(app).post("/api/desk/ops/run-now", json={})
+    assert r.status_code == 401
+
+
+def test_run_now_returns_500_when_desk_dir_missing(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    """Defence-in-depth: if the deployment shape ever drifts and the
+    desk/ directory isn't where we expect, surface a clean 500 rather
+    than a silent Popen failure."""
+    monkeypatch.setenv("DESK_OPS_USER", "ops")
+    monkeypatch.setenv("DESK_OPS_PASS", "s3cret")
+    app = _build_app(monkeypatch, tmp_path)
+
+    import desk_ops_api
+    monkeypatch.setattr(desk_ops_api, "_PROJECT_ROOT", tmp_path / "no-desk-here")
+
+    r = TestClient(app).post(
+        "/api/desk/ops/run-now", auth=("ops", "s3cret"), json={},
+    )
+    assert r.status_code == 500
+    assert "desk/" in r.json()["detail"]
+
+
+def test_run_now_returns_500_when_spawn_fails(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    monkeypatch.setenv("DESK_OPS_USER", "ops")
+    monkeypatch.setenv("DESK_OPS_PASS", "s3cret")
+    app = _build_app(monkeypatch, tmp_path)
+
+    def _boom(*_a, **_kw):
+        raise OSError("permission denied")
+
+    import subprocess as _subprocess
+    monkeypatch.setattr(_subprocess, "Popen", _boom)
+
+    r = TestClient(app).post(
+        "/api/desk/ops/run-now", auth=("ops", "s3cret"), json={},
+    )
+    assert r.status_code == 500
+    assert "spawn" in r.json()["detail"].lower()

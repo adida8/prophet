@@ -59,6 +59,12 @@ export default function OpsAdmin() {
   const [state, setState]   = useState(null);
   const [error, setError]   = useState(null);
   const [busy, setBusy]     = useState(false);
+  // Manual-trigger button state. `runNow` is one of:
+  //   null       — idle, button shows "Run now"
+  //   {pid, at}  — just triggered, button shows "Triggered (~8m)" + disabled
+  // The disable expires after a short timeout (UX hint, not a lock) so the
+  // operator can re-trigger if a tick failed silently.
+  const [runNow, setRunNow] = useState(null);
   // `picker` is the hour the dropdown currently shows. We default it to
   // the first unscheduled hour so the Add button is enabled on load; if
   // the operator manually picks an unscheduled hour, that choice sticks
@@ -162,6 +168,28 @@ export default function OpsAdmin() {
     await save({ enabled: !state.enabled });
   }
 
+  async function triggerRunNow() {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await fetchJson("/api/desk/ops/run-now", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      setRunNow({ pid: r.pid, at: r.triggered_at });
+      // Re-enable the button after the estimated tick duration so the
+      // operator can re-trigger if the tick failed silently. Not a lock
+      // — concurrent triggers are allowed (best-effort UX).
+      const cooldown = Math.max(60, (r.estimated_seconds || 480)) * 1000;
+      setTimeout(() => setRunNow(null), cooldown);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <>
       <header className="ops__header">
@@ -175,6 +203,16 @@ export default function OpsAdmin() {
           </div>
         </div>
         <div className="ops__header-right">
+          <button
+            className="ops__reload"
+            onClick={triggerRunNow}
+            disabled={busy || runNow != null}
+            title={runNow
+              ? `Triggered ${fmtAgo(runNow.at)} (pid ${runNow.pid})`
+              : "Fire one full refresh tick now (5-10 min to complete)"}
+          >
+            {runNow ? "Triggered · ~8m" : "Run now"}
+          </button>
           <button
             className={`ops__reload ${state.enabled ? "" : "ops__reload--off"}`}
             onClick={toggleEnabled}
