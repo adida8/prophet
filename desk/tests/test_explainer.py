@@ -36,6 +36,40 @@ def test_emoji_rejected() -> None:
         assert_voice_clean("Strong pick today 🔥")
 
 
+# ── Brand names with banned-word substrings (real prod bug, 2026-05-31) ──
+
+@pytest.mark.parametrize("brand_text", [
+    # 'bet' substring — used to dead-letter every Betfair / Sky Bet pick
+    "Cheapest line is Betfair Exchange at 5.40 for France.",
+    "Sky Bet has the draw at 3.40.",
+    "The Betfair_Ex_Eu line opens at 1.75.",
+    "Skybet's price matches William Hill's at 18.2%.",
+    # 'lock' substring — Wycombe's striker 'Lockyer', etc.
+    "Lockyer starts at centre-back.",
+    "Bullock fronts the attack.",
+    # multi-word phrases still need full match
+    "He runs the half-back theory all night.",   # no 'back the' word-bdr
+])
+def test_brand_substrings_are_not_banned(brand_text: str) -> None:
+    """Voice-check uses word boundaries: 'bet' must not match
+    'Betfair'/'Sky Bet'/'Skybet', 'lock' must not match 'Lockyer'.
+    A pre-fix substring check empty-Copy'd every cross-venue Pick
+    that landed on Betfair Exchange or Sky Bet."""
+    assert is_voice_clean(brand_text), brand_text
+
+
+@pytest.mark.parametrize("real_violation", [
+    "Place a bet on France.",
+    "You should bet now.",
+    "Lock this in before kickoff.",
+    "Back the home side.",
+])
+def test_banned_words_still_caught_when_isolated(real_violation: str) -> None:
+    """Word-boundary matching must STILL catch the real violations —
+    otherwise the fix would just disable the rule entirely."""
+    assert not is_voice_clean(real_violation), real_violation
+
+
 # ── Templated copy per state ──────────────────────────────────────────
 
 def _pick_inputs(**overrides) -> dict:
