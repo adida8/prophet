@@ -31,13 +31,20 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from loop_registry import is_enabled
+
 log = logging.getLogger("desk.lineups_loop")
 
+LOOP_ID           = "lineups_refresh"
 INITIAL_DELAY_SEC = int(os.getenv("DESK_LINEUP_LOOP_INITIAL_DELAY_SEC", "120"))
 TICK_SEC          = int(os.getenv("DESK_LINEUP_LOOP_TICK_SEC", "900"))   # 15 min
 WINDOW_HOURS      = float(os.getenv("DESK_LINEUP_LOOP_WINDOW_HOURS", "2"))
+# Default flipped to OFF 2026-05-31. Auto-republishing on every successful
+# lineup fetch silently fires the full Haiku blurb writer across all 72
+# WC26 matches; with both staging + prod running, that burned $20 of
+# Anthropic credit in a single day. Operator must explicitly opt in.
 PUBLISH_AFTER_LANDING = (
-    os.getenv("DESK_LINEUP_LOOP_PUBLISH", "1") == "1"
+    os.getenv("DESK_LINEUP_LOOP_PUBLISH", "0") == "1"
 )
 
 ROOT     = Path(__file__).resolve().parent
@@ -131,21 +138,31 @@ def _tick() -> None:
 
 
 async def run_lineups_loop() -> None:
-    """Entry point invoked from `main.py` alongside the other loops."""
+    """Entry point invoked from `main.py` alongside the other loops.
+
+    Honours BOTH the schedules.json admin toggle and the legacy
+    `DESK_LINEUP_LOOP_ENABLED` env gate. The admin can flip the loop
+    on/off live; the env gates remain as hard-deploy controls
+    (`DESK_AUTORUN=0` as global kill, `API_FOOTBALL_KEY` as
+    feature-flag-style prerequisite).
+    """
     if not _enabled():
         log.info(
-            "lineups loop disabled (set DESK_LINEUP_LOOP_ENABLED=1 + "
+            "lineups loop disabled at boot (set DESK_LINEUP_LOOP_ENABLED=1 + "
             "API_FOOTBALL_KEY to enable)"
         )
         return
 
     log.info(
         "lineups loop online · cadence=%ds · window=%.1fh · "
-        "boot in %ds",
+        "boot in %ds (honours schedules.json toggle)",
         TICK_SEC, WINDOW_HOURS, INITIAL_DELAY_SEC,
     )
     await asyncio.sleep(INITIAL_DELAY_SEC)
     while True:
+        if not is_enabled(LOOP_ID):
+            await asyncio.sleep(min(TICK_SEC, 60))
+            continue
         try:
             await asyncio.to_thread(_tick)
         except Exception:

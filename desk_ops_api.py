@@ -61,6 +61,20 @@ GET /api/desk/ops/distribute?limit=25
     counts. Owned by desk/desk/distribute/outbox.py; we read it
     here with stdlib sqlite3 to preserve the no-imports-from-desk
     invariant.
+
+GET /api/desk/ops/schedules
+    Unified loop schedule view. One row per registered background loop
+    (desk_refresh, lineups_refresh, distribute, activity_* × 3,
+    daily_report, site_qa, ledger_refresh, social_weekly), each with
+    enabled flag + cadence + required env hint. State persists in
+    `{ops_root}/schedules.json`; the `desk_refresh` row mirrors
+    control.json for backwards-compat with the existing Desk admin tab.
+
+POST /api/desk/ops/schedules/{loop_id}/enabled  body: { enabled: bool }
+    Flip one loop on or off. Loops poll the registry on every tick so
+    the flip lands within ~60s without a restart. 404 on an unknown
+    loop_id. The `desk_refresh` flip routes to control.json instead so
+    the Desk admin page sees the same state.
 """
 
 from __future__ import annotations
@@ -77,6 +91,8 @@ from typing import Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+
+from loop_registry import LOOPS, read_schedules, write_schedules
 
 log = logging.getLogger("desk_ops_api")
 
@@ -775,6 +791,82 @@ def get_data_sources_state() -> dict[str, Any]:
         "elo":            _elo_state(),
         "openweathermap": _openweathermap_state(),
     }
+
+
+# ── Schedules (unified loop on/off control) ───────────────────────────
+# The schedules page at /desk/ops/schedules surfaces every background
+# loop (lineups, distribute, activity ×3, daily_report, site_qa, ledger,
+# social_weekly) with a single on/off button each. State lives in
+# `{ops_root}/schedules.json`; loops poll `loop_registry.is_enabled()`
+# on every tick so flips land within ~60s without a restart.
+#
+# `desk_refresh` is special: its enabled flag stays in the existing
+# `control.json` so the Desk admin tab (which also edits the schedule
+# hours) and this page agree on a single source of truth. The schedules
+# API delegates that one row to control.json read/write.
+
+
+def _schedules_doc_for_api() -> dict[str, Any]:
+    """Build the API response: rows from schedules.json + desk_refresh's
+    enabled mirrored from control.json."""
+    doc = read_schedules()
+    control = _read_control()
+    # Mirror control.json onto the desk_refresh row.
+    desk_row = dict(doc["loops"].get("desk_refresh") or {})
+    desk_row["enabled"] = bool(control["enabled"])
+    desk_row["hours"]   = list(control["hours"])
+    desk_row["updated_at_control"] = control.get("updated_at")
+    doc["loops"]["desk_refresh"] = desk_row
+    # Annotate every row with the static registry metadata so the UI
+    # doesn't need a second fetch to render labels + descriptions.
+    rows = []
+    for ld in LOOPS:
+        body = dict(doc["loops"].get(ld.id) or {})
+        body.setdefault("enabled", ld.default_enabled)
+        rows.append({
+            "id":          ld.id,
+            "label":       ld.label,
+            "description": ld.description,
+            "shape":       ld.shape,
+            "requires":    list(ld.requires),
+            "state":       body,
+        })
+    return {
+        "version":    doc.get("version", 1),
+        "updated_at": doc.get("updated_at"),
+        "loops":      rows,
+    }
+
+
+@router.get("/schedules", dependencies=[Depends(_gate)])
+def get_schedules() -> dict[str, Any]:
+    return _schedules_doc_for_api()
+
+
+@router.post("/schedules/{loop_id}/enabled", dependencies=[Depends(_gate)])
+def post_loop_enabled(loop_id: str, payload: dict = Body(default_factory=dict)) -> dict:
+    """Toggle one loop's enabled flag. Body: { "enabled": bool }.
+
+    Validates `loop_id` against the registry (404 on unknown). The
+    `desk_refresh` row writes to control.json instead of schedules.json
+    so the existing Desk admin tab and this page stay in sync.
+    """
+    known_ids = {ld.id for ld in LOOPS}
+    if loop_id not in known_ids:
+        raise HTTPException(status_code=404, detail=f"unknown loop_id: {loop_id}")
+    if "enabled" not in payload:
+        raise HTTPException(status_code=400, detail="missing 'enabled' in body")
+    enabled = bool(payload["enabled"])
+
+    if loop_id == "desk_refresh":
+        _write_control({"enabled": enabled})
+    else:
+        doc = read_schedules()
+        row = dict(doc["loops"].get(loop_id) or {})
+        row["enabled"] = enabled
+        doc["loops"][loop_id] = row
+        write_schedules(doc)
+    return _schedules_doc_for_api()
 
 
 @router.get("/distribute", dependencies=[Depends(_gate)])
