@@ -145,8 +145,10 @@ def test_enrich_polymarket_legacy_rows_adds_fields() -> None:
     )
 
 
-def test_enrich_polymarket_preserves_non_polymarket_rows() -> None:
-    """Non-Poly rows pass through enrich_polymarket_venue_prices unchanged."""
+def test_enrich_polymarket_preserves_non_prediction_market_rows() -> None:
+    """Non-prediction-market rows (sportsbooks, exchanges) pass through
+    `enrich_polymarket_venue_prices` unchanged — only Polymarket +
+    Kalshi get enriched in-place."""
     rows = [
         VenuePrice("polymarket", "a", 0.40),
         VenuePrice("polymarket", "draw", 0.28),
@@ -156,5 +158,48 @@ def test_enrich_polymarket_preserves_non_polymarket_rows() -> None:
     enriched = enrich_polymarket_venue_prices(rows)
     pin_rows = [p for p in enriched if p.venue == "pinnacle"]
     assert len(pin_rows) == 1
-    # Pinnacle row left as-is (no enrichment for non-Poly here).
+    # Pinnacle row left as-is (no enrichment for non-prediction-market).
     assert pin_rows[0].true_price is None
+
+
+def test_enrich_kalshi_rows_with_zero_fee() -> None:
+    """Kalshi rows should be enriched the same way Polymarket is —
+    venue_type=prediction_market, true_price = ask + 0% fee (Kalshi
+    sports markets carry no per-trade fee in v1)."""
+    legacy = [
+        VenuePrice("kalshi", "a",    0.665),
+        VenuePrice("kalshi", "draw", 0.180),
+        VenuePrice("kalshi", "b",    0.190),
+    ]
+    enriched = enrich_polymarket_venue_prices(legacy)
+    kalshi = {p.side: p for p in enriched if p.venue == "kalshi"}
+    for s in ("a", "draw", "b"):
+        assert kalshi[s].venue_type == VenueType.PREDICTION_MARKET
+        assert kalshi[s].true_price is not None
+        # Zero fee → true_price == implied_p (clamped).
+        assert math.isclose(kalshi[s].true_price, kalshi[s].implied_p, rel_tol=1e-12)
+        assert kalshi[s].fair_p is not None
+    # fair_p sums to 1 after multiplicative de-vig (sums to 1.035 → 1.0).
+    assert math.isclose(
+        sum(kalshi[s].fair_p for s in ("a", "draw", "b")),
+        1.0, rel_tol=1e-12,
+    )
+
+
+def test_enrich_polymarket_and_kalshi_independently() -> None:
+    """When BOTH Polymarket and Kalshi rows are present, each gets its
+    own de-vig pass (sums to 1 within each venue, not across venues)."""
+    legacy = [
+        VenuePrice("polymarket", "a",    0.40), VenuePrice("polymarket", "draw", 0.28), VenuePrice("polymarket", "b", 0.40),
+        VenuePrice("kalshi",     "a",    0.665), VenuePrice("kalshi",     "draw", 0.180), VenuePrice("kalshi",     "b", 0.190),
+    ]
+    enriched = enrich_polymarket_venue_prices(legacy)
+    poly = {p.side: p for p in enriched if p.venue == "polymarket"}
+    kalshi = {p.side: p for p in enriched if p.venue == "kalshi"}
+    # Each venue de-vigs independently.
+    assert math.isclose(sum(poly[s].fair_p   for s in ("a", "draw", "b")), 1.0, rel_tol=1e-12)
+    assert math.isclose(sum(kalshi[s].fair_p for s in ("a", "draw", "b")), 1.0, rel_tol=1e-12)
+    # Polymarket gets the 0.75% taker fee bumping true_price above
+    # implied; Kalshi gets 0%, so true_price == implied.
+    assert poly["a"].true_price > poly["a"].implied_p
+    assert math.isclose(kalshi["a"].true_price, kalshi["a"].implied_p, rel_tol=1e-12)

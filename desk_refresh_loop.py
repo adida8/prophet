@@ -252,6 +252,18 @@ def _tick() -> None:
     started_at = _now_iso()
     sub_env    = {"DESK_TICK_ID": tick_id}
 
+    # Non-US pivot — pull odds-api prices BEFORE the runner so each
+    # tick's publish reflects fresh cross-venue data. Costs ~2 credits
+    # per call; gated on `DESK_ODDS_FETCH=1` + `ODDS_API_KEY`. On a
+    # fresh deploy with `DESK_ODDS_API_DB_PATH` unset, the ephemeral
+    # cache wipes — this primes it before the verdict runs so the
+    # first post-deploy publish carries the cross-venue rows.
+    if (os.getenv("DESK_ODDS_FETCH", "0") == "1"
+            and os.getenv("ODDS_API_KEY")):
+        _run([py, "-m", "desk", "fetch-odds"],
+             cwd=DESK_DIR, timeout=120,
+             label="desk fetch-odds", extra_env=sub_env)
+
     # Order matters: matches + outrights + site come first so the
     # dashboard-critical artifacts always get refreshed, even if the
     # news-signals steps run long. Signals enrich next tick's matches —
@@ -325,17 +337,6 @@ def _tick() -> None:
              cwd=DESK_DIR, timeout=300,
              label="desk fetch-elo", extra_env=sub_env)
 
-    # Non-US pivot — pull sportsbook + exchange prices from The Odds
-    # API into the oddsapi cache. Gated on `DESK_ODDS_FETCH=1` AND a
-    # valid `ODDS_API_KEY` so a fresh deploy doesn't burn credits.
-    # `DESK_CROSS_VENUE_EDGE` is the **separate** flag that promotes
-    # the prices to the verdict path — the operator can prime the
-    # cache without flipping the verdict surface until they're ready.
-    if (os.getenv("DESK_ODDS_FETCH", "0") == "1"
-            and os.getenv("ODDS_API_KEY")):
-        _run([py, "-m", "desk", "fetch-odds"],
-             cwd=DESK_DIR, timeout=120,
-             label="desk fetch-odds", extra_env=sub_env)
 
     # Slice B / N3 — refresh api-football lineups for fixtures inside the
     # next 24h. Confirmed XI lands ~1h pre-kickoff, so the daily tick

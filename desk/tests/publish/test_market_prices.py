@@ -75,6 +75,32 @@ def test_at_most_one_is_best_per_side() -> None:
         assert len(flagged) == 1, f"side={r.side} flagged {len(flagged)}"
 
 
+def test_is_best_ignores_rows_with_none_true_price() -> None:
+    """Bug fix: a row with `true_price=None` should NEVER win is_best
+    when at least one other row has a real true_price. Previously the
+    publisher fell back to ranking by implied_p whenever ANY row was
+    missing true_price — which gave Kalshi (no enrichment in the
+    snapshot, lowest implied_p) the 'Best price' badge over real
+    sportsbook quotes."""
+    from desk.pricing.cost import VenueType as _VT
+    snap = _snap([
+        # Pinnacle: real true_price 0.32
+        VenuePrice("pinnacle", "a", 1.0 / 3.10,
+                   venue_type=_VT.SPORTSBOOK, decimal_odds=3.10,
+                   true_price=1.0 / 3.10, fair_p=0.30, overround=1.05),
+        # Kalshi: no enrichment, low implied_p
+        VenuePrice("kalshi", "a", 0.20),
+    ])
+    rows = build_market_prices(snap)
+    assert len(rows) == 1
+    venues_by_id = {v.venue: v for v in rows[0].venues}
+    # Pinnacle wins is_best (it has true_price).
+    assert venues_by_id["pinnacle"].is_best is True
+    # Kalshi can NOT win is_best despite lower implied_p — it has no
+    # true_price.
+    assert venues_by_id["kalshi"].is_best is False
+
+
 def test_is_best_chosen_by_true_price() -> None:
     """Betfair Exchange wins side 'a' because 1/3.107 ≈ 0.3218 vs
     Pinnacle's 1/3.10 = 0.3226 (William Hill at 1/3.00 is worse)."""

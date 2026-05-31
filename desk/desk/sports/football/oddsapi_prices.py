@@ -224,48 +224,68 @@ def merge_oddsapi_into_snapshot(
     )
 
 
+# Per-prediction-market default taker_fee. Polymarket's sports taker
+# fee runs ~0.75% at the 50/50 peak (per scope doc §1). Kalshi doesn't
+# charge a per-trade fee on sports markets — they're free at the
+# venue level, so we use 0. If Kalshi adds fees later, this is the
+# single line to edit.
+_PREDICTION_MARKET_TAKER_FEE: dict[str, float] = {
+    "polymarket": 0.0075,
+    "kalshi":     0.0,
+}
+
+_PREDICTION_MARKET_VENUES: frozenset[str] = frozenset({"polymarket", "kalshi"})
+
+
 def enrich_polymarket_venue_prices(
     prices: Iterable[VenuePrice],
 ) -> list[VenuePrice]:
-    """Re-emit Polymarket-only VenuePrice rows with the non-US-pivot
-    fields populated (venue_type + true_price + fair_p across the
-    three sides).
+    """Re-emit prediction-market VenuePrice rows (Polymarket + Kalshi)
+    with the non-US-pivot fields populated — venue_type + true_price +
+    fair_p across the three sides.
 
-    The legacy gamma adapter emits `VenuePrice(venue="polymarket",
-    side, implied_p)` without the extra fields, because it predates
-    the pivot. This helper re-runs the math and returns a new list —
-    callers swap the old list out for the enriched one when feeding
-    the cross-venue snapshot.
+    The legacy adapters emit `VenuePrice(venue=..., side, implied_p)`
+    without the extra fields, because they predate the pivot. This
+    helper re-runs the math per venue and returns a new list — callers
+    swap the old list out for the enriched one when feeding the
+    cross-venue snapshot. (Function name is legacy; it now handles
+    every prediction market in `_PREDICTION_MARKET_VENUES`.)
     """
-    poly_rows: dict[Side, VenuePrice] = {}
+    # Bucket by venue, then by side, so each prediction-market venue
+    # gets its own de-vig pass over its three sides.
+    by_venue: dict[str, dict[Side, VenuePrice]] = {}
     out: list[VenuePrice] = []
     for p in prices:
-        if p.venue == "polymarket" and p.side in _SIDES_3WAY:
-            poly_rows[p.side] = p
+        if p.venue in _PREDICTION_MARKET_VENUES and p.side in _SIDES_3WAY:
+            by_venue.setdefault(p.venue, {})[p.side] = p
         else:
             out.append(p)
 
-    if set(poly_rows.keys()) == set(_SIDES_3WAY):
-        ordered = [poly_rows[s].implied_p for s in _SIDES_3WAY]
+    for venue_id, side_to_row in by_venue.items():
+        if set(side_to_row.keys()) != set(_SIDES_3WAY):
+            # Partial-coverage on this venue — keep the legacy shape
+            # so the cross-venue path falls through cleanly. Without
+            # all three sides we can't de-vig.
+            out.extend(side_to_row.values())
+            continue
+        ordered = [side_to_row[s].implied_p for s in _SIDES_3WAY]
         fair = devig_multiplicative(ordered)
         overround = sum(ordered)
+        taker_fee = _PREDICTION_MARKET_TAKER_FEE.get(venue_id, 0.0)
         for side, p, fair_p in zip(_SIDES_3WAY, ordered, fair):
             tp = compute_true_price(
-                VenueType.PREDICTION_MARKET, PolymarketCostInputs(ask=p),
+                VenueType.PREDICTION_MARKET,
+                PolymarketCostInputs(ask=p, taker_fee=taker_fee),
             )
             out.append(VenuePrice(
-                venue="polymarket",
+                venue=venue_id,
                 side=side,
                 implied_p=p,
                 venue_type=VenueType.PREDICTION_MARKET,
-                region=VENUE_REGIONS.get("polymarket"),
+                region=VENUE_REGIONS.get(venue_id),
                 decimal_odds=None,
                 true_price=tp,
                 fair_p=fair_p,
                 overround=overround,
             ))
-    else:
-        # Partial-coverage Poly: keep the legacy shape so the
-        # cross-venue path falls through cleanly.
-        out.extend(poly_rows.values())
     return out

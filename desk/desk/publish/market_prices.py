@@ -66,10 +66,14 @@ def build_market_prices(snapshot: MarketSnapshot) -> list[MarketPriceRow]:
             key=lambda p: (order.get(p.venue, 99), p.venue),
         )
 
-        # Decide best by true_price if every row has one; fall back to
-        # implied_p otherwise.
-        if all(p.true_price is not None for p in candidates_sorted):
-            best = min(candidates_sorted, key=lambda p: p.true_price)  # type: ignore[arg-type]
+        # Decide best by `true_price`. When at least one row has a
+        # real true_price, rank only among those — rows without it
+        # can't compete for the badge (mixing apples + oranges). The
+        # legacy fallback to `implied_p` fires only when NO row in
+        # the side has a true_price (pre-pivot snapshots).
+        priced = [p for p in candidates_sorted if p.true_price is not None]
+        if priced:
+            best = min(priced, key=lambda p: p.true_price)   # type: ignore[arg-type]
         else:
             best = min(candidates_sorted, key=lambda p: p.implied_p)
 
