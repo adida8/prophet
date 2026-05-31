@@ -201,6 +201,49 @@ class Outbox:
         ).fetchall()
         return [_row_to_obj(r) for r in rows]
 
+    def retry_dead_letters(
+        self,
+        *,
+        match_ids: list[str] | None = None,
+        now: int | None = None,
+    ) -> int:
+        """Move dead rows back to pending so the next drain sweep picks
+        them up. `attempts` is reset to 0 and the row becomes due
+        immediately (`next_attempt_at=now`). `last_error` is preserved
+        so the operator can still see why the row died.
+
+        When `match_ids` is given, only those rows are retried. None ⇒
+        every dead row is retried. Returns the count of rows that
+        flipped (so the caller can confirm).
+
+        Typical use: after fixing the upstream condition that caused
+        a 4xx (consumer schema mismatch, auth header issue), call
+        this from a Railway shell to re-fire the rows MTA missed.
+        """
+        ts_now = now if now is not None else int(time.time())
+        if match_ids is not None:
+            if not match_ids:
+                return 0
+            placeholders = ",".join("?" * len(match_ids))
+            cur = self._conn.execute(
+                f"UPDATE push_queue SET "
+                "  status = 'pending', "
+                "  attempts = 0, "
+                "  next_attempt_at = ? "
+                f"WHERE status = 'dead' AND match_id IN ({placeholders})",
+                (ts_now, *match_ids),
+            )
+        else:
+            cur = self._conn.execute(
+                "UPDATE push_queue SET "
+                "  status = 'pending', "
+                "  attempts = 0, "
+                "  next_attempt_at = ? "
+                "WHERE status = 'dead'",
+                (ts_now,),
+            )
+        return cur.rowcount or 0
+
 
 def _row_to_obj(row: sqlite3.Row) -> OutboxRow:
     return OutboxRow(
