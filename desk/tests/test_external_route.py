@@ -47,6 +47,50 @@ def _seed_match(output_dir: Path, match: MatchOutput) -> None:
     pub.write_match(match)
 
 
+def _sample_outright() -> dict:
+    """A published-on-disk outright dict (build_payload shape): verdict +
+    copy + a `model` block carrying a nested hard_signal_adjustments."""
+    return {
+        "outright_id": "fb-wc26-winner",
+        "sport": "football",
+        "competition": {"code": "wc26", "label": "FIFA World Cup 2026",
+                        "stage": "pre_tournament"},
+        "market_label": "World Cup 2026 — outright winner",
+        "market_venue": "polymarket",
+        "market_url": "https://polymarket.com/event/2026-fifa-world-cup-winner-595",
+        "candidate": "Argentina",
+        "resolves_at": "2026-07-20T00:00:00Z",
+        "asof": "2026-05-28T17:44:23Z",
+        "verdict": {"state": "pick", "candidate": "YES Argentina", "side": "YES",
+                    "team": "Argentina", "edge_pp": 10.33, "lower_edge_pp": 3.35,
+                    "model_p": 0.1878, "model_p_lower": 0.118, "model_p_upper": 0.254,
+                    "market_p": 0.0845, "market_venue": "polymarket",
+                    "market_url": "https://polymarket.com/event/x", "price": "+1083"},
+        "copy": {"title": "t", "summary": "s", "blurb": "b", "drivers": ["d"]},
+        "model": {"sims": 10000, "bootstrap_samples": 100, "seed": 42,
+                  "overround_pp": 3.5,
+                  "hard_signal_adjustments": [
+                      {"team": "USA", "delta_elo": -8.0, "capped": False,
+                       "reason": "injury", "signal_type": "injury",
+                       "signal_url": "https://espn.com/x", "source_id": "espn-soccer",
+                       "source_name": "ESPN (soccer)", "published_at": "2026-05-21T15:58:17Z"},
+                  ]},
+        "ladder": [{"team": "Argentina", "model_p": 0.1878, "model_p_lower": 0.118,
+                    "model_p_upper": 0.254, "yes_market_p": 0.0845, "no_market_p": 0.9155,
+                    "yes_edge_pp": 10.33, "no_edge_pp": -10.33, "yes_lower_edge_pp": 3.35,
+                    "no_lower_edge_pp": -16.95, "verdict": "pick", "pick_side": "YES"}],
+        "updated_at": "2026-05-28T17:44:38Z",
+    }
+
+
+def _seed_outright(output_dir: Path, published: dict) -> None:
+    out = output_dir / "outrights"
+    out.mkdir(parents=True, exist_ok=True)
+    (out / f"{published['outright_id']}.json").write_text(
+        __import__("json").dumps(published), encoding="utf-8"
+    )
+
+
 # ── Auth ──────────────────────────────────────────────────────────────
 
 
@@ -169,3 +213,81 @@ def test_compare_resists_length_differences(
             headers={"Authorization": "Bearer x"},
         )
     assert r.status_code == 401
+
+
+# ── External outright GET ─────────────────────────────────────────────
+
+
+def test_outright_get_returns_wire_shape(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    """Happy path: the pull returns the wire shape, not the raw on-disk
+    JSON — content_type added + hard_signal_adjustments lifted to top."""
+    _seed_outright(tmp_path, _sample_outright())
+    app = _build_app(monkeypatch, tmp_path, token="dtk_correct-1")
+    with TestClient(app) as client:
+        r = client.get(
+            "/api/desk/external/outright/fb-wc26-winner",
+            headers={"Authorization": "Bearer dtk_correct-1"},
+        )
+    assert r.status_code == 200
+    payload = r.json()
+    assert payload["content_type"] == "outright"
+    assert payload["outright_id"] == "fb-wc26-winner"
+    # lifted to top level, removed from model
+    assert payload["hard_signal_adjustments"][0]["team"] == "USA"
+    assert "hard_signal_adjustments" not in payload["model"]
+    assert len(payload["ladder"]) == 1
+
+
+def test_outright_get_matches_canonical_push_transform(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    """LOCKSTEP guard: the inlined route transform must be byte-identical
+    to the canonical push transform. If they drift, this fails."""
+    from desk.distribute.outright import outright_wire_payload
+
+    published = _sample_outright()
+    _seed_outright(tmp_path, published)
+    app = _build_app(monkeypatch, tmp_path, token="dtk_correct-1")
+    with TestClient(app) as client:
+        r = client.get(
+            "/api/desk/external/outright/fb-wc26-winner",
+            headers={"Authorization": "Bearer dtk_correct-1"},
+        )
+    assert r.status_code == 200
+    assert r.json() == outright_wire_payload(published)
+
+
+def test_outright_get_requires_bearer(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    _seed_outright(tmp_path, _sample_outright())
+    app = _build_app(monkeypatch, tmp_path, token="dtk_correct-1")
+    with TestClient(app) as client:
+        r = client.get("/api/desk/external/outright/fb-wc26-winner")
+    assert r.status_code == 401
+
+
+def test_unknown_outright_returns_404(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    app = _build_app(monkeypatch, tmp_path, token="dtk_correct-1")
+    with TestClient(app) as client:
+        r = client.get(
+            "/api/desk/external/outright/fb-wc26-nope",
+            headers={"Authorization": "Bearer dtk_correct-1"},
+        )
+    assert r.status_code == 404
+
+
+def test_malformed_outright_id_returns_400(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    app = _build_app(monkeypatch, tmp_path, token="dtk_correct-1")
+    with TestClient(app) as client:
+        r = client.get(
+            "/api/desk/external/outright/NOT_A_VALID_ID",
+            headers={"Authorization": "Bearer dtk_correct-1"},
+        )
+    assert r.status_code == 400

@@ -30,6 +30,7 @@ GET /api/desk/outright/{outright_id}
 
 from __future__ import annotations
 
+import copy
 import hmac
 import json
 import logging
@@ -224,3 +225,45 @@ async def external_get_match(
     invalid bearer (handled by the dependency).
     """
     return _load_match(_sport_dir(sport), match_id)
+
+
+def _outright_wire_shape(published: dict[str, Any]) -> dict[str, Any]:
+    """Reshape the on-disk outright JSON into the MTA wire payload — the
+    exact shape the push wire delivers: add `content_type: "outright"`
+    and lift `model.hard_signal_adjustments` to a top-level list.
+
+    Kept in LOCKSTEP with the canonical transform at
+    `desk/desk/distribute/outright.py::outright_wire_payload`. The web
+    process stays decoupled from the desk package (only `site/generate.py`
+    bridges it), so this is inlined rather than imported — a test
+    (`desk/tests/test_external_route.py`) asserts the two stay
+    byte-identical so drift fails CI.
+    """
+    wire = copy.deepcopy(published)
+    wire["content_type"] = "outright"
+    model = wire.get("model")
+    hsa = model.pop("hard_signal_adjustments", []) if isinstance(model, dict) else []
+    wire["hard_signal_adjustments"] = hsa or []
+    return wire
+
+
+@external_router.get(
+    "/outright/{outright_id}",
+    dependencies=[Depends(_require_bearer)],
+)
+async def external_get_outright(outright_id: str) -> dict[str, Any]:
+    """Latest published payload for one outright_id, in the same wire
+    shape the push delivers (the `fb-wc26-winner.mta-sample.json` shape:
+    `content_type: "outright"` + top-level `hard_signal_adjustments`).
+
+    Lets MTA's "Refresh from desk" button pull an outright the same way
+    it pulls a match. 404 when no outright has been published under this
+    id. 400 on a malformed id. 401 on missing / invalid bearer.
+    """
+    if not _OUTRIGHT_ID_RE.match(outright_id):
+        raise HTTPException(status_code=400, detail="invalid outright_id")
+    path = _outrights_dir() / f"{outright_id}.json"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail=f"outright not found: {outright_id}")
+    published = json.loads(path.read_text(encoding="utf-8"))
+    return _outright_wire_shape(published)
