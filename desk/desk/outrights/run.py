@@ -12,10 +12,16 @@ finish (one extra step, ~30s of compute).
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from pathlib import Path
 
 from desk.config import OUTPUT_DIR
+from desk.distribute.config import DistributeConfig
+from desk.distribute.config import load_config as load_distribute_config
+from desk.distribute.enqueue import BodyTooLarge
+from desk.distribute.outbox import Outbox
+from desk.distribute.outright import enqueue_outright
 from desk.outrights.decide import decide
 from desk.outrights.explainer import build_copy
 from desk.outrights.hard_signals import (
@@ -186,4 +192,53 @@ def run_once(
         "resolves_at":  snapshot.resolution_utc.isoformat().replace("+00:00", "Z"),
     }
     write_index(out, [payload_entry])
+
+    # Distribute — push the published outright to MTA on the same wire as
+    # matches. Best-effort: the on-disk JSON is the canonical receipt, so
+    # a wire failure never breaks the run. No-op when DESK_DISTRIBUTE_PUSH=0.
+    _try_distribute(json_path)
     return json_path
+
+
+def _open_distribute() -> tuple[DistributeConfig | None, Outbox | None]:
+    """Resolve distribute config + open the outbox if push is enabled.
+
+    Mirrors `desk.runner._open_distribute`. Returns (None, None) when the
+    config can't be loaded (e.g. push=1 without URL/secret) so the caller
+    logs and continues — disk writes are decoupled from the wire.
+    """
+    try:
+        cfg = load_distribute_config()
+    except ValueError as e:
+        log.warning("outrights distribute config invalid, push disabled: %s", e)
+        return None, None
+    if not cfg.push_enabled:
+        return cfg, None
+    try:
+        return cfg, Outbox(cfg.db_path)
+    except Exception as e:                                  # noqa: BLE001
+        log.warning("outrights distribute outbox open failed, push disabled: %s", e)
+        return cfg, None
+
+
+def _try_distribute(json_path: Path) -> None:
+    """Best-effort enqueue of the just-published outright onto the MTA
+    wire. Never raises — the on-disk JSON is the canonical receipt.
+
+    Reads the payload back off disk (rather than re-running build_payload,
+    which re-stamps `updated_at`) so the wire body is byte-faithful to
+    what was published.
+    """
+    cfg, outbox = _open_distribute()
+    if cfg is None or outbox is None or not cfg.push_enabled:
+        return
+    try:
+        published = json.loads(json_path.read_text(encoding="utf-8"))
+        enqueue_outright(published, config=cfg, outbox=outbox)
+        log.info("outrights: enqueued %s for MTA push", published.get("outright_id"))
+    except BodyTooLarge as e:
+        log.error("outrights distribute enqueue rejected (oversized): %s", e)
+    except Exception as e:                                  # noqa: BLE001
+        log.warning("outrights distribute enqueue failed: %s", e)
+    finally:
+        outbox.close()

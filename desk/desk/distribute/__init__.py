@@ -12,7 +12,8 @@ it. See `desk/docs/adr/0001-withdrawn-verdict-state.md` for the
 lifecycle story.
 
 Public surface:
-    enqueue_match(match, body_bytes)       — fire-and-forget enqueue
+    enqueue_match(match, body_bytes)       — fire-and-forget enqueue (match)
+    enqueue_outright(published, ...)        — fire-and-forget enqueue (outright)
     detect_withdrawn(prior, current, ...)  — emit withdrawn payloads
     drain_once(...)                         — single worker sweep
 """
@@ -22,6 +23,11 @@ from desk.distribute.enqueue import (  # noqa: F401
     BodyTooLarge,
     canonical_body,
     enqueue_match,
+)
+from desk.distribute.outright import (  # noqa: F401
+    canonical_body_outright,
+    enqueue_outright,
+    outright_wire_payload,
 )
 from desk.distribute.outbox import Outbox, OutboxRow  # noqa: F401
 from desk.distribute.signing import sign, verify  # noqa: F401
