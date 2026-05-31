@@ -155,3 +155,76 @@ def test_outbox_survives_close_reopen(tmp_path: Path) -> None:
         rows = box2.claim_due(now=999, limit=10)
         assert len(rows) == 1
         assert rows[0].body == b'survived'
+
+
+# ── retry_dead_letters ────────────────────────────────────────────────
+
+def test_retry_dead_letters_all_when_no_filter(tmp_path: Path) -> None:
+    """Calling without match_ids retries every dead row."""
+    with Outbox(tmp_path / "x.db") as box:
+        rid1 = box.enqueue(match_id="m1", updated_at="t1", body=b'a', now=100)
+        rid2 = box.enqueue(match_id="m2", updated_at="t1", body=b'b', now=100)
+        box.mark_dead(rid1, reason="permanent: 400")
+        box.mark_dead(rid2, reason="permanent: 400")
+        assert box.dead_count() == 2
+
+        n = box.retry_dead_letters(now=200)
+        assert n == 2
+        assert box.dead_count() == 0
+        assert box.pending_count() == 2
+
+        # And the rows are due immediately (next_attempt_at=200).
+        due = box.claim_due(now=200, limit=10)
+        assert {r.id for r in due} == {rid1, rid2}
+
+
+def test_retry_dead_letters_match_ids_filter(tmp_path: Path) -> None:
+    """Filter retries to a specific list of match_ids."""
+    with Outbox(tmp_path / "x.db") as box:
+        r1 = box.enqueue(match_id="fb-wc26-mex-rsa-20260611", updated_at="t1", body=b'a', now=100)
+        r2 = box.enqueue(match_id="fb-wc26-bra-hai-20260620", updated_at="t1", body=b'b', now=100)
+        r3 = box.enqueue(match_id="fb-wc26-arg-pol-20260626", updated_at="t1", body=b'c', now=100)
+        box.mark_dead(r1, reason="x")
+        box.mark_dead(r2, reason="y")
+        box.mark_dead(r3, reason="z")
+
+        n = box.retry_dead_letters(
+            match_ids=["fb-wc26-mex-rsa-20260611", "fb-wc26-bra-hai-20260620"],
+            now=200,
+        )
+        assert n == 2
+        # arg-pol stays dead.
+        dead = {r.match_id for r in box.list_dead()}
+        assert dead == {"fb-wc26-arg-pol-20260626"}
+
+
+def test_retry_dead_letters_empty_match_ids_list_is_noop(tmp_path: Path) -> None:
+    """Passing an empty list explicitly retries nothing — guard against
+    accidentally retrying everything when the caller intended a
+    filtered call with a runtime-built (and possibly empty) list."""
+    with Outbox(tmp_path / "x.db") as box:
+        rid = box.enqueue(match_id="m1", updated_at="t1", body=b'a', now=100)
+        box.mark_dead(rid, reason="x")
+        n = box.retry_dead_letters(match_ids=[], now=200)
+        assert n == 0
+        assert box.dead_count() == 1
+
+
+def test_retry_dead_letters_resets_attempts(tmp_path: Path) -> None:
+    """Retried rows have `attempts` reset to 0 so the standard backoff
+    schedule starts fresh on the next failure."""
+    with Outbox(tmp_path / "x.db") as box:
+        rid = box.enqueue(match_id="m1", updated_at="t1", body=b'a', now=100)
+        box.mark_retry(rid, next_attempt_at=200, last_error="transient")
+        box.mark_retry(rid, next_attempt_at=300, last_error="transient again")
+        box.mark_dead(rid, reason="permanent")
+        # After 2 retries + 1 dead, attempts should be 3.
+        row = box.get(rid)
+        assert row is not None and row.attempts == 3
+
+        box.retry_dead_letters(now=500)
+        row = box.get(rid)
+        assert row is not None
+        assert row.status == "pending"
+        assert row.attempts == 0
+        assert row.next_attempt_at == 500
