@@ -1,0 +1,11 @@
+# Runtime SQLite outbox — never committed. The frozen JSON in
+# data/output/ IS committed (it's the product), but *.db is queue state.
+*.db
+*.db-wal
+*.db-shm
+
+.env
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
